@@ -11,12 +11,6 @@ export default class UserSeeder extends BaseSeeder {
 
     const users = [
       {
-        email: 'admin@ftc.fr',
-        password,
-        name: 'Administrateur',
-        role: 'admin' as const,
-      },
-      {
         organizationId: ftcParis.id,
         email: 'expert@ftc.fr',
         password,
@@ -40,7 +34,10 @@ export default class UserSeeder extends BaseSeeder {
     ]
 
     for (const row of users) {
-      await User.updateOrCreate({ organizationId: row.organizationId, email: row.email }, row)
+      await User.updateOrCreate(
+        { organizationId: row.organizationId as number | undefined, email: row.email },
+        row
+      )
     }
   }
 }
