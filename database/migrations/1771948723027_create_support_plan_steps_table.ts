@@ -28,7 +28,7 @@ export default class extends BaseSchema {
       ALTER TABLE "${this.tableName}"
       ADD CONSTRAINT "${this.tableName}_associated_exercise_check"
       CHECK (associated_exercise IS NULL OR associated_exercise IN (
-        ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')})
+        ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')}))
     `)
   }
 

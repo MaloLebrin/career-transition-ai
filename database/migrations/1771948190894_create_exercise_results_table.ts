@@ -31,8 +31,7 @@ export default class extends BaseSchema {
       ALTER TABLE "${this.tableName}"
       ADD CONSTRAINT "${this.tableName}_type_check"
       CHECK (type IS NULL OR type IN (
-        ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')})
-      ))
+        ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')}))
     `)
 
     this.schema.raw(`
