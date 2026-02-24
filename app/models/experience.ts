@@ -9,3 +9,5 @@ export const EXPERIENCES_TYPES = {
 } as const
 
 export type ExperienceType = (typeof EXPERIENCES_TYPES)[keyof typeof EXPERIENCES_TYPES]
+
+export const experiencesTypesValues = Object.values(EXPERIENCES_TYPES)

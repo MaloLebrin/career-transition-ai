@@ -1,4 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
+import { employeeStatusValues } from '../../app/models/employee.js'
 
 export default class extends BaseSchema {
   protected tableName = 'employees'
@@ -37,7 +38,7 @@ export default class extends BaseSchema {
     this.schema.raw(`
       ALTER TABLE "${this.tableName}"
       ADD CONSTRAINT "${this.tableName}_status_check"
-      CHECK (status IN ('active', 'completed', 'on-hold'))
+      CHECK (status IS NULL OR status IN (${employeeStatusValues.map((status) => `'${status}'`).join(',')}))
     `)
   }
 

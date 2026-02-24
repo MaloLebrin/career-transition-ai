@@ -1,4 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
+import { userRolesValues } from '../../app/models/user.js'
 
 export default class extends BaseSchema {
   protected tableName = 'users'
@@ -25,7 +26,7 @@ export default class extends BaseSchema {
     this.schema.raw(`
       ALTER TABLE "${this.tableName}"
       ADD CONSTRAINT "${this.tableName}_role_check"
-      CHECK (role IN ('advisor', 'employee', 'admin'))
+      CHECK (role IS NULL OR role IN (${userRolesValues.map((role) => `'${role}'`).join(',')}))
     `)
   }
 

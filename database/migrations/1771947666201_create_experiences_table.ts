@@ -1,4 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
+import { experiencesTypesValues } from '../../app/models/experience.js'
 
 export default class extends BaseSchema {
   protected tableName = 'experiences'
@@ -27,7 +28,7 @@ export default class extends BaseSchema {
     this.schema.raw(`
       ALTER TABLE "${this.tableName}"
       ADD CONSTRAINT "${this.tableName}_type_check"
-      CHECK (type IS NULL OR type IN ('cdi', 'cdd', 'interim', 'freelance', 'independent', 'alternance', 'other'))
+      CHECK (type IS NULL OR type IN (${experiencesTypesValues.map((type) => `'${type}'`).join(',')}))
     `)
   }
 

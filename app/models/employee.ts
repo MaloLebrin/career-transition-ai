@@ -5,3 +5,5 @@ export const EMPLOYEES_STATUS = {
 } as const
 
 export type EmployeeStatus = (typeof EMPLOYEES_STATUS)[keyof typeof EMPLOYEES_STATUS]
+
+export const employeeStatusValues = Object.values(EMPLOYEES_STATUS)
