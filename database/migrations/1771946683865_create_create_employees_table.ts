@@ -26,16 +26,25 @@ export default class extends BaseSchema {
       table.string('target_role', 255).nullable()
       table.text('summary').nullable()
       table.text('advisor_notes').nullable()
-      table.string('status', 20).notNullable().defaultTo('active')
+      table.string('status', 50).notNullable().defaultTo('active')
       table.boolean('onboarded').notNullable().defaultTo(false)
       table.timestamp('next_appointment', { useTz: true }).nullable()
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
       table.timestamp('deleted_at', { useTz: true }).nullable()
     })
+
+    this.schema.raw(`
+      ALTER TABLE "${this.tableName}"
+      ADD CONSTRAINT "${this.tableName}_status_check"
+      CHECK (status IN ('active', 'completed', 'on-hold'))
+    `)
   }
 
   async down() {
+    this.schema.raw(
+      `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`
+    )
     this.schema.dropTable(this.tableName)
   }
 }
