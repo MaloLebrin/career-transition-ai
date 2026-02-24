@@ -1,5 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { exerciceResultTypesValues } from '../../app/models/exercice_result.js'
+import { exerciceResultTypesValues } from '../../app/models/exercise_result.js'
 
 export default class extends BaseSchema {
   protected tableName = 'support_plan_steps'

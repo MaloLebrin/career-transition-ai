@@ -2,7 +2,7 @@ import Employee from '#models/employee'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import { ExerciceResultType } from './exercice_result.js'
+import { ExerciceResultType } from './exercise_result.js'
 
 export default class SupportPlanStep extends BaseModel {
   @column({ isPrimary: true })

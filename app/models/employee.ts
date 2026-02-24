@@ -1,6 +1,5 @@
 import Appointment from '#models/appointment'
 import Education from '#models/education'
-import ExerciseResult from '#models/exercise_result'
 import Experience from '#models/experience'
 import File from '#models/file'
 import Organization from '#models/organization'
@@ -10,6 +9,7 @@ import User from '#models/user'
 import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
+import ExerciseResult from './exercise_result.js'
 
 export const EMPLOYEES_STATUS = {
   ACTIVE: 'active',

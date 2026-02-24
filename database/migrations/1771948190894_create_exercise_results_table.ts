@@ -3,7 +3,7 @@ import {
   exerciceResultStatusValues,
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
-} from '../../app/models/exercice_result.js'
+} from '../../app/models/exercise_result.js'
 
 export default class extends BaseSchema {
   protected tableName = 'exercise_results'
