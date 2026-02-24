@@ -28,3 +28,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
+
+export const USERS_ROLES = {
+  ADVISOR: 'advisor',
+  EMPLOYEE: 'employee',
+  ADMIN: 'admin',
+  SUPER_ADMIN: 'super_admin',
+} as const
+
+export type UserRole = (typeof USERS_ROLES)[keyof typeof USERS_ROLES]
