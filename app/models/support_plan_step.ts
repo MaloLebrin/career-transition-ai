@@ -2,22 +2,9 @@ import Employee from '#models/employee'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
+import { ExerciceResultType } from './exercice_result.js'
 
-export const EXPERIENCES_TYPES = {
-  CDI: 'cdi',
-  CDD: 'cdd',
-  INTERIM: 'interim',
-  FREELANCE: 'freelance',
-  INDEPENDENT: 'independent',
-  ALTERNANCE: 'alternance',
-  OTHER: 'other',
-} as const
-
-export type ExperienceType = (typeof EXPERIENCES_TYPES)[keyof typeof EXPERIENCES_TYPES]
-
-export const experiencesTypesValues = Object.values(EXPERIENCES_TYPES)
-
-export default class Experience extends BaseModel {
+export default class SupportPlanStep extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
@@ -28,22 +15,19 @@ export default class Experience extends BaseModel {
   declare title: string
 
   @column()
-  declare company: string
-
-  @column()
-  declare type: ExperienceType | null
-
-  @column.date()
-  declare startDate: DateTime
-
-  @column.date()
-  declare endDate: DateTime | null
-
-  @column()
-  declare isCurrent: boolean | null
-
-  @column()
   declare description: string | null
+
+  @column.date()
+  declare dueDate: DateTime
+
+  @column()
+  declare completed: boolean
+
+  @column()
+  declare notes: string | null
+
+  @column()
+  declare associatedExercise: ExerciceResultType | null
 
   @column()
   declare sortOrder: number | null

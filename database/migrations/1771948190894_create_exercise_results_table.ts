@@ -1,5 +1,6 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 import {
+  exerciceResultStatusValues,
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
 } from '../../app/models/exercice_result.js'
@@ -17,7 +18,7 @@ export default class extends BaseSchema {
         .references('employees.id')
         .onDelete('CASCADE')
       table.string('type', 30).notNullable()
-      table.string('status', 20).notNullable().defaultTo('draft')
+      table.string('status', 20).notNullable().defaultTo(exerciceResultStatusValues.DRAFT)
       table.date('date').nullable()
       table.integer('duration').unsigned().nullable()
       table.jsonb('data').notNullable()

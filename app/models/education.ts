@@ -3,21 +3,7 @@ import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
-export const EXPERIENCES_TYPES = {
-  CDI: 'cdi',
-  CDD: 'cdd',
-  INTERIM: 'interim',
-  FREELANCE: 'freelance',
-  INDEPENDENT: 'independent',
-  ALTERNANCE: 'alternance',
-  OTHER: 'other',
-} as const
-
-export type ExperienceType = (typeof EXPERIENCES_TYPES)[keyof typeof EXPERIENCES_TYPES]
-
-export const experiencesTypesValues = Object.values(EXPERIENCES_TYPES)
-
-export default class Experience extends BaseModel {
+export default class Education extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
@@ -25,13 +11,10 @@ export default class Experience extends BaseModel {
   declare employeeId: number
 
   @column()
-  declare title: string
+  declare degree: string
 
   @column()
-  declare company: string
-
-  @column()
-  declare type: ExperienceType | null
+  declare school: string
 
   @column.date()
   declare startDate: DateTime
@@ -40,7 +23,7 @@ export default class Experience extends BaseModel {
   declare endDate: DateTime | null
 
   @column()
-  declare isCurrent: boolean | null
+  declare isCurrent: boolean
 
   @column()
   declare description: string | null
