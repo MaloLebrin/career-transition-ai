@@ -15,3 +15,13 @@ export const exerciceResultTypesValues = Object.values(EXERCICE_RESULTS_TYPES)
 
 export type ExerciceResultType =
   (typeof EXERCICE_RESULTS_TYPES)[keyof typeof EXERCICE_RESULTS_TYPES]
+
+export const exerciceResultStatusValues = {
+  DRAFT: 'draft',
+  COMPLETED: 'completed',
+} as const
+
+export type ExerciceResultStatus =
+  (typeof exerciceResultStatusValues)[keyof typeof exerciceResultStatusValues]
+
+export const exerciceResultStatusValuesValues = Object.values(exerciceResultStatusValues)
