@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: career-transition-ai-db
+    environment:
+      POSTGRES_USER: career_transition_ai
+      POSTGRES_PASSWORD: career_transition_ai_secret
+      POSTGRES_DB: career_transition_ai
+    ports:
+      - "5439:5432"
+    volumes:
+      - career_transition_ai_pg_data:/var/lib/postgresql/data
+
+volumes:
+  career_transition_ai_pg_data:
