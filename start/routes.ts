@@ -8,4 +8,5 @@
 */
 
 import router from '@adonisjs/core/services/router'
-router.on('/').renderInertia('home')
+// @ts-expect-error Inertia page name from generated types
+router.on('/').renderInertia('home', {})

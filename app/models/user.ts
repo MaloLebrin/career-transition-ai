@@ -4,6 +4,8 @@ import hash from '@adonisjs/core/services/hash'
 import { BaseModel, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
+import Appointment from './appointment.js'
+import Employee from './employee.js'
 import Organization from './organization.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {

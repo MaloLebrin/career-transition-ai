@@ -21,7 +21,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * to return the HTML contents to send as a response.
    */
   protected statusPages: Record<StatusPageRange, StatusPageRenderer> = {
+    // @ts-expect-error Inertia page names from generated types
     '404': (error, { inertia }) => inertia.render('errors/not_found', { error }),
+    // @ts-expect-error Inertia page names from generated types
     '500..599': (error, { inertia }) => inertia.render('errors/server_error', { error }),
   }
 
