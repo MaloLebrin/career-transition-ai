@@ -123,9 +123,22 @@ export const apiService = {
   },
 
   async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
-    // TODO: brancher sur une route backend de mise à jour quand l'API sera disponible.
-    await delay(500);
-    return { ...(updates as Employee), id } as Employee;
+    const response = await fetch(`/api/employees/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la mise à jour du candidat.');
+    }
+
+    const data = await response.json();
+    return data as Employee;
   },
 
   async saveExerciseResult(employeeId: string, result: ExerciseResult, plan: SupportPlanStep[]): Promise<void> {

@@ -117,13 +117,13 @@ const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
     id: String(step.id),
     title: step.title,
     description: step.description ?? '',
-    dueDate: step.dueDate.toISODate()!,
+    dueDate: step.dueDate ? step.dueDate.toISODate() || '' : '',
     completed: step.completed,
     notes: step.notes ?? undefined,
     associatedExercise: step.associatedExercise
       ? exerciceTypeToFront(step.associatedExercise)
       : undefined,
-    lastUpdated: step.updatedAt.toISO(),
+    lastUpdated: step.updatedAt.toISO() || undefined,
   }
 }
 

@@ -40,5 +40,20 @@ router.get('/dashboard/exercises/:type', ({ params, inertia }) =>
   (inertia as any).render('dashboard/Exercise', { type: params.type })
 )
 
-router.get('/api/employees', EmployeesController, 'index')
-router.get('/api/employees/:id', EmployeesController, 'show')
+router.get('/api/employees', async (ctx) => {
+  const Controller = (await EmployeesController()).default
+  const controller = new Controller()
+  return controller.index(ctx)
+})
+
+router.get('/api/employees/:id', async (ctx) => {
+  const Controller = (await EmployeesController()).default
+  const controller = new Controller()
+  return controller.show(ctx)
+})
+
+router.put('/api/employees/:id', async (ctx) => {
+  const Controller = (await EmployeesController()).default
+  const controller = new Controller()
+  return controller.update(ctx)
+})
