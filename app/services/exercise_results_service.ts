@@ -78,14 +78,72 @@ export class ExerciseResultsService {
     return mapEmployee(loaded)
   }
 
-  // These methods are placeholders to keep API parity with the frontend;
-  // persistence for drafts can be implemented later (e.g. dedicated table).
-  public async saveDraft(_input: SaveDraftInput): Promise<void> {
-    return
+  /**
+   * Saves or updates a draft for a given employee + exercise type.
+   * Uses the same ExerciseResult table with status = "draft".
+   * When the exercise is completed, saveResult will overwrite this record.
+   */
+  public async saveDraft(input: SaveDraftInput): Promise<void> {
+    const employee = await Employee.findOrFail(input.employeeId)
+
+    const existing = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', input.type)
+      .first()
+
+    if (existing) {
+      existing.merge({
+        status: 'draft',
+        date: null,
+        duration: null,
+        data: input.data,
+        quantitativeScore: null,
+        qualitativeAnalysis: null,
+      })
+      await existing.save()
+    } else {
+      await ExerciseResult.create({
+        employeeId: employee.id,
+        type: input.type,
+        status: 'draft',
+        date: null,
+        duration: null,
+        data: input.data,
+        quantitativeScore: null,
+        qualitativeAnalysis: null,
+      })
+    }
   }
 
-  public async fetchDraft(_input: SaveDraftInput): Promise<Record<string, unknown> | null> {
-    return null
+  /**
+   * Returns the latest draft for an employee + exercise type, or null.
+   */
+  public async fetchDraft(input: SaveDraftInput): Promise<
+    | {
+        employeeId: string
+        type: ExerciseResult['type']
+        lastUpdated: string
+        data: Record<string, unknown>
+      }
+    | null
+  > {
+    const draft = await ExerciseResult.query()
+      .where('employeeId', input.employeeId)
+      .andWhere('type', input.type)
+      .andWhere('status', 'draft')
+      .orderBy('updatedAt', 'desc')
+      .first()
+
+    if (!draft) {
+      return null
+    }
+
+    return {
+      employeeId: String(draft.employeeId),
+      type: draft.type,
+      lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+      data: draft.data,
+    }
   }
 }
 

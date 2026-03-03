@@ -70,6 +70,8 @@ router
         router.get('/:id', [EmployeesController, 'show'])
         router.put('/:id', [EmployeesController, 'update'])
         router.post('/:id/exercises/result', [ExerciseResultsController, 'store'])
+        router.post('/:id/exercises/draft', [ExerciseResultsController, 'saveDraft'])
+        router.post('/:id/exercises/draft/fetch', [ExerciseResultsController, 'fetchDraft'])
       })
       .prefix('/employees')
 

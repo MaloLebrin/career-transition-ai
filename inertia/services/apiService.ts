@@ -214,21 +214,52 @@ export const apiService = {
   },
 
   async saveExerciseDraft(draft: ExerciseDraft): Promise<void> {
-    await delay(100);
-    const drafts = getDrafts();
-    const index = drafts.findIndex(d => d.employeeId === draft.employeeId && d.type === draft.type);
-    
-    if (index !== -1) {
-      drafts[index] = draft;
-    } else {
-      drafts.push(draft);
+    const response = await fetch(`/api/employees/${draft.employeeId}/exercises/draft`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        employeeId: draft.employeeId,
+        type: draft.type,
+        data: draft.data,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de l'enregistrement du brouillon.");
     }
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
   },
 
   async fetchExerciseDraft(employeeId: string, type: string): Promise<ExerciseDraft | null> {
-    await delay(100);
-    const drafts = getDrafts();
-    return drafts.find(d => d.employeeId === employeeId && d.type === type) || null;
+    const response = await fetch(`/api/employees/${employeeId}/exercises/draft/fetch`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        employeeId,
+        type,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error('Erreur lors du chargement du brouillon.');
+    }
+
+    const data = await response.json();
+    if (!data) return null;
+
+    return {
+      employeeId: data.employeeId,
+      type: data.type,
+      lastUpdated: data.lastUpdated,
+      data: data.data,
+    } as ExerciseDraft;
   }
 };

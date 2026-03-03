@@ -3,7 +3,10 @@ import { DateTime } from 'luxon'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import Employee from '#models/employee'
 import SupportPlanStep from '#models/support_plan_step'
-import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#models/exercise_result'
+import ExerciseResult, {
+  EXERCICE_RESULTS_TYPES,
+  exerciceResultStatusValues,
+} from '#models/exercise_result'
 
 test.group('ExerciseResultsService', () => {
   test('saveResult creates exercise result and updates plan', async ({ assert }) => {
@@ -59,6 +62,100 @@ test.group('ExerciseResultsService', () => {
     assert.equal(dto.exercises[0].quantitativeScore, 10)
     assert.lengthOf(dto.plan, 1)
     assert.isTrue(dto.plan[0].completed)
+  })
+
+  test('saveDraft creates or updates draft result', async ({ assert }) => {
+    const service = new ExerciseResultsService()
+
+    const employee = await Employee.create({
+      organizationId: 1,
+      advisorId: null,
+      userId: null,
+      name: 'Draft Candidate',
+      email: 'draft@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+      nextAppointment: null,
+    })
+
+    await service.saveDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      data: { foo: 'bar' },
+    })
+
+    let stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .first()
+
+    assert.isNotNull(stored)
+    assert.equal(stored!.status, 'draft')
+    assert.deepEqual(stored!.data, { foo: 'bar' })
+
+    await service.saveDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      data: { foo: 'baz' },
+    })
+
+    stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .first()
+
+    assert.isNotNull(stored)
+    assert.equal(stored!.status, 'draft')
+    assert.deepEqual(stored!.data, { foo: 'baz' })
+  })
+
+  test('fetchDraft returns null when no draft and dto when exists', async ({ assert }) => {
+    const service = new ExerciseResultsService()
+
+    const employee = await Employee.create({
+      organizationId: 1,
+      advisorId: null,
+      userId: null,
+      name: 'Fetch Draft Candidate',
+      email: 'fetch-draft@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+      nextAppointment: null,
+    })
+
+    let draft = await service.fetchDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      data: {},
+    })
+
+    assert.isNull(draft)
+
+    await service.saveDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      data: { foo: 'bar' },
+    })
+
+    draft = await service.fetchDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      data: {},
+    })
+
+    assert.isNotNull(draft)
+    assert.equal(draft!.employeeId, String(employee.id))
+    assert.equal(draft!.type, EXERCICE_RESULTS_TYPES.MOTIVATION)
+    assert.deepEqual(draft!.data, { foo: 'bar' })
+    assert.isString(draft!.lastUpdated)
   })
 })
 
