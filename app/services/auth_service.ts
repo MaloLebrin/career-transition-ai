@@ -13,8 +13,8 @@ type RegisterInput = {
 
 function toSessionDto(user: User): UserSessionDto {
   return {
-    id: String(user.id),
-    organizationId: String(user.organizationId),
+    id: user.id,
+    organizationId: user.organizationId,
     email: user.email,
     name: user.name,
     role: user.role,

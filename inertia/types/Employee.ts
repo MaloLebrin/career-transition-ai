@@ -6,9 +6,9 @@ import { ExerciseResult } from './ExerciseResult';
 import { SupportPlanStep } from './SupportPlanStep';
 
 export interface Employee {
-  id: string;
-  organizationId: string;
-  advisorId?: string;
+  id: number;
+  organizationId: number;
+  advisorId?: number;
   name: string;
   email: string;
   currentRole: string;

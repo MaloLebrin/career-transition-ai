@@ -11,8 +11,8 @@ vi.mock('../../../inertia/services/apiService', () => ({
 const { apiService } = await import('../../../inertia/services/apiService')
 
 const mockEmployee = {
-  id: '1',
-  organizationId: '1',
+  id: 1,
+  organizationId: 1,
   name: 'Jean Dupont',
   email: 'jean@example.com',
   currentRole: 'Dev',

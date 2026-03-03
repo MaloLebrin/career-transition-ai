@@ -1,7 +1,7 @@
 
 export interface UserSession {
-  id: string
-  organizationId: string
+  id: number
+  organizationId: number
   email: string
   name: string
   role: 'advisor' | 'employee' | 'admin' | 'super_admin'
@@ -46,7 +46,7 @@ export const authService = {
     return (await response.json()) as UserSession
   },
 
-  async updateProfile(_id: string, _updates: Partial<UserSession>): Promise<UserSession> {
+  async updateProfile(_id: number | string, _updates: Partial<UserSession>): Promise<UserSession> {
     // TODO: Exposer un endpoint backend pour mettre à jour le profil utilisateur (name / email)
     // Pour l'instant, on renvoie simplement la session courante depuis /auth/me.
     const current = await this.getCurrentSession()

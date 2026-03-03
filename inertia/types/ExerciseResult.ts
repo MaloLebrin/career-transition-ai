@@ -2,7 +2,7 @@
 import { ExerciseType } from './ExerciseType';
 
 export interface ExerciseResult {
-  id: string;
+  id: number;
   type: ExerciseType;
   date: string;
   duration: number;
@@ -12,7 +12,7 @@ export interface ExerciseResult {
 }
 
 export interface ExerciseDraft {
-  employeeId: string;
+  employeeId: number;
   type: ExerciseType;
   lastUpdated: string;
   data: any;

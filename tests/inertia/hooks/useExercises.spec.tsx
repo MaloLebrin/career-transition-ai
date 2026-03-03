@@ -19,8 +19,8 @@ const { apiService } = await import('../../../inertia/services/apiService')
 const { analyzeExerciseResult } = await import('../../../inertia/services/geminiService')
 
 const mockEmployee = {
-  id: '1',
-  organizationId: '10',
+  id: 1,
+  organizationId: 10,
   name: 'Jean',
   email: 'jean@example.com',
   currentRole: 'Dev',
@@ -30,7 +30,7 @@ const mockEmployee = {
   status: 'active' as const,
   onboarded: true,
   exercises: [],
-  plan: [{ id: 's1', title: 'Step', description: '', dueDate: '', completed: false, associatedExercise: ExerciseType.MOTIVATION }],
+  plan: [{ id: 1, title: 'Step', description: '', dueDate: '', completed: false, associatedExercise: ExerciseType.MOTIVATION }],
 }
 
 describe('useExercises', () => {
@@ -54,7 +54,7 @@ describe('useExercises', () => {
 
     const loaded = await result.current.loadDraft(ExerciseType.MOTIVATION)
     expect(loaded).toEqual(draft)
-    expect(apiService.fetchExerciseDraft).toHaveBeenCalledWith('1', ExerciseType.MOTIVATION)
+    expect(apiService.fetchExerciseDraft).toHaveBeenCalledWith(1, ExerciseType.MOTIVATION)
   })
 
   test('loadDraft returns null when no employee', async () => {
@@ -92,7 +92,7 @@ describe('useExercises', () => {
 
     expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.MOTIVATION, { data: 'x' })
     expect(apiService.saveExerciseResult).toHaveBeenCalledWith(
-      '1',
+      1,
       expect.objectContaining({ type: ExerciseType.MOTIVATION, duration: 60 }),
       expect.any(Array)
     )

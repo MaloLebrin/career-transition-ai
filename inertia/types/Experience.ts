@@ -2,7 +2,7 @@
 import { JobType } from './JobType';
 
 export interface Experience {
-  id: string;
+  id: number;
   title: string;
   company: string;
   type?: JobType;

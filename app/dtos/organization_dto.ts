@@ -1,7 +1,7 @@
 export type AdvisorRoleDto = 'admin' | 'expert' | 'consultant'
 
 export type OrganizationDto = {
-  id: string
+  id: number
   name: string
   slug: string
   logoUrl?: string
@@ -9,8 +9,8 @@ export type OrganizationDto = {
 }
 
 export type AdvisorDto = {
-  id: string
-  organizationId: string
+  id: number
+  organizationId: number
   email: string
   name: string
   role: AdvisorRoleDto

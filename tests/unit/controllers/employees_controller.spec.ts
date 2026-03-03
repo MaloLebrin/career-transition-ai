@@ -22,8 +22,8 @@ class FakeEmployeesService {
   async create(input: CreateInput): Promise<EmployeeDto> {
     this.createCalls.push(input)
     return {
-      id: '1',
-      organizationId: String(input.organizationId),
+      id: 1,
+      organizationId: input.organizationId,
       name: input.name,
       email: input.email,
       currentRole: input.currentRole ?? '',

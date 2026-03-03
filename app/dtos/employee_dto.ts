@@ -6,7 +6,7 @@ export type SkillDto = {
 }
 
 export type ExperienceDto = {
-  id: string
+  id: number
   title: string
   company: string
   type?: 'CDI' | 'CDD' | 'Alternance' | 'Freelance' | 'Stage'
@@ -17,7 +17,7 @@ export type ExperienceDto = {
 }
 
 export type EducationDto = {
-  id: string
+  id: number
   degree: string
   school: string
   startDate: string
@@ -27,7 +27,7 @@ export type EducationDto = {
 }
 
 export type ExerciseResultDto = {
-  id: string
+  id: number
   type:
     | 'MOTIVATION'
     | 'VALUES'
@@ -47,7 +47,7 @@ export type ExerciseResultDto = {
 }
 
 export type SupportPlanStepDto = {
-  id: string
+  id: number
   title: string
   description: string
   dueDate: string
@@ -58,9 +58,9 @@ export type SupportPlanStepDto = {
 }
 
 export type EmployeeDto = {
-  id: string
-  organizationId: string
-  advisorId?: string
+  id: number
+  organizationId: number
+  advisorId?: number
   name: string
   email: string
   currentRole: string

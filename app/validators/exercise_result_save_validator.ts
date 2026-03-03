@@ -12,7 +12,7 @@ export const saveExerciseResultValidator = vine.compile(
     qualitativeAnalysis: vine.string().optional(),
     plan: vine.array(
       vine.object({
-        id: vine.string(),
+        id: vine.number(),
         completed: vine.boolean(),
         lastUpdated: vine.string().optional(),
       })

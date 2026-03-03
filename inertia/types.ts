@@ -12,7 +12,7 @@ export * from './types/Employee';
 export type AdvisorRole = 'admin' | 'expert' | 'consultant';
 
 export interface Organization {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   logoUrl?: string;
@@ -20,8 +20,8 @@ export interface Organization {
 }
 
 export interface Advisor {
-  id: string;
-  organizationId: string;
+  id: number;
+  organizationId: number;
   email: string;
   name: string;
   role: AdvisorRole;

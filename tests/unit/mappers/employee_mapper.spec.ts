@@ -113,8 +113,8 @@ test.group('Employee mapper', () => {
 
     const dto = mapEmployee(loaded)
 
-    assert.equal(dto.id, String(employee.id))
-    assert.equal(dto.organizationId, String(orgId))
+    assert.equal(dto.id, employee.id)
+    assert.equal(dto.organizationId, orgId)
     assert.isUndefined(dto.advisorId)
     assert.equal(dto.name, 'Jane Doe')
     assert.equal(dto.currentRole, 'Développeuse')

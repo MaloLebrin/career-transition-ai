@@ -27,7 +27,7 @@ export const apiService = {
     return data as Organization;
   },
 
-  async fetchOrganization(id: string): Promise<Organization> {
+  async fetchOrganization(id: string | number): Promise<Organization> {
     const response = await fetch(`/api/organizations/${id}`, {
       credentials: 'include',
       headers: { Accept: 'application/json' },
@@ -41,7 +41,7 @@ export const apiService = {
     return data as Organization;
   },
 
-  async fetchOrganizationAdvisors(organizationId: string): Promise<Advisor[]> {
+  async fetchOrganizationAdvisors(organizationId: string | number): Promise<Advisor[]> {
     const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
       credentials: 'include',
       headers: { Accept: 'application/json' },
@@ -54,13 +54,13 @@ export const apiService = {
     return data as Advisor[];
   },
 
-  async fetchEmployees(organizationId?: string, advisorId?: string): Promise<Employee[]> {
+  async fetchEmployees(organizationId?: string | number, advisorId?: string | number): Promise<Employee[]> {
     const url = new URL('/api/employees', window.location.origin);
-    if (organizationId) {
-      url.searchParams.set('organizationId', organizationId);
+    if (organizationId !== undefined && organizationId !== '') {
+      url.searchParams.set('organizationId', String(organizationId));
     }
-    if (advisorId) {
-      url.searchParams.set('advisorId', advisorId);
+    if (advisorId !== undefined && advisorId !== '') {
+      url.searchParams.set('advisorId', String(advisorId));
     }
 
     const response = await fetch(url.toString(), {
@@ -78,7 +78,7 @@ export const apiService = {
     return data as Employee[];
   },
 
-  async fetchEmployeeById(id: string): Promise<Employee> {
+  async fetchEmployeeById(id: string | number): Promise<Employee> {
     const response = await fetch(`/api/employees/${id}`, {
       credentials: 'include',
       headers: {
@@ -94,7 +94,7 @@ export const apiService = {
     return data as Employee;
   },
 
-  async saveExerciseResult(employeeId: string, result: ExerciseResult, plan: SupportPlanStep[]): Promise<void> {
+  async saveExerciseResult(employeeId: string | number, result: ExerciseResult, plan: SupportPlanStep[]): Promise<void> {
     const response = await fetch(`/api/employees/${employeeId}/exercises/result`, {
       method: 'POST',
       credentials: 'include',
@@ -143,7 +143,7 @@ export const apiService = {
     }
   },
 
-  async fetchExerciseDraft(employeeId: string, type: string): Promise<ExerciseDraft | null> {
+  async fetchExerciseDraft(employeeId: string | number, type: string): Promise<ExerciseDraft | null> {
     const response = await fetch(`/api/employees/${employeeId}/exercises/draft/fetch`, {
       method: 'POST',
       credentials: 'include',

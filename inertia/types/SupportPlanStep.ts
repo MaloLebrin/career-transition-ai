@@ -2,7 +2,7 @@
 import { ExerciseType } from './ExerciseType';
 
 export interface SupportPlanStep {
-  id: string;
+  id: number;
   title: string;
   description: string;
   dueDate: string;

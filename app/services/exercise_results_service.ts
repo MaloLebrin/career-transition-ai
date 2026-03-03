@@ -14,7 +14,7 @@ type SaveResultInput = {
   data: Record<string, unknown>
   quantitativeScore?: number
   qualitativeAnalysis?: string
-  plan: Array<{ id: string; completed: boolean; lastUpdated?: string }>
+  plan: Array<{ id: number; completed: boolean; lastUpdated?: string }>
 }
 
 type SaveDraftInput = {
@@ -120,7 +120,7 @@ export class ExerciseResultsService {
    */
   public async fetchDraft(input: SaveDraftInput): Promise<
     | {
-        employeeId: string
+        employeeId: number
         type: ExerciseResult['type']
         lastUpdated: string
         data: Record<string, unknown>
@@ -139,7 +139,7 @@ export class ExerciseResultsService {
     }
 
     return {
-      employeeId: String(draft.employeeId),
+      employeeId: draft.employeeId,
       type: draft.type,
       lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
       data: draft.data,

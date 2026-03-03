@@ -24,7 +24,7 @@ class FakeOrganizationsService {
   ): Promise<OrganizationDto> {
     this.updateCalls.push({ org, payload })
     return {
-      id: String(org.id),
+      id: org.id,
       name: payload.name ?? org.name,
       slug: payload.slug ?? org.slug,
       createdAt: org.createdAt.toISO() ?? '',
@@ -36,12 +36,12 @@ class FakeOrganizationsService {
     name: string
     email: string
     role: string
-  }): Promise<{ id: string; organizationId: string; email: string; name: string; role: string }> {
+  }): Promise<{ id: number; organizationId: number; email: string; name: string; role: string }> {
     this.inviteAdvisorCalls.push(input)
     if (this.inviteAdvisorError) throw this.inviteAdvisorError
     return {
-      id: '1',
-      organizationId: String(input.organizationId),
+      id: 1,
+      organizationId: input.organizationId,
       email: input.email,
       name: input.name,
       role: input.role,
@@ -119,7 +119,7 @@ test.group('OrganizationsController.current', () => {
   test('returns organization dto when it exists', async ({ assert }) => {
     const service = new FakeOrganizationsService()
     service.result = {
-      id: '1',
+      id: 1,
       name: 'Test Org',
       slug: 'test-org',
       createdAt: '2025-01-01T00:00:00.000Z',

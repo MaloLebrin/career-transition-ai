@@ -22,8 +22,8 @@ test.group('AuthService', () => {
     const service = new AuthService()
     const dto = service.toSession(user)
 
-    assert.equal(dto.id, String(user.id))
-    assert.equal(dto.organizationId, String(org.id))
+    assert.equal(dto.id, user.id)
+    assert.equal(dto.organizationId, org.id)
     assert.equal(dto.email, user.email)
     assert.equal(dto.name, user.name)
     assert.equal(dto.role, user.role)
@@ -71,8 +71,8 @@ test.group('AuthService', () => {
     assert.equal(dto.name, 'New User')
 
     const user = await User.findByOrFail('email', uniqueEmail)
-    assert.equal(dto.id, String(user.id))
-    assert.equal(dto.organizationId, String(user.organizationId))
+    assert.equal(dto.id, user.id)
+    assert.equal(dto.organizationId, user.organizationId)
   })
 
   test('register rejects duplicate email', async ({ assert }) => {

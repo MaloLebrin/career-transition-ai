@@ -46,7 +46,7 @@ const AppShell: React.FC = () => {
   const { employees, filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm);
 
   const userRole = user?.role || 'employee';
-  const targetId = userRole === 'employee' ? (user?.id || '1') : selectedEmployeeId;
+  const targetId = userRole === 'employee' ? String(user?.id ?? 1) : selectedEmployeeId;
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId);
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(selectedEmployee, async () => {
@@ -82,7 +82,7 @@ const AppShell: React.FC = () => {
 
   useEffect(() => {
     if (userRole === 'advisor' && !selectedEmployeeId && employees.length > 0) {
-      setSelectedEmployeeId(employees[0].id);
+      setSelectedEmployeeId(String(employees[0].id));
     }
   }, [userRole, employees, selectedEmployeeId]);
 
@@ -271,7 +271,7 @@ const AppShell: React.FC = () => {
                             setActiveView('detail');
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
-                            selectedEmployeeId === emp.id && activeNav === 'employees'
+                            Number(selectedEmployeeId) === emp.id && activeNav === 'employees'
                               ? 'bg-brand-sage/10 text-brand-sage'
                               : 'text-brand-navy/60 hover:bg-brand-ivory'
                           }`}

@@ -3,8 +3,8 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { useAuth } from '../../../inertia/hooks/useAuth'
 
 const mockSession = {
-  id: '1',
-  organizationId: '10',
+  id: 1,
+  organizationId: 10,
   email: 'user@example.com',
   name: 'Test User',
   role: 'advisor' as const,

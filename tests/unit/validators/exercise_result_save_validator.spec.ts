@@ -12,7 +12,7 @@ test.group('saveExerciseResultValidator', () => {
       data: { foo: 'bar' },
       quantitativeScore: 10,
       qualitativeAnalysis: 'Analyse',
-      plan: [{ id: '1', completed: true, lastUpdated: '2025-01-05T10:00:00Z' }],
+      plan: [{ id: 1, completed: true, lastUpdated: '2025-01-05T10:00:00Z' }],
     }
 
     const result = await saveExerciseResultValidator.validate(data)

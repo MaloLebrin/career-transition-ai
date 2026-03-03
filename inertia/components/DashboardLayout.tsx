@@ -67,7 +67,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
                       </div>
                     ) : filteredEmployees.length > 0 ? (
                       filteredEmployees.map((emp) => {
-                        const isActive = selectedEmployeeId === emp.id && url.includes('/dashboard/employees/')
+                        const isActive = selectedEmployeeId !== null && Number(selectedEmployeeId) === emp.id && url.includes('/dashboard/employees/')
                         return (
                           <Link
                             key={emp.id}

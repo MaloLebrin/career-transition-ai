@@ -49,14 +49,14 @@ test.group('ExerciseResultsService', () => {
       qualitativeAnalysis: 'Analyse',
       plan: [
         {
-          id: String(step.id),
+          id: step.id,
           completed: true,
           lastUpdated: DateTime.fromISO('2025-01-05T10:00:00').toISO() || undefined,
         },
       ],
     })
 
-    assert.equal(dto.id, String(employee.id))
+    assert.equal(dto.id, employee.id)
     assert.lengthOf(dto.exercises, 1)
     assert.equal(dto.exercises[0].type, 'MOTIVATION')
     assert.equal(dto.exercises[0].quantitativeScore, 10)
@@ -152,7 +152,7 @@ test.group('ExerciseResultsService', () => {
     })
 
     assert.isNotNull(draft)
-    assert.equal(draft!.employeeId, String(employee.id))
+    assert.equal(draft!.employeeId, employee.id)
     assert.equal(draft!.type, EXERCICE_RESULTS_TYPES.MOTIVATION)
     assert.deepEqual(draft!.data, { foo: 'bar' })
     assert.isString(draft!.lastUpdated)

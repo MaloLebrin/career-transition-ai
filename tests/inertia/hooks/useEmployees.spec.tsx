@@ -8,7 +8,7 @@ vi.mock('../../../inertia/services/apiService', () => ({
   },
 }))
 
-const stableUser = { id: '1', organizationId: '10', role: 'advisor' as const }
+const stableUser = { id: 1, organizationId: 10, role: 'advisor' as const }
 vi.mock('../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({ user: stableUser }),
 }))
@@ -17,8 +17,8 @@ const { apiService } = await import('../../../inertia/services/apiService')
 
 const mockEmployees = [
   {
-    id: '1',
-    organizationId: '10',
+    id: 1,
+    organizationId: 10,
     name: 'Alice',
     email: 'alice@example.com',
     currentRole: 'Dev',
@@ -31,8 +31,8 @@ const mockEmployees = [
     plan: [],
   },
   {
-    id: '2',
-    organizationId: '10',
+    id: 2,
+    organizationId: 10,
     name: 'Bob',
     email: 'bob@example.com',
     currentRole: 'Designer',
@@ -61,7 +61,7 @@ describe('useEmployees', () => {
 
     expect(result.current.employees).toHaveLength(2)
     expect(result.current.filteredEmployees).toHaveLength(2)
-    expect(apiService.fetchEmployees).toHaveBeenCalledWith('10', '1')
+    expect(apiService.fetchEmployees).toHaveBeenCalledWith(10, 1)
   })
 
   test('filteredEmployees filters by name and email', async () => {

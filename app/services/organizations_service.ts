@@ -7,7 +7,7 @@ import { randomBytes } from 'node:crypto'
 
 function mapOrganization(org: Organization): OrganizationDto {
   return {
-    id: String(org.id),
+    id: org.id,
     name: org.name,
     slug: org.slug,
     logoUrl: org.logoUrl ?? undefined,
@@ -18,8 +18,8 @@ function mapOrganization(org: Organization): OrganizationDto {
 function userToAdvisorDto(user: User): AdvisorDto {
   const role: AdvisorRoleDto = user.role === 'admin' ? 'admin' : 'expert'
   return {
-    id: String(user.id),
-    organizationId: String(user.organizationId),
+    id: user.id,
+    organizationId: user.organizationId,
     email: user.email,
     name: user.name,
     role,

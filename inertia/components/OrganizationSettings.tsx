@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth'
 
 interface Props {
   /** When omitted, loads the current user's organization via GET /api/organizations/current */
-  organizationId?: string;
+  organizationId?: string | number;
   onBack: () => void;
 }
 

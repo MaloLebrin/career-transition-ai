@@ -83,8 +83,8 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
 
   const addItem = (type: 'experiences' | 'educations') => {
     const newItem = type === 'experiences' 
-      ? { id: Math.random().toString(36).substr(2, 9), title: '', company: '', type: 'CDI' as JobType, startDate: '', endDate: '', isCurrent: false, description: '' }
-      : { id: Math.random().toString(36).substr(2, 9), degree: '', school: '', startDate: '', endDate: '', isCurrent: false, description: '' };
+      ? { id: Date.now() + Math.floor(Math.random() * 1000), title: '', company: '', type: 'CDI' as JobType, startDate: '', endDate: '', isCurrent: false, description: '' }
+      : { id: Date.now() + Math.floor(Math.random() * 1000), degree: '', school: '', startDate: '', endDate: '', isCurrent: false, description: '' };
     setFormData({ ...formData, [type]: [newItem, ...formData[type]] });
   };
 

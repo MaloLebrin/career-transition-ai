@@ -50,7 +50,7 @@ const mapExperience = (experience: Experience): ExperienceDto => {
   }
 
   return {
-    id: String(experience.id),
+    id: experience.id,
     title: experience.title,
     company: experience.company,
     type: mappedType,
@@ -63,7 +63,7 @@ const mapExperience = (experience: Experience): ExperienceDto => {
 
 const mapEducation = (education: Education): EducationDto => {
   return {
-    id: String(education.id),
+    id: education.id,
     degree: education.degree,
     school: education.school,
     startDate: education.startDate.toISODate()!,
@@ -102,7 +102,7 @@ export const exerciceTypeToFront = (type: ExerciseModelType): ExerciseResultDto[
 
 const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => {
   return {
-    id: String(result.id),
+    id: result.id,
     type: exerciceTypeToFront(result.type),
     date: result.date ? result.date.toISO()! : new Date().toISOString(),
     duration: result.duration ?? 0,
@@ -114,7 +114,7 @@ const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => {
 
 const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
   return {
-    id: String(step.id),
+    id: step.id,
     title: step.title,
     description: step.description ?? '',
     dueDate: step.dueDate ? step.dueDate.toISODate() || '' : '',
@@ -149,9 +149,9 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
   const nextAppointment = getNextAppointmentDate(employee.nextAppointment, employee.appointments || [])
 
   return {
-    id: String(employee.id),
-    organizationId: String(employee.organizationId),
-    advisorId: employee.advisorId !== null ? String(employee.advisorId) : undefined,
+    id: employee.id,
+    organizationId: employee.organizationId,
+    advisorId: employee.advisorId ?? undefined,
     name: employee.name,
     email: employee.email,
     currentRole: employee.currentRole,
