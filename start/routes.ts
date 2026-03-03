@@ -49,6 +49,9 @@ router
       (inertia as any).render('dashboard/Exercise', { type: params.type, employeeId: params.id })
     )
 
+    router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
+    router.post('/settings/organization/advisors', [OrganizationsController, 'storeAdvisorFromDashboard'])
+
     // @ts-expect-error Inertia page name from generated types
     router.on('/settings').renderInertia('dashboard/Settings', {})
     // @ts-expect-error Inertia page name from generated types

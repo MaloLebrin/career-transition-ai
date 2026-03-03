@@ -1,131 +1,146 @@
-
-import React, { useState } from 'react';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Card from './ui/Card';
-import { AdvisorRole } from '../types';
+import React from 'react'
+import { useForm } from '@inertiajs/react'
+import Button from './ui/Button'
+import Input from './ui/Input'
+import Card from './ui/Card'
+import type { AdvisorRole } from '../types'
 
 interface Props {
-  onClose: () => void;
-  onInvite: (data: { name: string, email: string, role: AdvisorRole }) => Promise<void>;
+  onClose: () => void
 }
 
-const AddAdvisorModal: React.FC<Props> = ({ onClose, onInvite }) => {
-  const [formData, setFormData] = useState<{ firstName: string, lastName: string, email: string, role: AdvisorRole }>({ 
-    firstName: '', 
-    lastName: '', 
-    email: '', 
-    role: 'consultant' 
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const roles: { id: AdvisorRole; title: string; desc: string }[] = [
+  { id: 'admin', title: 'Administrateur', desc: 'Gestion du cabinet, équipe et facturation' },
+  { id: 'expert', title: 'Expert Référent', desc: 'Accompagnement et supervision de dossiers' },
+  { id: 'consultant', title: 'Consultant', desc: "Accompagnement de ses propres candidats" },
+]
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    const fullName = `${formData.firstName} ${formData.lastName}`.trim();
-    
-    try {
-      await onInvite({ name: fullName, email: formData.email, role: formData.role });
-      onClose();
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue lors de l'invitation.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
+  const { data, setData, post, processing, errors, reset } = useForm({
+    name: '',
+    email: '',
+    role: 'consultant' as AdvisorRole,
+  })
 
-  const roles: { id: AdvisorRole, title: string, desc: string }[] = [
-    { id: 'admin', title: 'Administrateur', desc: 'Gestion du cabinet, équipe et facturation' },
-    { id: 'expert', title: 'Expert Référent', desc: 'Accompagnement et supervision de dossiers' },
-    { id: 'consultant', title: 'Consultant', desc: 'Accompagnement de ses propres candidats' }
-  ];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    post('/dashboard/settings/organization/advisors', {
+      onSuccess: () => {
+        reset()
+        onClose()
+      },
+    })
+  }
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
       <Card className="w-full max-w-xl relative animate-slideUp overflow-hidden">
-        <Button 
-          onClick={onClose} 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          onClick={onClose}
+          variant="ghost"
+          size="sm"
           className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 z-10 p-2"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </Button>
 
         <div className="mb-10 text-center">
           <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Nouveau Collaborateur</h2>
-          <p className="text-slate-500 mt-3 font-medium">Définissez l'identité et le niveau d'accès du conseiller.</p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
+            Nouveau Collaborateur
+          </h2>
+          <p className="text-slate-500 mt-3 font-medium">
+            Définissez l'identité et le niveau d'accès du conseiller.
+          </p>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-xs font-bold text-rose-600 animate-shake">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Prénom"
-                required
-                placeholder="Sophie"
-                value={formData.firstName}
-                onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-              />
-              <Input
-                label="Nom"
-                required
-                placeholder="Martin"
-                value={formData.lastName}
-                onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-              />
-            </div>
             <Input
-              label="Email Professionnel"
+              label="Nom complet"
+              required
+              placeholder="Sophie Martin"
+              value={data.name}
+              onChange={(e) => setData('name', e.target.value)}
+              error={errors.name}
+            />
+            <Input
+              label="Email professionnel"
               required
               type="email"
               placeholder="s.martin@votre-cabinet.fr"
-              value={formData.email}
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              value={data.email}
+              onChange={(e) => setData('email', e.target.value)}
+              error={errors.email}
             />
           </div>
 
           <div className="space-y-4">
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Rôle et Permissions</label>
-             <div className="grid grid-cols-1 gap-3">
-               {roles.map((r) => (
-                 <button
-                   key={r.id}
-                   type="button"
-                   onClick={() => setFormData({...formData, role: r.id})}
-                   className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${formData.role === r.id ? 'border-orange-500 bg-orange-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
-                 >
-                   <div>
-                     <div className={`font-black text-sm ${formData.role === r.id ? 'text-orange-600' : 'text-slate-700'}`}>{r.title}</div>
-                     <div className="text-[10px] font-bold text-slate-400">{r.desc}</div>
-                   </div>
-                   {formData.role === r.id && <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg></div>}
-                 </button>
-               ))}
-             </div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
+              Rôle et permissions
+            </label>
+            <div className="grid grid-cols-1 gap-3">
+              {roles.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setData('role', r.id)}
+                  className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${
+                    data.role === r.id
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <div>
+                    <div
+                      className={`font-black text-sm ${
+                        data.role === r.id ? 'text-orange-600' : 'text-slate-700'
+                      }`}
+                    >
+                      {r.title}
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-400">{r.desc}</div>
+                  </div>
+                  {data.role === r.id && (
+                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+            {errors.role && (
+              <p className="text-[9px] font-bold text-rose-500 px-2">{errors.role}</p>
+            )}
           </div>
 
           <div className="pt-4 flex flex-col gap-3">
-            <Button type="submit" className="w-full shadow-orange-100" variant="secondary" size="lg" isLoading={isLoading}>
+            <Button
+              type="submit"
+              className="w-full shadow-orange-100"
+              variant="secondary"
+              size="lg"
+              isLoading={processing}
+              disabled={processing}
+            >
               Envoyer l'invitation
             </Button>
-            <p className="text-[9px] text-slate-400 text-center font-bold uppercase tracking-widest italic">L'utilisateur recevra ses accès immédiatement par email.</p>
+            <p className="text-[9px] text-slate-400 text-center font-bold uppercase tracking-widest italic">
+              L'utilisateur recevra ses accès immédiatement par email.
+            </p>
           </div>
         </form>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default AddAdvisorModal;
+export default AddAdvisorModal

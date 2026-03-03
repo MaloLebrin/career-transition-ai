@@ -1,13 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { Organization, Advisor, AdvisorRole } from '../types';
-import { apiService } from '../services/apiService';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Card from './ui/Card';
-import Badge from './ui/Badge';
-import AddAdvisorModal from './AddAdvisorModal';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState, useEffect } from 'react'
+import { useForm } from '@inertiajs/react'
+import { Organization, Advisor, AdvisorRole } from '../types'
+import { apiService } from '../services/apiService'
+import Button from './ui/Button'
+import Input from './ui/Input'
+import Card from './ui/Card'
+import Badge from './ui/Badge'
+import AddAdvisorModal from './AddAdvisorModal'
+import { useAuth } from '../hooks/useAuth'
 
 interface Props {
   /** When omitted, loads the current user's organization via GET /api/organizations/current */
@@ -16,15 +16,19 @@ interface Props {
 }
 
 const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
-  const { user, updateProfile } = useAuth();
-  const [org, setOrg] = useState<Organization | null>(null);
-  const [members, setMembers] = useState<Advisor[]>([]);
-  const [personalInfo, setPersonalInfo] = useState({ name: '', email: '' });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const { user, updateProfile } = useAuth()
+  const [org, setOrg] = useState<Organization | null>(null)
+  const [members, setMembers] = useState<Advisor[]>([])
+  const [personalInfo, setPersonalInfo] = useState({ name: '', email: '' })
+  const [loading, setLoading] = useState(true)
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
+
+  const orgForm = useForm({ name: '', slug: '' })
+  useEffect(() => {
+    if (org) orgForm.setData({ name: org.name, slug: org.slug })
+  }, [org?.id])
 
   const loadData = async () => {
     try {
@@ -49,21 +53,6 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
     loadData();
   }, [organizationId, user?.id]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!org) return;
-    setSaving(true);
-    try {
-      await apiService.updateOrganization(org.id, org);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      alert("Erreur lors de la sauvegarde.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -76,14 +65,6 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
     } finally {
       setSavingProfile(false);
     }
-  };
-
-  const handleInviteAdvisor = async (advisorData: { name: string, email: string, role: AdvisorRole }) => {
-    if (!org) return;
-    const newMember = await apiService.inviteAdvisor(org.id, advisorData);
-    setMembers(prev => [...prev, newMember]);
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
   };
 
   if (loading || !org) {
@@ -152,22 +133,32 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
               Informations Générales
             </h3>
             
-            <form onSubmit={handleSave} className="space-y-6">
-              <Input 
-                label="Nom du Cabinet" 
-                value={org.name} 
-                onChange={e => setOrg({...org, name: e.target.value})} 
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                orgForm.put('/dashboard/settings/organization')
+              }}
+              className="space-y-6"
+            >
+              <Input
+                label="Nom du Cabinet"
+                value={orgForm.data.name}
+                onChange={(e) => orgForm.setData('name', e.target.value)}
                 placeholder="Ex: FTC Paris"
+                error={orgForm.errors.name}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input 
-                  label="Slug URL" 
-                  value={org.slug} 
-                  onChange={e => setOrg({...org, slug: e.target.value})} 
+                <Input
+                  label="Slug URL"
+                  value={orgForm.data.slug}
+                  onChange={(e) => orgForm.setData('slug', e.target.value)}
                   placeholder="ftc-paris"
+                  error={orgForm.errors.slug}
                 />
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Date de création</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
+                    Date de création
+                  </label>
                   <div className="p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold text-sm text-slate-400">
                     {new Date(org.createdAt).toLocaleDateString('fr-FR')}
                   </div>
@@ -175,7 +166,12 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
               </div>
 
               <div className="pt-4">
-                <Button type="submit" isLoading={saving} className="w-full shadow-indigo-100">
+                <Button
+                  type="submit"
+                  isLoading={orgForm.processing}
+                  disabled={orgForm.processing}
+                  className="w-full shadow-indigo-100"
+                >
                   Mettre à jour les infos
                 </Button>
               </div>
@@ -252,10 +248,7 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
       </div>
 
       {isInviteModalOpen && (
-        <AddAdvisorModal 
-          onClose={() => setIsInviteModalOpen(false)} 
-          onInvite={handleInviteAdvisor} 
-        />
+        <AddAdvisorModal onClose={() => setIsInviteModalOpen(false)} />
       )}
     </div>
   );

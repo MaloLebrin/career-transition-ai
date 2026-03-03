@@ -4,7 +4,6 @@ import type { EmployeeDto } from '#dtos/employee_dto'
 import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
-import { DateTime } from 'luxon'
 
 type CreateInput = {
   organizationId: number
@@ -28,8 +27,8 @@ class FakeEmployeesService {
       name: input.name,
       email: input.email,
       currentRole: input.currentRole ?? '',
-      targetRole: input.targetRole ?? null,
-      summary: input.summary ?? null,
+      targetRole: input.targetRole ?? undefined,
+      summary: input.summary ?? undefined,
       status: 'active',
       onboarded: false,
       experiences: [],
@@ -37,8 +36,8 @@ class FakeEmployeesService {
       skills: [],
       exercises: [],
       plan: [],
-      advisorNotes: null,
-      nextAppointment: null,
+      advisorNotes: undefined,
+      nextAppointment: undefined,
     }
   }
 
