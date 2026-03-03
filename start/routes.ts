@@ -10,40 +10,66 @@
 import router from '@adonisjs/core/services/router'
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const OrganizationsController = () => import('#controllers/organizations_controller')
 
+// Public / auth pages
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
 // @ts-expect-error Inertia page name from generated types
 router.on('/auth').renderInertia('Auth', {})
 
-// Dashboard: home uses dashboard/Home (replaces single Dashboard page)
-// @ts-expect-error Inertia page name from generated types
-router.on('/dashboard').renderInertia('dashboard/Home', {})
+// Dashboard (Inertia) routes
+router
+  .group(() => {
+    // Dashboard: home uses dashboard/Home (replaces single Dashboard page)
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/').renderInertia('dashboard/Home', {})
 
-router.get('/dashboard/employees', ({ inertia }) =>
-  (inertia as any).render('dashboard/Employees', {})
-)
-router.get('/dashboard/employees/:id', ({ params, inertia }) =>
-  (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })
-)
-router.get('/dashboard/employees/:id/exercises/:type', ({ params, inertia }) =>
-  (inertia as any).render('dashboard/Exercise', { type: params.type, employeeId: params.id })
-)
+    router.get('/employees', ({ inertia }) =>
+      (inertia as any).render('dashboard/Employees', {})
+    )
+    router.get('/employees/:id', ({ params, inertia }) =>
+      (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })
+    )
+    router.get('/employees/:id/exercises/:type', ({ params, inertia }) =>
+      (inertia as any).render('dashboard/Exercise', { type: params.type, employeeId: params.id })
+    )
 
-// @ts-expect-error Inertia page name from generated types
-router.on('/dashboard/settings').renderInertia('dashboard/Settings', {})
-// @ts-expect-error Inertia page name from generated types
-router.on('/dashboard/design-system').renderInertia('dashboard/DesignSystem', {})
-// @ts-expect-error Inertia page name from generated types
-router.on('/dashboard/profile').renderInertia('dashboard/Profile', {})
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/settings').renderInertia('dashboard/Settings', {})
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/design-system').renderInertia('dashboard/DesignSystem', {})
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/profile').renderInertia('dashboard/Profile', {})
 
-router.get('/dashboard/exercises/:type', ({ params, inertia }) =>
-  (inertia as any).render('dashboard/Exercise', { type: params.type })
-)
+    router.get('/exercises/:type', ({ params, inertia }) =>
+      (inertia as any).render('dashboard/Exercise', { type: params.type })
+    )
+  })
+  .prefix('/dashboard')
 
-router.post('/api/employees', [EmployeesController, 'store'])
-router.get('/api/employees', [EmployeesController, 'index'])
-router.get('/api/employees/:id', [EmployeesController, 'show'])
-router.put('/api/employees/:id', [EmployeesController, 'update'])
+// JSON API routes (nested groups by resource)
+router
+  .group(() => {
+    // Employees + exercise results
+    router
+      .group(() => {
+        router.post('/', [EmployeesController, 'store'])
+        router.get('/', [EmployeesController, 'index'])
+        router.get('/:id', [EmployeesController, 'show'])
+        router.put('/:id', [EmployeesController, 'update'])
+        router.post('/:id/exercises/result', [ExerciseResultsController, 'store'])
+      })
+      .prefix('/employees')
 
-router.post('/api/employees/:id/exercises/result', [ExerciseResultsController, 'store'])
+    // Organizations + advisors
+    router
+      .group(() => {
+        router.get('/:id', [OrganizationsController, 'show'])
+        router.put('/:id', [OrganizationsController, 'update'])
+        router.get('/:id/advisors', [OrganizationsController, 'indexAdvisors'])
+        router.post('/:id/advisors', [OrganizationsController, 'storeAdvisor'])
+      })
+      .prefix('/organizations')
+  })
+  .prefix('/api')

@@ -32,48 +32,63 @@ const getDrafts = (): ExerciseDraft[] => {
 
 export const apiService = {
   async fetchOrganization(id: string): Promise<Organization> {
-    await delay(300);
-    const orgs = getOrgs();
-    const org = orgs.find(o => o.id === id);
-    if (!org) throw new Error("Organisation introuvable");
-    return org;
+    const response = await fetch(`/api/organizations/${id}`, {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Organisation introuvable');
+      if (response.status === 401) throw new Error('Non authentifié');
+      throw new Error('Erreur lors du chargement de l’organisation.');
+    }
+    const data = await response.json();
+    return data as Organization;
   },
 
   async updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
-    await delay(500);
-    const orgs = getOrgs();
-    const index = orgs.findIndex(o => o.id === id);
-    if (index === -1) throw new Error("Organisation introuvable");
-    orgs[index] = { ...orgs[index], ...updates };
-    localStorage.setItem(ORG_KEY, JSON.stringify(orgs));
-    return orgs[index];
+    const response = await fetch(`/api/organizations/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Organisation introuvable');
+      if (response.status === 401) throw new Error('Non authentifié');
+      throw new Error('Erreur lors de la sauvegarde.');
+    }
+    const data = await response.json();
+    return data as Organization;
   },
 
   async fetchOrganizationAdvisors(organizationId: string): Promise<Advisor[]> {
-    await delay(400);
-    const users = getUsers();
-    return users.filter(u => u.organizationId === organizationId);
+    const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      if (response.status === 401) throw new Error('Non authentifié');
+      throw new Error('Erreur lors du chargement des conseillers.');
+    }
+    const data = await response.json();
+    return data as Advisor[];
   },
 
   async inviteAdvisor(organizationId: string, advisorData: { name: string, email: string, role: AdvisorRole }): Promise<Advisor> {
-    await delay(800);
-    const users = getUsers();
-    
-    if (users.find(u => u.email.toLowerCase() === advisorData.email.toLowerCase())) {
-      throw new Error("Cet email est déjà utilisé par un compte existant.");
+    const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(advisorData),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      if (response.status === 400 && body?.message) throw new Error(body.message);
+      if (response.status === 401) throw new Error('Non authentifié');
+      throw new Error('Erreur lors de l’invitation.');
     }
-
-    const newAdvisor: Advisor = {
-      id: Math.random().toString(36).substr(2, 9),
-      organizationId,
-      email: advisorData.email,
-      name: advisorData.name,
-      role: advisorData.role
-    };
-
-    users.push(newAdvisor);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    return newAdvisor;
+    const data = await response.json();
+    return data as Advisor;
   },
 
   async fetchEmployees(organizationId?: string, advisorId?: string): Promise<Employee[]> {
