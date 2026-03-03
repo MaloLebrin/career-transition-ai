@@ -1,6 +1,6 @@
-
-import React from 'react';
-import Button from './ui/Button';
+import React from 'react'
+import Button from './ui/Button'
+import FlashBanner from './FlashBanner'
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -58,7 +58,8 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
           </div>
         </div>
       </header>
-      <main className="flex-grow max-w-7xl mx-auto px-6 py-10 w-full">
+      <FlashBanner />
+      <main className="grow max-w-7xl mx-auto px-6 py-10 w-full">
         {children}
       </main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
