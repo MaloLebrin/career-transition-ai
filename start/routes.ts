@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
+const AuthController = () => import('#controllers/auth_controller')
 
 // Public / auth pages
 // @ts-expect-error Inertia page name from generated types
@@ -18,16 +19,24 @@ router.on('/').renderInertia('Landing', {})
 // @ts-expect-error Inertia page name from generated types
 router.on('/auth').renderInertia('Auth', {})
 
-// Dashboard (Inertia) routes
+// Auth JSON API
+router
+  .group(() => {
+    router.get('/me', [AuthController, 'me'])
+    router.post('/login', [AuthController, 'login'])
+    router.post('/register', [AuthController, 'register'])
+    router.post('/logout', [AuthController, 'logout'])
+  })
+  .prefix('/auth')
+
+// Dashboard (Inertia) routes. For admin-only routes use .use(['auth', 'admin'])
 router
   .group(() => {
     // Dashboard: home uses dashboard/Home (replaces single Dashboard page)
     // @ts-expect-error Inertia page name from generated types
     router.on('/').renderInertia('dashboard/Home', {})
 
-    router.get('/employees', ({ inertia }) =>
-      (inertia as any).render('dashboard/Employees', {})
-    )
+    router.get('/employees', ({ inertia }) => (inertia as any).render('dashboard/Employees', {}))
     router.get('/employees/:id', ({ params, inertia }) =>
       (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })
     )
