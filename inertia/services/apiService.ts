@@ -1,5 +1,5 @@
 
-import { Employee, ExerciseResult, SupportPlanStep, ExerciseDraft, Organization, Advisor, AdvisorRole } from '../types';
+import { Employee, ExerciseResult, SupportPlanStep, ExerciseDraft, Organization, Advisor } from '../types';
 
 const DRAFT_KEY = 'ftc_portal_drafts';
 const ORG_KEY = 'ftc_organizations';
@@ -60,22 +60,6 @@ export const apiService = {
     return data as Organization;
   },
 
-  async updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
-    const response = await fetch(`/api/organizations/${id}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-    if (!response.ok) {
-      if (response.status === 404) throw new Error('Organisation introuvable');
-      if (response.status === 401) throw new Error('Non authentifié');
-      throw new Error('Erreur lors de la sauvegarde.');
-    }
-    const data = await response.json();
-    return data as Organization;
-  },
-
   async fetchOrganizationAdvisors(organizationId: string): Promise<Advisor[]> {
     const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
       credentials: 'include',
@@ -87,23 +71,6 @@ export const apiService = {
     }
     const data = await response.json();
     return data as Advisor[];
-  },
-
-  async inviteAdvisor(organizationId: string, advisorData: { name: string, email: string, role: AdvisorRole }): Promise<Advisor> {
-    const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(advisorData),
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      if (response.status === 400 && body?.message) throw new Error(body.message);
-      if (response.status === 401) throw new Error('Non authentifié');
-      throw new Error('Erreur lors de l’invitation.');
-    }
-    const data = await response.json();
-    return data as Advisor;
   },
 
   async fetchEmployees(organizationId?: string, advisorId?: string): Promise<Employee[]> {
