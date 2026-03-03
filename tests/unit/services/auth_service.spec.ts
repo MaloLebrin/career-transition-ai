@@ -30,24 +30,20 @@ test.group('AuthService', () => {
   })
 
   test('verifyCredentials returns user when credentials are valid', async ({ assert }) => {
-    const org = await Organization.create({
-      name: 'Org VC',
-      slug: `org-vc-${Date.now()}`,
-    })
-
+    const uniqueEmail = `valid-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
     const password = 'secret123'
-    const user = await User.create({
-      organizationId: org.id,
-      email: 'valid@example.com',
+    const service = new AuthService()
+    await service.register({
+      email: uniqueEmail,
+      password,
       name: 'Valid User',
-      password: await hash.make(password),
       role: USERS_ROLES.ADVISOR,
     })
 
-    const service = new AuthService()
-    const result = await service.verifyCredentials('valid@example.com', password)
+    const result = await service.verifyCredentials(uniqueEmail, password)
 
-    assert.equal(result.id, user.id)
+    assert.equal(result.email, uniqueEmail)
+    assert.equal(result.name, 'Valid User')
   })
 
   test('verifyCredentials throws for invalid credentials', async ({ assert }) => {
@@ -62,18 +58,19 @@ test.group('AuthService', () => {
   })
 
   test('register creates user in default org and returns session dto', async ({ assert }) => {
+    const uniqueEmail = `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
     const service = new AuthService()
     const dto = await service.register({
-      email: 'new@example.com',
+      email: uniqueEmail,
       password: 'secret123',
       name: 'New User',
       role: USERS_ROLES.ADVISOR,
     })
 
-    assert.equal(dto.email, 'new@example.com')
+    assert.equal(dto.email, uniqueEmail)
     assert.equal(dto.name, 'New User')
 
-    const user = await User.findByOrFail('email', 'new@example.com')
+    const user = await User.findByOrFail('email', uniqueEmail)
     assert.equal(dto.id, String(user.id))
     assert.equal(dto.organizationId, String(user.organizationId))
   })

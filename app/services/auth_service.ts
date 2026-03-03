@@ -67,7 +67,7 @@ export class AuthService {
       organizationId: org.id,
       email: input.email,
       name: input.name,
-      password: await hash.make(input.password),
+      password: input.password,
       role,
     })
 

@@ -8,6 +8,7 @@
 */
 
 import router from '@adonisjs/core/services/router'
+import { middleware } from '#start/kernel'
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
@@ -29,7 +30,7 @@ router
   })
   .prefix('/auth')
 
-// Dashboard (Inertia) routes. For admin-only routes use .use(['auth', 'admin'])
+// Dashboard (Inertia) routes. Requires auth; for admin-only use .use(['auth', 'admin'])
 router
   .group(() => {
     // Dashboard: home uses dashboard/Home (replaces single Dashboard page)
@@ -55,6 +56,7 @@ router
       (inertia as any).render('dashboard/Exercise', { type: params.type })
     )
   })
+  .use([middleware.auth()])
   .prefix('/dashboard')
 
 // JSON API routes (nested groups by resource)
