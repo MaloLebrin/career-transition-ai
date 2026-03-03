@@ -127,4 +127,71 @@ test.group('Dashboard routes (functional)', () => {
     await org.refresh()
     assert.equal(org.name, newName)
   })
+
+  test('POST /dashboard/settings/organization/advisors returns 401 when unauthenticated', async ({
+    assert,
+  }) => {
+    const res = await fetch(`${baseUrl()}/dashboard/settings/organization/advisors`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        name: 'New Advisor',
+        email: 'advisor@example.com',
+        role: 'consultant',
+      }),
+    })
+    assert.equal(res.status, 401)
+  })
+
+  test('POST /dashboard/settings/organization/advisors invites advisor and redirects when authenticated', async ({
+    assert,
+  }) => {
+    await app.boot()
+    const authService = new AuthService()
+    const email = `advisor-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
+    await authService.register({
+      email,
+      password: 'secret123',
+      name: 'Owner',
+      role: USERS_ROLES.ADVISOR,
+    })
+
+    const loginRes = await fetch(`${baseUrl()}/auth/login`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ email, password: 'secret123' }),
+    })
+    const setCookies =
+      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
+    const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
+
+    const invitedEmail = `invited-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
+    const res = await fetch(`${baseUrl()}/dashboard/settings/organization/advisors`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Cookie: cookieHeader,
+      },
+      body: JSON.stringify({
+        name: 'Invited Advisor',
+        email: invitedEmail,
+        role: 'consultant',
+      }),
+    })
+
+    assert.equal(res.status, 302)
+    const location = res.headers.get('location') ?? ''
+    assert.isTrue(
+      location.includes('/dashboard/settings'),
+      `Expected redirect to /dashboard/settings, got ${location}`
+    )
+
+    const invitedUser = await User.query().where('email', invitedEmail).first()
+    assert.isNotNull(invitedUser)
+    assert.equal(invitedUser!.name, 'Invited Advisor')
+  })
 })
