@@ -1,78 +1,32 @@
 
 import { Employee, ExerciseResult, SupportPlanStep, ExerciseDraft, Organization, Advisor, AdvisorRole } from '../types';
-import { MOCK_EMPLOYEES } from '../mocks/employees';
 
-const STORAGE_KEY = 'ftc_portal_data';
 const DRAFT_KEY = 'ftc_portal_drafts';
 const ORG_KEY = 'ftc_organizations';
 const USERS_KEY = 'ftc_portal_users';
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-const getInitialData = (): Employee[] => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  let currentData: Employee[] = [];
-  
-  if (saved) {
-    currentData = JSON.parse(saved);
-  } else {
-    currentData = [...MOCK_EMPLOYEES];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
-    return currentData;
-  }
-
-  let modified = false;
-  
-  // Ensure all mock employees are present in the data
-  MOCK_EMPLOYEES.forEach(mockEmp => {
-    const exists = currentData.find(e => String(e.id) === String(mockEmp.id));
-    if (!exists) {
-      currentData.push(mockEmp);
-      modified = true;
-    } else {
-      // Update existing mock entries if they differ in critical fields
-      const index = currentData.findIndex(e => String(e.id) === String(mockEmp.id));
-      if (
-        currentData[index].advisorId !== mockEmp.advisorId || 
-        currentData[index].organizationId !== mockEmp.organizationId ||
-        currentData[index].nextAppointment !== mockEmp.nextAppointment
-      ) {
-        currentData[index] = { 
-          ...currentData[index], 
-          advisorId: mockEmp.advisorId, 
-          organizationId: mockEmp.organizationId,
-          nextAppointment: mockEmp.nextAppointment
-        };
-        modified = true;
-      }
-    }
-  });
-
-  if (modified) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
-  }
-  
-  return currentData;
-};
-
 const getOrgs = (): Organization[] => {
-  const saved = localStorage.getItem(ORG_KEY);
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(ORG_KEY) : null;
   if (saved) return JSON.parse(saved);
   const initialOrgs: Organization[] = [
     { id: 'ftc-paris', name: 'FTC Paris Étoile', slug: 'ftc-paris', createdAt: '2024-01-01' },
     { id: 'new-org', name: 'Nouveau Cabinet', slug: 'nouveau-cabinet', createdAt: '2025-01-01' }
   ];
-  localStorage.setItem(ORG_KEY, JSON.stringify(initialOrgs));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(ORG_KEY, JSON.stringify(initialOrgs));
+  }
   return initialOrgs;
 };
 
 const getUsers = (): Advisor[] => {
-  const saved = localStorage.getItem(USERS_KEY);
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(USERS_KEY) : null;
   return saved ? JSON.parse(saved) : [];
 };
 
 const getDrafts = (): ExerciseDraft[] => {
-  const saved = localStorage.getItem(DRAFT_KEY);
+  const saved = typeof window !== 'undefined' ? localStorage.getItem(DRAFT_KEY) : null;
   return saved ? JSON.parse(saved) : [];
 };
 
@@ -123,42 +77,55 @@ export const apiService = {
   },
 
   async fetchEmployees(organizationId?: string, advisorId?: string): Promise<Employee[]> {
-    await delay(300);
-    let data = getInitialData();
+    const url = new URL('/api/employees', window.location.origin);
     if (organizationId) {
-      data = data.filter(e => e.organizationId === organizationId);
+      url.searchParams.set('organizationId', organizationId);
     }
     if (advisorId) {
-      // Show candidates assigned to this advisor OR mock candidates if they are in the same organization
-      data = data.filter(e => e.advisorId === advisorId || (['1', '2'].includes(e.id) && (!organizationId || e.organizationId === organizationId)));
+      url.searchParams.set('advisorId', advisorId);
     }
-    return data;
+
+    const response = await fetch(url.toString(), {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors du chargement des candidats.");
+    }
+
+    const data = await response.json();
+    return data as Employee[];
   },
 
   async fetchEmployeeById(id: string): Promise<Employee> {
-    await delay(300);
-    const data = getInitialData();
-    const emp = data.find(e => e.id === id);
-    if (!emp) throw new Error("Candidat introuvable");
-    return emp;
+    const response = await fetch(`/api/employees/${id}`, {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Candidat introuvable");
+    }
+
+    const data = await response.json();
+    return data as Employee;
   },
 
   async createEmployee(employee: Employee): Promise<Employee> {
+    // TODO: brancher sur une route backend de création quand l'API sera disponible.
     await delay(300);
-    const data = getInitialData();
-    data.push(employee);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     return employee;
   },
 
   async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
+    // TODO: brancher sur une route backend de mise à jour quand l'API sera disponible.
     await delay(500);
-    const data = getInitialData();
-    const index = data.findIndex(e => e.id === id);
-    if (index === -1) throw new Error("Candidat introuvable");
-    data[index] = { ...data[index], ...updates };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    return data[index];
+    return { ...(updates as Employee), id } as Employee;
   },
 
   async saveExerciseResult(employeeId: string, result: ExerciseResult, plan: SupportPlanStep[]): Promise<void> {

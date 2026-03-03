@@ -8,6 +8,7 @@
 */
 
 import router from '@adonisjs/core/services/router'
+const EmployeesController = () => import('#controllers/employees_controller')
 
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
@@ -38,3 +39,6 @@ router.on('/dashboard/profile').renderInertia('dashboard/Profile', {})
 router.get('/dashboard/exercises/:type', ({ params, inertia }) =>
   (inertia as any).render('dashboard/Exercise', { type: params.type })
 )
+
+router.get('/api/employees', EmployeesController, 'index')
+router.get('/api/employees/:id', EmployeesController, 'show')
