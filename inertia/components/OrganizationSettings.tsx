@@ -1,0 +1,305 @@
+
+import React, { useState, useEffect } from 'react';
+import { Organization, Advisor, AdvisorRole } from '../types';
+import { apiService } from '../services/apiService';
+import Button from './ui/Button';
+import Input from './ui/Input';
+import Card from './ui/Card';
+import Badge from './ui/Badge';
+import AddAdvisorModal from './AddAdvisorModal';
+import { useAuth } from '../hooks/useAuth';
+
+interface Props {
+  organizationId: string;
+  onBack: () => void;
+}
+
+const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
+  const { user, updateProfile } = useAuth();
+  const [org, setOrg] = useState<Organization | null>(null);
+  const [members, setMembers] = useState<Advisor[]>([]);
+  const [personalInfo, setPersonalInfo] = useState({ name: '', email: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [orgData, membersData] = await Promise.all([
+        apiService.fetchOrganization(organizationId),
+        apiService.fetchOrganizationAdvisors(organizationId)
+      ]);
+      setOrg(orgData);
+      setMembers(membersData);
+      if (user) {
+        setPersonalInfo({ name: user.name, email: user.email });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [organizationId, user?.id]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!org) return;
+    setSaving(true);
+    try {
+      await apiService.updateOrganization(organizationId, org);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      alert("Erreur lors de la sauvegarde.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      await updateProfile(personalInfo);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: any) {
+      alert(err.message || "Erreur lors de la sauvegarde du profil.");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleInviteAdvisor = async (advisorData: { name: string, email: string, role: AdvisorRole }) => {
+    const newMember = await apiService.inviteAdvisor(organizationId, advisorData);
+    setMembers(prev => [...prev, newMember]);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
+  };
+
+  if (loading || !org) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Chargement du Cabinet...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fadeIn max-w-5xl mx-auto space-y-10 pb-20">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button onClick={onBack} variant="ghost" size="sm" className="rounded-full p-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          </Button>
+          <div>
+            <h2 className="text-4xl font-black text-slate-900 tracking-tight italic">Mon Cabinet</h2>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-1">Identité visuelle et gestion d'équipe</p>
+          </div>
+        </div>
+        {success && <Badge variant="lime">Action effectuée avec succès !</Badge>}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Identité du Conseiller & Cabinet */}
+        <div className="lg:col-span-7 space-y-8">
+          {/* Mon Profil Personnel */}
+          <Card className="space-y-8 p-10 border-2 border-violet-100 bg-white">
+            <h3 className="text-xl font-black text-slate-900 flex items-center">
+              <span className="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center mr-3">👤</span>
+              Mon Profil Personnel
+            </h3>
+            
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="Nom complet" 
+                  value={personalInfo.name} 
+                  onChange={e => setPersonalInfo({...personalInfo, name: e.target.value})} 
+                  placeholder="Votre nom"
+                />
+                <Input 
+                  label="Email professionnel" 
+                  value={personalInfo.email} 
+                  onChange={e => setPersonalInfo({...personalInfo, email: e.target.value})} 
+                  placeholder="votre@email.fr"
+                  type="email"
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button type="submit" isLoading={savingProfile} variant="secondary" className="w-full">
+                  Mettre à jour mon profil
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          {/* Identité du Cabinet */}
+          <Card className="space-y-8 p-10">
+            <h3 className="text-xl font-black text-slate-900 flex items-center">
+              <span className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mr-3">🏢</span>
+              Informations Générales
+            </h3>
+            
+            <form onSubmit={handleSave} className="space-y-6">
+              <Input 
+                label="Nom du Cabinet" 
+                value={org.name} 
+                onChange={e => setOrg({...org, name: e.target.value})} 
+                placeholder="Ex: FTC Paris"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="Slug URL" 
+                  value={org.slug} 
+                  onChange={e => setOrg({...org, slug: e.target.value})} 
+                  placeholder="ftc-paris"
+                />
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Date de création</label>
+                  <div className="p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold text-sm text-slate-400">
+                    {new Date(org.createdAt).toLocaleDateString('fr-FR')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button type="submit" isLoading={saving} className="w-full shadow-indigo-100">
+                  Mettre à jour les infos
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          <Card className="p-10 space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-black text-slate-900 flex items-center">
+                <span className="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mr-3">👥</span>
+                Mon Équipe
+              </h3>
+              <Button 
+                onClick={() => setIsInviteModalOpen(true)}
+                variant="ghost"
+                size="sm"
+              >
+                + Inviter un collaborateur
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              {members.length > 0 ? (
+                members.map((member) => (
+                  <TeamMember 
+                    key={member.id}
+                    name={member.name} 
+                    role={member.role} 
+                    email={member.email} 
+                    isMe={user?.id === member.id} 
+                  />
+                ))
+              ) : (
+                <p className="text-center py-8 text-slate-400 italic text-sm">Aucun collaborateur trouvé.</p>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        {/* Branding & Side Info */}
+        <div className="lg:col-span-5 space-y-8">
+          <Card className="p-10 text-center space-y-6">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Identité Visuelle</h3>
+            <div className="relative group mx-auto w-32 h-32">
+               <div className="w-32 h-32 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[32px] flex items-center justify-center text-slate-300 group-hover:border-indigo-300 group-hover:text-indigo-400 transition-all cursor-pointer overflow-hidden">
+                 {org.logoUrl ? (
+                   <img src={org.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                 ) : (
+                   <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
+                 )}
+               </div>
+               <Button size="sm" className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+               </Button>
+            </div>
+            <p className="text-xs text-slate-500 font-medium">Format carré, PNG ou SVG conseillé (Max 1Mo).</p>
+          </Card>
+
+          <Card variant="dark" className="p-10 space-y-6 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest relative z-10">Usage Plateforme</h3>
+            <div className="space-y-4 relative z-10">
+              <div className="flex justify-between items-end">
+                <span className="text-3xl font-black text-white">24 / 50</span>
+                <span className="text-[10px] font-black text-indigo-300 uppercase">Licences Candidats</span>
+              </div>
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-400" style={{ width: '48%' }}></div>
+              </div>
+              <p className="text-xs text-indigo-200/60 font-medium italic pt-4">Besoin de plus de licences ? Contactez votre gestionnaire de compte FTC.</p>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {isInviteModalOpen && (
+        <AddAdvisorModal 
+          onClose={() => setIsInviteModalOpen(false)} 
+          onInvite={handleInviteAdvisor} 
+        />
+      )}
+    </div>
+  );
+};
+
+// Fixed: Explicitly use React.FC and an interface for props to ensure TypeScript correctly handles React-reserved props like 'key'.
+interface TeamMemberProps {
+  name: string;
+  role: AdvisorRole;
+  email: string;
+  isMe?: boolean;
+}
+
+const TeamMember: React.FC<TeamMemberProps> = ({ name, role, email, isMe = false }) => {
+  const roleDisplay = {
+    admin: { label: 'Admin', variant: 'violet' as const },
+    expert: { label: 'Expert', variant: 'indigo' as const },
+    consultant: { label: 'Consultant', variant: 'cyan' as const }
+  }[role] || { label: 'Inconnu', variant: 'slate' as const };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 rounded-2xl transition-all group">
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 font-black text-sm border border-slate-100 group-hover:border-indigo-100 group-hover:text-indigo-600 transition-colors">
+          {name[0]}
+        </div>
+        <div>
+          <div className="text-sm font-black text-slate-900 flex items-center">
+            {name} 
+            {isMe && <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-500 text-[8px] rounded-full uppercase tracking-widest font-black">Moi</span>}
+            <span className="ml-2"><Badge variant={roleDisplay.variant}>{roleDisplay.label}</Badge></span>
+          </div>
+          <div className="text-[10px] text-slate-400 font-bold">{email}</div>
+        </div>
+      </div>
+      {!isMe && (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100" 
+          title="Retirer l'accès"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        </Button>
+      )}
+    </div>
+  );
+};
+
+export default OrganizationSettings;
