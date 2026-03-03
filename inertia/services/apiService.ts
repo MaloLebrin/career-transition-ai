@@ -8,8 +8,8 @@ import {
 } from '../types'
 
 /**
- * JSON API client. Dashboard create/update flows use Inertia (POST/PUT /dashboard/employees, etc.).
- * Remaining methods: org/employees fetch, employee update (onboarding/profile), exercise result/draft.
+ * JSON API client. Dashboard create/update flows use Inertia (POST/PUT /dashboard/employees).
+ * Remaining: org/employees fetch (read), exercise result/draft (write).
  */
 export const apiService = {
   /** Fetches the authenticated user's organization (no id required). */
@@ -88,26 +88,6 @@ export const apiService = {
 
     if (!response.ok) {
       throw new Error("Candidat introuvable");
-    }
-
-    const data = await response.json();
-    return data as Employee;
-  },
-
-  /** Dashboard create uses Inertia POST /dashboard/employees. API update used by onboarding, profile, advisor notes. */
-  async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
-    const response = await fetch(`/api/employees/${id}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erreur lors de la mise à jour du candidat.');
     }
 
     const data = await response.json();

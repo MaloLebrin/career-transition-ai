@@ -4,11 +4,12 @@ import DashboardLayout from '../../components/DashboardLayout'
 import ProfilePage from '../../components/ProfilePage'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
+import { employeeUpdatePayload } from '../../helpers/employee_payload'
 
 export default function DashboardProfile() {
   const { user } = useAuth()
   const targetId = user?.id || '1'
-  const { employee: selectedEmployee, updateProfile } = useEmployee(targetId)
+  const { employee: selectedEmployee } = useEmployee(targetId)
 
   useEffect(() => {
     if (!user) router.visit('/auth')
@@ -35,8 +36,9 @@ export default function DashboardProfile() {
         <ProfilePage
           employee={selectedEmployee}
           onSave={(updated) => {
-            updateProfile(updated)
-            router.visit('/dashboard')
+            router.put(`/dashboard/employees/${selectedEmployee.id}`, employeeUpdatePayload(updated), {
+              onSuccess: () => router.visit('/dashboard'),
+            })
           }}
           onBack={() => router.visit('/dashboard')}
         />

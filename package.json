@@ -9,6 +9,7 @@
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
+    "test:inertia": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
@@ -60,7 +61,11 @@
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.3",
     "vite": "^7.3.1",
-    "youch": "^4.1.0"
+    "youch": "^4.1.0",
+    "vitest": "^3.2.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "jsdom": "^25.0.1"
   },
   "dependencies": {
     "@adonisjs/auth": "^10.0.0",

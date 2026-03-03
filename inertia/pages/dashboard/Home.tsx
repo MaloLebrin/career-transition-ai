@@ -7,12 +7,13 @@ import OnboardingFlow from '../../components/OnboardingFlow'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import { isAdvisorOrAdmin } from '../../helpers/roles'
+import { employeeUpdatePayload } from '../../helpers/employee_payload'
 
 export default function DashboardHome() {
   const { user } = useAuth()
   const userRole = user?.role || 'employee'
   const targetId = user?.id || '1'
-  const { employee: selectedEmployee, updateProfile } = useEmployee(targetId)
+  const { employee: selectedEmployee } = useEmployee(targetId)
 
   useEffect(() => {
     if (!user) {
@@ -27,7 +28,14 @@ export default function DashboardHome() {
       <>
         <Head title="Onboarding" />
         <DashboardLayout>
-          <OnboardingFlow employee={selectedEmployee} onComplete={(updated) => updateProfile(updated)} />
+          <OnboardingFlow
+            employee={selectedEmployee}
+            onComplete={(updated) => {
+              router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated), {
+                onSuccess: () => router.reload(),
+              })
+            }}
+          />
         </DashboardLayout>
       </>
     )

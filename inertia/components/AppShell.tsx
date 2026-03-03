@@ -3,8 +3,10 @@
  * Use DashboardLayout + dashboard/Home, dashboard/EmployeeDetail, etc. instead.
  */
 import React, { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
 import { useAuth } from '../hooks/useAuth';
 import { useEmployee } from '../hooks/useEmployee';
+import { employeeUpdatePayload } from '../helpers/employee_payload';
 import { useEmployees } from '../hooks/useEmployees';
 import { useExercises } from '../hooks/useExercises';
 import { Employee, ExerciseType, SupportPlanStep } from '../types';
@@ -45,7 +47,7 @@ const AppShell: React.FC = () => {
 
   const userRole = user?.role || 'employee';
   const targetId = userRole === 'employee' ? (user?.id || '1') : selectedEmployeeId;
-  const { employee: selectedEmployee, updateAdvisorNotes, updateProfile, refreshEmployee } = useEmployee(targetId);
+  const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId);
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(selectedEmployee, async () => {
     await refreshEmployee();
@@ -93,8 +95,9 @@ const AppShell: React.FC = () => {
       <ProfilePage
         employee={selectedEmployee}
         onSave={(updated) => {
-          updateProfile(updated);
-          setActiveView('detail');
+          router.put(`/dashboard/employees/${selectedEmployee.id}`, employeeUpdatePayload(updated), {
+            onSuccess: () => setActiveView('detail'),
+          });
         }}
         onBack={() => setActiveView('detail')}
       />
@@ -477,7 +480,7 @@ const AppShell: React.FC = () => {
                       <textarea
                         className="w-full bg-white/50 border border-brand-sage/10 rounded-3xl p-6 text-sm min-h-[120px] outline-none focus:ring-2 focus:ring-brand-sage transition-all resize-none"
                         defaultValue={selectedEmployee.advisorNotes || ''}
-                        onBlur={(e) => updateAdvisorNotes(e.target.value)}
+                        onBlur={(e) => router.put(`/dashboard/employees/${targetId}`, { advisorNotes: e.target.value })}
                       />
                     </div>
                     <Card className="p-10">
@@ -560,7 +563,14 @@ const AppShell: React.FC = () => {
           )}
         </div>
       ) : selectedEmployee && !selectedEmployee.onboarded ? (
-        <OnboardingFlow employee={selectedEmployee} onComplete={(updated) => updateProfile(updated)} />
+        <OnboardingFlow
+          employee={selectedEmployee}
+          onComplete={(updated) => {
+            router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated), {
+              onSuccess: () => router.reload(),
+            });
+          }}
+        />
       ) : selectedEmployee ? (
         <div className="space-y-8 animate-fadeIn w-full">
           <div className="bg-brand-navy p-10 md:p-14 rounded-[48px] text-white shadow-2xl relative overflow-hidden">
