@@ -8,6 +8,7 @@ export type ScannedRoutes = {
     'employees.index': { paramsTuple?: []; params?: {} }
     'employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'employees.index': { paramsTuple?: []; params?: {} }
@@ -19,6 +20,7 @@ export type ScannedRoutes = {
   }
   POST: {
     'employees.store': { paramsTuple?: []; params?: {} }
+    'exercise_results.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'employees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

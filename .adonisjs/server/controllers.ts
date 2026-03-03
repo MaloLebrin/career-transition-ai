@@ -5,4 +5,5 @@
 
 export const controllers = {
   Employees: () => import('#controllers/employees_controller'),
+  ExerciseResults: () => import('#controllers/exercise_results_controller'),
 }

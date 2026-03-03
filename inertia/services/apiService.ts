@@ -155,23 +155,32 @@ export const apiService = {
   },
 
   async saveExerciseResult(employeeId: string, result: ExerciseResult, plan: SupportPlanStep[]): Promise<void> {
-    await delay(800);
-    const data = getInitialData();
-    const index = data.findIndex(e => e.id === employeeId);
-    if (index === -1) throw new Error("Candidat introuvable");
-    
-    const existingResultIndex = data[index].exercises.findIndex(r => r.type === result.type);
-    if (existingResultIndex !== -1) {
-      data[index].exercises[existingResultIndex] = result;
-    } else {
-      data[index].exercises.push(result);
-    }
-    
-    data[index].plan = plan;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const response = await fetch(`/api/employees/${employeeId}/exercises/result`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: result.type,
+        status: 'completed',
+        date: result.date,
+        duration: result.duration,
+        data: result.data,
+        quantitativeScore: result.quantitativeScore,
+        qualitativeAnalysis: result.qualitativeAnalysis,
+        plan: plan.map((step) => ({
+          id: step.id,
+          completed: step.completed,
+          lastUpdated: step.lastUpdated,
+        })),
+      }),
+    });
 
-    const drafts = getDrafts().filter(d => !(d.employeeId === employeeId && d.type === result.type));
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+    if (!response.ok) {
+      throw new Error('Erreur lors de la sauvegarde du résultat.');
+    }
   },
 
   async saveExerciseDraft(draft: ExerciseDraft): Promise<void> {

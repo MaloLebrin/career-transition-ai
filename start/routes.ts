@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 const EmployeesController = () => import('#controllers/employees_controller')
+const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
@@ -44,3 +45,5 @@ router.post('/api/employees', [EmployeesController, 'store'])
 router.get('/api/employees', [EmployeesController, 'index'])
 router.get('/api/employees/:id', [EmployeesController, 'show'])
 router.put('/api/employees/:id', [EmployeesController, 'update'])
+
+router.post('/api/employees/:id/exercises/result', [ExerciseResultsController, 'store'])
