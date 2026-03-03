@@ -2,6 +2,7 @@
   "extends": "@adonisjs/tsconfig/tsconfig.app.json",
   "compilerOptions": {
     "paths": {
+      "#helpers/*": ["./app/helpers/*"],
       "#mappers/*": ["./app/mappers/*"],
       "#models/*": ["./app/models/*"],
       "#validators/*": ["./app/validators/*"],

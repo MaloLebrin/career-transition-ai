@@ -6,6 +6,7 @@ import EmployeeHome from '../../components/dashboard/EmployeeHome'
 import OnboardingFlow from '../../components/OnboardingFlow'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
+import { isAdvisorOrAdmin } from '../../helpers/roles'
 
 export default function DashboardHome() {
   const { user } = useAuth()
@@ -21,7 +22,7 @@ export default function DashboardHome() {
 
   if (!user) return null
 
-  if (userRole === 'employee' && selectedEmployee && !selectedEmployee.onboarded) {
+  if (!isAdvisorOrAdmin(userRole) && selectedEmployee && !selectedEmployee.onboarded) {
     return (
       <>
         <Head title="Onboarding" />
@@ -36,7 +37,7 @@ export default function DashboardHome() {
     <>
       <Head title="Tableau de bord" />
       <DashboardLayout>
-        {userRole === 'advisor' ? <AdvisorHome /> : <EmployeeHome />}
+        {isAdvisorOrAdmin(userRole) ? <AdvisorHome /> : <EmployeeHome />}
       </DashboardLayout>
     </>
   )

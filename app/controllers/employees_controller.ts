@@ -1,3 +1,4 @@
+import { USERS_ROLES } from '#models/user'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import { EmployeesService } from '#services/employees_service'
@@ -13,7 +14,9 @@ export default class EmployeesController {
   public async index({ auth, response }: HttpContext) {
     const user = auth.user
     const organizationId = user?.organizationId ?? null
-    const advisorId = user?.id ?? null
+    // Admin sees all org employees; advisor sees only their advised employees
+    const advisorId =
+      user?.role === USERS_ROLES.ADVISOR ? user.id : null
 
     const query = Employee.query()
       .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))

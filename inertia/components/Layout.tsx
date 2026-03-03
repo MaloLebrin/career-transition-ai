@@ -4,7 +4,7 @@ import Button from './ui/Button';
 
 interface LayoutProps {
   children: React.ReactNode;
-  userRole: 'advisor' | 'employee';
+  userRole: 'advisor' | 'employee' | 'admin' | 'super_admin';
   onRoleChange: (role: 'advisor' | 'employee') => void;
   onLogout: () => void;
   userName?: string;
@@ -32,7 +32,10 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
               <div className="text-right">
                 <div className="text-xs font-bold text-brand-navy leading-none">{userName || 'Utilisateur'}</div>
                 <div className="text-[9px] font-bold text-brand-sage uppercase tracking-widest mt-1">
-                  {userRole === 'advisor' ? 'Expert Accompagnateur' : 'Candidat Transition'}
+                  {userRole === 'advisor' && 'Expert Accompagnateur'}
+                  {(userRole === 'admin' || userRole === 'super_admin') && 'Administrateur'}
+                  {userRole === 'employee' && 'Candidat Transition'}
+                  {!['advisor', 'admin', 'super_admin', 'employee'].includes(userRole) && 'Utilisateur'}
                 </div>
               </div>
               <div className="h-10 w-10 rounded-2xl bg-brand-ivory border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">

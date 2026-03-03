@@ -5,6 +5,7 @@ import NavLink from './ui/NavLink'
 import Input from './ui/Input'
 import { useAuth } from '../hooks/useAuth'
 import { useEmployees } from '../hooks/useEmployees'
+import { isAdvisorOrAdmin } from '../helpers/roles'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -23,7 +24,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
   }
 
   const userRole = user.role || 'employee'
-  const isAdvisor = userRole === 'advisor'
+  const isAdvisor = isAdvisorOrAdmin(userRole)
 
   return (
     <Layout userRole={userRole} onRoleChange={() => {}} onLogout={logout} userName={user.name}>
