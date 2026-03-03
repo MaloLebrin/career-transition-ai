@@ -48,7 +48,7 @@ test.group('ExerciseResultsService', () => {
         {
           id: String(step.id),
           completed: true,
-          lastUpdated: DateTime.fromISO('2025-01-05T10:00:00').toISO(),
+          lastUpdated: DateTime.fromISO('2025-01-05T10:00:00').toISO() || undefined,
         },
       ],
     })
