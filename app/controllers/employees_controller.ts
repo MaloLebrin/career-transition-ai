@@ -1,10 +1,15 @@
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
+import { EmployeesService } from '#services/employees_service'
+import { createEmployeeValidator } from '#validators/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee_update_validator'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { DateTime } from 'luxon'
 
+@inject()
 export default class EmployeesController {
+  constructor(private employeesService: EmployeesService) {}
+
   public async index({ auth, response }: HttpContext) {
     const user = auth.user
     const organizationId = user?.organizationId ?? null
@@ -47,6 +52,23 @@ export default class EmployeesController {
     return response.json(data)
   }
 
+  public async store({ auth, request, response }: HttpContext) {
+    const user = auth.user
+    if (!user) {
+      return response.unauthorized()
+    }
+
+    const payload = await request.validateUsing(createEmployeeValidator)
+
+    const dto = await this.employeesService.create({
+      organizationId: user.organizationId,
+      advisorId: user.id,
+      ...payload,
+    })
+
+    return response.json(dto)
+  }
+
   public async update({ params, request, auth, response }: HttpContext) {
     const organizationId = auth.user?.organizationId ?? null
 
@@ -64,19 +86,7 @@ export default class EmployeesController {
 
     const employee = await employeeQuery.firstOrFail()
 
-    employee.merge({
-      advisorNotes: payload.advisorNotes ?? employee.advisorNotes,
-      status: payload.status ?? employee.status,
-      targetRole: payload.targetRole ?? employee.targetRole,
-      summary: payload.summary ?? employee.summary,
-      name: payload.name ?? employee.name,
-      currentRole: payload.currentRole ?? employee.currentRole,
-      onboarded: typeof payload.onboarded === 'boolean' ? payload.onboarded : employee.onboarded,
-      nextAppointment: payload.nextAppointment
-        ? DateTime.fromISO(payload.nextAppointment)
-        : employee.nextAppointment,
-    })
-
+    this.employeesService.applyUpdate(employee, payload)
     await employee.save()
 
     const data = mapEmployee(employee)

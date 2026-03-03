@@ -117,9 +117,22 @@ export const apiService = {
   },
 
   async createEmployee(employee: Employee): Promise<Employee> {
-    // TODO: brancher sur une route backend de création quand l'API sera disponible.
-    await delay(300);
-    return employee;
+    const response = await fetch('/api/employees', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(employee),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la création du candidat.");
+    }
+
+    const data = await response.json();
+    return data as Employee;
   },
 
   async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
