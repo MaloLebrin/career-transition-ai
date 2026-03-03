@@ -96,4 +96,51 @@ export default class EmployeesController {
 
     return response.json(data)
   }
+
+  /**
+   * Inertia form: create employee then redirect with flash.
+   */
+  public async storeFromDashboard({ auth, request, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const payload = await request.validateUsing(createEmployeeValidator)
+
+    await this.employeesService.create({
+      organizationId: user.organizationId,
+      advisorId: user.id,
+      ...payload,
+    })
+
+    session.flash('success', 'Candidat ajouté.')
+    return response.redirect('/dashboard/employees')
+  }
+
+  /**
+   * Inertia form: update employee then redirect with flash.
+   */
+  public async updateFromDashboard({ params, auth, request, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const payload = await request.validateUsing(updateEmployeeValidator)
+
+    const employeeQuery = Employee.query()
+      .where('id', Number(params.id))
+      .where('organizationId', user.organizationId)
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('appointments')
+
+    const employee = await employeeQuery.firstOrFail()
+
+    this.employeesService.applyUpdate(employee, payload)
+    await employee.save()
+
+    session.flash('success', 'Candidat mis à jour.')
+    return response.redirect(`/dashboard/employees/${params.id}`)
+  }
 }

@@ -41,7 +41,7 @@ const AppShell: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null);
 
-  const { employees, filteredEmployees, addEmployee, loading: employeesLoading } = useEmployees(searchTerm);
+  const { employees, filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm);
 
   const userRole = user?.role || 'employee';
   const targetId = userRole === 'employee' ? (user?.id || '1') : selectedEmployeeId;
@@ -71,13 +71,6 @@ const AppShell: React.FC = () => {
     } finally {
       setIsGeneratingPDF(false);
     }
-  };
-
-  const handleAddEmployee = async (newEmployee: Employee) => {
-    const created = await addEmployee(newEmployee);
-    setSelectedEmployeeId(created.id);
-    setActiveNav('employees');
-    setIsAddModalOpen(false);
   };
 
   const getResultForStep = (step: SupportPlanStep) => {
@@ -563,7 +556,7 @@ const AppShell: React.FC = () => {
             />
           )}
           {isAddModalOpen && (
-            <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} onAdd={handleAddEmployee} />
+            <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />
           )}
         </div>
       ) : selectedEmployee && !selectedEmployee.onboarded ? (

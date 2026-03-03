@@ -14,7 +14,7 @@ interface EmployeeDetailProps {
 
 export default function DashboardEmployeeDetail({ employeeId }: EmployeeDetailProps) {
   const { user } = useAuth()
-  const { employee: selectedEmployee, updateAdvisorNotes } = useEmployee(employeeId)
+  const { employee: selectedEmployee } = useEmployee(employeeId)
   const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
@@ -97,7 +97,10 @@ export default function DashboardEmployeeDetail({ employeeId }: EmployeeDetailPr
                 <textarea
                   className="w-full bg-white/50 border border-brand-sage/10 rounded-3xl p-6 text-sm min-h-[120px] outline-none focus:ring-2 focus:ring-brand-sage transition-all resize-none"
                   defaultValue={selectedEmployee.advisorNotes || ''}
-                  onBlur={(e) => updateAdvisorNotes(e.target.value)}
+                  onBlur={(e) => {
+                    const value = e.target.value
+                    router.put(`/dashboard/employees/${employeeId}`, { advisorNotes: value })
+                  }}
                 />
               </div>
               <Card className="p-10">

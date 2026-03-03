@@ -37,6 +37,10 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/').renderInertia('dashboard/Home', {})
 
+    // Inertia form submissions (before :id routes)
+    router.post('/employees', [EmployeesController, 'storeFromDashboard'])
+    router.put('/employees/:id', [EmployeesController, 'updateFromDashboard'])
+
     router.get('/employees', ({ inertia }) => (inertia as any).render('dashboard/Employees', {}))
     router.get('/employees/:id', ({ params, inertia }) =>
       (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })

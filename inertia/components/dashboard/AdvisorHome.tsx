@@ -1,21 +1,13 @@
-import React from 'react'
-import { router } from '@inertiajs/react'
+import React, { useState } from 'react'
 import Button from '../ui/Button'
 import StatCard from '../ui/StatCard'
 import Card from '../ui/Card'
 import AddEmployeeModal from '../AddEmployeeModal'
 import { useEmployees } from '../../hooks/useEmployees'
-import { useState } from 'react'
 
 export default function AdvisorHome() {
-  const { employees, addEmployee } = useEmployees('')
+  const { employees } = useEmployees('')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-
-  const handleAddEmployee = async (newEmployee: any) => {
-    const created = await addEmployee(newEmployee)
-    setIsAddModalOpen(false)
-    router.visit(`/dashboard/employees/${created.id}`)
-  }
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -142,7 +134,7 @@ export default function AdvisorHome() {
       </div>
 
       {isAddModalOpen && (
-        <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} onAdd={handleAddEmployee} />
+        <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />
       )}
     </div>
   )
