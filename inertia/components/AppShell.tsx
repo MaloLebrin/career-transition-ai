@@ -1,30 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import 'react-datepicker/dist/react-datepicker.css';
-import Layout from './Layout';
-import MotivationTool from './MotivationTool';
-import ValuesTool from './ValuesTool';
-import PersonalityTool from './PersonalityTool';
-import LifeCurveTool from './LifeCurveTool';
-import TargetingTool from './TargetingTool';
-import DISCTool from './DISCTool';
-import SkillMappingTool from './SkillMappingTool';
-import CircleOfControlTool from './CircleOfControlTool';
-import StepDetailModal from './StepDetailModal';
-import OnboardingFlow from './OnboardingFlow';
-import ProfilePage from './ProfilePage';
-import OrganizationSettings from './OrganizationSettings';
-import AddEmployeeModal from './AddEmployeeModal';
-import DesignSystem from './DesignSystem';
-import { ExerciseType, SupportPlanStep, Employee } from '../types';
-import { useEmployees } from '../hooks/useEmployees';
-import { useEmployee } from '../hooks/useEmployee';
-import { useExercises } from '../hooks/useExercises';
+/**
+ * @deprecated Navigation is now handled by Inertia routes and dashboard/* pages.
+ * Use DashboardLayout + dashboard/Home, dashboard/EmployeeDetail, etc. instead.
+ */
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useEmployee } from '../hooks/useEmployee';
+import { useEmployees } from '../hooks/useEmployees';
+import { useExercises } from '../hooks/useExercises';
+import { Employee, ExerciseType, SupportPlanStep } from '../types';
+import AddEmployeeModal from './AddEmployeeModal';
+import CircleOfControlTool from './CircleOfControlTool';
+import DISCTool from './DISCTool';
+import DesignSystem from './DesignSystem';
+import Layout from './Layout';
+import LifeCurveTool from './LifeCurveTool';
+import MotivationTool from './MotivationTool';
+import OnboardingFlow from './OnboardingFlow';
+import OrganizationSettings from './OrganizationSettings';
+import PersonalityTool from './PersonalityTool';
+import ProfilePage from './ProfilePage';
+import SkillMappingTool from './SkillMappingTool';
+import StepDetailModal from './StepDetailModal';
+import TargetingTool from './TargetingTool';
+import ValuesTool from './ValuesTool';
 import Button from './ui/Button';
-import NavButton from './ui/NavButton';
-import StatCard from './ui/StatCard';
 import Card from './ui/Card';
 import Input from './ui/Input';
+import NavButton from './ui/NavButton';
+import StatCard from './ui/StatCard';
 
 const AppShell: React.FC = () => {
   const { user, logout } = useAuth();
