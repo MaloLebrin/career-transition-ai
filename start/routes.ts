@@ -62,9 +62,10 @@ router
       })
       .prefix('/employees')
 
-    // Organizations + advisors
+    // Organizations + advisors (static /current before /:id)
     router
       .group(() => {
+        router.get('/current', [OrganizationsController, 'current'])
         router.get('/:id', [OrganizationsController, 'show'])
         router.put('/:id', [OrganizationsController, 'update'])
         router.get('/:id/advisors', [OrganizationsController, 'indexAdvisors'])

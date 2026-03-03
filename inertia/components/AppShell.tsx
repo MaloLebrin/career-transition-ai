@@ -427,7 +427,6 @@ const AppShell: React.FC = () => {
             ) : activeNav === 'settings' ? (
               <div className="animate-fadeIn">
                 <OrganizationSettings
-                  organizationId={user?.organizationId || 'ftc-paris'}
                   onBack={() => {
                     setActiveNav('dashboard');
                     setActiveView('detail');

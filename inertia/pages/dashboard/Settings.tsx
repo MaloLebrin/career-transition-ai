@@ -19,7 +19,6 @@ export default function DashboardSettings() {
       <DashboardLayout>
         <div className="animate-fadeIn">
           <OrganizationSettings
-            organizationId={user.organizationId || 'ftc-paris'}
             onBack={() => router.visit('/dashboard')}
           />
         </div>

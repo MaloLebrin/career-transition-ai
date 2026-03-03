@@ -10,7 +10,8 @@ import AddAdvisorModal from './AddAdvisorModal';
 import { useAuth } from '../hooks/useAuth';
 
 interface Props {
-  organizationId: string;
+  /** When omitted, loads the current user's organization via GET /api/organizations/current */
+  organizationId?: string;
   onBack: () => void;
 }
 
@@ -27,10 +28,11 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
 
   const loadData = async () => {
     try {
-      const [orgData, membersData] = await Promise.all([
-        apiService.fetchOrganization(organizationId),
-        apiService.fetchOrganizationAdvisors(organizationId)
-      ]);
+      const orgData = organizationId
+        ? await apiService.fetchOrganization(organizationId)
+        : await apiService.fetchCurrentOrganization();
+      const orgId = orgData.id;
+      const membersData = await apiService.fetchOrganizationAdvisors(orgId);
       setOrg(orgData);
       setMembers(membersData);
       if (user) {
@@ -52,7 +54,7 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
     if (!org) return;
     setSaving(true);
     try {
-      await apiService.updateOrganization(organizationId, org);
+      await apiService.updateOrganization(org.id, org);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -77,7 +79,8 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
   };
 
   const handleInviteAdvisor = async (advisorData: { name: string, email: string, role: AdvisorRole }) => {
-    const newMember = await apiService.inviteAdvisor(organizationId, advisorData);
+    if (!org) return;
+    const newMember = await apiService.inviteAdvisor(org.id, advisorData);
     setMembers(prev => [...prev, newMember]);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);

@@ -31,6 +31,21 @@ const getDrafts = (): ExerciseDraft[] => {
 };
 
 export const apiService = {
+  /** Fetches the authenticated user's organization (no id required). */
+  async fetchCurrentOrganization(): Promise<Organization> {
+    const response = await fetch('/api/organizations/current', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Organisation introuvable');
+      if (response.status === 401) throw new Error('Non authentifié');
+      throw new Error('Erreur lors du chargement de l’organisation.');
+    }
+    const data = await response.json();
+    return data as Organization;
+  },
+
   async fetchOrganization(id: string): Promise<Organization> {
     const response = await fetch(`/api/organizations/${id}`, {
       credentials: 'include',

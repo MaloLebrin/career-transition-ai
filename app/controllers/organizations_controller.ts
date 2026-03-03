@@ -9,6 +9,15 @@ import Organization from '#models/organization'
 export default class OrganizationsController {
   constructor(private organizationsService: OrganizationsService) {}
 
+  /** Returns the authenticated user's organization (no id in URL). */
+  public async current({ auth, response }: HttpContext) {
+    if (!auth.user) return response.unauthorized()
+    const orgId = auth.user.organizationId
+    const dto = await this.organizationsService.getById(orgId)
+    if (!dto) return response.notFound()
+    return response.json(dto)
+  }
+
   public async show({ params, auth, response }: HttpContext) {
     if (!auth.user) return response.unauthorized()
     const orgId = Number(params.id)
