@@ -1,35 +1,16 @@
+import {
+  Employee,
+  ExerciseResult,
+  SupportPlanStep,
+  ExerciseDraft,
+  Organization,
+  Advisor,
+} from '../types'
 
-import { Employee, ExerciseResult, SupportPlanStep, ExerciseDraft, Organization, Advisor } from '../types';
-
-const DRAFT_KEY = 'ftc_portal_drafts';
-const ORG_KEY = 'ftc_organizations';
-const USERS_KEY = 'ftc_portal_users';
-
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-const getOrgs = (): Organization[] => {
-  const saved = typeof window !== 'undefined' ? localStorage.getItem(ORG_KEY) : null;
-  if (saved) return JSON.parse(saved);
-  const initialOrgs: Organization[] = [
-    { id: 'ftc-paris', name: 'FTC Paris Étoile', slug: 'ftc-paris', createdAt: '2024-01-01' },
-    { id: 'new-org', name: 'Nouveau Cabinet', slug: 'nouveau-cabinet', createdAt: '2025-01-01' }
-  ];
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(ORG_KEY, JSON.stringify(initialOrgs));
-  }
-  return initialOrgs;
-};
-
-const getUsers = (): Advisor[] => {
-  const saved = typeof window !== 'undefined' ? localStorage.getItem(USERS_KEY) : null;
-  return saved ? JSON.parse(saved) : [];
-};
-
-const getDrafts = (): ExerciseDraft[] => {
-  const saved = typeof window !== 'undefined' ? localStorage.getItem(DRAFT_KEY) : null;
-  return saved ? JSON.parse(saved) : [];
-};
-
+/**
+ * JSON API client. Dashboard create/update flows use Inertia (POST/PUT /dashboard/employees, etc.).
+ * Remaining methods: org/employees fetch, employee update (onboarding/profile), exercise result/draft.
+ */
 export const apiService = {
   /** Fetches the authenticated user's organization (no id required). */
   async fetchCurrentOrganization(): Promise<Organization> {
@@ -113,25 +94,7 @@ export const apiService = {
     return data as Employee;
   },
 
-  async createEmployee(employee: Employee): Promise<Employee> {
-    const response = await fetch('/api/employees', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(employee),
-    });
-
-    if (!response.ok) {
-      throw new Error("Erreur lors de la création du candidat.");
-    }
-
-    const data = await response.json();
-    return data as Employee;
-  },
-
+  /** Dashboard create uses Inertia POST /dashboard/employees. API update used by onboarding, profile, advisor notes. */
   async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
     const response = await fetch(`/api/employees/${id}`, {
       method: 'PUT',

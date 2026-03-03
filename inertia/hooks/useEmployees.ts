@@ -31,35 +31,17 @@ export function useEmployees(searchTerm: string = '') {
   }, [user]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(emp => 
+    return employees.filter(emp =>
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [employees, searchTerm]);
 
-  const addEmployee = async (newEmp: Employee) => {
-    try {
-      // On s'assure que le candidat appartient à la même organisation que le conseiller
-      const employeeWithOrg = {
-        ...newEmp,
-        organizationId: user?.organizationId || 'default-org',
-        advisorId: user?.id
-      };
-      const created = await apiService.createEmployee(employeeWithOrg);
-      setEmployees(prev => [created, ...prev]);
-      return created;
-    } catch (err) {
-      setError("Impossible d'ajouter le candidat.");
-      throw err;
-    }
-  };
-
-  return { 
-    employees, 
-    filteredEmployees, 
-    loading, 
-    error, 
-    addEmployee,
-    refresh: fetchAll
+  return {
+    employees,
+    filteredEmployees,
+    loading,
+    error,
+    refresh: fetchAll,
   };
 }
