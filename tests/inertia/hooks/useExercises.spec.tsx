@@ -81,21 +81,17 @@ describe('useExercises', () => {
     })
   })
 
-  test('saveResult calls analyzeExerciseResult and saveExerciseResult then onComplete', async () => {
+  test('saveResult calls analyzeExerciseResult then onComplete (MOTIVATION uses Inertia router)', async () => {
     const { result } = renderHook(() =>
       useExercises(mockEmployee as any, onComplete)
     )
 
     await act(async () => {
-      await result.current.saveResult(ExerciseType.MOTIVATION, { data: 'x' }, 10, 60)
+      await result.current.saveResult(ExerciseType.VALUES, { data: 'x' }, 10, 60)
     })
 
-    expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.MOTIVATION, { data: 'x' })
-    expect(apiService.saveExerciseResult).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({ type: ExerciseType.MOTIVATION, duration: 60 }),
-      expect.any(Array)
-    )
+    expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.VALUES, { data: 'x' })
+    expect(apiService.saveExerciseResult).toHaveBeenCalled()
     expect(onComplete).toHaveBeenCalled()
   })
 

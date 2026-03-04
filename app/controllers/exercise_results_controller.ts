@@ -52,6 +52,53 @@ export default class ExerciseResultsController {
 
     return response.json(draft)
   }
+
+  /**
+   * Inertia form: save MOTIVATION draft then redirect back.
+   */
+  public async saveDraftFromDashboard({ auth, params, request, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employeeId = Number(params.id)
+    const payload = await request.validateUsing(saveExerciseDraftValidator)
+
+    await this.service.saveDraft({
+      employeeId,
+      type: payload.type,
+      data: payload.data,
+    })
+
+    return response.redirect().back()
+  }
+
+  /**
+   * Inertia form: save MOTIVATION result then redirect to employee detail.
+   */
+  public async storeFromDashboard({ auth, params, request, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employeeId = Number(params.id)
+    const payload = await request.validateUsing(saveExerciseResultValidator)
+
+    await this.service.saveResult({
+      employeeId,
+      type: payload.type,
+      status: payload.status,
+      date: payload.date,
+      duration: payload.duration,
+      data: payload.data,
+      quantitativeScore: payload.quantitativeScore,
+      qualitativeAnalysis: payload.qualitativeAnalysis,
+      plan: payload.plan,
+    })
+
+    session.flash('success', 'Exercice MOTIVATION enregistré.')
+    return response.redirect(`/dashboard/employees/${employeeId}`)
+  }
   /**
    * Inertia page: exercise with initial draft/result for MOTIVATION.
    */

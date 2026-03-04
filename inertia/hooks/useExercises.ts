@@ -1,5 +1,6 @@
 
 import { useState, useCallback } from 'react';
+import { router } from '@inertiajs/react';
 import { ExerciseType, ExerciseResult, Employee, ExerciseDraft } from '../types';
 import { analyzeExerciseResult } from '../services/geminiService';
 import { apiService } from '../services/apiService';
@@ -39,7 +40,14 @@ export function useExercises(
         lastUpdated: new Date().toISOString(),
         data
       };
-      await apiService.saveExerciseDraft(draft);
+      if (type === ExerciseType.MOTIVATION) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/motivation/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else {
+        await apiService.saveExerciseDraft(draft);
+      }
     } catch (err) {
       console.error("Draft save error:", err);
     } finally {
@@ -72,7 +80,24 @@ export function useExercises(
         step.associatedExercise === type ? { ...step, completed: true, lastUpdated: now } : step
       );
 
-      await apiService.saveExerciseResult(employee.id, newResult, updatedPlan);
+      if (type === ExerciseType.MOTIVATION) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/motivation/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else {
+        await apiService.saveExerciseResult(employee.id, newResult, updatedPlan);
+      }
       onComplete();
     } catch (err) {
       console.error("Exercise save error:", err);
