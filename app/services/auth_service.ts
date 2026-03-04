@@ -11,6 +11,11 @@ type RegisterInput = {
   role: UserRole
 }
 
+type UpdateProfileInput = {
+  name: string
+  email: string
+}
+
 function toSessionDto(user: User): UserSessionDto {
   return {
     id: user.id,
@@ -74,8 +79,34 @@ export class AuthService {
     return toSessionDto(user)
   }
 
+  /**
+   * Updates the authenticated user's profile (name, email).
+   */
+  public async updateProfile(user: User, input: UpdateProfileInput): Promise<UserSessionDto> {
+    if (input.email !== user.email) {
+      const existing = await User.query()
+        .where('email', input.email)
+        .whereNot('id', user.id)
+        .first()
+
+      if (existing) {
+        throw new Error('Cet email est déjà utilisé.')
+      }
+    }
+
+    user.merge({
+      name: input.name,
+      email: input.email,
+    })
+    await user.save()
+
+    await user.refresh()
+    return toSessionDto(user)
+  }
+
   public toSession(user: User): UserSessionDto {
     return toSessionDto(user)
   }
 }
+
 

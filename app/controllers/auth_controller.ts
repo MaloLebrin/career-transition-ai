@@ -1,6 +1,7 @@
 import { AuthService } from '#services/auth_service'
 import { loginValidator } from '#validators/auth_login_validator'
 import { registerValidator } from '#validators/auth_register_validator'
+import { userProfileUpdateValidator } from '#validators/user_profile_update_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -49,5 +50,29 @@ export default class AuthController {
     await auth.use('web').logout()
     return response.noContent()
   }
+
+  /**
+   * Inertia form: update current user's profile (name, email) then redirect with flash.
+   */
+  public async updateFromDashboard({ auth, request, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const payload = await request.validateUsing(userProfileUpdateValidator)
+
+    try {
+      await this.authService.updateProfile(auth.user, payload)
+      session.flash('success', 'Profil mis à jour.')
+      return response.redirect('/dashboard/settings')
+    } catch (error: any) {
+      if (error.message?.includes('déjà utilisé')) {
+        session.flash('error', error.message)
+        return response.redirect('/dashboard/settings')
+      }
+      throw error
+    }
+  }
 }
+
 

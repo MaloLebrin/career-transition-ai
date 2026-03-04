@@ -41,6 +41,8 @@ router
     router.post('/employees', [EmployeesController, 'storeFromDashboard'])
     router.put('/employees/:id', [EmployeesController, 'updateFromDashboard'])
 
+    router.put('/profile', [AuthController, 'updateFromDashboard'])
+
     router.get('/employees', ({ inertia }) => (inertia as any).render('dashboard/Employees', {}))
     router.get('/employees/:id', ({ params, inertia }) =>
       (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })

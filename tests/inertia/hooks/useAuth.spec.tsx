@@ -16,7 +16,6 @@ vi.mock('../../../inertia/services/authService', () => ({
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
-    updateProfile: vi.fn(),
   },
 }))
 
@@ -28,7 +27,6 @@ describe('useAuth', () => {
     vi.mocked(authService.login).mockReset()
     vi.mocked(authService.register).mockReset()
     vi.mocked(authService.logout).mockReset()
-    vi.mocked(authService.updateProfile).mockReset()
   })
 
   test('starts with loading then no user when no session', async () => {

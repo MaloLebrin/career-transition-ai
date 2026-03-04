@@ -16,15 +16,14 @@ interface Props {
 }
 
 const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
-  const { user, updateProfile } = useAuth()
+  const { user } = useAuth()
   const [org, setOrg] = useState<Organization | null>(null)
   const [members, setMembers] = useState<Advisor[]>([])
-  const [personalInfo, setPersonalInfo] = useState({ name: '', email: '' })
   const [loading, setLoading] = useState(true)
-  const [savingProfile, setSavingProfile] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
 
+  const profileForm = useForm({ name: '', email: '' })
   const orgForm = useForm({ name: '', slug: '' })
   useEffect(() => {
     if (org) orgForm.setData({ name: org.name, slug: org.slug })
@@ -34,13 +33,13 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
     try {
       const orgData = organizationId
         ? await apiService.fetchOrganization(organizationId)
-        : await apiService.fetchCurrentOrganization();
-      const orgId = orgData.id;
-      const membersData = await apiService.fetchOrganizationAdvisors(orgId);
-      setOrg(orgData);
-      setMembers(membersData);
+        : await apiService.fetchCurrentOrganization()
+      const orgId = orgData.id
+      const membersData = await apiService.fetchOrganizationAdvisors(orgId)
+      setOrg(orgData)
+      setMembers(membersData)
       if (user) {
-        setPersonalInfo({ name: user.name, email: user.email });
+        profileForm.setData({ name: user.name, email: user.email })
       }
     } catch (err) {
       console.error(err);
@@ -52,20 +51,6 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
   useEffect(() => {
     loadData();
   }, [organizationId, user?.id]);
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingProfile(true);
-    try {
-      await updateProfile(personalInfo);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      alert(err.message || "Erreur lors de la sauvegarde du profil.");
-    } finally {
-      setSavingProfile(false);
-    }
-  };
 
   if (loading || !org) {
     return (
@@ -101,25 +86,44 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
               Mon Profil Personnel
             </h3>
             
-            <form onSubmit={handleSaveProfile} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                profileForm.put('/dashboard/profile', {
+                  onSuccess: () => {
+                    setSuccess(true)
+                    setTimeout(() => setSuccess(false), 3000)
+                  },
+                })
+              }}
+              className="space-y-6"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input 
                   label="Nom complet" 
-                  value={personalInfo.name} 
-                  onChange={e => setPersonalInfo({...personalInfo, name: e.target.value})} 
+                  value={profileForm.data.name} 
+                  onChange={e => profileForm.setData('name', e.target.value)} 
                   placeholder="Votre nom"
+                  error={profileForm.errors.name}
                 />
                 <Input 
                   label="Email professionnel" 
-                  value={personalInfo.email} 
-                  onChange={e => setPersonalInfo({...personalInfo, email: e.target.value})} 
+                  value={profileForm.data.email} 
+                  onChange={e => profileForm.setData('email', e.target.value)} 
                   placeholder="votre@email.fr"
                   type="email"
+                  error={profileForm.errors.email}
                 />
               </div>
 
               <div className="pt-2">
-                <Button type="submit" isLoading={savingProfile} variant="secondary" className="w-full">
+                <Button
+                  type="submit"
+                  isLoading={profileForm.processing}
+                  disabled={profileForm.processing}
+                  variant="secondary"
+                  className="w-full"
+                >
                   Mettre à jour mon profil
                 </Button>
               </div>

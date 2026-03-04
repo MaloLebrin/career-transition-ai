@@ -46,16 +46,6 @@ export const authService = {
     return (await response.json()) as UserSession
   },
 
-  async updateProfile(_id: number | string, _updates: Partial<UserSession>): Promise<UserSession> {
-    // TODO: Exposer un endpoint backend pour mettre à jour le profil utilisateur (name / email)
-    // Pour l'instant, on renvoie simplement la session courante depuis /auth/me.
-    const current = await this.getCurrentSession()
-    if (!current) {
-      throw new Error('Non authentifié')
-    }
-    return current
-  },
-
   async logout(): Promise<void> {
     await fetch('/auth/logout', {
       method: 'POST',
