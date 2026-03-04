@@ -2,11 +2,14 @@ import React, { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/DashboardLayout'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployees } from '../../hooks/useEmployees'
+import type { Employee } from '../../types'
 
-export default function DashboardEmployees() {
+interface DashboardEmployeesProps {
+  employees: Employee[]
+}
+
+export default function DashboardEmployees({ employees }: DashboardEmployeesProps) {
   const { user } = useAuth()
-  const { employees } = useEmployees('')
 
   useEffect(() => {
     if (!user) router.visit('/auth')

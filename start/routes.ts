@@ -43,10 +43,8 @@ router
 
     router.put('/profile', [AuthController, 'updateFromDashboard'])
 
-    router.get('/employees', ({ inertia }) => (inertia as any).render('dashboard/Employees', {}))
-    router.get('/employees/:id', ({ params, inertia }) =>
-      (inertia as any).render('dashboard/EmployeeDetail', { employeeId: params.id })
-    )
+    router.get('/employees', [EmployeesController, 'indexDashboard'])
+    router.get('/employees/:id', [EmployeesController, 'showDashboard'])
     router.get('/employees/:id/exercises/:type', ({ params, inertia }) =>
       (inertia as any).render('dashboard/Exercise', { type: params.type, employeeId: params.id })
     )

@@ -6,15 +6,16 @@ import Card from '../../components/ui/Card'
 import StepDetailModal from '../../components/StepDetailModal'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
-import type { SupportPlanStep } from '../../types'
+import type { SupportPlanStep, Employee } from '../../types'
 
 interface EmployeeDetailProps {
   employeeId: string
+  employee: Employee
 }
 
-export default function DashboardEmployeeDetail({ employeeId }: EmployeeDetailProps) {
+export default function DashboardEmployeeDetail({ employeeId, employee }: EmployeeDetailProps) {
   const { user } = useAuth()
-  const { employee: selectedEmployee } = useEmployee(employeeId)
+  const { employee: selectedEmployee } = useEmployee(employeeId, employee)
   const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 

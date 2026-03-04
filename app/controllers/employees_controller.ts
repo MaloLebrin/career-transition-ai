@@ -11,6 +11,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class EmployeesController {
   constructor(private employeesService: EmployeesService) {}
 
+  /**
+   * JSON API: list employees visible to current user.
+   */
   public async index({ auth, response }: HttpContext) {
     const user = auth.user
     const organizationId = user?.organizationId ?? null
@@ -35,6 +38,9 @@ export default class EmployeesController {
     return response.json(data)
   }
 
+  /**
+   * JSON API: show single employee.
+   */
   public async show({ params, auth, response }: HttpContext) {
     const organizationId = auth.user?.organizationId ?? null
 
@@ -142,5 +148,61 @@ export default class EmployeesController {
 
     session.flash('success', 'Candidat mis à jour.')
     return response.redirect(`/dashboard/employees/${params.id}`)
+  }
+
+  /**
+   * Inertia page: list employees for dashboard (shared data).
+   */
+  public async indexDashboard(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const organizationId = user.organizationId
+    const advisorId = user.role === USERS_ROLES.ADVISOR ? user.id : null
+
+    const query = Employee.query()
+      .where('organizationId', organizationId)
+      .if(advisorId !== null, (q) => q.where('advisorId', advisorId!))
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('appointments')
+
+    const employees = await query
+    const data = employees.map(mapEmployee)
+
+    return (ctx.inertia as any).render('dashboard/Employees', { employees: data })
+  }
+
+  /**
+   * Inertia page: employee detail for dashboard.
+   */
+  public async showDashboard(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const employeeQuery = Employee.query()
+      .where('id', Number(ctx.params.id))
+      .where('organizationId', user.organizationId)
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('appointments')
+
+    const employee = await employeeQuery.firstOrFail()
+    const data = mapEmployee(employee)
+
+    return (ctx.inertia as any).render('dashboard/EmployeeDetail', {
+      employeeId: String(employee.id),
+      employee: data,
+    })
   }
 }
