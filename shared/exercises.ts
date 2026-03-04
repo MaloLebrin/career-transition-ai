@@ -1,6 +1,13 @@
 /**
- * Configuration partagée des types et statuts d'exercices,
- * utilisée côté backend (Adonis) et frontend (Inertia).
+ * Configuration partagée des types et statuts d'exercices.
+ *
+ * IMPORTANT:
+ * - Toute nouvelle valeur ajoutée ici doit rester synchronisée
+ *   avec le frontend (Inertia) via `inertia/config/exercises.ts`.
+ * - Les slugs définis ici sont utilisés:
+ *   - côté backend pour persister les résultats (Lucid),
+ *   - côté frontend pour construire les routes Inertia
+ *     (voir `EXERCISE_SLUGS`).
  */
 
 export const EXERCICE_RESULTS_TYPES = {

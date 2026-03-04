@@ -3,7 +3,14 @@ import { EXERCICE_RESULTS_TYPES } from '../../shared/exercises.js';
 
 /**
  * Slugs utilisés dans les routes Inertia / Adonis pour chaque type d'exercice.
- * Ils doivent rester alignés avec EXERCICE_RESULTS_TYPES côté backend.
+ *
+ * CONTRAT AVEC LE BACKEND:
+ * - Chaque entrée doit correspondre exactement à un slug défini
+ *   dans `shared/exercises.ts` (EXERCICE_RESULTS_TYPES).
+ * - Lors de l'ajout d'un nouveau type d'exercice:
+ *   1. L'ajouter dans `shared/exercises.ts`.
+ *   2. L'ajouter ici dans `EXERCISE_SLUGS`.
+ *   3. Mettre à jour, si besoin, la config `EXERCISES_WITH_INERTIA_DRAFT`.
  */
 export const EXERCISE_SLUGS: Partial<Record<ExerciseType, string>> = {
   [ExerciseType.MOTIVATION]: EXERCICE_RESULTS_TYPES.MOTIVATION,
