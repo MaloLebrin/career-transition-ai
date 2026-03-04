@@ -46,22 +46,54 @@ router
     router.get('/employees', [EmployeesController, 'indexDashboard'])
     router.get('/employees/:id', [EmployeesController, 'showDashboard'])
     router.get('/employees/:id/exercises/:type', [ExerciseResultsController, 'showDashboard'])
-    router.post('/employees/:id/exercises/motivation/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/motivation/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/values/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/values/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/personality/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/personality/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/life_curve/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/life_curve/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/targeting/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/targeting/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/disc/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/disc/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/skill_mapping/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/skill_mapping/result', [ExerciseResultsController, 'storeFromDashboard'])
-    router.post('/employees/:id/exercises/circle_of_control/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
-    router.post('/employees/:id/exercises/circle_of_control/result', [ExerciseResultsController, 'storeFromDashboard'])
+    router
+      .post('/employees/:id/exercises/motivation/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.motivation.draft')
+    router
+      .post('/employees/:id/exercises/motivation/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.motivation.result')
+    router
+      .post('/employees/:id/exercises/values/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.values.draft')
+    router
+      .post('/employees/:id/exercises/values/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.values.result')
+    router
+      .post('/employees/:id/exercises/personality/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.personality.draft')
+    router
+      .post('/employees/:id/exercises/personality/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.personality.result')
+    router
+      .post('/employees/:id/exercises/life_curve/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.life_curve.draft')
+    router
+      .post('/employees/:id/exercises/life_curve/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.life_curve.result')
+    router
+      .post('/employees/:id/exercises/targeting/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.targeting.draft')
+    router
+      .post('/employees/:id/exercises/targeting/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.targeting.result')
+    router
+      .post('/employees/:id/exercises/disc/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.disc.draft')
+    router
+      .post('/employees/:id/exercises/disc/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.disc.result')
+    router
+      .post('/employees/:id/exercises/skill_mapping/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.skill_mapping.draft')
+    router
+      .post('/employees/:id/exercises/skill_mapping/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.skill_mapping.result')
+    router
+      .post('/employees/:id/exercises/circle_of_control/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+      .as('dashboard.exercises.circle_of_control.draft')
+    router
+      .post('/employees/:id/exercises/circle_of_control/result', [ExerciseResultsController, 'storeFromDashboard'])
+      .as('dashboard.exercises.circle_of_control.result')
 
     router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
     router.post('/settings/organization/advisors', [OrganizationsController, 'storeAdvisorFromDashboard'])
