@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
-import PublicHeader from '../layout/PublicHeader';
+import PublicLayout from '../layout/PublicLayout';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -41,9 +41,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBackToLanding, log
   };
 
   return (
-    <div className="min-h-screen bg-brand-ivory flex flex-col lg:flex-row overflow-hidden">
-      <PublicHeader onLogoClick={onBackToLanding} showAction={false} />
-
+    <PublicLayout
+      headerProps={{ onLogoClick: onBackToLanding, showAction: false }}
+      className="flex flex-col lg:flex-row overflow-hidden"
+    >
       {/* Côté Gauche - Visuel & Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-brand-navy relative items-center justify-center p-20 overflow-hidden pt-32">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-sage/10 blur-[120px] rounded-full -mr-96 -mt-96"></div>
@@ -164,7 +165,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBackToLanding, log
           </div>
         </Card>
       </div>
-    </div>
+    </PublicLayout>
   );
 };
 

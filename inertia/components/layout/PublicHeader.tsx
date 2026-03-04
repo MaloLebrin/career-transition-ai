@@ -2,7 +2,7 @@
 import React from 'react';
 import Button from '../ui/Button';
 
-interface PublicHeaderProps {
+export interface PublicHeaderProps {
   onLogoClick: () => void;
   onMethodologyClick?: () => void;
   onAiClick?: () => void;

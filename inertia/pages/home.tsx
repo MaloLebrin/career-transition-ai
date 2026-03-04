@@ -22,7 +22,7 @@ export default function Home() {
         </div>
 
         {/* Bento with documentation, Adocasts, packages and Discord */}
-        <div className="isolate mt-10 max-w-screen-xl mx-auto px-16 xl:px-8 grid grid-cols-1 xl:grid-cols-2 xl:grid-rows-3 gap-8">
+        <div className="isolate mt-10 max-w-7xl mx-auto px-16 xl:px-8 grid grid-cols-1 xl:grid-cols-2 xl:grid-rows-3 gap-8">
           <article className="row-span-3 relative p-6 shadow-sm hover:shadow border border-sand-7 hover:border-sand-8 rounded-2xl transition ease-in-out duration-700 group flex flex-col gap-8">
             <div className="relative opacity-80">
               <svg fill="none" viewBox="0 0 240 105">
@@ -61,7 +61,7 @@ export default function Home() {
                 </defs>
               </svg>
 
-              <div className="absolute left-0 right-0 bottom-0 h-16 bg-gradient-to-b from-white/0 to-white"></div>
+              <div className="absolute left-0 right-0 bottom-0 h-16 bg-linear-to-b from-white/0 to-white"></div>
             </div>
 
             <div className="flex flex-row gap-4">

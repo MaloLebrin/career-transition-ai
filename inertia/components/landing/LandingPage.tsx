@@ -3,7 +3,7 @@ import React from 'react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
-import PublicHeader from '../layout/PublicHeader';
+import PublicLayout from '../layout/PublicLayout';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -16,14 +16,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-ivory text-brand-navy selection:bg-brand-sage/20 overflow-x-hidden font-sans">
-      <PublicHeader 
-        onLogoClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} 
-        onMethodologyClick={() => scrollToSection('methodology')}
-        onAiClick={() => scrollToSection('ai-engine')}
-        onActionClick={onEnterApp} 
-      />
-
+    <PublicLayout
+      headerProps={{
+        onLogoClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+        onMethodologyClick: () => scrollToSection('methodology'),
+        onAiClick: () => scrollToSection('ai-engine'),
+        onActionClick: onEnterApp,
+      }}
+    >
       {/* --- HERO SECTION --- */}
       <section className="relative pt-44 pb-32 px-6 overflow-hidden">
         {/* Background Decorative Elements */}
@@ -271,7 +271,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
       </footer>
 
-    </div>
+    </PublicLayout>
   );
 };
 
