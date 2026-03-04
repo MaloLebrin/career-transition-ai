@@ -113,4 +113,25 @@ export default class OrganizationsController {
       throw err
     }
   }
+
+  /**
+   * Inertia page: dashboard settings with organization and advisors.
+   */
+  public async settingsDashboard({ auth, inertia, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const orgId = auth.user.organizationId
+    const organization = await this.organizationsService.getById(orgId)
+    if (!organization) {
+      return response.notFound()
+    }
+    const members = await this.organizationsService.listAdvisors(orgId)
+
+    return (inertia as any).render('dashboard/Settings', {
+      organization,
+      members,
+    })
+  }
 }

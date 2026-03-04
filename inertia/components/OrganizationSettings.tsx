@@ -17,9 +17,8 @@ interface Props {
 
 const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
   const { user } = useAuth()
-  const [org, setOrg] = useState<Organization | null>(null)
-  const [members, setMembers] = useState<Advisor[]>([])
-  const [loading, setLoading] = useState(true)
+  const [org] = useState<Organization>(organization)
+  const [team] = useState<Advisor[]>(members)
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
 
@@ -29,37 +28,11 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
     if (org) orgForm.setData({ name: org.name, slug: org.slug })
   }, [org?.id])
 
-  const loadData = async () => {
-    try {
-      const orgData = organizationId
-        ? await apiService.fetchOrganization(organizationId)
-        : await apiService.fetchCurrentOrganization()
-      const orgId = orgData.id
-      const membersData = await apiService.fetchOrganizationAdvisors(orgId)
-      setOrg(orgData)
-      setMembers(membersData)
-      if (user) {
-        profileForm.setData({ name: user.name, email: user.email })
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadData();
-  }, [organizationId, user?.id]);
-
-  if (loading || !org) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Chargement du Cabinet...</p>
-      </div>
-    );
-  }
+    if (user) {
+      profileForm.setData({ name: user.name, email: user.email })
+    }
+  }, [user?.id]);
 
   return (
     <div className="animate-fadeIn max-w-5xl mx-auto space-y-10 pb-20">
@@ -198,8 +171,8 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
             </div>
             
             <div className="space-y-4">
-              {members.length > 0 ? (
-                members.map((member) => (
+              {team.length > 0 ? (
+                team.map((member) => (
                   <TeamMember 
                     key={member.id}
                     name={member.name} 

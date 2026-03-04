@@ -1,59 +1,10 @@
-import {
-  Employee,
-  ExerciseResult,
-  SupportPlanStep,
-  ExerciseDraft,
-  Organization,
-  Advisor,
-} from '../types'
+import { Employee, ExerciseResult, SupportPlanStep, ExerciseDraft } from '../types'
 
 /**
- * JSON API client. Dashboard create/update flows use Inertia (POST/PUT /dashboard/employees).
- * Remaining: org/employees fetch (read), exercise result/draft (write).
+ * JSON API client pour les opérations purement JSON (exercices, rafraîchissements ponctuels).
+ * Tous les écrans et formulaires principaux passent par Inertia (router.* + props).
  */
 export const apiService = {
-  /** Fetches the authenticated user's organization (no id required). */
-  async fetchCurrentOrganization(): Promise<Organization> {
-    const response = await fetch('/api/organizations/current', {
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) {
-      if (response.status === 404) throw new Error('Organisation introuvable');
-      if (response.status === 401) throw new Error('Non authentifié');
-      throw new Error('Erreur lors du chargement de l’organisation.');
-    }
-    const data = await response.json();
-    return data as Organization;
-  },
-
-  async fetchOrganization(id: string | number): Promise<Organization> {
-    const response = await fetch(`/api/organizations/${id}`, {
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) {
-      if (response.status === 404) throw new Error('Organisation introuvable');
-      if (response.status === 401) throw new Error('Non authentifié');
-      throw new Error('Erreur lors du chargement de l’organisation.');
-    }
-    const data = await response.json();
-    return data as Organization;
-  },
-
-  async fetchOrganizationAdvisors(organizationId: string | number): Promise<Advisor[]> {
-    const response = await fetch(`/api/organizations/${organizationId}/advisors`, {
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) {
-      if (response.status === 401) throw new Error('Non authentifié');
-      throw new Error('Erreur lors du chargement des conseillers.');
-    }
-    const data = await response.json();
-    return data as Advisor[];
-  },
-
   async fetchEmployees(organizationId?: string | number, advisorId?: string | number): Promise<Employee[]> {
     const url = new URL('/api/employees', window.location.origin);
     if (organizationId !== undefined && organizationId !== '') {

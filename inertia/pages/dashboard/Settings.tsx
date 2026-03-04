@@ -1,24 +1,23 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/DashboardLayout'
 import OrganizationSettings from '../../components/OrganizationSettings'
-import { useAuth } from '../../hooks/useAuth'
+import type { Organization, Advisor } from '../../types'
 
-export default function DashboardSettings() {
-  const { user } = useAuth()
+interface DashboardSettingsProps {
+  organization: Organization
+  members: Advisor[]
+}
 
-  useEffect(() => {
-    if (!user) router.visit('/auth')
-  }, [user])
-
-  if (!user) return null
-
+export default function DashboardSettings({ organization, members }: DashboardSettingsProps) {
   return (
     <>
       <Head title="Réglages" />
       <DashboardLayout>
         <div className="animate-fadeIn">
           <OrganizationSettings
+            organization={organization}
+            members={members}
             onBack={() => router.visit('/dashboard')}
           />
         </div>
