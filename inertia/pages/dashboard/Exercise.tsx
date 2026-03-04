@@ -20,6 +20,7 @@ interface ExerciseProps {
   type: string
   employeeId?: string
   initialMotivationDraft?: ExerciseDraft | null
+  initialValuesDraft?: ExerciseDraft | null
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -33,7 +34,12 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
   CIRCLE_OF_CONTROL: ExerciseType.CIRCLE_OF_CONTROL,
 }
 
-export default function DashboardExercise({ type, employeeId, initialMotivationDraft }: ExerciseProps) {
+export default function DashboardExercise({
+  type,
+  employeeId,
+  initialMotivationDraft,
+  initialValuesDraft,
+}: ExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
@@ -47,6 +53,9 @@ export default function DashboardExercise({ type, employeeId, initialMotivationD
     {
       motivation: {
         initialDraft: initialMotivationDraft ?? null,
+      },
+      values: {
+        initialDraft: initialValuesDraft ?? null,
       },
     }
   )
@@ -108,7 +117,7 @@ export default function DashboardExercise({ type, employeeId, initialMotivationD
               <ValuesTool
                 onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.VALUES, data)}
-                initialDraftPromise={loadDraft(ExerciseType.VALUES)}
+                initialDraftPromise={Promise.resolve(initialValuesDraft ?? null)}
               />
             )}
             {exerciseType === ExerciseType.LIFE_CURVE && (

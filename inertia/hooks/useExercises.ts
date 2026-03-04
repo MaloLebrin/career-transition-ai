@@ -12,6 +12,9 @@ export function useExercises(
     motivation?: {
       initialDraft?: ExerciseDraft | null;
     };
+    values?: {
+      initialDraft?: ExerciseDraft | null;
+    };
   }
 ) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -23,6 +26,9 @@ export function useExercises(
 
       if (type === ExerciseType.MOTIVATION && options?.motivation?.initialDraft) {
         return options.motivation.initialDraft;
+      }
+      if (type === ExerciseType.VALUES && options?.values?.initialDraft) {
+        return options.values.initialDraft;
       }
 
       return await apiService.fetchExerciseDraft(employee.id, type);
@@ -38,10 +44,15 @@ export function useExercises(
         employeeId: employee.id,
         type,
         lastUpdated: new Date().toISOString(),
-        data
+        data,
       };
       if (type === ExerciseType.MOTIVATION) {
         await router.post(`/dashboard/employees/${employee.id}/exercises/motivation/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.VALUES) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/values/draft`, draft, {
           preserveScroll: true,
           preserveState: true,
         });
@@ -82,6 +93,21 @@ export function useExercises(
 
       if (type === ExerciseType.MOTIVATION) {
         await router.post(`/dashboard/employees/${employee.id}/exercises/motivation/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.VALUES) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/values/result`, {
           type,
           status: 'completed',
           date: newResult.date,

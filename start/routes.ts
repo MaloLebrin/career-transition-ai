@@ -48,6 +48,8 @@ router
     router.get('/employees/:id/exercises/:type', [ExerciseResultsController, 'showDashboard'])
     router.post('/employees/:id/exercises/motivation/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
     router.post('/employees/:id/exercises/motivation/result', [ExerciseResultsController, 'storeFromDashboard'])
+    router.post('/employees/:id/exercises/values/draft', [ExerciseResultsController, 'saveDraftFromDashboard'])
+    router.post('/employees/:id/exercises/values/result', [ExerciseResultsController, 'storeFromDashboard'])
 
     router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
     router.post('/settings/organization/advisors', [OrganizationsController, 'storeAdvisorFromDashboard'])

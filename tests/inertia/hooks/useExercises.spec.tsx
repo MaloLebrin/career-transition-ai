@@ -66,13 +66,13 @@ describe('useExercises', () => {
     expect(apiService.fetchExerciseDraft).not.toHaveBeenCalled()
   })
 
-  test('saveDraft calls apiService and sets isSavingDraft', async () => {
+  test('saveDraft calls apiService and sets isSavingDraft for non-Inertia type', async () => {
     const { result } = renderHook(() =>
       useExercises(mockEmployee as any, onComplete)
     )
 
     await act(async () => {
-      result.current.saveDraft(ExerciseType.VALUES, { foo: 'bar' })
+      result.current.saveDraft(ExerciseType.DISC, { foo: 'bar' })
     })
 
     expect(apiService.saveExerciseDraft).toHaveBeenCalled()
@@ -81,16 +81,16 @@ describe('useExercises', () => {
     })
   })
 
-  test('saveResult calls analyzeExerciseResult then onComplete (MOTIVATION uses Inertia router)', async () => {
+  test('saveResult calls analyzeExerciseResult then onComplete for non-Inertia type', async () => {
     const { result } = renderHook(() =>
       useExercises(mockEmployee as any, onComplete)
     )
 
     await act(async () => {
-      await result.current.saveResult(ExerciseType.VALUES, { data: 'x' }, 10, 60)
+      await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 10, 60)
     })
 
-    expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.VALUES, { data: 'x' })
+    expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.DISC, { data: 'x' })
     expect(apiService.saveExerciseResult).toHaveBeenCalled()
     expect(onComplete).toHaveBeenCalled()
   })
