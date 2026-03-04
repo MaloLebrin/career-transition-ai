@@ -45,9 +45,7 @@ router
 
     router.get('/employees', [EmployeesController, 'indexDashboard'])
     router.get('/employees/:id', [EmployeesController, 'showDashboard'])
-    router.get('/employees/:id/exercises/:type', ({ params, inertia }) =>
-      (inertia as any).render('dashboard/Exercise', { type: params.type, employeeId: params.id })
-    )
+    router.get('/employees/:id/exercises/:type', [ExerciseResultsController, 'showDashboard'])
 
     router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
     router.post('/settings/organization/advisors', [OrganizationsController, 'storeAdvisorFromDashboard'])

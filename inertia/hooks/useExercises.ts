@@ -4,14 +4,30 @@ import { ExerciseType, ExerciseResult, Employee, ExerciseDraft } from '../types'
 import { analyzeExerciseResult } from '../services/geminiService';
 import { apiService } from '../services/apiService';
 
-export function useExercises(employee: Employee | null, onComplete: () => void) {
+export function useExercises(
+  employee: Employee | null,
+  onComplete: () => void,
+  options?: {
+    motivation?: {
+      initialDraft?: ExerciseDraft | null;
+    };
+  }
+) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
-  const loadDraft = useCallback(async (type: ExerciseType) => {
-    if (!employee) return null;
-    return await apiService.fetchExerciseDraft(employee.id, type);
-  }, [employee]);
+  const loadDraft = useCallback(
+    async (type: ExerciseType) => {
+      if (!employee) return null;
+
+      if (type === ExerciseType.MOTIVATION && options?.motivation?.initialDraft) {
+        return options.motivation.initialDraft;
+      }
+
+      return await apiService.fetchExerciseDraft(employee.id, type);
+    },
+    [employee, options]
+  );
 
   const saveDraft = async (type: ExerciseType, data: any) => {
     if (!employee) return;

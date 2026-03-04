@@ -11,7 +11,7 @@ import TargetingTool from '../../components/TargetingTool'
 import DISCTool from '../../components/DISCTool'
 import SkillMappingTool from '../../components/SkillMappingTool'
 import CircleOfControlTool from '../../components/CircleOfControlTool'
-import { ExerciseType } from '../../types'
+import { ExerciseType, type ExerciseDraft } from '../../types'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import { useExercises } from '../../hooks/useExercises'
@@ -19,6 +19,7 @@ import { useExercises } from '../../hooks/useExercises'
 interface ExerciseProps {
   type: string
   employeeId?: string
+  initialMotivationDraft?: ExerciseDraft | null
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -32,7 +33,7 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
   CIRCLE_OF_CONTROL: ExerciseType.CIRCLE_OF_CONTROL,
 }
 
-export default function DashboardExercise({ type, employeeId }: ExerciseProps) {
+export default function DashboardExercise({ type, employeeId, initialMotivationDraft }: ExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
@@ -42,6 +43,11 @@ export default function DashboardExercise({ type, employeeId }: ExerciseProps) {
       await refreshEmployee()
       if (employeeId) router.visit(`/dashboard/employees/${employeeId}`)
       else router.visit('/dashboard')
+    },
+    {
+      motivation: {
+        initialDraft: initialMotivationDraft ?? null,
+      },
     }
   )
 
@@ -95,7 +101,7 @@ export default function DashboardExercise({ type, employeeId }: ExerciseProps) {
               <MotivationTool
                 onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.MOTIVATION, data)}
-                initialDraftPromise={loadDraft(ExerciseType.MOTIVATION)}
+                initialDraftPromise={Promise.resolve(initialMotivationDraft ?? null)}
               />
             )}
             {exerciseType === ExerciseType.VALUES && (

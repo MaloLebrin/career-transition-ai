@@ -1,6 +1,8 @@
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { fetchExerciseDraftValidator, saveExerciseDraftValidator } from '#validators/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
+import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
+import Employee from '#models/employee'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -49,6 +51,54 @@ export default class ExerciseResultsController {
     })
 
     return response.json(draft)
+  }
+  /**
+   * Inertia page: exercise with initial draft/result for MOTIVATION.
+   */
+  public async showDashboard({ auth, params, inertia, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employeeId = Number(params.id)
+    const typeParam = String(params.type).toLowerCase()
+
+    // For now, only handle MOTIVATION specifically; others fall back without draft
+    if (typeParam !== EXERCICE_RESULTS_TYPES.MOTIVATION) {
+      return (inertia as any).render('dashboard/Exercise', {
+        type: params.type,
+        employeeId: String(employeeId),
+        initialMotivationDraft: null,
+      })
+    }
+
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where('organizationId', auth.user.organizationId)
+      .preload('exerciseResults')
+      .firstOrFail()
+
+    const draft = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .andWhere('status', 'draft')
+      .orderBy('updatedAt', 'desc')
+      .first()
+
+    const initialMotivationDraft = draft
+      ? {
+          employeeId: employee.id,
+          type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
+      : null
+
+    return (inertia as any).render('dashboard/Exercise', {
+      type: params.type,
+      employeeId: String(employee.id),
+      initialMotivationDraft,
+    })
   }
 }
 
