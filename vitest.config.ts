@@ -4,20 +4,15 @@ import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    include: ['tests/inertia/**/*.spec.{ts,tsx}'],
-    setupFiles: ['tests/inertia/setup.ts'],
-    resolve: {
-      alias: {
-        '~': path.resolve(__dirname, 'inertia'),
-      },
-    },
-  },
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'inertia'),
     },
   },
-})
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    include: ['tests/inertia/**/*.spec.{ts,tsx}'],
+    setupFiles: ['tests/inertia/setup.ts'],
+  },
+} as any)

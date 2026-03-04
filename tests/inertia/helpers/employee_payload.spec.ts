@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { employeeUpdatePayload } from '../../../inertia/helpers/employee_payload'
+import { employeeUpdatePayload } from '../../../inertia/helpers/employee_payload.js'
 
 describe('employeeUpdatePayload', () => {
   test('returns empty object for empty input', () => {

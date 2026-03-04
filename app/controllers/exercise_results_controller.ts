@@ -1,14 +1,17 @@
-import { ExerciseResultsService } from '#services/exercise_results_service'
-import { fetchExerciseDraftValidator, saveExerciseDraftValidator } from '#validators/exercise_draft_validator'
-import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
-import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
 import Employee from '#models/employee'
+import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
+import { ExerciseResultsService } from '#services/exercise_results_service'
+import {
+  fetchExerciseDraftValidator,
+  saveExerciseDraftValidator,
+} from '#validators/exercise_draft_validator'
+import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ExerciseResultsController {
-  constructor(private service: ExerciseResultsService) {}
+  constructor(private service: ExerciseResultsService) { }
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -152,11 +155,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employee.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employee.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -168,4 +171,3 @@ export default class ExerciseResultsController {
     })
   }
 }
-
