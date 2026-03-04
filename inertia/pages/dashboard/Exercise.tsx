@@ -21,6 +21,7 @@ interface ExerciseProps {
   employeeId?: string
   initialMotivationDraft?: ExerciseDraft | null
   initialValuesDraft?: ExerciseDraft | null
+  initialPersonalityDraft?: ExerciseDraft | null
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -39,6 +40,7 @@ export default function DashboardExercise({
   employeeId,
   initialMotivationDraft,
   initialValuesDraft,
+  initialPersonalityDraft,
 }: ExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
@@ -56,6 +58,9 @@ export default function DashboardExercise({
       },
       values: {
         initialDraft: initialValuesDraft ?? null,
+      },
+      personality: {
+        initialDraft: initialPersonalityDraft ?? null,
       },
     }
   )
@@ -130,6 +135,7 @@ export default function DashboardExercise({
             {exerciseType === ExerciseType.PERSONALITY && (
               <PersonalityTool
                 onSave={(data, duration) => saveResult(ExerciseType.PERSONALITY, data, 10, duration)}
+                // Personality currently has no explicit draft UI, but results are saved via Inertia.
               />
             )}
             {exerciseType === ExerciseType.TARGETING && (

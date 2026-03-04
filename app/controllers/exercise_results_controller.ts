@@ -118,6 +118,7 @@ export default class ExerciseResultsController {
 
     let initialMotivationDraft: any = null
     let initialValuesDraft: any = null
+    let initialPersonalityDraft: any = null
 
     if (typeParam === EXERCICE_RESULTS_TYPES.MOTIVATION) {
       const draft = await ExerciseResult.query()
@@ -160,6 +161,7 @@ export default class ExerciseResultsController {
       employeeId: String(employee.id),
       initialMotivationDraft,
       initialValuesDraft,
+      initialPersonalityDraft,
     })
   }
 }
