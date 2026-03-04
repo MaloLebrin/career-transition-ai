@@ -74,7 +74,7 @@ export default class ExerciseResultsController {
   }
 
   /**
-   * Inertia form: save MOTIVATION result then redirect to employee detail.
+   * Inertia form: save exercise result then redirect to employee detail.
    */
   public async storeFromDashboard({ auth, params, request, response, session }: HttpContext) {
     if (!auth.user) {
@@ -96,7 +96,21 @@ export default class ExerciseResultsController {
       plan: payload.plan,
     })
 
-    session.flash('success', 'Exercice MOTIVATION enregistré.')
+    // Message de succès dynamique selon le type d'exercice
+    const typeLabelMap: Record<string, string> = {
+      [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'Motivation',
+      [EXERCICE_RESULTS_TYPES.VALUES]: 'Valeurs',
+      [EXERCICE_RESULTS_TYPES.PERSONALITY]: 'Personnalité',
+      [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: 'Courbe de vie',
+      [EXERCICE_RESULTS_TYPES.TARGETING]: 'Ciblage',
+      [EXERCICE_RESULTS_TYPES.DISC]: 'DISC',
+      [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'Cartographie des compétences',
+      [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'Cercle de contrôle',
+    }
+
+    const typeKey = String(payload.type)
+    const label = typeLabelMap[typeKey] ?? 'Exercice'
+    session.flash('success', `Exercice ${label} enregistré.`)
     return response.redirect(`/dashboard/employees/${employeeId}`)
   }
   /**
@@ -127,7 +141,7 @@ export default class ExerciseResultsController {
       EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
     ] as const
 
-    const initialDrafts: Record<string, any> = {}
+    const initialDraftsByType: Record<string, any> = {}
     for (const exerciseType of draftTypes) {
       if (typeParam !== exerciseType) continue
       const draft = await ExerciseResult.query()
@@ -136,7 +150,7 @@ export default class ExerciseResultsController {
         .andWhere('status', 'draft')
         .orderBy('updatedAt', 'desc')
         .first()
-      initialDrafts[exerciseType] = draft
+      initialDraftsByType[exerciseType] = draft
         ? {
             employeeId: employee.id,
             type: exerciseType,
@@ -150,14 +164,7 @@ export default class ExerciseResultsController {
     return (inertia as any).render('dashboard/Exercise', {
       type: params.type,
       employeeId: String(employee.id),
-      initialMotivationDraft: initialDrafts[EXERCICE_RESULTS_TYPES.MOTIVATION] ?? null,
-      initialValuesDraft: initialDrafts[EXERCICE_RESULTS_TYPES.VALUES] ?? null,
-      initialPersonalityDraft: initialDrafts[EXERCICE_RESULTS_TYPES.PERSONALITY] ?? null,
-      initialLifeCurveDraft: initialDrafts[EXERCICE_RESULTS_TYPES.LIFE_CURVE] ?? null,
-      initialTargetingDraft: initialDrafts[EXERCICE_RESULTS_TYPES.TARGETING] ?? null,
-      initialDiscDraft: initialDrafts[EXERCICE_RESULTS_TYPES.DISC] ?? null,
-      initialSkillMappingDraft: initialDrafts[EXERCICE_RESULTS_TYPES.SKILL_MAPPING] ?? null,
-      initialCircleOfControlDraft: initialDrafts[EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL] ?? null,
+      initialDraftsByType,
     })
   }
 }

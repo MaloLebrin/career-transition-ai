@@ -15,18 +15,12 @@ import { ExerciseType, type ExerciseDraft } from '../../types'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import { useExercises } from '../../hooks/useExercises'
+import { EXERCISE_SLUGS } from '../../config/exercises'
 
 interface ExerciseProps {
   type: string
   employeeId?: string
-  initialMotivationDraft?: ExerciseDraft | null
-  initialValuesDraft?: ExerciseDraft | null
-  initialPersonalityDraft?: ExerciseDraft | null
-  initialLifeCurveDraft?: ExerciseDraft | null
-  initialTargetingDraft?: ExerciseDraft | null
-  initialDiscDraft?: ExerciseDraft | null
-  initialSkillMappingDraft?: ExerciseDraft | null
-  initialCircleOfControlDraft?: ExerciseDraft | null
+  initialDraftsByType?: Record<string, ExerciseDraft | null>
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -43,18 +37,19 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
 export default function DashboardExercise({
   type,
   employeeId,
-  initialMotivationDraft,
-  initialValuesDraft,
-  initialPersonalityDraft,
-  initialLifeCurveDraft,
-  initialTargetingDraft,
-  initialDiscDraft,
-  initialSkillMappingDraft,
-  initialCircleOfControlDraft,
+  initialDraftsByType,
 }: ExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
+
+  const draftsByType = initialDraftsByType ?? {}
+  const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
+    const slug = EXERCISE_SLUGS[exerciseType]
+    if (!slug) return null
+    return draftsByType[slug] ?? null
+  }
+
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(
     selectedEmployee,
     async () => {
@@ -63,14 +58,14 @@ export default function DashboardExercise({
       else router.visit('/dashboard')
     },
     {
-      motivation: { initialDraft: initialMotivationDraft ?? null },
-      values: { initialDraft: initialValuesDraft ?? null },
-      personality: { initialDraft: initialPersonalityDraft ?? null },
-      lifeCurve: { initialDraft: initialLifeCurveDraft ?? null },
-      targeting: { initialDraft: initialTargetingDraft ?? null },
-      disc: { initialDraft: initialDiscDraft ?? null },
-      skillMapping: { initialDraft: initialSkillMappingDraft ?? null },
-      circleOfControl: { initialDraft: initialCircleOfControlDraft ?? null },
+      motivation: { initialDraft: getInitialDraft(ExerciseType.MOTIVATION) },
+      values: { initialDraft: getInitialDraft(ExerciseType.VALUES) },
+      personality: { initialDraft: getInitialDraft(ExerciseType.PERSONALITY) },
+      lifeCurve: { initialDraft: getInitialDraft(ExerciseType.LIFE_CURVE) },
+      targeting: { initialDraft: getInitialDraft(ExerciseType.TARGETING) },
+      disc: { initialDraft: getInitialDraft(ExerciseType.DISC) },
+      skillMapping: { initialDraft: getInitialDraft(ExerciseType.SKILL_MAPPING) },
+      circleOfControl: { initialDraft: getInitialDraft(ExerciseType.CIRCLE_OF_CONTROL) },
     }
   )
 
@@ -124,21 +119,21 @@ export default function DashboardExercise({
               <MotivationTool
                 onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.MOTIVATION, data)}
-                initialDraftPromise={Promise.resolve(initialMotivationDraft ?? null)}
+                initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.MOTIVATION))}
               />
             )}
             {exerciseType === ExerciseType.VALUES && (
               <ValuesTool
                 onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.VALUES, data)}
-                initialDraftPromise={Promise.resolve(initialValuesDraft ?? null)}
+                initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.VALUES))}
               />
             )}
             {exerciseType === ExerciseType.LIFE_CURVE && (
               <LifeCurveTool
                 onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.LIFE_CURVE, data)}
-                initialDraftPromise={Promise.resolve(initialLifeCurveDraft ?? null)}
+                initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.LIFE_CURVE))}
               />
             )}
             {exerciseType === ExerciseType.PERSONALITY && (
@@ -164,7 +159,7 @@ export default function DashboardExercise({
               <DISCTool
                 onSave={(data, duration) => saveResult(ExerciseType.DISC, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.DISC, data)}
-                initialDraftPromise={Promise.resolve(initialDiscDraft ?? null)}
+                initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.DISC))}
               />
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (
@@ -173,7 +168,9 @@ export default function DashboardExercise({
                   saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
-                initialDraftPromise={Promise.resolve(initialSkillMappingDraft ?? null)}
+                initialDraftPromise={Promise.resolve(
+                  getInitialDraft(ExerciseType.SKILL_MAPPING)
+                )}
                 experiences={selectedEmployee?.experiences || []}
               />
             )}
@@ -183,7 +180,9 @@ export default function DashboardExercise({
                   saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.CIRCLE_OF_CONTROL, data)}
-                initialDraftPromise={Promise.resolve(initialCircleOfControlDraft ?? null)}
+                initialDraftPromise={Promise.resolve(
+                  getInitialDraft(ExerciseType.CIRCLE_OF_CONTROL)
+                )}
               />
             )}
           </div>
