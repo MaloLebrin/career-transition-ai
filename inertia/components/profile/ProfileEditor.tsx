@@ -1,8 +1,8 @@
 
 import React, { useState, useRef } from 'react';
-import DatePicker from './ui/DatePicker';
-import { Employee, Experience, Education, Skill, JobType } from '../types';
-import { extractCVData } from '../services/geminiService';
+import DatePicker from '../ui/DatePicker';
+import { Employee, Experience, Education, Skill, JobType } from '../../types';
+import { extractCVData } from '../../services/geminiService';
 
 interface Props {
   employee: Employee;

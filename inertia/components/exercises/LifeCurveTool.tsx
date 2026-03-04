@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { ExerciseDraft } from '../types';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Input from './ui/Input';
+import { ExerciseDraft } from '../../types';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
 
 interface Point {
   year: number;

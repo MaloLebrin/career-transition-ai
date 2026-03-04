@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { SupportPlanStep, ExerciseResult, ExerciseType } from '../types';
-import MotivationResultView from './MotivationResultView';
+import { SupportPlanStep, ExerciseResult, ExerciseType } from '../../types';
+import MotivationResultView from '../exercises/MotivationResultView';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
-import { MOTIVATIONS_LIST } from '../constants/motivations';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Badge from './ui/Badge';
+import { MOTIVATIONS_LIST } from '../../constants/motivations';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 
 interface Props {
   step: SupportPlanStep;

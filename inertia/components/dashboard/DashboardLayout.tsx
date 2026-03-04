@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { Link, usePage } from '@inertiajs/react'
-import Layout from './Layout'
-import NavLink from './ui/NavLink'
-import Input from './ui/Input'
-import { useAuth } from '../hooks/useAuth'
-import { useEmployees } from '../hooks/useEmployees'
-import { isAdvisorOrAdmin } from '../helpers/roles'
+import Layout from '../layout/Layout'
+import NavLink from '../ui/NavLink'
+import Input from '../ui/Input'
+import { useAuth } from '../../hooks/useAuth'
+import { useEmployees } from '../../hooks/useEmployees'
+import { isAdvisorOrAdmin } from '../../helpers/roles'
 
 interface DashboardLayoutProps {
   children: React.ReactNode

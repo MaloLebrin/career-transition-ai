@@ -1,9 +1,9 @@
 import React from 'react'
 import { useForm } from '@inertiajs/react'
-import Button from './ui/Button'
-import Input from './ui/Input'
-import Card from './ui/Card'
-import type { AdvisorRole } from '../types'
+import Button from '../ui/Button'
+import Input from '../ui/Input'
+import Card from '../ui/Card'
+import type { AdvisorRole } from '../../types'
 
 interface Props {
   onClose: () => void

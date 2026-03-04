@@ -1,7 +1,7 @@
 import React from 'react'
 import { Head, router } from '@inertiajs/react'
-import DashboardLayout from '../../components/DashboardLayout'
-import OrganizationSettings from '../../components/OrganizationSettings'
+import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import OrganizationSettings from '../../components/settings/OrganizationSettings'
 import type { Organization, Advisor } from '../../types'
 
 interface DashboardSettingsProps {

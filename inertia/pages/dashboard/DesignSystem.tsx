@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
-import DashboardLayout from '../../components/DashboardLayout'
-import DesignSystem from '../../components/DesignSystem'
+import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import DesignSystem from '../../components/design-system/DesignSystem'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function DashboardDesignSystem() {

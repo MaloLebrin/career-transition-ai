@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Button from '../ui/Button'
 import StatCard from '../ui/StatCard'
 import Card from '../ui/Card'
-import AddEmployeeModal from '../AddEmployeeModal'
+import AddEmployeeModal from '../modals/AddEmployeeModal'
 import { useEmployees } from '../../hooks/useEmployees'
 
 export default function AdvisorHome() {

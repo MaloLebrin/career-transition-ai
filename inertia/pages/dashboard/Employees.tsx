@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
-import DashboardLayout from '../../components/DashboardLayout'
+import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../hooks/useAuth'
 import type { Employee } from '../../types'
 

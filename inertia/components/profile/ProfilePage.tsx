@@ -1,11 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { Employee, Experience, Education, Skill, JobType } from '../types';
-import { extractCVData } from '../services/geminiService';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Input from './ui/Input';
-import DatePicker from './ui/DatePicker';
+import { Employee, Experience, Education, Skill, JobType } from '../../types';
+import { extractCVData } from '../../services/geminiService';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
+import DatePicker from '../ui/DatePicker';
 
 interface Props {
   employee: Employee;

@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import AuthPage from '../components/AuthPage'
+import AuthPage from '../components/auth/AuthPage'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Auth() {

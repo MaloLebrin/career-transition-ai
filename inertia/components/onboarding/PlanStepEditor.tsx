@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import DatePicker from './ui/DatePicker';
-import { SupportPlanStep, ExerciseType } from '../types';
+import DatePicker from '../ui/DatePicker';
+import { SupportPlanStep, ExerciseType } from '../../types';
 
 interface Props {
   onSave: (step: Omit<SupportPlanStep, 'id' | 'completed'>) => void;

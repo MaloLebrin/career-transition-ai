@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { SCHWARTZ_VALUES } from '../constants/values';
-import { ExerciseDraft } from '../types';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Input from './ui/Input';
+import { SCHWARTZ_VALUES } from '../../constants/values';
+import { ExerciseDraft } from '../../types';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
 
 interface Props {
   onSave: (data: { selectedValues: string[], peopleExercise: { name: string, values: string }[] }, duration: number) => void;

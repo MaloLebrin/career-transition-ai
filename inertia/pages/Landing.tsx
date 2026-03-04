@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import LandingPage from '../components/LandingPage'
+import LandingPage from '../components/landing/LandingPage'
 
 export default function Landing() {
   return (

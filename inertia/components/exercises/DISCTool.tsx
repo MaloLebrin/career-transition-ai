@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import Button from './ui/Button';
-import Badge from './ui/Badge';
-import Card from './ui/Card';
-import { ExerciseDraft } from '../types';
+import Button from '../ui/Button';
+import Badge from '../ui/Badge';
+import Card from '../ui/Card';
+import { ExerciseDraft } from '../../types';
 
 interface Props {
   onSave: (data: any, duration: number) => void;

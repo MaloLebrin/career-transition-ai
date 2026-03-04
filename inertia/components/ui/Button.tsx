@@ -18,7 +18,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props 
 }) => {
-  const baseStyles = "inline-flex items-center justify-center font-bold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none";
+  const baseStyles = "inline-flex items-center justify-center font-bold transition-all active:scale-95  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
     primary: "bg-brand-sage text-white shadow-lg shadow-brand-sage/10 hover:bg-brand-sage/90",

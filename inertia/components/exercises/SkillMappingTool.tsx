@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import Button from './ui/Button';
-import Badge from './ui/Badge';
-import Card from './ui/Card';
-import { extractSkillMappingFromText } from '../services/geminiService';
-import { Experience, ExerciseDraft } from '../types';
+import Button from '../ui/Button';
+import Badge from '../ui/Badge';
+import Card from '../ui/Card';
+import { extractSkillMappingFromText } from '../../services/geminiService';
+import { Experience, ExerciseDraft } from '../../types';
 
 interface SkillRow {
   id: string;

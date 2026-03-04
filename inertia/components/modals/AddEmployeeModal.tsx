@@ -1,8 +1,8 @@
 import React from 'react'
 import { useForm } from '@inertiajs/react'
-import Button from './ui/Button'
-import Input from './ui/Input'
-import Card from './ui/Card'
+import Button from '../ui/Button'
+import Input from '../ui/Input'
+import Card from '../ui/Card'
 
 interface Props {
   onClose: () => void

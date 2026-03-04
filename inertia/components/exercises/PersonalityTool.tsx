@@ -1,8 +1,8 @@
 
 import React, { useState, useRef } from 'react';
-import { PersonalityData } from '../types';
-import Button from './ui/Button';
-import Card from './ui/Card';
+import { PersonalityData } from '../../types';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 
 interface Props {
   onSave: (data: PersonalityData, duration: number) => void;

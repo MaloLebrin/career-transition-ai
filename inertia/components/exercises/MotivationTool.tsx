@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MOTIVATIONS_LIST } from '../constants/motivations';
-import { ExerciseDraft } from '../types';
-import Button from './ui/Button';
-import Card from './ui/Card';
+import { MOTIVATIONS_LIST } from '../../constants/motivations';
+import { ExerciseDraft } from '../../types';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 
 interface Props {
   onSave: (results: { ranked: string[], scores: Record<string, number>, matrix: (number | null)[][] }, duration: number) => void;

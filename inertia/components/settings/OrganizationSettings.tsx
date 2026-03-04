@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useForm } from '@inertiajs/react'
-import { Organization, Advisor, AdvisorRole } from '../types'
-import { apiService } from '../services/apiService'
-import Button from './ui/Button'
-import Input from './ui/Input'
-import Card from './ui/Card'
-import Badge from './ui/Badge'
-import AddAdvisorModal from './AddAdvisorModal'
-import { useAuth } from '../hooks/useAuth'
+import { Organization, Advisor, AdvisorRole } from '../../types'
+import { apiService } from '../../services/apiService'
+import Button from '../ui/Button'
+import Input from '../ui/Input'
+import Card from '../ui/Card'
+import Badge from '../ui/Badge'
+import AddAdvisorModal from '../modals/AddAdvisorModal'
+import { useAuth } from '../../hooks/useAuth'
 
 interface Props {
   /** When omitted, loads the current user's organization via GET /api/organizations/current */

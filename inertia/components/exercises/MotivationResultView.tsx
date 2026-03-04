@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MOTIVATIONS_LIST } from '../constants';
+import { MOTIVATIONS_LIST } from '../../constants';
 
 interface Props {
   data: {

@@ -1,9 +1,9 @@
 
 import React from 'react';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Badge from './ui/Badge';
-import PublicHeader from './PublicHeader';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Badge from '../ui/Badge';
+import PublicHeader from '../layout/PublicHeader';
 
 interface LandingPageProps {
   onEnterApp: () => void;

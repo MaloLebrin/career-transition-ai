@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Card from './ui/Card';
-import PublicHeader from './PublicHeader';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import Card from '../ui/Card';
+import PublicHeader from '../layout/PublicHeader';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;

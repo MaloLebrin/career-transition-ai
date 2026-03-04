@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import Input from './ui/Input';
-import Badge from './ui/Badge';
-import NavButton from './ui/NavButton';
-import StatCard from './ui/StatCard';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
+import Badge from '../ui/Badge';
+import NavButton from '../ui/NavButton';
+import StatCard from '../ui/StatCard';
 
 const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [inputValue, setInputValue] = useState('');

@@ -1,8 +1,8 @@
 
 import React, { useState, useRef } from 'react';
-import Button from './ui/Button';
-import Card from './ui/Card';
-import { suggestTargets } from '../services/geminiService';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import { suggestTargets } from '../../services/geminiService';
 
 interface TargetItem {
   id: string;
