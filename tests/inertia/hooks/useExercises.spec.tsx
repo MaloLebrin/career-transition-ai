@@ -3,6 +3,9 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { useExercises } from '../../../inertia/hooks/useExercises'
 import { ExerciseType } from '../../../inertia/types'
 
+const mockRouterPost = vi.fn().mockResolvedValue(undefined)
+vi.mock('@inertiajs/react', () => ({ router: { post: (...args: unknown[]) => mockRouterPost(...args) } }))
+
 vi.mock('../../../inertia/services/apiService', () => ({
   apiService: {
     fetchExerciseDraft: vi.fn(),
@@ -41,6 +44,7 @@ describe('useExercises', () => {
     vi.mocked(apiService.saveExerciseDraft).mockResolvedValue(undefined)
     vi.mocked(apiService.saveExerciseResult).mockResolvedValue(undefined)
     vi.mocked(analyzeExerciseResult).mockResolvedValue('Analysis text')
+    mockRouterPost.mockClear().mockResolvedValue(undefined)
     onComplete.mockReset()
   })
 
@@ -66,7 +70,7 @@ describe('useExercises', () => {
     expect(apiService.fetchExerciseDraft).not.toHaveBeenCalled()
   })
 
-  test('saveDraft calls apiService and sets isSavingDraft for non-Inertia type', async () => {
+  test('saveDraft uses Inertia router.post for DISC and sets isSavingDraft', async () => {
     const { result } = renderHook(() =>
       useExercises(mockEmployee as any, onComplete)
     )
@@ -75,13 +79,18 @@ describe('useExercises', () => {
       result.current.saveDraft(ExerciseType.DISC, { foo: 'bar' })
     })
 
-    expect(apiService.saveExerciseDraft).toHaveBeenCalled()
+    expect(mockRouterPost).toHaveBeenCalledWith(
+      '/dashboard/employees/1/exercises/disc/draft',
+      expect.objectContaining({ type: ExerciseType.DISC, data: { foo: 'bar' } }),
+      expect.any(Object)
+    )
+    expect(apiService.saveExerciseDraft).not.toHaveBeenCalled()
     await waitFor(() => {
       expect(result.current.isSavingDraft).toBe(false)
     })
   })
 
-  test('saveResult calls analyzeExerciseResult then onComplete for non-Inertia type', async () => {
+  test('saveResult uses Inertia router.post for DISC then onComplete', async () => {
     const { result } = renderHook(() =>
       useExercises(mockEmployee as any, onComplete)
     )
@@ -91,7 +100,11 @@ describe('useExercises', () => {
     })
 
     expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.DISC, { data: 'x' })
-    expect(apiService.saveExerciseResult).toHaveBeenCalled()
+    expect(mockRouterPost).toHaveBeenCalledWith(
+      '/dashboard/employees/1/exercises/disc/result',
+      expect.objectContaining({ type: ExerciseType.DISC, status: 'completed' })
+    )
+    expect(apiService.saveExerciseResult).not.toHaveBeenCalled()
     expect(onComplete).toHaveBeenCalled()
   })
 

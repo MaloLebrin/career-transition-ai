@@ -22,6 +22,11 @@ interface ExerciseProps {
   initialMotivationDraft?: ExerciseDraft | null
   initialValuesDraft?: ExerciseDraft | null
   initialPersonalityDraft?: ExerciseDraft | null
+  initialLifeCurveDraft?: ExerciseDraft | null
+  initialTargetingDraft?: ExerciseDraft | null
+  initialDiscDraft?: ExerciseDraft | null
+  initialSkillMappingDraft?: ExerciseDraft | null
+  initialCircleOfControlDraft?: ExerciseDraft | null
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -41,6 +46,11 @@ export default function DashboardExercise({
   initialMotivationDraft,
   initialValuesDraft,
   initialPersonalityDraft,
+  initialLifeCurveDraft,
+  initialTargetingDraft,
+  initialDiscDraft,
+  initialSkillMappingDraft,
+  initialCircleOfControlDraft,
 }: ExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
@@ -53,15 +63,14 @@ export default function DashboardExercise({
       else router.visit('/dashboard')
     },
     {
-      motivation: {
-        initialDraft: initialMotivationDraft ?? null,
-      },
-      values: {
-        initialDraft: initialValuesDraft ?? null,
-      },
-      personality: {
-        initialDraft: initialPersonalityDraft ?? null,
-      },
+      motivation: { initialDraft: initialMotivationDraft ?? null },
+      values: { initialDraft: initialValuesDraft ?? null },
+      personality: { initialDraft: initialPersonalityDraft ?? null },
+      lifeCurve: { initialDraft: initialLifeCurveDraft ?? null },
+      targeting: { initialDraft: initialTargetingDraft ?? null },
+      disc: { initialDraft: initialDiscDraft ?? null },
+      skillMapping: { initialDraft: initialSkillMappingDraft ?? null },
+      circleOfControl: { initialDraft: initialCircleOfControlDraft ?? null },
     }
   )
 
@@ -129,7 +138,7 @@ export default function DashboardExercise({
               <LifeCurveTool
                 onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.LIFE_CURVE, data)}
-                initialDraftPromise={loadDraft(ExerciseType.LIFE_CURVE)}
+                initialDraftPromise={Promise.resolve(initialLifeCurveDraft ?? null)}
               />
             )}
             {exerciseType === ExerciseType.PERSONALITY && (
@@ -155,7 +164,7 @@ export default function DashboardExercise({
               <DISCTool
                 onSave={(data, duration) => saveResult(ExerciseType.DISC, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.DISC, data)}
-                initialDraftPromise={loadDraft(ExerciseType.DISC)}
+                initialDraftPromise={Promise.resolve(initialDiscDraft ?? null)}
               />
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (
@@ -164,7 +173,7 @@ export default function DashboardExercise({
                   saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
-                initialDraftPromise={loadDraft(ExerciseType.SKILL_MAPPING)}
+                initialDraftPromise={Promise.resolve(initialSkillMappingDraft ?? null)}
                 experiences={selectedEmployee?.experiences || []}
               />
             )}
@@ -174,7 +183,7 @@ export default function DashboardExercise({
                   saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.CIRCLE_OF_CONTROL, data)}
-                initialDraftPromise={loadDraft(ExerciseType.CIRCLE_OF_CONTROL)}
+                initialDraftPromise={Promise.resolve(initialCircleOfControlDraft ?? null)}
               />
             )}
           </div>

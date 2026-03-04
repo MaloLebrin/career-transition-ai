@@ -9,15 +9,14 @@ export function useExercises(
   employee: Employee | null,
   onComplete: () => void,
   options?: {
-    motivation?: {
-      initialDraft?: ExerciseDraft | null;
-    };
-    values?: {
-      initialDraft?: ExerciseDraft | null;
-    };
-    personality?: {
-      initialDraft?: ExerciseDraft | null;
-    };
+    motivation?: { initialDraft?: ExerciseDraft | null };
+    values?: { initialDraft?: ExerciseDraft | null };
+    personality?: { initialDraft?: ExerciseDraft | null };
+    lifeCurve?: { initialDraft?: ExerciseDraft | null };
+    targeting?: { initialDraft?: ExerciseDraft | null };
+    disc?: { initialDraft?: ExerciseDraft | null };
+    skillMapping?: { initialDraft?: ExerciseDraft | null };
+    circleOfControl?: { initialDraft?: ExerciseDraft | null };
   }
 ) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -33,8 +32,23 @@ export function useExercises(
       if (type === ExerciseType.VALUES && options?.values?.initialDraft) {
         return options.values.initialDraft;
       }
-       if (type === ExerciseType.PERSONALITY && options?.personality?.initialDraft) {
+      if (type === ExerciseType.PERSONALITY && options?.personality?.initialDraft) {
         return options.personality.initialDraft;
+      }
+      if (type === ExerciseType.LIFE_CURVE && options?.lifeCurve?.initialDraft) {
+        return options.lifeCurve.initialDraft;
+      }
+      if (type === ExerciseType.TARGETING && options?.targeting?.initialDraft) {
+        return options.targeting.initialDraft;
+      }
+      if (type === ExerciseType.DISC && options?.disc?.initialDraft) {
+        return options.disc.initialDraft;
+      }
+      if (type === ExerciseType.SKILL_MAPPING && options?.skillMapping?.initialDraft) {
+        return options.skillMapping.initialDraft;
+      }
+      if (type === ExerciseType.CIRCLE_OF_CONTROL && options?.circleOfControl?.initialDraft) {
+        return options.circleOfControl.initialDraft;
       }
 
       return await apiService.fetchExerciseDraft(employee.id, type);
@@ -64,6 +78,31 @@ export function useExercises(
         });
       } else if (type === ExerciseType.PERSONALITY) {
         await router.post(`/dashboard/employees/${employee.id}/exercises/personality/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.LIFE_CURVE) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/life_curve/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.TARGETING) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/targeting/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.DISC) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/disc/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.SKILL_MAPPING) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/skill_mapping/draft`, draft, {
+          preserveScroll: true,
+          preserveState: true,
+        });
+      } else if (type === ExerciseType.CIRCLE_OF_CONTROL) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/circle_of_control/draft`, draft, {
           preserveScroll: true,
           preserveState: true,
         });
@@ -134,6 +173,81 @@ export function useExercises(
         });
       } else if (type === ExerciseType.PERSONALITY) {
         await router.post(`/dashboard/employees/${employee.id}/exercises/personality/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.LIFE_CURVE) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/life_curve/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.TARGETING) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/targeting/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.DISC) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/disc/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.SKILL_MAPPING) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/skill_mapping/result`, {
+          type,
+          status: 'completed',
+          date: newResult.date,
+          duration,
+          data,
+          quantitativeScore: quantScore,
+          qualitativeAnalysis: analysis,
+          plan: updatedPlan.map((step) => ({
+            id: step.id,
+            completed: step.completed,
+            lastUpdated: step.lastUpdated,
+          })),
+        });
+      } else if (type === ExerciseType.CIRCLE_OF_CONTROL) {
+        await router.post(`/dashboard/employees/${employee.id}/exercises/circle_of_control/result`, {
           type,
           status: 'completed',
           date: newResult.date,

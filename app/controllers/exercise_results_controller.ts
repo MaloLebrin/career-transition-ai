@@ -116,52 +116,48 @@ export default class ExerciseResultsController {
       .preload('exerciseResults')
       .firstOrFail()
 
-    let initialMotivationDraft: any = null
-    let initialValuesDraft: any = null
-    let initialPersonalityDraft: any = null
+    const draftTypes = [
+      EXERCICE_RESULTS_TYPES.MOTIVATION,
+      EXERCICE_RESULTS_TYPES.VALUES,
+      EXERCICE_RESULTS_TYPES.PERSONALITY,
+      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
+      EXERCICE_RESULTS_TYPES.TARGETING,
+      EXERCICE_RESULTS_TYPES.DISC,
+      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
+      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
+    ] as const
 
-    if (typeParam === EXERCICE_RESULTS_TYPES.MOTIVATION) {
+    const initialDrafts: Record<string, any> = {}
+    for (const exerciseType of draftTypes) {
+      if (typeParam !== exerciseType) continue
       const draft = await ExerciseResult.query()
         .where('employeeId', employee.id)
-        .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+        .andWhere('type', exerciseType)
         .andWhere('status', 'draft')
         .orderBy('updatedAt', 'desc')
         .first()
-
-      initialMotivationDraft = draft
+      initialDrafts[exerciseType] = draft
         ? {
             employeeId: employee.id,
-            type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+            type: exerciseType,
             lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
             data: draft.data,
           }
         : null
-    }
-
-    if (typeParam === EXERCICE_RESULTS_TYPES.VALUES) {
-      const draft = await ExerciseResult.query()
-        .where('employeeId', employee.id)
-        .andWhere('type', EXERCICE_RESULTS_TYPES.VALUES)
-        .andWhere('status', 'draft')
-        .orderBy('updatedAt', 'desc')
-        .first()
-
-      initialValuesDraft = draft
-        ? {
-            employeeId: employee.id,
-            type: EXERCICE_RESULTS_TYPES.VALUES,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
-        : null
+      break
     }
 
     return (inertia as any).render('dashboard/Exercise', {
       type: params.type,
       employeeId: String(employee.id),
-      initialMotivationDraft,
-      initialValuesDraft,
-      initialPersonalityDraft,
+      initialMotivationDraft: initialDrafts[EXERCICE_RESULTS_TYPES.MOTIVATION] ?? null,
+      initialValuesDraft: initialDrafts[EXERCICE_RESULTS_TYPES.VALUES] ?? null,
+      initialPersonalityDraft: initialDrafts[EXERCICE_RESULTS_TYPES.PERSONALITY] ?? null,
+      initialLifeCurveDraft: initialDrafts[EXERCICE_RESULTS_TYPES.LIFE_CURVE] ?? null,
+      initialTargetingDraft: initialDrafts[EXERCICE_RESULTS_TYPES.TARGETING] ?? null,
+      initialDiscDraft: initialDrafts[EXERCICE_RESULTS_TYPES.DISC] ?? null,
+      initialSkillMappingDraft: initialDrafts[EXERCICE_RESULTS_TYPES.SKILL_MAPPING] ?? null,
+      initialCircleOfControlDraft: initialDrafts[EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL] ?? null,
     })
   }
 }
