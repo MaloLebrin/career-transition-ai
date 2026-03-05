@@ -14,6 +14,7 @@ const ExerciseResultsController = () => import('#controllers/exercise_results_co
 const OrganizationsController = () => import('#controllers/organizations_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const SuperAdminController = () => import('#controllers/super_admin_controller')
+const OnboardingController = () => import('#controllers/onboarding_controller')
 
 // Public / auth pages
 // @ts-expect-error Inertia page name from generated types
@@ -32,6 +33,14 @@ router
     router.post('/reset-password/:id', [AuthController, 'resetPassword'])
   })
   .prefix('/auth')
+
+// Onboarding (guest): set password via email link
+router
+  .group(() => {
+    router.get('/:token', [OnboardingController, 'show'])
+    router.post('/:token', [OnboardingController, 'submit'])
+  })
+  .prefix('/onboarding')
 
 // Dashboard (Inertia) routes. Requires auth; for admin-only use .use(['auth', 'admin'])
 router

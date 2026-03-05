@@ -104,21 +104,33 @@ export default class EmployeesController {
   }
 
   /**
-   * Inertia form: create employee then redirect with flash.
+   * Inertia form: create employee (and user + onboarding link) then redirect with flash.
    */
   public async storeFromDashboard({ auth, request, response, session }: HttpContext) {
     const user = auth.user
     if (!user) return response.unauthorized()
 
     const payload = await request.validateUsing(createEmployeeValidator)
+    const baseUrl = request.origin() || `${request.protocol()}://${request.hostname()}`
 
-    await this.employeesService.create({
-      organizationId: user.organizationId,
-      advisorId: user.id,
-      ...payload,
-    })
+    try {
+      await this.employeesService.create(
+        {
+          organizationId: user.organizationId,
+          advisorId: user.id,
+          ...payload,
+        },
+        { baseUrl }
+      )
+    } catch (err: any) {
+      if (err.message?.includes('existe déjà')) {
+        session.flash('error', err.message)
+        return response.redirectBack()
+      }
+      throw err
+    }
 
-    session.flash('success', 'Candidat ajouté.')
+    session.flash('success', 'Candidat ajouté. Un lien d’activation a été envoyé par email.')
     return response.redirect('/dashboard/employees')
   }
 
