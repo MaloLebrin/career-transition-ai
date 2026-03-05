@@ -3,21 +3,20 @@ import { render, screen } from '@testing-library/react'
 import Logo from '../../../inertia/components/ui/Logo'
 
 describe('Logo', () => {
-  test('renders full logo with alt text by default', () => {
+  test('renders full logo with text by default', () => {
     render(<Logo />)
 
-    const img = screen.getByAltText('France Transition Carrière')
-    expect(img).toBeInTheDocument()
-    // Height is controlled via inline style from size map
-    expect((img as HTMLImageElement).style.height).toBe('40px')
+    expect(screen.getByLabelText('France Transition Carrière')).toBeInTheDocument()
+    expect(screen.getByText('France Transition Carrière')).toBeInTheDocument()
+    expect(screen.getByText('FTC')).toBeInTheDocument()
   })
 
-  test('renders small icon-only logo when showText is false and size is sm', () => {
+  test('renders icon-only when showText is false', () => {
     render(<Logo size="sm" showText={false} />)
 
-    const img = screen.getByAltText('France Transition Carrière')
-    expect(img).toBeInTheDocument()
-    expect((img as HTMLImageElement).style.height).toBe('28px')
+    expect(screen.getByLabelText('France Transition Carrière')).toBeInTheDocument()
+    expect(screen.queryByText('France Transition Carrière')).not.toBeInTheDocument()
+    expect(screen.getByText('FTC')).toBeInTheDocument()
   })
 })
 
