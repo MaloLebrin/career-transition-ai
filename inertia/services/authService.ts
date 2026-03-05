@@ -1,4 +1,3 @@
-
 export interface UserSession {
   id: number
   organizationId: number
@@ -7,15 +6,23 @@ export interface UserSession {
   role: 'advisor' | 'employee' | 'admin' | 'super_admin'
 }
 
+function headersWithCsrf(csrfToken: string | undefined, extra: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...extra,
+  }
+  if (csrfToken) {
+    headers['X-CSRF-TOKEN'] = csrfToken
+  }
+  return headers
+}
+
 export const authService = {
-  async login(email: string, password: string): Promise<UserSession> {
+  async login(email: string, password: string, csrfToken?: string): Promise<UserSession> {
     const response = await fetch('/auth/login', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: headersWithCsrf(csrfToken, { 'Content-Type': 'application/json' }),
       body: JSON.stringify({ email, password }),
     })
 
@@ -27,14 +34,17 @@ export const authService = {
     return (await response.json()) as UserSession
   },
 
-  async register(email: string, password: string, name: string, role: 'advisor' | 'employee'): Promise<UserSession> {
+  async register(
+    email: string,
+    password: string,
+    name: string,
+    role: 'advisor' | 'employee',
+    csrfToken?: string
+  ): Promise<UserSession> {
     const response = await fetch('/auth/register', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: headersWithCsrf(csrfToken, { 'Content-Type': 'application/json' }),
       body: JSON.stringify({ email, password, name, role }),
     })
 
@@ -46,10 +56,11 @@ export const authService = {
     return (await response.json()) as UserSession
   },
 
-  async logout(): Promise<void> {
+  async logout(csrfToken?: string): Promise<void> {
     await fetch('/auth/logout', {
       method: 'POST',
       credentials: 'include',
+      headers: headersWithCsrf(csrfToken),
     })
   },
 

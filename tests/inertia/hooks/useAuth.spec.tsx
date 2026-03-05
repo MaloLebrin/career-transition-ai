@@ -10,6 +10,12 @@ const mockSession = {
   role: 'advisor' as const,
 }
 
+const mockCsrfToken = 'test-csrf-token'
+
+vi.mock('@inertiajs/react', () => ({
+  usePage: vi.fn(() => ({ props: { csrfToken: mockCsrfToken } })),
+}))
+
 vi.mock('../../../inertia/services/authService', () => ({
   authService: {
     getCurrentSession: vi.fn(),
@@ -65,7 +71,7 @@ describe('useAuth', () => {
     })
 
     expect(result.current.user).toEqual(mockSession)
-    expect(authService.login).toHaveBeenCalledWith('user@example.com', 'password')
+    expect(authService.login).toHaveBeenCalledWith('user@example.com', 'password', mockCsrfToken)
   })
 
   test('login sets error on failure', async () => {
@@ -102,7 +108,7 @@ describe('useAuth', () => {
     })
 
     expect(result.current.user).toBe(null)
-    expect(authService.logout).toHaveBeenCalled()
+    expect(authService.logout).toHaveBeenCalledWith(mockCsrfToken)
   })
 
   test('register updates user on success', async () => {
@@ -123,7 +129,8 @@ describe('useAuth', () => {
       'new@example.com',
       'secret',
       'New User',
-      'advisor'
+      'advisor',
+      mockCsrfToken
     )
   })
 })

@@ -5,6 +5,7 @@ import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
     const { session, auth } = ctx as Partial<HttpContext>
+    const request = ctx.request as typeof ctx.request & { csrfToken?: string }
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       flash: ctx.inertia.always({
@@ -12,6 +13,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         success: session?.flashMessages.get('success'),
       }),
       user: ctx.inertia.always(auth?.user ?? undefined),
+      csrfToken: request.csrfToken,
     }
   }
 
