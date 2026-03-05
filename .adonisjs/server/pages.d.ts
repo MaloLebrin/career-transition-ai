@@ -22,6 +22,7 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/Profile': ExtractProps<(typeof import('../../inertia/pages/dashboard/Profile.tsx'))['default']>
     'dashboard/Settings': ExtractProps<(typeof import('../../inertia/pages/dashboard/Settings.tsx'))['default']>
     'dashboard/SuperAdminHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/SuperAdminHome.tsx'))['default']>
+    'dashboard/UsersAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/UsersAdmin.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>

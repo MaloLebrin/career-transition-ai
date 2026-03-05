@@ -61,6 +61,61 @@ export default class SuperAdminController {
   }
 
   /**
+   * Inertia page: list all users with global filters and role overview.
+   */
+  public async users({ inertia, response, auth }: HttpContext) {
+    const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
+    if (guardResult) return guardResult
+
+    const users = await User.query().preload('organization')
+
+    const items = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      organization: user.organization ? { id: user.organization.id, name: user.organization.name } : null,
+      createdAt: user.createdAt?.toISO() ?? null,
+    }))
+
+    return (inertia as any).render('dashboard/UsersAdmin', {
+      users: items,
+    })
+  }
+
+  /**
+   * Inertia form: update a user's role from the Super Admin dashboard.
+   */
+  public async updateUserRole({ auth, request, params, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    if (auth.user.role !== 'super_admin') {
+      return response.forbidden()
+    }
+
+    const updateRoleValidator = vine.compile(
+      vine.object({
+        role: vine.enum(['employee', 'advisor', 'admin', 'super_admin'] as const),
+      })
+    )
+
+    const payload = await request.validateUsing(updateRoleValidator)
+    const id = Number(params.id)
+    const user = await User.find(id)
+    if (!user) {
+      session.flash('error', 'Utilisateur introuvable.')
+      return response.redirect('/dashboard/super-admin/users')
+    }
+
+    user.role = payload.role
+    await user.save()
+
+    session.flash('success', `Rôle mis à jour pour ${user.name}.`)
+    return response.redirect('/dashboard/super-admin/users')
+  }
+
+  /**
    * Inertia form: create a new organization from the Super Admin dashboard.
    */
   public async storeOrganization({ auth, request, response, session }: HttpContext) {

@@ -122,6 +122,8 @@ router
     router.get('/organizations', [SuperAdminController, 'organizations'])
     router.post('/organizations', [SuperAdminController, 'storeOrganization'])
     router.delete('/organizations/:id', [SuperAdminController, 'destroyOrganization'])
+    router.get('/users', [SuperAdminController, 'users'])
+    router.post('/users/:id/role', [SuperAdminController, 'updateUserRole'])
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.admin()])
