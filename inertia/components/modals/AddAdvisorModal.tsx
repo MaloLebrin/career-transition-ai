@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import type { AdvisorRole } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -32,8 +32,29 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
     })
   }
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn">
+    <div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+      aria-modal="true"
+      role="dialog"
+    >
       <Card className="w-full max-w-xl relative animate-slideUp overflow-hidden">
         <Button
           onClick={onClose}
