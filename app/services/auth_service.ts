@@ -107,6 +107,25 @@ export class AuthService {
   public toSession(user: User): UserSessionDto {
     return toSessionDto(user)
   }
+
+  public async findUserById(id: number): Promise<User | null> {
+    return User.find(id)
+  }
+
+  public async resetPasswordForUser(
+    id: number
+  ): Promise<{ user: User; temporaryPassword: string } | null> {
+    const user = await User.find(id)
+    if (!user) {
+      return null
+    }
+
+    const temporaryPassword = Math.random().toString(36).slice(-10)
+    user.password = temporaryPassword
+    await user.save()
+
+    return { user, temporaryPassword }
+  }
 }
 
 

@@ -52,6 +52,57 @@ export default class AuthController {
   }
 
   /**
+   * Super admin only: impersonate another user by id.
+   */
+  public async impersonate({ auth, params, response, session }: HttpContext) {
+    const current = auth.user
+    if (!current) {
+      return response.unauthorized()
+    }
+    if (current.role !== 'super_admin') {
+      return response.forbidden()
+    }
+
+    const targetId = Number(params.id)
+    const targetUser = await this.authService.findUserById(targetId)
+    if (!targetUser) {
+      session.flash('error', "Utilisateur introuvable pour l'impersonation.")
+      return response.redirect('/dashboard/super-admin')
+    }
+
+    await auth.use('web').login(targetUser)
+    session.flash('success', `Vous êtes maintenant connecté en tant que ${targetUser.name}.`)
+    return response.redirect('/dashboard')
+  }
+
+  /**
+   * Super admin only: reset another user's password to a temporary one.
+   * In un contexte réel, on enverrait un email de réinitialisation ; ici, on fixe un mot de passe simple.
+   */
+  public async resetPassword({ auth, params, response, session }: HttpContext) {
+    const current = auth.user
+    if (!current) {
+      return response.unauthorized()
+    }
+    if (current.role !== 'super_admin') {
+      return response.forbidden()
+    }
+
+    const targetId = Number(params.id)
+    const result = await this.authService.resetPasswordForUser(targetId)
+    if (!result) {
+      session.flash('error', "Utilisateur introuvable pour la réinitialisation.")
+      return response.redirect('/dashboard/super-admin')
+    }
+
+    session.flash(
+      'success',
+      `Mot de passe réinitialisé pour ${result.name}. Nouveau mot de passe temporaire: ${result.temporaryPassword}`
+    )
+    return response.redirect('/dashboard/super-admin')
+  }
+
+  /**
    * Inertia form: update current user's profile (name, email) then redirect with flash.
    */
   public async updateFromDashboard({ auth, request, response, session }: HttpContext) {

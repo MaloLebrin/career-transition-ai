@@ -99,3 +99,63 @@ test.group('AuthController.updateFromDashboard', () => {
   })
 })
 
+test.group('AuthController super admin actions', () => {
+  test('impersonate returns 401 when not authenticated', async ({ assert }) => {
+    const controller = new AuthController({} as any)
+    const response = makeResponse()
+
+    // @ts-expect-error minimal context
+    await controller.impersonate({
+      auth: { user: null },
+      params: { id: 1 },
+      response: response as any,
+      session: makeSession() as any,
+    })
+
+    assert.isTrue(response.unauthorizedCalled)
+  })
+
+  test('impersonate returns 403 when not super admin', async ({ assert }) => {
+    const org = await Organization.create({
+      name: 'Org',
+      slug: `org-${Date.now()}`,
+    })
+
+    const user = await User.create({
+      organizationId: org.id,
+      email: 'user@example.com',
+      name: 'User',
+      password: await hash.make('secret123'),
+      role: 'advisor',
+    })
+
+    const controller = new AuthController({} as any)
+    const response = makeResponse()
+
+    // @ts-expect-error minimal context
+    const result = await controller.impersonate({
+      auth: { user },
+      params: { id: 999 },
+      response: response as any,
+      session: makeSession() as any,
+    })
+
+    assert.equal(result?.statusCode, 403)
+  })
+
+  test('resetPassword returns 401 when not authenticated', async ({ assert }) => {
+    const controller = new AuthController({} as any)
+    const response = makeResponse()
+
+    // @ts-expect-error minimal context
+    await controller.resetPassword({
+      auth: { user: null },
+      params: { id: 1 },
+      response: response as any,
+      session: makeSession() as any,
+    })
+
+    assert.isTrue(response.unauthorizedCalled)
+  })
+})
+

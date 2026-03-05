@@ -28,6 +28,8 @@ router
     router.post('/login', [AuthController, 'login'])
     router.post('/register', [AuthController, 'register'])
     router.post('/logout', [AuthController, 'logout'])
+    router.post('/impersonate/:id', [AuthController, 'impersonate'])
+    router.post('/reset-password/:id', [AuthController, 'resetPassword'])
   })
   .prefix('/auth')
 

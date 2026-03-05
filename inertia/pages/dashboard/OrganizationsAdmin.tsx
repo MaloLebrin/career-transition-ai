@@ -202,7 +202,11 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                           size="xs"
                           variant="outline"
                           className="text-[11px]"
-                          disabled
+                          onClick={() =>
+                            router.post('/auth/impersonate/' + org.id, undefined, {
+                              preserveScroll: true,
+                            })
+                          }
                         >
                           Impersonation
                         </Button>
@@ -211,7 +215,11 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                           size="xs"
                           variant="outline"
                           className="text-[11px]"
-                          disabled
+                          onClick={() =>
+                            router.post('/auth/reset-password/' + org.id, undefined, {
+                              preserveScroll: true,
+                            })
+                          }
                         >
                           Reset mot de passe
                         </Button>
