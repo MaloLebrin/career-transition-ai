@@ -53,6 +53,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
                     <NavLink href="/dashboard/super-admin" icon="dashboard" label="Supervision Plateforme" />
                     <NavLink href="/dashboard/super-admin/organizations" icon="building" label="Organisations" />
                     <NavLink href="/dashboard/super-admin/users" icon="user" label="Utilisateurs" />
+                    <NavLink href="/dashboard/super-admin/exercises-usage" icon="target" label="Usage exercices" />
                   </>
                 )}
 
