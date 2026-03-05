@@ -176,6 +176,7 @@ router
     router.get('/users', [SuperAdminController, 'users'])
     router.post('/users/:id/role', [SuperAdminController, 'updateUserRole'])
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
+    router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.admin()])

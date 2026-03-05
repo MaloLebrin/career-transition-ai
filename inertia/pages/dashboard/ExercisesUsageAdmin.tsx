@@ -82,6 +82,17 @@ export default function ExercisesUsageAdmin({
     [organizations]
   )
 
+  const handleExport = () => {
+    const params = new URLSearchParams({
+      from,
+      to,
+    })
+    if (organizationId) {
+      params.set('organizationId', organizationId)
+    }
+    window.location.href = `/dashboard/super-admin/exercises-usage/export?${params.toString()}`
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const params: Record<string, string> = {
@@ -168,6 +179,9 @@ export default function ExercisesUsageAdmin({
               <Button type="submit" size="sm" className="px-6">
                 Mettre à jour
               </Button>
+              <Button type="button" size="sm" variant="outline" className="px-6" onClick={handleExport}>
+                Export CSV
+              </Button>
             </div>
           </form>
 
@@ -193,8 +207,14 @@ export default function ExercisesUsageAdmin({
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
                 {organizations.map((org) => (
-                  <tr key={org.id} className="hover:bg-brand-ivory/60 transition-colors">
-                    <td className="px-6 py-4 text-sm font-bold text-brand-navy">{org.name}</td>
+                  <tr key={org.id} className="hover:bg-brand-ivory/60 transition-colors cursor-pointer" onClick={() => {
+                    const params: Record<string, string> = { from, to }
+                    if (organizationId) params.organizationId = organizationId
+                    router.get('/dashboard/super-admin/exercises-usage', { ...params, organizationId: String(org.id) }, { preserveState: true, preserveScroll: true })
+                  }}>
+                    <td className="px-6 py-4 text-sm font-bold text-brand-navy underline decoration-brand-navy/20">
+                      {org.name}
+                    </td>
                     {EXERCISE_ORDER.map((key) => {
                       const value = org.totalsByType[key] || 0
                       return (

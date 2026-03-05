@@ -85,5 +85,67 @@ describe('ExercisesUsageAdmin page', () => {
       expect.objectContaining({ preserveState: true, preserveScroll: true })
     )
   })
+
+  test('clicking organization row triggers drill-down navigation', () => {
+    const props = {
+      filters: {
+        from: '2025-01-01',
+        to: '2025-01-31',
+        organizationId: null,
+      },
+      organizationsOptions: [{ id: 1, name: 'Cabinet Alpha' }],
+      organizations: [
+        {
+          id: 1,
+          name: 'Cabinet Alpha',
+          totalsByType: { motivation: 2 },
+          totalExercises: 2,
+        },
+      ],
+    }
+
+    render(<ExercisesUsageAdmin {...props} />)
+
+    const rowNameCell = screen.getByText('Cabinet Alpha')
+    fireEvent.click(rowNameCell)
+
+    expect(getMock).toHaveBeenCalledWith(
+      '/dashboard/super-admin/exercises-usage',
+      expect.objectContaining({
+        from: '2025-01-01',
+        to: '2025-01-31',
+        organizationId: '1',
+      }),
+      expect.objectContaining({ preserveState: true, preserveScroll: true })
+    )
+  })
+
+  test('clicking Export CSV changes window.location.href', () => {
+    const props = {
+      filters: {
+        from: '2025-01-01',
+        to: '2025-01-31',
+        organizationId: null,
+      },
+      organizationsOptions: [],
+      organizations: [],
+    }
+
+    const originalLocation = window.location
+    // @ts-expect-error override for test
+    delete (window as any).location
+    ;(window as any).location = { href: '' }
+
+    render(<ExercisesUsageAdmin {...props} />)
+
+    const exportButton = screen.getByRole('button', { name: /Export CSV/i })
+    fireEvent.click(exportButton)
+
+    expect(window.location.href).toContain(
+      '/dashboard/super-admin/exercises-usage/export?from=2025-01-01&to=2025-01-31'
+    )
+
+    window.location = originalLocation
+  })
 })
 

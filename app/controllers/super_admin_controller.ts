@@ -158,6 +158,77 @@ export default class SuperAdminController {
   }
 
   /**
+   * CSV export: exercise usage per organization and type for a given period.
+   */
+  public async exerciseUsageExport({ auth, request, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    if (auth.user.role !== 'super_admin') {
+      return response.forbidden()
+    }
+
+    const qs = request.qs()
+    const from =
+      typeof qs.from === 'string' && qs.from.length > 0
+        ? qs.from
+        : DateTime.now().minus({ days: 30 }).toISODate()
+    const to =
+      typeof qs.to === 'string' && qs.to.length > 0 ? qs.to : DateTime.now().toISODate()
+    const organizationId =
+      typeof qs.organizationId === 'string' && qs.organizationId.length > 0
+        ? Number(qs.organizationId)
+        : null
+
+    const query = ExerciseResult.query()
+      .join('employees', 'employees.id', 'exercise_results.employee_id')
+      .join('organizations', 'organizations.id', 'employees.organization_id')
+      .where('exercise_results.status', 'completed')
+      .andWhere((builder) => {
+        builder.where('exercise_results.date', '>=', from).andWhere(
+          'exercise_results.date',
+          '<=',
+          to
+        )
+      })
+      .select(
+        'organizations.id as organizationId',
+        'organizations.name as organizationName',
+        'exercise_results.type as type'
+      )
+      .count('* as total')
+      .groupBy('organizations.id', 'organizations.name', 'exercise_results.type')
+
+    if (organizationId) {
+      query.andWhere('organizations.id', organizationId)
+    }
+
+    const rows = await query
+
+    const header = ['organization_id', 'organization_name', 'type', 'count']
+    const lines = [header.join(',')]
+
+    for (const row of rows) {
+      const orgId = Number((row as any).$extras.organizationId ?? (row as any).organizationId)
+      const orgName =
+        (row as any).$extras.organizationName ?? (row as any).organizationName ?? 'Inconnu'
+      const type = String((row as any).type ?? (row as any).$extras.type)
+      const total = Number((row as any).$extras.total ?? 0)
+
+      const escapedName = `"${String(orgName).replace(/"/g, '""')}"`
+      lines.push([orgId, escapedName, type, total].join(','))
+    }
+
+    const csv = lines.join('\n')
+    response.header('content-type', 'text/csv; charset=utf-8')
+    response.header(
+      'content-disposition',
+      `attachment; filename="exercises-usage-${from}-to-${to}.csv"`
+    )
+    return response.send(csv)
+  }
+
+  /**
    * Inertia page: list all users with global filters and role overview.
    */
   public async users({ inertia, response, auth }: HttpContext) {
