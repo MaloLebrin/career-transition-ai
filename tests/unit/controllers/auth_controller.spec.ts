@@ -22,9 +22,15 @@ function makeResponse() {
     payload: undefined as any,
     redirectUrl,
     unauthorizedCalled: false,
+    forbiddenCalled: false,
     unauthorized() {
       this.unauthorizedCalled = true
       this.statusCode = 401
+      return this
+    },
+    forbidden() {
+      this.forbiddenCalled = true
+      this.statusCode = 403
       return this
     },
     redirect(url: string) {
@@ -140,7 +146,8 @@ test.group('AuthController super admin actions', () => {
       session: makeSession() as any,
     })
 
-    assert.equal(result?.statusCode, 403)
+    assert.isTrue(response.forbiddenCalled)
+    assert.equal(response.statusCode, 403)
   })
 
   test('resetPassword returns 401 when not authenticated', async ({ assert }) => {

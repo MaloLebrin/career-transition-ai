@@ -78,11 +78,15 @@ test.group('SuperAdminController.exerciseUsage', () => {
     const employee1 = await Employee.create({
       organizationId: org1.id,
       name: 'Emp 1',
+      email: `emp1-${Date.now()}@test.example`,
+      currentRole: 'Role 1',
       status: 'active',
     })
     const employee2 = await Employee.create({
       organizationId: org2.id,
       name: 'Emp 2',
+      email: `emp2-${Date.now()}@test.example`,
+      currentRole: 'Role 2',
       status: 'active',
     })
 
@@ -161,6 +165,8 @@ test.group('SuperAdminController.exerciseUsageExport', () => {
     const employee = await Employee.create({
       organizationId: org.id,
       name: 'Emp CSV',
+      email: `emp-csv-${Date.now()}@test.example`,
+      currentRole: 'Role CSV',
       status: 'active',
     })
 

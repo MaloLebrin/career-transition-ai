@@ -108,6 +108,8 @@ test.group('EmployeesController.storeFromDashboard', () => {
       auth: { user: { id: 10, organizationId: 5 } },
       request: {
         validateUsing: () => Promise.resolve(payload),
+        protocol: () => 'http',
+        hostname: () => 'localhost',
       },
       response: response as any,
       session: session as any,
@@ -119,7 +121,10 @@ test.group('EmployeesController.storeFromDashboard', () => {
     assert.equal(service.createCalls[0].name, payload.name)
     assert.equal(service.createCalls[0].email, payload.email)
     assert.equal(service.createCalls[0].currentRole, payload.currentRole)
-    assert.deepEqual(session.flashes, [['success', 'Candidat ajouté.']])
+    assert.equal(session.flashes.length, 1)
+    assert.equal(session.flashes[0][0], 'success')
+    assert.include(session.flashes[0][1], 'Candidat ajouté')
+    assert.include(session.flashes[0][1], 'email')
     assert.equal(response.redirectUrl, '/dashboard/employees')
   })
 })

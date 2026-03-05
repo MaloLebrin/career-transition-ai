@@ -111,7 +111,7 @@ export default class EmployeesController {
     if (!user) return response.unauthorized()
 
     const payload = await request.validateUsing(createEmployeeValidator)
-    const baseUrl = request.origin() || `${request.protocol()}://${request.hostname()}`
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
 
     try {
       await this.employeesService.create(

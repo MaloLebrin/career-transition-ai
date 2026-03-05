@@ -24,16 +24,16 @@ function makeCtx(overrides: any = {}) {
     response: {
       unauthorizedCalled: false,
       redirectUrl: '',
+      redirectBackCalled: false,
       unauthorized() {
         this.unauthorizedCalled = true
         return this
       },
-      redirect(url: string) {
-        this.redirectUrl = url
-        return this
-      },
-      redirectBackCalled: false,
-      redirect() {
+      redirect(url?: string) {
+        if (url !== undefined) {
+          this.redirectUrl = url
+          return this
+        }
         return {
           back: () => {
             this.redirectBackCalled = true
