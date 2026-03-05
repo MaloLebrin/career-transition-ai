@@ -1,0 +1,64 @@
+import { describe, test, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import AddEmployeeModal from '../../../inertia/components/modals/AddEmployeeModal'
+
+const mockPost = vi.fn()
+const mockReset = vi.fn()
+
+vi.mock('@inertiajs/react', () => ({
+  useForm: () => ({
+    data: {
+      name: '',
+      email: '',
+      currentRole: '',
+      targetRole: '',
+      summary: '',
+    },
+    setData: vi.fn(),
+    post: mockPost,
+    processing: false,
+    errors: {},
+    reset: mockReset,
+  }),
+}))
+
+describe('AddEmployeeModal', () => {
+  test('renders title and can be closed with close button', () => {
+    const onClose = vi.fn()
+    render(<AddEmployeeModal onClose={onClose} />)
+
+    expect(screen.getByText(/Inviter un Talent/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/L'invitation sera envoyée par email/i)
+    ).toBeInTheDocument()
+
+    // first button is the close (top-right); second is submit
+    const buttons = screen.getAllByRole('button')
+    buttons[0].click()
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  test('submits form, then reset and onClose are called on success', () => {
+    const onClose = vi.fn()
+    render(<AddEmployeeModal onClose={onClose} />)
+
+    const submitButton = screen.getByRole('button', { name: /Envoyer l'invitation/i })
+    submitButton.click()
+
+    expect(mockPost).toHaveBeenCalledTimes(1)
+    expect(mockPost).toHaveBeenCalledWith(
+      '/dashboard/employees',
+      expect.objectContaining({
+        onSuccess: expect.any(Function),
+      })
+    )
+
+    const options = mockPost.mock.calls[0][1] as { onSuccess?: () => void }
+    options.onSuccess?.()
+
+    expect(mockReset).toHaveBeenCalledTimes(1)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+})
+
