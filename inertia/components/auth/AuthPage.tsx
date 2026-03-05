@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
-import Card from '../ui/Card';
 import PublicLayout from '../layout/PublicLayout';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -73,7 +73,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBackToLanding, log
       </div>
 
       {/* Côté Droit - Formulaire */}
-      <div className="flex-grow flex items-center justify-center p-6 md:p-12 lg:p-24 relative pt-32 lg:pt-32">
+      <div className="grow flex items-center justify-center p-6 md:p-12 lg:p-24 relative pt-32 lg:pt-32">
         <Card className="w-full max-w-md border-none shadow-none bg-transparent lg:bg-white lg:p-12 lg:shadow-2xl lg:shadow-brand-navy/5 lg:border lg:border-brand-navy/5">
           <div className="mb-10 text-center lg:text-left">
             <h2 className="text-3xl font-bold text-brand-navy tracking-tight mb-2">

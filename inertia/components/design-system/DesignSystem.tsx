@@ -25,7 +25,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Colors Section */}
         <section className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">01. Colors</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">01. Colors</h2>
             <p className="text-brand-navy/40 text-sm">Our core palette is professional, expert and human.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -41,7 +41,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Typography Section */}
         <section className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">02. Typography</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">02. Typography</h2>
             <p className="text-brand-navy/40 text-sm">Using Inter & Manrope for a modern, structured feel.</p>
           </div>
           <div className="bg-white p-12 rounded-3xl border border-brand-navy/5 space-y-8">
@@ -70,7 +70,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Buttons Section */}
         <section className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">03. Buttons</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">03. Buttons</h2>
             <p className="text-brand-navy/40 text-sm">Interactive elements with structured hierarchy.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -101,7 +101,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Inputs & Forms Section */}
         <section className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">04. Inputs</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">04. Inputs</h2>
             <p className="text-brand-navy/40 text-sm">Clean, accessible form elements.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -134,7 +134,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Specialized Components */}
         <section className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">05. Specialized Components</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">05. Specialized Components</h2>
             <p className="text-brand-navy/40 text-sm">Components built for specific application needs.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -169,7 +169,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {/* Cards & Layout Section */}
         <section className="space-y-8 pb-20">
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-brand-navy uppercase tracking-widest text-xs opacity-30">06. Cards & Containers</h2>
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-widest opacity-30">06. Cards & Containers</h2>
             <p className="text-brand-navy/40 text-sm">Our signature "Vitaminé" containers.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

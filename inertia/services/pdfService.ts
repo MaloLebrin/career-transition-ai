@@ -1,6 +1,6 @@
 
-import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { Employee, ExerciseType } from "../types";
 
 /**
@@ -64,15 +64,15 @@ export async function generateComprehensivePDF(employee: Employee) {
   const motivationResult = employee.exercises.find(e => e.type === ExerciseType.MOTIVATION);
   const valuesResult = employee.exercises.find(e => e.type === ExerciseType.VALUES);
   const discResult = employee.exercises.find(e => e.type === ExerciseType.DISC);
-  
+
   const topMotivations = motivationResult?.data.ranked.slice(0, 3).join(', ') || "Non défini";
   const topValues = valuesResult?.data.selectedValues.slice(0, 3).join(', ') || "Non défini";
   const skillsList = employee.skills.filter(s => s.level >= 4).map(s => s.name).slice(0, 4).join(', ') || "En cours";
-  
+
   let personalitySummary = "Analyse en cours";
   if (discResult) {
     const d = discResult.data;
-    const sorted = Object.entries(d).sort(([,a], [,b]) => (b as number) - (a as number));
+    const sorted = Object.entries(d).sort(([, a], [, b]) => (b as number) - (a as number));
     personalitySummary = `Profil dominant : ${sorted[0][0]}${sorted[1][0]}`;
   }
 
@@ -194,7 +194,7 @@ export async function generateComprehensivePDF(employee: Employee) {
                   <span>${s.level}/5</span>
                 </div>
                 <div style="height: 1.5mm; background: #f1f5f9; border-radius: 1mm; overflow: hidden;">
-                  <div style="height: 100%; background: #8B5CF6; width: ${(s.level/5)*100}%"></div>
+                  <div style="height: 100%; background: #8B5CF6; width: ${(s.level / 5) * 100}%"></div>
                 </div>
               </div>
             `).join('')}
@@ -220,7 +220,7 @@ export async function generateComprehensivePDF(employee: Employee) {
     for (const [index, result] of employee.exercises.entries()) {
       const exercisePage = document.createElement('div');
       exercisePage.className = 'pdf-page';
-      
+
       let detailContent = '';
       if (result.type === ExerciseType.MOTIVATION) {
         detailContent = `
@@ -228,11 +228,11 @@ export async function generateComprehensivePDF(employee: Employee) {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8mm;">
             <div>
               <span class="data-label">Top 11 Facteurs</span>
-              ${result.data.ranked.slice(0, 11).map((m: string, i: number) => `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i+1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
+              ${result.data.ranked.slice(0, 11).map((m: string, i: number) => `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i + 1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
             </div>
             <div>
               <span class="data-label">Suivant</span>
-              ${result.data.ranked.slice(11, 22).map((m: string, i: number) => `<div class="list-item"><div class="list-number">${i+12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
+              ${result.data.ranked.slice(11, 22).map((m: string, i: number) => `<div class="list-item"><div class="list-number">${i + 12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
             </div>
           </div>
         `;
@@ -242,9 +242,9 @@ export async function generateComprehensivePDF(employee: Employee) {
           <div style="display: flex; flex-direction: column; gap: 2mm;">
             ${result.data.selectedValues.map((v: string, i: number) => `
               <div style="display: flex; align-items: center; gap: 4mm;">
-                <div style="width: 8mm; font-size: 7pt; font-weight: 900; color: #94a3b8;">${i+1}</div>
-                <div style="flex-grow: 1; height: 6mm; background: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 2mm; overflow: hidden; position: relative;">
-                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #8B5CF6; opacity: 0.1; width: ${100-(i*9)}%;"></div>
+                <div style="width: 8mm; font-size: 7pt; font-weight: 900; color: #94a3b8;">${i + 1}</div>
+                <div style="grow: 1; height: 6mm; background: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 2mm; overflow: hidden; position: relative;">
+                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #8B5CF6; opacity: 0.1; width: ${100 - (i * 9)}%;"></div>
                   <span style="position: relative; font-size: 8.5pt; font-weight: 800; padding-left: 4mm; line-height: 6mm;">${v}</span>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export async function generateComprehensivePDF(employee: Employee) {
           <div style="font-size: 9pt; font-weight: 900; color: #8B5CF6;">DIAGNOSTIC DÉTAILLÉ</div>
           <div style="font-size: 9pt; font-weight: 900; color: #94a3b8;">${result.date}</div>
         </div>
-        <div style="flex-grow: 1;">
+        <div style="grow: 1;">
           ${detailContent}
           <div class="card" style="margin-top: 10mm; background: #f5f3ff; border-color: #ddd6fe;">
             <span class="data-label" style="color: #7c3aed;">Analyse Qualitative Gemini</span>

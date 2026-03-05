@@ -1,9 +1,9 @@
 
 import React from 'react';
+import PublicLayout from '../layout/PublicLayout';
+import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import Badge from '../ui/Badge';
-import PublicLayout from '../layout/PublicLayout';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -64,7 +64,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <div className="w-2.5 h-2.5 rounded-full bg-white/20"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-white/20"></div>
                 </div>
-                <div className="flex-grow flex justify-center"><div className="w-48 h-3 bg-white/10 rounded-full"></div></div>
+                <div className="grow flex justify-center"><div className="w-48 h-3 bg-white/10 rounded-full"></div></div>
              </div>
              
              {/* App Content Simulation */}
@@ -93,7 +93,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <div className="bg-white p-8 rounded-[32px] border border-brand-navy/5 shadow-sm h-64 flex flex-col justify-end overflow-hidden">
                     <div className="flex items-end gap-2 h-full">
                        {[40, 70, 45, 90, 65, 80, 50, 85].map((h, i) => (
-                         <div key={i} className="flex-grow bg-brand-sage/20 rounded-t-lg transition-all group-hover:bg-brand-sage" style={{ height: `${h}%` }}></div>
+                         <div key={i} className="grow bg-brand-sage/20 rounded-t-lg transition-all group-hover:bg-brand-sage" style={{ height: `${h}%` }}></div>
                        ))}
                     </div>
                   </div>
@@ -104,7 +104,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
              <div className="absolute top-1/4 -right-10 w-80 bg-white p-8 rounded-[40px] shadow-2xl border border-brand-navy/5 animate-slideUp hidden lg:block">
                <div className="flex items-center space-x-3 mb-6">
                  <div className="w-10 h-10 rounded-2xl bg-brand-terracotta flex items-center justify-center text-white shadow-lg shadow-brand-terracotta/20">
-                    <svg className="w-6 h-6 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    <svg className="w-6 h-6 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                  </div>
                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">Analyse Gemini 3 Pro</div>
                </div>
@@ -254,7 +254,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-brand-navy rounded-2xl flex items-center justify-center text-white shadow-xl">
-              <svg className="w-6 h-6 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>

@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
 import { Head, Link, router } from '@inertiajs/react'
+import { useState } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import StepDetailModal from '../../components/modals/StepDetailModal'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
-import StepDetailModal from '../../components/modals/StepDetailModal'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
-import type { SupportPlanStep, Employee } from '../../types'
+import type { Employee, SupportPlanStep } from '../../types'
 
 interface EmployeeDetailProps {
   employeeId: string
@@ -76,7 +76,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 isLoading={isGeneratingPDF}
                 disabled={!selectedEmployee?.plan.some((step) => step.completed)}
                 icon={
-                  <svg className="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

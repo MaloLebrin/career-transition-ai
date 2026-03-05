@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { SupportPlanStep, ExerciseResult, ExerciseType } from '../../types';
+import { CartesianGrid, Line, LineChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ExerciseResult, ExerciseType, SupportPlanStep } from '../../types';
 import MotivationResultView from '../exercises/MotivationResultView';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
-import { MOTIVATIONS_LIST } from '../../constants/motivations';
+import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import Badge from '../ui/Badge';
 
 interface Props {
   step: SupportPlanStep;
@@ -168,7 +167,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
           Zone de défilement interne. 
           Le padding est appliqué ici pour que le contenu respire mais ne touche pas les bords extrêmes lors du scroll.
         */}
-        <div className="flex-grow overflow-y-auto custom-scrollbar p-12 md:p-16">
+        <div className="grow overflow-y-auto custom-scrollbar p-12 md:p-16">
           <div className="mb-12 pr-10">
             <div className="flex items-center space-x-3 mb-4">
               <Badge variant={step.completed ? 'lime' : 'slate'}>

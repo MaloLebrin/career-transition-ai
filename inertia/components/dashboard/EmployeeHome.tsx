@@ -1,9 +1,8 @@
-import React from 'react'
 import { Link } from '@inertiajs/react'
-import Button from '../ui/Button'
-import Card from '../ui/Card'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
+import Button from '../ui/Button'
+import Card from '../ui/Card'
 export default function EmployeeHome() {
   const { user } = useAuth()
   const targetId = user?.id || '1'
@@ -59,7 +58,7 @@ export default function EmployeeHome() {
                   >
                     {step.completed ? '✓' : idx + 1}
                   </div>
-                  <div className="ml-8 flex-grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
+                  <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
                     <h4
                       className={`font-bold text-xl ${
                         step.completed ? 'text-brand-navy/40' : 'text-brand-navy'
@@ -76,7 +75,7 @@ export default function EmployeeHome() {
                           size="md"
                           icon={
                             <svg
-                              className="w-4 h-4 stroke-[2]"
+                              className="w-4 h-4 stroke-2"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"

@@ -1,8 +1,8 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import { suggestTargets } from '../../services/geminiService';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { suggestTargets } from '../../services/geminiService';
 
 interface TargetItem {
   id: string;
@@ -179,7 +179,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
       <div className="mt-12 flex flex-col md:flex-row gap-4 border-t border-slate-50 pt-10">
         <Button 
           onClick={handleSave}
-          className="flex-grow"
+          className="grow"
           size="lg"
           variant="dark"
         >

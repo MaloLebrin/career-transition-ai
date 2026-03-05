@@ -1,8 +1,8 @@
 
-import React, { useState, useRef } from 'react';
-import DatePicker from '../ui/DatePicker';
-import { Employee, Experience, Education, Skill, JobType } from '../../types';
+import React, { useRef, useState } from 'react';
 import { extractCVData } from '../../services/geminiService';
+import { Employee, JobType } from '../../types';
+import DatePicker from '../ui/DatePicker';
 
 interface Props {
   employee: Employee;
@@ -237,7 +237,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
         <div className="mt-12 flex flex-col md:flex-row gap-4 border-t border-slate-100 pt-10">
           <button 
             onClick={() => onSave({ ...employee, ...formData })}
-            className="flex-grow bg-indigo-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-2xl shadow-indigo-100 transition-all active:scale-95"
+            className="grow bg-indigo-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-2xl shadow-indigo-100 transition-all active:scale-95"
           >
             Mettre à jour mon profil
           </button>

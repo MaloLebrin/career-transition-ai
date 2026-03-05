@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import Button from '../ui/Button'
-import StatCard from '../ui/StatCard'
-import Card from '../ui/Card'
-import AddEmployeeModal from '../modals/AddEmployeeModal'
+import { useState } from 'react'
 import { useEmployees } from '../../hooks/useEmployees'
+import AddEmployeeModal from '../modals/AddEmployeeModal'
+import Button from '../ui/Button'
+import Card from '../ui/Card'
+import StatCard from '../ui/StatCard'
 
 export default function AdvisorHome() {
   const { employees } = useEmployees('')
@@ -95,7 +95,7 @@ export default function AdvisorHome() {
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-brand-terracotta/10 text-brand-terracotta flex items-center justify-center">
                       <svg
-                        className="w-5 h-5 stroke-[2]"
+                        className="w-5 h-5 stroke-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

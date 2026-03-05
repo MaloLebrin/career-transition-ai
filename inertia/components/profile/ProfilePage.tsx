@@ -1,11 +1,11 @@
 
-import React, { useState, useRef } from 'react';
-import { Employee, Experience, Education, Skill, JobType } from '../../types';
+import React, { useRef, useState } from 'react';
 import { extractCVData } from '../../services/geminiService';
+import { Employee, JobType, Skill } from '../../types';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import Input from '../ui/Input';
 import DatePicker from '../ui/DatePicker';
+import Input from '../ui/Input';
 
 interface Props {
   employee: Employee;
@@ -113,7 +113,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
               onClick={() => fileInputRef.current?.click()}
               size="sm"
               variant="dark"
-              className="flex-grow md:flex-none"
+              className="grow md:flex-none"
               isLoading={isExtracting}
               icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>}
             >
@@ -124,7 +124,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
               onClick={() => onSave({ ...employee, ...formData })}
               size="sm"
               variant="primary"
-              className="flex-grow md:flex-none px-8"
+              className="grow md:flex-none px-8"
             >
               Sauvegarder
             </Button>
@@ -322,7 +322,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
                         <button
                           key={lvl}
                           onClick={() => updateSkillLevel(skill.name, lvl)}
-                          className={`h-2 flex-grow rounded-full transition-all ${lvl <= skill.level ? 'bg-brand-sage' : 'bg-brand-navy/10'}`}
+                          className={`h-2 grow rounded-full transition-all ${lvl <= skill.level ? 'bg-brand-sage' : 'bg-brand-navy/10'}`}
                         />
                       ))}
                     </div>

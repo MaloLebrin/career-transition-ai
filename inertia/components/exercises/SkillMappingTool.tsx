@@ -1,10 +1,10 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import Button from '../ui/Button';
-import Badge from '../ui/Badge';
-import Card from '../ui/Card';
+import React, { useEffect, useRef, useState } from 'react';
 import { extractSkillMappingFromText } from '../../services/geminiService';
-import { Experience, ExerciseDraft } from '../../types';
+import { ExerciseDraft, Experience } from '../../types';
+import Badge from '../ui/Badge';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 
 interface SkillRow {
   id: string;
@@ -121,7 +121,7 @@ const SkillMappingTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPr
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">L'IA va structurer ce texte</span>
             </div>
             <textarea
-              className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 text-lg flex-grow min-h-[300px] outline-none focus:ring-2 focus:ring-violet-500 transition-all resize-none font-medium placeholder:text-slate-600"
+              className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 text-lg grow min-h-[300px] outline-none focus:ring-2 focus:ring-violet-500 transition-all resize-none font-medium placeholder:text-slate-600"
               placeholder="Ex: Dans mon dernier poste, j'étais responsable de... J'ai notamment géré le projet X avec l'outil Y, ce qui a permis de réduire les coûts de 15%..."
               value={narrative}
               onChange={(e) => setNarrative(e.target.value)}

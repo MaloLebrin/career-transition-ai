@@ -1,9 +1,9 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import Button from '../ui/Button';
-import Badge from '../ui/Badge';
-import Card from '../ui/Card';
+import React, { useEffect, useRef, useState } from 'react';
 import { ExerciseDraft } from '../../types';
+import Badge from '../ui/Badge';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 
 interface Props {
   onSave: (data: any, duration: number) => void;
@@ -185,7 +185,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
                   <div className="flex gap-4 mt-6">
                     <Button 
                       onClick={() => handleSelect(option.trait, 'most')} 
-                      className="flex-grow"
+                      className="grow"
                       variant={isMost ? 'primary' : 'outline'}
                       size="md"
                     >
@@ -193,7 +193,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
                     </Button>
                     <Button 
                       onClick={() => handleSelect(option.trait, 'least')} 
-                      className="flex-grow"
+                      className="grow"
                       variant={isLeast ? 'danger' : 'outline'}
                       size="md"
                     >

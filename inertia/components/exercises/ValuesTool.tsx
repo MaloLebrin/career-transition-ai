@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SCHWARTZ_VALUES } from '../../constants/values';
 import { ExerciseDraft } from '../../types';
 import Button from '../ui/Button';
@@ -96,7 +96,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                     <span className="w-8 h-8 rounded-lg bg-brand-sage text-white flex items-center justify-center font-bold text-xs mr-4">
                       {idx + 1}
                     </span>
-                    <span className="font-bold text-brand-navy flex-grow">{label}</span>
+                    <span className="font-bold text-brand-navy grow">{label}</span>
                     <button 
                       onClick={() => handleRemoveValue(label)}
                       className="text-brand-navy/20 hover:text-rose-500 transition-colors"
@@ -154,7 +154,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
             <Button onClick={() => setStep(1)} variant="ghost" size="md">Retour au classement</Button>
             <Button
               onClick={handleSave}
-              className="flex-grow"
+              className="grow"
               variant="primary"
               size="lg"
             >

@@ -1,10 +1,9 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import React, { useEffect, useRef, useState } from 'react';
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ExerciseDraft } from '../../types';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import Input from '../ui/Input';
 
 interface Point {
   year: number;
@@ -142,7 +141,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
                 <div className="pt-6 border-t border-slate-200 space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                   {points.map((p, i) => (
                     <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 text-xs animate-slideUp">
-                      <div className="truncate flex-grow mr-2">
+                      <div className="truncate grow mr-2">
                         <span className="font-black text-indigo-600 mr-2">{p.year}</span>
                         <span className="font-bold text-slate-700">{p.label}</span>
                       </div>
@@ -212,7 +211,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
             <Button onClick={() => setStep(1)} variant="ghost" size="md">Retour</Button>
             <Button
               onClick={handleSave}
-              className="flex-grow"
+              className="grow"
               variant="primary"
               size="lg"
             >

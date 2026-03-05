@@ -2,34 +2,34 @@
  * @deprecated Navigation is now handled by Inertia routes and dashboard/* pages.
  * Use DashboardLayout + dashboard/Home, dashboard/EmployeeDetail, etc. instead.
  */
-import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
+import { employeeUpdatePayload } from '../../helpers/employee_payload';
 import { useAuth } from '../../hooks/useAuth';
 import { useEmployee } from '../../hooks/useEmployee';
-import { employeeUpdatePayload } from '../../helpers/employee_payload';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useExercises } from '../../hooks/useExercises';
-import { Employee, ExerciseType, SupportPlanStep } from '../../types';
-import AddEmployeeModal from '../modals/AddEmployeeModal';
+import { ExerciseType, SupportPlanStep } from '../../types';
+import DesignSystem from '../design-system/DesignSystem';
 import CircleOfControlTool from '../exercises/CircleOfControlTool';
 import DISCTool from '../exercises/DISCTool';
-import DesignSystem from '../design-system/DesignSystem';
-import Layout from './Layout';
 import LifeCurveTool from '../exercises/LifeCurveTool';
 import MotivationTool from '../exercises/MotivationTool';
-import OnboardingFlow from '../onboarding/OnboardingFlow';
-import OrganizationSettings from '../settings/OrganizationSettings';
 import PersonalityTool from '../exercises/PersonalityTool';
-import ProfilePage from '../profile/ProfilePage';
 import SkillMappingTool from '../exercises/SkillMappingTool';
-import StepDetailModal from '../modals/StepDetailModal';
 import TargetingTool from '../exercises/TargetingTool';
 import ValuesTool from '../exercises/ValuesTool';
+import AddEmployeeModal from '../modals/AddEmployeeModal';
+import StepDetailModal from '../modals/StepDetailModal';
+import OnboardingFlow from '../onboarding/OnboardingFlow';
+import ProfilePage from '../profile/ProfilePage';
+import OrganizationSettings from '../settings/OrganizationSettings';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Input from '../ui/Input';
 import NavButton from '../ui/NavButton';
 import StatCard from '../ui/StatCard';
+import Layout from './Layout';
 
 const AppShell: React.FC = () => {
   const { user, logout } = useAuth();
@@ -382,7 +382,7 @@ const AppShell: React.FC = () => {
                             <div className="flex items-center space-x-4">
                               <div className="w-10 h-10 rounded-xl bg-brand-terracotta/10 text-brand-terracotta flex items-center justify-center">
                                 <svg
-                                  className="w-5 h-5 stroke-[2]"
+                                  className="w-5 h-5 stroke-2"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -458,7 +458,7 @@ const AppShell: React.FC = () => {
                       isLoading={isGeneratingPDF}
                       disabled={!selectedEmployee?.plan.some((step) => step.completed)}
                       icon={
-                        <svg className="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -611,7 +611,7 @@ const AppShell: React.FC = () => {
                       >
                         {step.completed ? '✓' : idx + 1}
                       </div>
-                      <div className="ml-8 flex-grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
+                      <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
                         <h4
                           className={`font-bold text-xl ${
                             step.completed ? 'text-brand-navy/40' : 'text-brand-navy'
@@ -631,7 +631,7 @@ const AppShell: React.FC = () => {
                             size="md"
                             icon={
                               <svg
-                                className="w-4 h-4 stroke-[2]"
+                                className="w-4 h-4 stroke-2"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
