@@ -1,6 +1,7 @@
 import React from 'react'
 import Button from '../ui/Button'
 import FlashBanner from './FlashBanner'
+import Logo from '../ui/Logo'
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,17 +16,21 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
     <div className="min-h-screen flex flex-col bg-brand-ivory">
       <header className="bg-white border-b border-brand-navy/5 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.location.reload()}>
-            <div className="w-10 h-10 bg-brand-sage rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-sage/10">
-              <svg className="w-6 h-6 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+          <button
+            type="button"
+            className="flex items-center space-x-3 cursor-pointer border-none bg-transparent p-0"
+            onClick={() => window.location.reload()}
+          >
+            <Logo size="md" showText={false} />
+            <div className="text-left">
+              <h1 className="text-lg font-bold tracking-tight text-brand-navy leading-none">
+                France Transition Carrière
+              </h1>
+              <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest mt-1">
+                Accompagnement Expert
+              </p>
             </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-brand-navy leading-none">FTC Portal</h1>
-              <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest mt-1">Accompagnement Expert</p>
-            </div>
-          </div>
+          </button>
           
           <div className="flex items-center space-x-2 md:space-x-6">
             <div className="hidden sm:flex items-center space-x-4 mr-2">
