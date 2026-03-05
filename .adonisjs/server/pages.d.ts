@@ -18,8 +18,10 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/Employees': ExtractProps<(typeof import('../../inertia/pages/dashboard/Employees.tsx'))['default']>
     'dashboard/Exercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/Exercise.tsx'))['default']>
     'dashboard/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/Home.tsx'))['default']>
+    'dashboard/OrganizationsAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/OrganizationsAdmin.tsx'))['default']>
     'dashboard/Profile': ExtractProps<(typeof import('../../inertia/pages/dashboard/Profile.tsx'))['default']>
     'dashboard/Settings': ExtractProps<(typeof import('../../inertia/pages/dashboard/Settings.tsx'))['default']>
+    'dashboard/SuperAdminHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/SuperAdminHome.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>

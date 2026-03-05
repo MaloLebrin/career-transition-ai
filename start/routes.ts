@@ -118,6 +118,8 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/').renderInertia('dashboard/SuperAdminHome', {})
     router.get('/organizations', [SuperAdminController, 'organizations'])
+    router.post('/organizations', [SuperAdminController, 'storeOrganization'])
+    router.delete('/organizations/:id', [SuperAdminController, 'destroyOrganization'])
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.admin()])
