@@ -1,9 +1,9 @@
-import React from 'react'
 import { useForm } from '@inertiajs/react'
-import Button from '../ui/Button'
-import Input from '../ui/Input'
-import Card from '../ui/Card'
+import React from 'react'
 import type { AdvisorRole } from '../../types'
+import Button from '../ui/Button'
+import Card from '../ui/Card'
+import Input from '../ui/Input'
 
 interface Props {
   onClose: () => void
@@ -33,7 +33,7 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn">
       <Card className="w-full max-w-xl relative animate-slideUp overflow-hidden">
         <Button
           onClick={onClose}
