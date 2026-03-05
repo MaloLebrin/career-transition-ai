@@ -4,6 +4,7 @@ import AddEmployeeModal from '../../../inertia/components/modals/AddEmployeeModa
 
 const mockPost = vi.fn()
 const mockReset = vi.fn()
+const mockSetData = vi.fn()
 
 vi.mock('@inertiajs/react', () => ({
   useForm: () => ({
@@ -14,7 +15,7 @@ vi.mock('@inertiajs/react', () => ({
       targetRole: '',
       summary: '',
     },
-    setData: vi.fn(),
+    setData: mockSetData,
     post: mockPost,
     processing: false,
     errors: {},

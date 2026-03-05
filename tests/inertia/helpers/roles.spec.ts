@@ -1,47 +1,44 @@
 import { describe, test, expect } from 'vitest'
-import { isAdmin, isAdvisorOrAdmin } from '../../../inertia/helpers/roles'
+import {
+  isAdmin,
+  isAdvisorOrAdmin,
+  isSuperAdmin,
+  isOrganizationAdmin,
+} from '../../../inertia/helpers/roles'
 
-describe('isAdmin', () => {
-  test('returns true for admin', () => {
+describe('role helpers (inertia)', () => {
+  test('isSuperAdmin only for super_admin', () => {
+    expect(isSuperAdmin('super_admin')).toBe(true)
+    expect(isSuperAdmin('admin')).toBe(false)
+    expect(isSuperAdmin('advisor')).toBe(false)
+    expect(isSuperAdmin('employee')).toBe(false)
+    expect(isSuperAdmin(undefined)).toBe(false)
+    expect(isSuperAdmin(null)).toBe(false)
+  })
+
+  test('isOrganizationAdmin only for admin', () => {
+    expect(isOrganizationAdmin('admin')).toBe(true)
+    expect(isOrganizationAdmin('super_admin')).toBe(false)
+    expect(isOrganizationAdmin('advisor')).toBe(false)
+    expect(isOrganizationAdmin('employee')).toBe(false)
+    expect(isOrganizationAdmin(undefined)).toBe(false)
+    expect(isOrganizationAdmin(null)).toBe(false)
+  })
+
+  test('isAdmin for admin and super_admin', () => {
     expect(isAdmin('admin')).toBe(true)
-  })
-
-  test('returns true for super_admin', () => {
     expect(isAdmin('super_admin')).toBe(true)
-  })
-
-  test('returns false for advisor', () => {
     expect(isAdmin('advisor')).toBe(false)
-  })
-
-  test('returns false for employee', () => {
     expect(isAdmin('employee')).toBe(false)
-  })
-
-  test('returns false for undefined and null', () => {
     expect(isAdmin(undefined)).toBe(false)
     expect(isAdmin(null)).toBe(false)
   })
-})
 
-describe('isAdvisorOrAdmin', () => {
-  test('returns true for advisor', () => {
+  test('isAdvisorOrAdmin for advisor, admin and super_admin', () => {
     expect(isAdvisorOrAdmin('advisor')).toBe(true)
-  })
-
-  test('returns true for admin', () => {
     expect(isAdvisorOrAdmin('admin')).toBe(true)
-  })
-
-  test('returns true for super_admin', () => {
     expect(isAdvisorOrAdmin('super_admin')).toBe(true)
-  })
-
-  test('returns false for employee', () => {
     expect(isAdvisorOrAdmin('employee')).toBe(false)
-  })
-
-  test('returns false for undefined and null', () => {
     expect(isAdvisorOrAdmin(undefined)).toBe(false)
     expect(isAdvisorOrAdmin(null)).toBe(false)
   })

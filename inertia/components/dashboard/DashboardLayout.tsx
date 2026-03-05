@@ -5,7 +5,7 @@ import NavLink from '../ui/NavLink'
 import Input from '../ui/Input'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployees } from '../../hooks/useEmployees'
-import { isAdvisorOrAdmin } from '../../helpers/roles'
+import { isAdvisorOrAdmin, isSuperAdmin } from '../../helpers/roles'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -25,6 +25,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
 
   const userRole = user.role || 'employee'
   const isAdvisor = isAdvisorOrAdmin(userRole)
+  const superAdmin = isSuperAdmin(userRole)
 
   return (
     <Layout userRole={userRole} onRoleChange={() => {}} onLogout={logout} userName={user.name}>
@@ -42,6 +43,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
                 <NavLink href="/dashboard/employees" icon="users" label="Candidats" />
                 <NavLink href="/dashboard/settings" icon="settings" label="Réglages" />
                 <NavLink href="/dashboard/design-system" icon="palette" label="Design" />
+                {superAdmin && (
+                  <>
+                    <div className="px-3 pt-4 mt-4 pb-2 border-t border-brand-navy/5">
+                      <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
+                        Supervision
+                      </h4>
+                    </div>
+                    <NavLink href="/dashboard/super-admin" icon="dashboard" label="Supervision Plateforme" />
+                    <NavLink href="/dashboard/super-admin/organizations" icon="building" label="Organisations" />
+                  </>
+                )}
 
                 <div className="pt-4 mt-4 border-t border-brand-navy/5">
                   <div className="px-3 py-2">

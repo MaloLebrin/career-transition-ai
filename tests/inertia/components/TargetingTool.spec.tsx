@@ -44,7 +44,7 @@ describe('TargetingTool', () => {
       nameInput.dispatchEvent(new Event('input', { bubbles: true }))
     })
 
-    const saveButton = screen.getByRole('button', { name: /Enregistrer ma liste/i })
+    const saveButton = screen.getByRole('button', { name: /Valider mon ciblage expert/i })
     act(() => {
       saveButton.click()
     })

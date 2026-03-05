@@ -89,5 +89,37 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     assert.equal(ctx.response.redirectUrl, '/dashboard/employees/1')
     assert.equal(ctx.flashes.success, 'Exercice Motivation enregistré.')
   })
+
+  test('uses correct label for different exercise types', async ({ assert }) => {
+    const calls: any[] = []
+    const service = {
+      saveResult: async (input: any) => {
+        calls.push(input)
+        return {}
+      },
+    } as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(service)
+
+    const motivationCtx = makeCtx()
+    await controller.storeFromDashboard(motivationCtx)
+    assert.equal(motivationCtx.flashes.success, 'Exercice Motivation enregistré.')
+
+    const valuesCtx = makeCtx({
+      request: {
+        validateUsing: async () => ({
+          type: EXERCICE_RESULTS_TYPES.VALUES,
+          status: 'completed',
+          date: '2025-01-01',
+          duration: 120,
+          data: {},
+          quantitativeScore: null,
+          qualitativeAnalysis: null,
+          plan: [],
+        }),
+      },
+    })
+    await controller.storeFromDashboard(valuesCtx)
+    assert.equal(valuesCtx.flashes.success, 'Exercice Valeurs enregistré.')
+  })
 })
 

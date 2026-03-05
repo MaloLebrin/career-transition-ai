@@ -13,6 +13,7 @@ const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
 const AuthController = () => import('#controllers/auth_controller')
+const SuperAdminController = () => import('#controllers/super_admin_controller')
 
 // Public / auth pages
 // @ts-expect-error Inertia page name from generated types
@@ -110,6 +111,16 @@ router
   })
   .use([middleware.auth()])
   .prefix('/dashboard')
+
+// Super admin only dashboard routes
+router
+  .group(() => {
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/').renderInertia('dashboard/SuperAdminHome', {})
+    router.get('/organizations', [SuperAdminController, 'organizations'])
+  })
+  .prefix('/dashboard/super-admin')
+  .use([middleware.auth(), middleware.admin()])
 
 // JSON API routes (nested groups by resource)
 router
