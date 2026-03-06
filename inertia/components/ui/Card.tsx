@@ -1,25 +1,27 @@
+import React, { memo } from 'react'
 
-import React from 'react';
+export type CardVariant = 'default' | 'flat' | 'dark' | 'amber'
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  variant?: 'default' | 'flat' | 'dark' | 'amber';
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode
+  variant?: CardVariant
 }
 
-const Card: React.FC<CardProps> = ({ children, className = '', variant = 'default' }) => {
-  const variants = {
-    default: "bg-white border border-brand-navy/5 shadow-sm",
-    flat: "bg-brand-ivory/50 border border-brand-navy/5",
-    dark: "bg-brand-navy text-white shadow-2xl",
-    amber: "bg-brand-terracotta/5 border border-brand-terracotta/10"
-  };
+const VARIANTS: Record<CardVariant, string> = {
+  default: 'bg-white border border-brand-navy/5 shadow-sm',
+  flat: 'bg-brand-ivory/50 border border-brand-navy/5',
+  dark: 'bg-brand-navy text-white shadow-2xl',
+  amber: 'bg-brand-terracotta/5 border border-brand-terracotta/10',
+}
 
+const Card = memo(function Card({ children, className, variant = 'default', ...props }: CardProps) {
   return (
-    <div className={`p-8 rounded-3xl ${variants[variant]} ${className}`}>
+    <div className={`p-8 rounded-3xl ${VARIANTS[variant]} ${className ?? ''}`.trim()} {...props}>
       {children}
     </div>
-  );
-};
+  )
+})
 
-export default Card;
+Card.displayName = 'Card'
+
+export default Card
