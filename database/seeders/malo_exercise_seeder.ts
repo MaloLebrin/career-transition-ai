@@ -7,11 +7,14 @@ import { DateTime } from 'luxon'
 
 export default class MaloExercisesSeeder extends BaseSeeder {
   async run() {
-    const org = await Organization.findByOrFail('slug', 'ftc-paris')
+    const org = await Organization.findBy('slug', 'ftc-paris')
+    if (!org) return
+
     const malo = await Employee.query()
       .where('organizationId', org.id)
       .where('email', 'm.lebrin@example.fr')
-      .firstOrFail()
+      .first()
+    if (!malo) return
 
     const exerciseResults = [
       {

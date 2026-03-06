@@ -37,9 +37,8 @@ export class AuthService {
     if (!user) {
       throw new Error('Identifiants invalides')
     }
-    console.log('user', user)
+    // Même service que le modèle User (hash.make) : hash.verify détecte l'algo depuis le hash ($scrypt$…)
     const isValid = await hash.verify(user.password, password)
-    console.log('isValid', isValid)
     if (!isValid) {
       throw new Error('Identifiants invalides')
     }

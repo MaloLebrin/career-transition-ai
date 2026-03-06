@@ -19,7 +19,6 @@ export default class AuthController {
 
   public async login({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)
-    console.log('payload', payload)
     try {
       const user = await this.authService.verifyCredentials(payload.email, payload.password)
       await auth.use('web').login(user)

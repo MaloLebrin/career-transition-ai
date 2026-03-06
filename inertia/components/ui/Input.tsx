@@ -146,6 +146,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const showClear = showClearButton !== false && isClearableType && hasValue && !disabled
     const showPasswordBtn = isPassword && showPasswordToggle && !disabled
 
+    // Structure stable : wrapper dès qu’on peut avoir des actions (évite remount de l’input au 2e caractère)
+    const canHaveActions =
+      showPasswordBtn || (isClearableType && showClearButton !== false && !disabled)
+    const hasActions = canHaveActions
+
     const effectiveType: React.InputHTMLAttributes<HTMLInputElement>['type'] =
       isPassword && showPassword ? 'text' : type
 
@@ -207,7 +212,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
     ].join(' ')
 
-    const hasActions = showClear || showPasswordBtn
     const inputClassName = hasAddons || hasActions ? addonInputClassName : standaloneInputClassName
     // Wrapper sans padding : même hauteur que l'input seul (padding porté par l'input à l'intérieur)
     const actionsWrapperClassName = hasActions

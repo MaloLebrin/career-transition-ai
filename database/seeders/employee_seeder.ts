@@ -9,11 +9,14 @@ import { DateTime } from 'luxon'
 
 export default class EmployeeSeeder extends BaseSeeder {
   async run() {
-    const org = await Organization.findByOrFail('slug', 'ftc-paris')
+    const org = await Organization.findBy('slug', 'ftc-paris')
+    if (!org) return
+
     const advisor = await User.query()
       .where('role', 'advisor')
       .where('organizationId', org.id)
-      .firstOrFail()
+      .first()
+    if (!advisor) return
 
     const skills = await Skill.query().whereNull('organizationId').select('id', 'slug')
     const bySlug = Object.fromEntries(skills.map((s) => [s.slug, s.id]))
