@@ -19,10 +19,15 @@ const OnboardingController = () => import('#controllers/onboarding_controller')
 // Public / auth pages
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
-// @ts-expect-error Inertia page name from generated types
-router.on('/auth/login').renderInertia('Login', {})
-// @ts-expect-error Inertia page name from generated types
-router.on('/auth/register').renderInertia('Register', {})
+// Auth pages: guest middleware redirects already-logged-in users to /dashboard
+router
+  .group(() => {
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/auth/login').renderInertia('Login', {})
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/auth/register').renderInertia('Register', {})
+  })
+  .use([middleware.guest()])
 router.get('/auth', ({ response }) => response.redirect('/auth/login'))
 
 // Auth JSON API

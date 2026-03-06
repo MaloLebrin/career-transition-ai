@@ -3,11 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LoginPage from '../../../../inertia/components/auth/LoginPage'
 
 const defaultProps = {
-  onAuthSuccess: vi.fn(),
+  csrfToken: 'test-csrf-token',
+  error: null as string | null,
   onBackToLanding: vi.fn(),
   onGoToRegister: vi.fn(),
-  login: vi.fn().mockResolvedValue(undefined),
-  error: null as string | null,
 }
 
 describe('LoginPage', () => {
@@ -31,21 +30,19 @@ describe('LoginPage', () => {
     expect(defaultProps.onGoToRegister).toHaveBeenCalledTimes(1)
   })
 
-  test('shows validation errors and does not call login when email is empty', async () => {
-    const login = vi.fn().mockResolvedValue(undefined)
-    render(<LoginPage {...defaultProps} login={login} />)
-
+  test('shows validation errors when email is empty and does not submit', async () => {
+    render(<LoginPage {...defaultProps} />)
     fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))
 
     await waitFor(() => {
       expect(screen.getByText((content) => content.includes('email est requis'))).toBeInTheDocument()
     })
-    expect(login).not.toHaveBeenCalled()
+    // Form has action for when valid (backend redirect)
+    expect(screen.getByRole('button', { name: /Se connecter/ }).closest('form')).toHaveAttribute('action', '/auth/login')
   })
 
   test('shows validation error when email format is invalid', async () => {
-    const login = vi.fn().mockResolvedValue(undefined)
-    render(<LoginPage {...defaultProps} login={login} />)
+    render(<LoginPage {...defaultProps} />)
 
     fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
       target: { value: 'not-an-email' },
@@ -58,12 +55,12 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByText((content) => content.includes("pas valide") && content.includes("email"))).toBeInTheDocument()
     })
-    expect(login).not.toHaveBeenCalled()
+    const form = screen.getByRole('button', { name: /Se connecter/ }).closest('form')!
+    expect(form).toHaveAttribute('action', '/auth/login')
   })
 
   test('shows validation error when password is too short', async () => {
-    const login = vi.fn().mockResolvedValue(undefined)
-    render(<LoginPage {...defaultProps} login={login} />)
+    render(<LoginPage {...defaultProps} />)
 
     fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
       target: { value: 'user@example.com' },
@@ -76,25 +73,16 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/Le mot de passe doit contenir au moins 6/)).toBeInTheDocument()
     })
-    expect(login).not.toHaveBeenCalled()
   })
 
-  test('calls login and onAuthSuccess when form is valid', async () => {
-    const login = vi.fn().mockResolvedValue(undefined)
-    render(<LoginPage {...defaultProps} login={login} onAuthSuccess={defaultProps.onAuthSuccess} />)
-
-    fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
-      target: { value: 'user@example.com' },
-    })
-    fireEvent.change(screen.getByPlaceholderText(/••••••••/), {
-      target: { value: 'password1' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))
-
-    await waitFor(() => {
-      expect(login).toHaveBeenCalledWith('user@example.com', 'password1')
-    })
-    expect(defaultProps.onAuthSuccess).toHaveBeenCalled()
+  test('form has action and method for backend redirect when valid', () => {
+    render(<LoginPage {...defaultProps} />)
+    const form = screen.getByRole('button', { name: /Se connecter/ }).closest('form')
+    expect(form).toHaveAttribute('action', '/auth/login')
+    expect(form?.getAttribute('method')?.toLowerCase()).toBe('post')
+    expect(form?.querySelector('input[name="_csrf"]')).toHaveValue('test-csrf-token')
+    expect(form?.querySelector('input[name="email"]')).toBeInTheDocument()
+    expect(form?.querySelector('input[name="password"]')).toBeInTheDocument()
   })
 
   test('uses PublicLayout with back to landing', () => {

@@ -6,38 +6,62 @@ import Input from '../ui/Input'
 import { hasErrors, validateLogin, type LoginErrors } from '../../lib/authValidation'
 
 interface LoginPageProps {
-  onAuthSuccess: () => void
+  csrfToken?: string
+  error: string | null
   onBackToLanding: () => void
   onGoToRegister: () => void
-  login: (email: string, password: string) => Promise<any>
-  error: string | null
 }
 
 export default function LoginPage({
-  onAuthSuccess,
+  csrfToken,
+  error,
   onBackToLanding,
   onGoToRegister,
-  login,
-  error,
 }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const data = { email, password }
+    const data = { email: email.trim(), password }
     const nextErrors = validateLogin(data)
     setErrors(nextErrors)
-    if (hasErrors(nextErrors)) return
-
+    if (hasErrors(nextErrors)) {
+      e.preventDefault()
+      return
+    }
+    e.preventDefault()
+    setSubmitError(null)
     setIsLoading(true)
+    const form = e.currentTarget
+    const body = new FormData(form)
     try {
-      await login(data.email.trim(), data.password)
-      onAuthSuccess()
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body,
+        credentials: 'include',
+        redirect: 'manual',
+        headers: { Accept: 'text/html' },
+      })
+      const location = res.headers.get('Location')
+      if ((res.status === 303 || res.status === 302) && location?.includes('/dashboard')) {
+        window.location.href = location
+        return
+      }
+      if (res.ok) {
+        window.location.href = '/dashboard'
+        return
+      }
+      if (res.status === 302 && location?.includes('/auth/login')) {
+        setSubmitError('Identifiants invalides')
+        return
+      }
+      const text = await res.text()
+      setSubmitError(text && text.length < 200 ? text : 'Identifiants invalides')
     } catch {
-      // Erreur affichée via la prop error
+      setSubmitError('Erreur de connexion.')
     } finally {
       setIsLoading(false)
     }
@@ -86,7 +110,7 @@ export default function LoginPage({
             </p>
           </div>
 
-          {error && (
+          {(error || submitError) && (
             <div className="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start space-x-3 animate-shake">
               <svg
                 className="w-5 h-5 text-rose-500 shrink-0 mt-0.5"
@@ -101,12 +125,20 @@ export default function LoginPage({
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p className="text-xs font-bold text-rose-600">{error}</p>
+              <p className="text-xs font-bold text-rose-600">{error || submitError}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <form
+            action="/auth/login"
+            method="POST"
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            noValidate
+          >
+            {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
             <Input
+              name="email"
               label="Email"
               type="email"
               autoComplete="email"
@@ -117,6 +149,7 @@ export default function LoginPage({
               error={errors.email}
             />
             <Input
+              name="password"
               label="Mot de passe"
               type="password"
               autoComplete="current-password"
