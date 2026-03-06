@@ -5,7 +5,7 @@ export default function Landing() {
   return (
     <>
       <Head title="France Transition Carrière" />
-      <LandingPage onEnterApp={() => router.visit('/auth')} />
+      <LandingPage onEnterApp={() => router.visit('/auth/login')} />
     </>
   )
 }

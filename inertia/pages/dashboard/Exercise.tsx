@@ -73,7 +73,7 @@ export default function DashboardExercise({
   const backHref = employeeId ? `/dashboard/employees/${employeeId}` : '/dashboard'
 
   useEffect(() => {
-    if (!user) router.visit('/auth')
+    if (!user) router.visit('/auth/login')
   }, [user])
 
   if (!user) return null

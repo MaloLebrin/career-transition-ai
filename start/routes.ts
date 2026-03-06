@@ -20,7 +20,10 @@ const OnboardingController = () => import('#controllers/onboarding_controller')
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
 // @ts-expect-error Inertia page name from generated types
-router.on('/auth').renderInertia('Auth', {})
+router.on('/auth/login').renderInertia('Login', {})
+// @ts-expect-error Inertia page name from generated types
+router.on('/auth/register').renderInertia('Register', {})
+router.get('/auth', ({ response }) => response.redirect('/auth/login'))
 
 // Auth JSON API
 router

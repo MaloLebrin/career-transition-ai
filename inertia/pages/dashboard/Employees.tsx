@@ -12,7 +12,7 @@ export default function DashboardEmployees({ employees }: DashboardEmployeesProp
   const { user } = useAuth()
 
   useEffect(() => {
-    if (!user) router.visit('/auth')
+    if (!user) router.visit('/auth/login')
   }, [user])
 
   useEffect(() => {

@@ -41,12 +41,12 @@ export default class OnboardingController {
 
     if (!tokenRecord || !tokenRecord.user) {
       session.flash('error', 'Lien invalide ou expiré.')
-      return response.redirect('/auth')
+      return response.redirect('/auth/login')
     }
 
     if (!tokenRecord.isValid()) {
       session.flash('error', 'Ce lien a déjà été utilisé ou a expiré.')
-      return response.redirect('/auth')
+      return response.redirect('/auth/login')
     }
 
     const payload = await request.validateUsing(onboardingSetPasswordValidator)

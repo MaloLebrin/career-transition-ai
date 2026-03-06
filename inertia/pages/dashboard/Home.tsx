@@ -17,7 +17,7 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!user) {
-      router.visit('/auth')
+      router.visit('/auth/login')
     }
   }, [user])
 

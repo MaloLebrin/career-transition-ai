@@ -8,7 +8,7 @@ export default function DashboardDesignSystem() {
   const { user } = useAuth()
 
   useEffect(() => {
-    if (!user) router.visit('/auth')
+    if (!user) router.visit('/auth/login')
   }, [user])
 
   if (!user) return null

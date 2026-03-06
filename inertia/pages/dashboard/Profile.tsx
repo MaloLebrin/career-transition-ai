@@ -12,7 +12,7 @@ export default function DashboardProfile() {
   const { employee: selectedEmployee } = useEmployee(targetId)
 
   useEffect(() => {
-    if (!user) router.visit('/auth')
+    if (!user) router.visit('/auth/login')
   }, [user])
 
   if (!user) return null

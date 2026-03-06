@@ -24,7 +24,7 @@ export default function InvalidToken({ expired }: InvalidTokenProps) {
                 : 'Ce lien est invalide ou a déjà été utilisé.'}
             </p>
             <div className="mt-6">
-              <Link href="/auth">
+              <Link href="/auth/login">
                 <Button variant="outline" size="md">
                   Aller à la connexion
                 </Button>
