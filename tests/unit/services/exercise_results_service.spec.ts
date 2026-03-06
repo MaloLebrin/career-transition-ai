@@ -158,4 +158,3 @@ test.group('ExerciseResultsService', () => {
     assert.isString(draft!.lastUpdated)
   })
 })
-

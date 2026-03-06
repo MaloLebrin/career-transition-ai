@@ -18,4 +18,3 @@ describe('SuperAdminHome page', () => {
     expect(screen.getByText(/Utilisateurs/i)).toBeInTheDocument()
   })
 })
-

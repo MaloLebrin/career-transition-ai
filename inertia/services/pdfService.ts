@@ -1,7 +1,6 @@
-
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
-import { Employee, ExerciseType } from "../types";
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
+import { Employee, ExerciseType } from '../types'
 
 /**
  * Service de génération de PDF "Expert" pour France Transition Carrière.
@@ -12,21 +11,21 @@ export async function generateComprehensivePDF(employee: Employee) {
     orientation: 'p',
     unit: 'mm',
     format: 'a4',
-  });
+  })
 
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const pdfWidth = pdf.internal.pageSize.getWidth()
+  const pdfHeight = pdf.internal.pageSize.getHeight()
 
-  const renderRoot = document.createElement('div');
-  renderRoot.style.position = 'fixed';
-  renderRoot.style.left = '-3000px';
-  renderRoot.style.top = '0';
-  renderRoot.style.width = '210mm';
-  renderRoot.style.backgroundColor = '#ffffff';
-  renderRoot.className = 'font-sans text-slate-900';
-  document.body.appendChild(renderRoot);
+  const renderRoot = document.createElement('div')
+  renderRoot.style.position = 'fixed'
+  renderRoot.style.left = '-3000px'
+  renderRoot.style.top = '0'
+  renderRoot.style.width = '210mm'
+  renderRoot.style.backgroundColor = '#ffffff'
+  renderRoot.className = 'font-sans text-slate-900'
+  document.body.appendChild(renderRoot)
 
-  const styleTag = document.createElement('style');
+  const styleTag = document.createElement('style')
   styleTag.innerHTML = `
     .pdf-page { width: 210mm; min-height: 297mm; padding: 20mm; box-sizing: border-box; background: white; position: relative; overflow: hidden; display: flex; flex-direction: column; }
     .pdf-header { border-bottom: 1.5pt solid #e2e8f0; padding-bottom: 4mm; margin-bottom: 8mm; display: flex; justify-content: space-between; align-items: flex-end; }
@@ -44,8 +43,8 @@ export async function generateComprehensivePDF(employee: Employee) {
     .systemic-node { position: absolute; width: 42mm; height: 42mm; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4mm; box-sizing: border-box; z-index: 10; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 2pt solid white; }
     .node-title { font-size: 7pt; font-weight: 900; text-transform: uppercase; margin-bottom: 1.5mm; }
     .node-content { font-size: 6.5pt; font-weight: 600; line-height: 1.3; }
-  `;
-  renderRoot.appendChild(styleTag);
+  `
+  renderRoot.appendChild(styleTag)
 
   const captureAndAddPage = async (element: HTMLElement) => {
     const canvas = await html2canvas(element, {
@@ -54,35 +53,40 @@ export async function generateComprehensivePDF(employee: Employee) {
       backgroundColor: '#ffffff',
       windowWidth: element.offsetWidth,
       windowHeight: element.offsetHeight,
-    });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    if (pdf.internal.pages.length > 1) pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-  };
+    })
+    const imgData = canvas.toDataURL('image/jpeg', 0.95)
+    if (pdf.internal.pages.length > 1) pdf.addPage()
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+  }
 
   // Préparation des données pour la systémie
-  const motivationResult = employee.exercises.find(e => e.type === ExerciseType.MOTIVATION);
-  const valuesResult = employee.exercises.find(e => e.type === ExerciseType.VALUES);
-  const discResult = employee.exercises.find(e => e.type === ExerciseType.DISC);
+  const motivationResult = employee.exercises.find((e) => e.type === ExerciseType.MOTIVATION)
+  const valuesResult = employee.exercises.find((e) => e.type === ExerciseType.VALUES)
+  const discResult = employee.exercises.find((e) => e.type === ExerciseType.DISC)
 
-  const topMotivations = motivationResult?.data.ranked.slice(0, 3).join(', ') || "Non défini";
-  const topValues = valuesResult?.data.selectedValues.slice(0, 3).join(', ') || "Non défini";
-  const skillsList = employee.skills.filter(s => s.level >= 4).map(s => s.name).slice(0, 4).join(', ') || "En cours";
+  const topMotivations = motivationResult?.data.ranked.slice(0, 3).join(', ') || 'Non défini'
+  const topValues = valuesResult?.data.selectedValues.slice(0, 3).join(', ') || 'Non défini'
+  const skillsList =
+    employee.skills
+      .filter((s) => s.level >= 4)
+      .map((s) => s.name)
+      .slice(0, 4)
+      .join(', ') || 'En cours'
 
-  let personalitySummary = "Analyse en cours";
+  let personalitySummary = 'Analyse en cours'
   if (discResult) {
-    const d = discResult.data;
-    const sorted = Object.entries(d).sort(([, a], [, b]) => (b as number) - (a as number));
-    personalitySummary = `Profil dominant : ${sorted[0][0]}${sorted[1][0]}`;
+    const d = discResult.data
+    const sorted = Object.entries(d).sort(([, a], [, b]) => (b as number) - (a as number))
+    personalitySummary = `Profil dominant : ${sorted[0][0]}${sorted[1][0]}`
   }
 
   try {
     // --- PAGE 1 : COUVERTURE ---
-    const coverPage = document.createElement('div');
-    coverPage.className = 'pdf-page';
-    coverPage.style.backgroundColor = '#1e1b4b';
-    coverPage.style.color = 'white';
-    coverPage.style.justifyContent = 'center';
+    const coverPage = document.createElement('div')
+    coverPage.className = 'pdf-page'
+    coverPage.style.backgroundColor = '#1e1b4b'
+    coverPage.style.color = 'white'
+    coverPage.style.justifyContent = 'center'
     coverPage.innerHTML = `
       <div style="padding: 20mm; text-align: center;">
         <div class="tag" style="background: #8B5CF6; color: white; margin-bottom: 10mm; padding: 2mm 5mm; border-radius: 5mm;">Rapport Individuel Expert</div>
@@ -95,13 +99,13 @@ export async function generateComprehensivePDF(employee: Employee) {
         <span>FRANCE TRANSITION CARRIÈRE</span>
         <span>${new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}</span>
       </div>
-    `;
-    renderRoot.appendChild(coverPage);
-    await captureAndAddPage(coverPage);
+    `
+    renderRoot.appendChild(coverPage)
+    await captureAndAddPage(coverPage)
 
     // --- PAGE 2 : SYSTÉMIE DU REBOND (LA NOUVELLE PAGE) ---
-    const systemicPage = document.createElement('div');
-    systemicPage.className = 'pdf-page';
+    const systemicPage = document.createElement('div')
+    systemicPage.className = 'pdf-page'
     systemicPage.innerHTML = `
       <div class="pdf-header">
         <div style="font-size: 9pt; font-weight: 900; color: #8B5CF6;">ANALYSE SYSTÉMIQUE</div>
@@ -166,13 +170,13 @@ export async function generateComprehensivePDF(employee: Employee) {
       </div>
 
       <div class="pdf-footer"><span>FRANCE TRANSITION CARRIÈRE</span><span>APPROCHE SYSTÉMIQUE</span></div>
-    `;
-    renderRoot.appendChild(systemicPage);
-    await captureAndAddPage(systemicPage);
+    `
+    renderRoot.appendChild(systemicPage)
+    await captureAndAddPage(systemicPage)
 
     // --- PAGE 3 : SYNTHÈSE GLOBALE ---
-    const summaryPage = document.createElement('div');
-    summaryPage.className = 'pdf-page';
+    const summaryPage = document.createElement('div')
+    summaryPage.className = 'pdf-page'
     summaryPage.innerHTML = `
       <div class="pdf-header">
         <div style="font-size: 9pt; font-weight: 900; color: #8B5CF6;">SYNTHÈSE EXPERT</div>
@@ -181,13 +185,15 @@ export async function generateComprehensivePDF(employee: Employee) {
       <h2 class="section-title">Analyse de l'Accompagnateur</h2>
       <div class="card" style="margin-bottom: 10mm;">
         <span class="data-label">Observations et Recommandations</span>
-        <div style="font-size: 10.5pt; color: #334155; line-height: 1.6; font-style: italic; white-space: pre-wrap;">"${employee.advisorNotes || "Aucune note saisie."}"</div>
+        <div style="font-size: 10.5pt; color: #334155; line-height: 1.6; font-style: italic; white-space: pre-wrap;">"${employee.advisorNotes || 'Aucune note saisie.'}"</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8mm;">
         <div class="card">
           <span class="data-label">Maîtrise Compétences</span>
           <div style="margin-top: 4mm;">
-            ${employee.skills.map(s => `
+            ${employee.skills
+              .map(
+                (s) => `
               <div style="margin-bottom: 4mm;">
                 <div style="display: flex; justify-content: space-between; font-size: 8pt; font-weight: 800; color: #1e293b; margin-bottom: 1mm;">
                   <span>${s.name}</span>
@@ -197,7 +203,9 @@ export async function generateComprehensivePDF(employee: Employee) {
                   <div style="height: 100%; background: #8B5CF6; width: ${(s.level / 5) * 100}%"></div>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </div>
         <div class="card">
@@ -205,57 +213,75 @@ export async function generateComprehensivePDF(employee: Employee) {
           <div style="margin-top: 4mm;">
             <div style="margin-bottom: 6mm;">
               <div class="data-label" style="color: #F97316;">Cible Identifiée</div>
-              <div class="data-value" style="font-size: 14pt;">${employee.targetRole || "Non définie"}</div>
+              <div class="data-value" style="font-size: 14pt;">${employee.targetRole || 'Non définie'}</div>
             </div>
             <div class="tag tag-violet">${employee.status}</div>
           </div>
         </div>
       </div>
       <div class="pdf-footer"><span>FRANCE TRANSITION CARRIÈRE</span><span>CONFIDENTIEL</span></div>
-    `;
-    renderRoot.appendChild(summaryPage);
-    await captureAndAddPage(summaryPage);
+    `
+    renderRoot.appendChild(summaryPage)
+    await captureAndAddPage(summaryPage)
 
     // --- PAGES D'EXERCICES ---
     for (const [index, result] of employee.exercises.entries()) {
-      const exercisePage = document.createElement('div');
-      exercisePage.className = 'pdf-page';
+      const exercisePage = document.createElement('div')
+      exercisePage.className = 'pdf-page'
 
-      let detailContent = '';
+      let detailContent = ''
       if (result.type === ExerciseType.MOTIVATION) {
         detailContent = `
           <h2 class="section-title">Analyse Motivations</h2>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8mm;">
             <div>
               <span class="data-label">Top 11 Facteurs</span>
-              ${result.data.ranked.slice(0, 11).map((m: string, i: number) => `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i + 1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
+              ${result.data.ranked
+                .slice(0, 11)
+                .map(
+                  (m: string, i: number) =>
+                    `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i + 1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
+                )
+                .join('')}
             </div>
             <div>
               <span class="data-label">Suivant</span>
-              ${result.data.ranked.slice(11, 22).map((m: string, i: number) => `<div class="list-item"><div class="list-number">${i + 12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`).join('')}
+              ${result.data.ranked
+                .slice(11, 22)
+                .map(
+                  (m: string, i: number) =>
+                    `<div class="list-item"><div class="list-number">${i + 12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
+                )
+                .join('')}
             </div>
           </div>
-        `;
+        `
       } else if (result.type === ExerciseType.VALUES) {
         detailContent = `
           <h2 class="section-title">Analyse Valeurs</h2>
           <div style="display: flex; flex-direction: column; gap: 2mm;">
-            ${result.data.selectedValues.map((v: string, i: number) => `
+            ${result.data.selectedValues
+              .map(
+                (v: string, i: number) => `
               <div style="display: flex; align-items: center; gap: 4mm;">
                 <div style="width: 8mm; font-size: 7pt; font-weight: 900; color: #94a3b8;">${i + 1}</div>
                 <div style="grow: 1; height: 6mm; background: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 2mm; overflow: hidden; position: relative;">
-                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #8B5CF6; opacity: 0.1; width: ${100 - (i * 9)}%;"></div>
+                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #8B5CF6; opacity: 0.1; width: ${100 - i * 9}%;"></div>
                   <span style="position: relative; font-size: 8.5pt; font-weight: 800; padding-left: 4mm; line-height: 6mm;">${v}</span>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        `;
+        `
       } else if (result.type === ExerciseType.DISC) {
         detailContent = `
           <h2 class="section-title">Analyse DISC</h2>
           <div class="card">
-             ${Object.entries(result.data).map(([key, val]) => `
+             ${Object.entries(result.data)
+               .map(
+                 ([key, val]) => `
                <div style="margin-bottom: 4mm;">
                  <div style="display: flex; justify-content: space-between; margin-bottom: 1mm;">
                    <span style="font-size: 9pt; font-weight: 900;">${key === 'D' ? 'Dominance' : key === 'I' ? 'Influence' : key === 'S' ? 'Stabilité' : 'Conformité'}</span>
@@ -263,9 +289,11 @@ export async function generateComprehensivePDF(employee: Employee) {
                  </div>
                  <div style="height: 2mm; background: #f1f5f9; border-radius: 1mm; overflow: hidden;"><div style="height: 100%; background: #8B5CF6; width: ${val}%"></div></div>
                </div>
-             `).join('')}
+             `
+               )
+               .join('')}
           </div>
-        `;
+        `
       }
 
       exercisePage.innerHTML = `
@@ -281,18 +309,17 @@ export async function generateComprehensivePDF(employee: Employee) {
           </div>
         </div>
         <div class="pdf-footer"><span>PAGE ${String(index + 4).padStart(2, '0')}</span><span>DÉTAIL EXERCICE</span></div>
-      `;
-      renderRoot.appendChild(exercisePage);
-      await captureAndAddPage(exercisePage);
+      `
+      renderRoot.appendChild(exercisePage)
+      await captureAndAddPage(exercisePage)
     }
 
-    const finalFileName = `Rapport_Transition_${employee.name.replace(/\s+/g, '_')}.pdf`;
-    pdf.save(finalFileName);
-
+    const finalFileName = `Rapport_Transition_${employee.name.replace(/\s+/g, '_')}.pdf`
+    pdf.save(finalFileName)
   } catch (err) {
-    console.error("PDF Export failed:", err);
-    alert("Erreur export PDF.");
+    console.error('PDF Export failed:', err)
+    alert('Erreur export PDF.')
   } finally {
-    document.body.removeChild(renderRoot);
+    document.body.removeChild(renderRoot)
   }
 }

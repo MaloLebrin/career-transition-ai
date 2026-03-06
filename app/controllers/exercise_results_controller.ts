@@ -11,7 +11,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ExerciseResultsController {
-  constructor(private service: ExerciseResultsService) { }
+  constructor(private service: ExerciseResultsService) {}
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -155,11 +155,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }

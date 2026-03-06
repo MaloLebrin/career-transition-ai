@@ -4,7 +4,7 @@ import TargetingTool from '../../../inertia/components/exercises/TargetingTool'
 
 vi.mock('../../../inertia/services/geminiService', () => ({
   suggestTargets: vi.fn().mockResolvedValue({
-    companies: ['AFPA', 'L\'Oréal'],
+    companies: ['AFPA', "L'Oréal"],
     sectors: ['Formation professionnelle'],
   }),
 }))
@@ -23,9 +23,7 @@ describe('TargetingTool', () => {
     expect(
       screen.getByText(/Identifiez les structures qui correspondent à votre projet professionnel/i)
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /Ajouter manuellement/i })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Ajouter manuellement/i })).toBeInTheDocument()
   })
 
   test('allows adding a manual target and saving it', () => {
@@ -52,10 +50,7 @@ describe('TargetingTool', () => {
     expect(onSave).toHaveBeenCalledTimes(1)
     const [payload] = onSave.mock.calls[0]
     expect(payload.targets).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: 'AFPA' }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ name: 'AFPA' })])
     )
   })
 })
-

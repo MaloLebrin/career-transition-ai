@@ -138,7 +138,9 @@ export default function DashboardExercise({
             )}
             {exerciseType === ExerciseType.PERSONALITY && (
               <PersonalityTool
-                onSave={(data, duration) => saveResult(ExerciseType.PERSONALITY, data, 10, duration)}
+                onSave={(data, duration) =>
+                  saveResult(ExerciseType.PERSONALITY, data, 10, duration)
+                }
                 // Personality currently has no explicit draft UI, but results are saved via Inertia.
               />
             )}
@@ -168,9 +170,7 @@ export default function DashboardExercise({
                   saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
-                initialDraftPromise={Promise.resolve(
-                  getInitialDraft(ExerciseType.SKILL_MAPPING)
-                )}
+                initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.SKILL_MAPPING))}
                 experiences={selectedEmployee?.experiences || []}
               />
             )}

@@ -41,4 +41,3 @@ describe('Layout', () => {
     expect(onLogout).toHaveBeenCalledTimes(1)
   })
 })
-

@@ -7,17 +7,10 @@ describe('CircleOfControlTool', () => {
   const onSaveDraft = vi.fn()
 
   test('renders intro and starts game', async () => {
-    render(
-      <CircleOfControlTool
-        onSave={onSave}
-        onSaveDraft={onSaveDraft}
-      />
-    )
+    render(<CircleOfControlTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     expect(screen.getByText(/Cercle de Contrôle/i)).toBeInTheDocument()
-    expect(
-      screen.getByText(/Vous allez voir 20 situations/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Vous allez voir 20 situations/i)).toBeInTheDocument()
 
     const startButton = screen.getByRole('button', { name: /Commencer le tri/i })
     await act(async () => {
@@ -25,10 +18,7 @@ describe('CircleOfControlTool', () => {
     })
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Positionnez cet élément/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Positionnez cet élément/i)).toBeInTheDocument()
     })
   })
 })
-

@@ -12,4 +12,3 @@ export const updateEmployeeValidator = vine.compile(
     nextAppointment: vine.string().optional(),
   })
 )
-

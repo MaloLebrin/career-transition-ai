@@ -93,9 +93,7 @@ describe('Input', () => {
 
     test('clic sur vider vide le champ (mode contrôlé)', () => {
       const onChange = vi.fn()
-      render(
-        <Input type="text" value="hello" onChange={onChange} aria-label="Champ" />
-      )
+      render(<Input type="text" value="hello" onChange={onChange} aria-label="Champ" />)
       fireEvent.click(screen.getByRole('button', { name: /vider le champ/i }))
       expect(onChange).toHaveBeenCalledTimes(1)
       const event = onChange.mock.calls[0][0]

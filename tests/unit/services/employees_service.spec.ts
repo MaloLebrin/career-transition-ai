@@ -62,4 +62,3 @@ test.group('EmployeesService', () => {
     assert.isTrue(employee.onboarded)
   })
 })
-

@@ -9,4 +9,3 @@ export const registerValidator = vine.compile(
     role: vine.enum(userRolesValues),
   })
 )
-

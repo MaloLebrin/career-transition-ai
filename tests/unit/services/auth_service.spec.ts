@@ -170,7 +170,9 @@ test.group('AuthService', () => {
     }
   })
 
-  test('resetPasswordForUser resets password and returns temporary password', async ({ assert }) => {
+  test('resetPasswordForUser resets password and returns temporary password', async ({
+    assert,
+  }) => {
     const org = await Organization.create({
       name: 'Org Reset',
       slug: `org-reset-${Date.now()}`,
@@ -200,4 +202,3 @@ test.group('AuthService', () => {
     assert.isNull(result)
   })
 })
-

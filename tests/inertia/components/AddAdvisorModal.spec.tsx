@@ -64,4 +64,3 @@ describe('AddAdvisorModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })
-

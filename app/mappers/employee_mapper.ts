@@ -127,7 +127,10 @@ const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
   }
 }
 
-const getNextAppointmentDate = (nextAppointment: DateTime | null, appointments: Appointment[]): string | undefined => {
+const getNextAppointmentDate = (
+  nextAppointment: DateTime | null,
+  appointments: Appointment[]
+): string | undefined => {
   if (nextAppointment) {
     return nextAppointment.toISO()!
   }
@@ -146,7 +149,10 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
   const skills = (employee.skills || []).map(mapSkill)
   const exercises = (employee.exerciseResults || []).map(mapExerciseResult)
   const steps = (employee.supportPlanSteps || []).map(mapSupportPlanStep)
-  const nextAppointment = getNextAppointmentDate(employee.nextAppointment, employee.appointments || [])
+  const nextAppointment = getNextAppointmentDate(
+    employee.nextAppointment,
+    employee.appointments || []
+  )
 
   return {
     id: employee.id,
@@ -168,4 +174,3 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
     plan: steps,
   }
 }
-

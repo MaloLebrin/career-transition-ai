@@ -15,4 +15,3 @@ export const fetchExerciseDraftValidator = vine.compile(
     type: vine.enum(exerciceResultTypesValues),
   })
 )
-

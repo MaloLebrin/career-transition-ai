@@ -39,4 +39,4 @@ Checklist des points à traiter avant ou pour la mise en production.
 
 ---
 
-*À mettre à jour au fil des livraisons.*
+_À mettre à jour au fil des livraisons._

@@ -48,9 +48,7 @@ describe('ExercisesUsageAdmin page', () => {
 
     render(<ExercisesUsageAdmin {...props} />)
 
-    expect(
-      screen.getByText(/Usage des exercices par organisation/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Usage des exercices par organisation/i)).toBeInTheDocument()
     expect(screen.getByText('Cabinet Alpha')).toBeInTheDocument()
     expect(screen.getByText('4')).toBeInTheDocument()
   })
@@ -148,4 +146,3 @@ describe('ExercisesUsageAdmin page', () => {
     window.location = originalLocation
   })
 })
-

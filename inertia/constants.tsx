@@ -1,3 +1,2 @@
-
-export * from './constants/motivations';
-export * from './constants/values';
+export * from './constants/motivations'
+export * from './constants/values'

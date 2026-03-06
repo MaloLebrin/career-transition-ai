@@ -79,4 +79,3 @@ describe('AppShell', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1)
   })
 })
-

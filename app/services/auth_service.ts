@@ -1,8 +1,8 @@
-import hash from '@adonisjs/core/services/hash'
-import { inject } from '@adonisjs/core'
 import type { UserSessionDto } from '#dtos/auth_dto'
 import Organization from '#models/organization'
 import User, { USERS_ROLES, type UserRole } from '#models/user'
+import { inject } from '@adonisjs/core'
+import hash from '@adonisjs/core/services/hash'
 
 type RegisterInput = {
   email: string
@@ -37,7 +37,9 @@ export class AuthService {
     if (!user) {
       throw new Error('Identifiants invalides')
     }
+    console.log('user', user)
     const isValid = await hash.verify(user.password, password)
+    console.log('isValid', isValid)
     if (!isValid) {
       throw new Error('Identifiants invalides')
     }
@@ -127,5 +129,3 @@ export class AuthService {
     return { user, temporaryPassword }
   }
 }
-
-

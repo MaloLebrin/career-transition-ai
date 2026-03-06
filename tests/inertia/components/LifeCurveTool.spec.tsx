@@ -7,12 +7,7 @@ describe('LifeCurveTool', () => {
   const onSaveDraft = vi.fn()
 
   test('renders intro and allows adding a point', () => {
-    render(
-      <LifeCurveTool
-        onSave={onSave}
-        onSaveDraft={onSaveDraft}
-      />
-    )
+    render(<LifeCurveTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     expect(screen.getByText(/La courbe de vie/i)).toBeInTheDocument()
     expect(
@@ -35,4 +30,3 @@ describe('LifeCurveTool', () => {
     expect(onSaveDraft).toHaveBeenCalled()
   })
 })
-

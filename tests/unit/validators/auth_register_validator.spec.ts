@@ -31,4 +31,3 @@ test.group('registerValidator', () => {
     }
   })
 })
-

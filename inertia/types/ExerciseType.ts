@@ -1,4 +1,3 @@
-
 export enum ExerciseType {
   MOTIVATION = 'MOTIVATION',
   VALUES = 'VALUES',
@@ -9,5 +8,5 @@ export enum ExerciseType {
   TARGETING = 'TARGETING',
   DISC = 'DISC',
   CIRCLE_OF_CONTROL = 'CIRCLE_OF_CONTROL',
-  SKILL_MAPPING = 'SKILL_MAPPING'
+  SKILL_MAPPING = 'SKILL_MAPPING',
 }

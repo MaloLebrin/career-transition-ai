@@ -44,9 +44,7 @@ export default class SuperAdminController {
     const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
     if (guardResult) return guardResult
 
-    const organizations = await Organization.query()
-      .preload('users')
-      .preload('employees')
+    const organizations = await Organization.query().preload('users').preload('employees')
 
     const items = organizations.map((org) => ({
       id: org.id,
@@ -74,8 +72,7 @@ export default class SuperAdminController {
       typeof qs.from === 'string' && qs.from.length > 0
         ? qs.from
         : DateTime.now().minus({ days: 30 }).toISODate()
-    const to =
-      typeof qs.to === 'string' && qs.to.length > 0 ? qs.to : DateTime.now().toISODate()
+    const to = typeof qs.to === 'string' && qs.to.length > 0 ? qs.to : DateTime.now().toISODate()
     const organizationId =
       typeof qs.organizationId === 'string' && qs.organizationId.length > 0
         ? Number(qs.organizationId)
@@ -86,11 +83,9 @@ export default class SuperAdminController {
       .join('organizations', 'organizations.id', 'employees.organization_id')
       .where('exercise_results.status', 'completed')
       .andWhere((builder) => {
-        builder.where('exercise_results.date', '>=', from).andWhere(
-          'exercise_results.date',
-          '<=',
-          to
-        )
+        builder
+          .where('exercise_results.date', '>=', from)
+          .andWhere('exercise_results.date', '<=', to)
       })
       .select(
         'organizations.id as organizationId',
@@ -173,8 +168,7 @@ export default class SuperAdminController {
       typeof qs.from === 'string' && qs.from.length > 0
         ? qs.from
         : DateTime.now().minus({ days: 30 }).toISODate()
-    const to =
-      typeof qs.to === 'string' && qs.to.length > 0 ? qs.to : DateTime.now().toISODate()
+    const to = typeof qs.to === 'string' && qs.to.length > 0 ? qs.to : DateTime.now().toISODate()
     const organizationId =
       typeof qs.organizationId === 'string' && qs.organizationId.length > 0
         ? Number(qs.organizationId)
@@ -185,11 +179,9 @@ export default class SuperAdminController {
       .join('organizations', 'organizations.id', 'employees.organization_id')
       .where('exercise_results.status', 'completed')
       .andWhere((builder) => {
-        builder.where('exercise_results.date', '>=', from).andWhere(
-          'exercise_results.date',
-          '<=',
-          to
-        )
+        builder
+          .where('exercise_results.date', '>=', from)
+          .andWhere('exercise_results.date', '<=', to)
       })
       .select(
         'organizations.id as organizationId',
@@ -242,7 +234,9 @@ export default class SuperAdminController {
       name: user.name,
       email: user.email,
       role: user.role,
-      organization: user.organization ? { id: user.organization.id, name: user.organization.name } : null,
+      organization: user.organization
+        ? { id: user.organization.id, name: user.organization.name }
+        : null,
       createdAt: user.createdAt?.toISO() ?? null,
     }))
 
@@ -335,7 +329,7 @@ export default class SuperAdminController {
     const id = Number(params.id)
     const organization = await Organization.find(id)
     if (!organization) {
-      session.flash('error', "Organisation introuvable.")
+      session.flash('error', 'Organisation introuvable.')
       return response.redirect('/dashboard/super-admin/organizations')
     }
 
@@ -344,4 +338,3 @@ export default class SuperAdminController {
     return response.redirect('/dashboard/super-admin/organizations')
   }
 }
-

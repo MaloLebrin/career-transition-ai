@@ -6,7 +6,10 @@ export interface UserSession {
   role: 'advisor' | 'employee' | 'admin' | 'super_admin'
 }
 
-function headersWithCsrf(csrfToken: string | undefined, extra: Record<string, string> = {}): Record<string, string> {
+function headersWithCsrf(
+  csrfToken: string | undefined,
+  extra: Record<string, string> = {}
+): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...extra,
@@ -50,7 +53,7 @@ export const authService = {
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}))
-      throw new Error(body?.message || "Erreur lors de la création du compte.")
+      throw new Error(body?.message || 'Erreur lors de la création du compte.')
     }
 
     return (await response.json()) as UserSession

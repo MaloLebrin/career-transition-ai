@@ -19,4 +19,3 @@ describe('Logo', () => {
     expect(screen.getByText('FTC')).toBeInTheDocument()
   })
 })
-

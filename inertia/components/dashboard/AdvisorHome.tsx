@@ -19,7 +19,12 @@ export default function AdvisorHome() {
           variant="secondary"
           icon={
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           }
         >
@@ -28,7 +33,11 @@ export default function AdvisorHome() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard label="Total suivis" value={employees.length} color="navy" />
-        <StatCard label="En attente" value={employees.filter((e) => !e.onboarded).length} color="terracotta" />
+        <StatCard
+          label="En attente"
+          value={employees.filter((e) => !e.onboarded).length}
+          color="terracotta"
+        />
         <StatCard
           label="Étapes validées"
           value={employees.reduce((acc, e) => acc + e.exercises.length, 0)}
@@ -43,7 +52,9 @@ export default function AdvisorHome() {
           </h3>
           <div className="space-y-4">
             {employees
-              .flatMap((e) => e.exercises.map((ex) => ({ ...ex, employeeName: e.name, employeeId: e.id })))
+              .flatMap((e) =>
+                e.exercises.map((ex) => ({ ...ex, employeeName: e.name, employeeId: e.id }))
+              )
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .slice(0, 5)
               .map((activity, idx) => (
@@ -109,7 +120,9 @@ export default function AdvisorHome() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-brand-navy">{emp.name}</p>
-                      <p className="text-[10px] font-medium text-brand-navy/60">Accompagnement individuel</p>
+                      <p className="text-[10px] font-medium text-brand-navy/60">
+                        Accompagnement individuel
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -133,9 +146,7 @@ export default function AdvisorHome() {
         </Card>
       </div>
 
-      {isAddModalOpen && (
-        <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />
-      )}
+      {isAddModalOpen && <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />}
     </div>
   )
 }

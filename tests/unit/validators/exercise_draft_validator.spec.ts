@@ -1,5 +1,8 @@
 import { test } from '@japa/runner'
-import { fetchExerciseDraftValidator, saveExerciseDraftValidator } from '#validators/exercise_draft_validator'
+import {
+  fetchExerciseDraftValidator,
+  saveExerciseDraftValidator,
+} from '#validators/exercise_draft_validator'
 import { exerciceResultTypesValues } from '#models/exercise_result'
 
 test.group('exercise draft validators', () => {
@@ -24,4 +27,3 @@ test.group('exercise draft validators', () => {
     await assert.rejects(() => fetchExerciseDraftValidator.validate(data))
   })
 })
-

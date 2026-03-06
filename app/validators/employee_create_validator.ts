@@ -9,4 +9,3 @@ export const createEmployeeValidator = vine.compile(
     summary: vine.string().trim().maxLength(5000).optional(),
   })
 )
-

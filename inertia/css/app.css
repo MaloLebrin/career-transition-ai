@@ -1,18 +1,18 @@
-@import "tailwindcss";
-@import "react-datepicker/dist/react-datepicker.css";
+@import 'tailwindcss';
+@import 'react-datepicker/dist/react-datepicker.css';
 
 @theme {
   /* Palette principale du logo */
-  --color-brand-navy: #1E2F3F; /* Bleu nuit profond — Expertise structurante */
-  --color-brand-sage: #6E8F80; /* Vert sauge structuré — Orientation maîtrisée */
-  
+  --color-brand-navy: #1e2f3f; /* Bleu nuit profond — Expertise structurante */
+  --color-brand-sage: #6e8f80; /* Vert sauge structuré — Orientation maîtrisée */
+
   /* Palette secondaire */
-  --color-brand-terracotta: #C47652; /* Terracotta doux — Énergie maîtrisée */
-  --color-brand-ivory: #F4F1EA; /* Ivoire chaud — Fond premium */
-  --color-brand-gray: #6B7280; /* Gris technique */
-  
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
+  --color-brand-terracotta: #c47652; /* Terracotta doux — Énergie maîtrisée */
+  --color-brand-ivory: #f4f1ea; /* Ivoire chaud — Fond premium */
+  --color-brand-gray: #6b7280; /* Gris technique */
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
 }
@@ -27,19 +27,19 @@
   .structured-card {
     @apply bg-white border border-brand-navy/5 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300;
   }
-  
+
   .line-icon {
     @apply stroke-[1.5] rounded-sm;
   }
-  
+
   .btn-primary {
     @apply bg-brand-sage text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-sage/90 transition-all active:scale-[0.98];
   }
-  
+
   .btn-secondary {
     @apply border-2 border-brand-navy text-brand-navy px-6 py-3 rounded-2xl font-bold hover:bg-brand-navy hover:text-white transition-all active:scale-[0.98];
   }
-  
+
   .btn-cta {
     @apply bg-brand-terracotta text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-terracotta/90 shadow-lg shadow-brand-terracotta/20 transition-all active:scale-[0.98];
   }

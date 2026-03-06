@@ -4,7 +4,9 @@ import { useExercises } from '../../../inertia/hooks/useExercises'
 import { ExerciseType } from '../../../inertia/types'
 
 const mockRouterPost = vi.fn().mockResolvedValue(undefined)
-vi.mock('@inertiajs/react', () => ({ router: { post: (...args: unknown[]) => mockRouterPost(...args) } }))
+vi.mock('@inertiajs/react', () => ({
+  router: { post: (...args: unknown[]) => mockRouterPost(...args) },
+}))
 
 vi.mock('../../../inertia/services/apiService', () => ({
   apiService: {
@@ -33,7 +35,16 @@ const mockEmployee = {
   status: 'active' as const,
   onboarded: true,
   exercises: [],
-  plan: [{ id: 1, title: 'Step', description: '', dueDate: '', completed: false, associatedExercise: ExerciseType.MOTIVATION }],
+  plan: [
+    {
+      id: 1,
+      title: 'Step',
+      description: '',
+      dueDate: '',
+      completed: false,
+      associatedExercise: ExerciseType.MOTIVATION,
+    },
+  ],
 }
 
 describe('useExercises', () => {
@@ -52,9 +63,7 @@ describe('useExercises', () => {
     const draft = { employeeId: '1', type: ExerciseType.MOTIVATION, lastUpdated: '', data: {} }
     vi.mocked(apiService.fetchExerciseDraft).mockResolvedValue(draft as any)
 
-    const { result } = renderHook(() =>
-      useExercises(mockEmployee as any, onComplete)
-    )
+    const { result } = renderHook(() => useExercises(mockEmployee as any, onComplete))
 
     const loaded = await result.current.loadDraft(ExerciseType.MOTIVATION)
     expect(loaded).toEqual(draft)
@@ -71,9 +80,7 @@ describe('useExercises', () => {
   })
 
   test('saveDraft uses Inertia router.post for DISC and sets isSavingDraft', async () => {
-    const { result } = renderHook(() =>
-      useExercises(mockEmployee as any, onComplete)
-    )
+    const { result } = renderHook(() => useExercises(mockEmployee as any, onComplete))
 
     await act(async () => {
       result.current.saveDraft(ExerciseType.DISC, { foo: 'bar' })
@@ -91,9 +98,7 @@ describe('useExercises', () => {
   })
 
   test('saveResult uses Inertia router.post for DISC then onComplete', async () => {
-    const { result } = renderHook(() =>
-      useExercises(mockEmployee as any, onComplete)
-    )
+    const { result } = renderHook(() => useExercises(mockEmployee as any, onComplete))
 
     await act(async () => {
       await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 10, 60)

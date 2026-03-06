@@ -1,5 +1,5 @@
-import { ExerciseType } from '../types';
-import { EXERCICE_RESULTS_TYPES } from '../../shared/exercises.js';
+import { ExerciseType } from '../types'
+import { EXERCICE_RESULTS_TYPES } from '../../shared/exercises.js'
 
 /**
  * Slugs utilisés dans les routes Inertia / Adonis pour chaque type d'exercice.
@@ -21,7 +21,7 @@ export const EXERCISE_SLUGS: Partial<Record<ExerciseType, string>> = {
   [ExerciseType.DISC]: EXERCICE_RESULTS_TYPES.DISC,
   [ExerciseType.SKILL_MAPPING]: EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
   [ExerciseType.CIRCLE_OF_CONTROL]: EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
-};
+}
 
 /**
  * Types pour lesquels on utilise Inertia pour les brouillons.
@@ -36,5 +36,4 @@ export const EXERCISES_WITH_INERTIA_DRAFT = new Set<ExerciseType>([
   ExerciseType.DISC,
   ExerciseType.SKILL_MAPPING,
   ExerciseType.CIRCLE_OF_CONTROL,
-]);
-
+])

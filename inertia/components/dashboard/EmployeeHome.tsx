@@ -26,8 +26,8 @@ export default function EmployeeHome() {
           </h2>
           <p className="text-white/60 text-lg opacity-90 max-w-xl">
             Votre transition vers{' '}
-            <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est boostée à
-            l'IA.
+            <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est boostée
+            à l'IA.
           </p>
           <Link href="/dashboard/profile">
             <Button

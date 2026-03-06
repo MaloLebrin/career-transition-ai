@@ -118,15 +118,12 @@ export class ExerciseResultsService {
   /**
    * Returns the latest draft for an employee + exercise type, or null.
    */
-  public async fetchDraft(input: SaveDraftInput): Promise<
-    | {
-        employeeId: number
-        type: ExerciseResult['type']
-        lastUpdated: string
-        data: Record<string, unknown>
-      }
-    | null
-  > {
+  public async fetchDraft(input: SaveDraftInput): Promise<{
+    employeeId: number
+    type: ExerciseResult['type']
+    lastUpdated: string
+    data: Record<string, unknown>
+  } | null> {
     const draft = await ExerciseResult.query()
       .where('employeeId', input.employeeId)
       .andWhere('type', input.type)
@@ -146,4 +143,3 @@ export class ExerciseResultsService {
     }
   }
 }
-

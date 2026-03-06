@@ -71,4 +71,3 @@ describe('UsersAdmin page', () => {
     )
   })
 })
-

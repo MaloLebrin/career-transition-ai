@@ -10,9 +10,7 @@ describe('MotivationTool', () => {
     render(<MotivationTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     expect(screen.getByText('Matrice des Motivations')).toBeInTheDocument()
-    expect(
-      screen.getByText(/Comparez les 22 leviers d'engagement un par un/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Comparez les 22 leviers d'engagement un par un/i)).toBeInTheDocument()
 
     const startButton = screen.getByRole('button', { name: /Commencer l'analyse/i })
 
@@ -22,9 +20,7 @@ describe('MotivationTool', () => {
 
     // Après démarrage, on doit voir la question principale
     await waitFor(() => {
-      expect(
-        screen.getByText(/Lequel est le plus important pour vous/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Lequel est le plus important pour vous/i)).toBeInTheDocument()
     })
   })
 
@@ -52,4 +48,3 @@ describe('MotivationTool', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 })
-

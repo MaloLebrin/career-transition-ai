@@ -67,14 +67,14 @@ Après redirection, le candidat voit le dashboard ; selon la logique existante, 
 
 ### Table `onboarding_tokens`
 
-| Colonne      | Type        | Description                          |
-|-------------|-------------|--------------------------------------|
-| `id`        | integer PK  | —                                    |
-| `user_id`   | integer FK  | Référence `users.id` (CASCADE)      |
-| `token`     | string(64)  | Token unique (hex, 32 bytes)         |
-| `expires_at`| timestamp   | Date d’expiration (création + 7 j)   |
-| `used_at`   | timestamp   | Nullable ; renseigné après utilisation |
-| `created_at`| timestamp   | —                                    |
+| Colonne      | Type       | Description                            |
+| ------------ | ---------- | -------------------------------------- |
+| `id`         | integer PK | —                                      |
+| `user_id`    | integer FK | Référence `users.id` (CASCADE)         |
+| `token`      | string(64) | Token unique (hex, 32 bytes)           |
+| `expires_at` | timestamp  | Date d’expiration (création + 7 j)     |
+| `used_at`    | timestamp  | Nullable ; renseigné après utilisation |
+| `created_at` | timestamp  | —                                      |
 
 ### Règles métier
 
@@ -95,17 +95,17 @@ Après redirection, le candidat voit le dashboard ; selon la logique existante, 
 
 ## Fichiers principaux
 
-| Rôle              | Fichier |
-|-------------------|--------|
-| Migration         | `database/migrations/1730500000000_create_onboarding_tokens_table.ts` |
-| Modèle token      | `app/models/onboarding_token.ts` |
-| Validator         | `app/validators/onboarding_set_password_validator.ts` |
-| Contrôleur        | `app/controllers/onboarding_controller.ts` |
-| Notify (stub)     | `app/services/onboarding_notify_service.ts` |
-| Création User+token | `app/services/employees_service.ts` (option `baseUrl`) |
-| Invite dashboard  | `app/controllers/employees_controller.ts` → `storeFromDashboard` |
-| Pages Inertia     | `inertia/pages/onboarding/SetPassword.tsx`, `InvalidToken.tsx` |
-| Routes            | `start/routes.ts` → préfixe `/onboarding` |
+| Rôle                | Fichier                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| Migration           | `database/migrations/1730500000000_create_onboarding_tokens_table.ts` |
+| Modèle token        | `app/models/onboarding_token.ts`                                      |
+| Validator           | `app/validators/onboarding_set_password_validator.ts`                 |
+| Contrôleur          | `app/controllers/onboarding_controller.ts`                            |
+| Notify (stub)       | `app/services/onboarding_notify_service.ts`                           |
+| Création User+token | `app/services/employees_service.ts` (option `baseUrl`)                |
+| Invite dashboard    | `app/controllers/employees_controller.ts` → `storeFromDashboard`      |
+| Pages Inertia       | `inertia/pages/onboarding/SetPassword.tsx`, `InvalidToken.tsx`        |
+| Routes              | `start/routes.ts` → préfixe `/onboarding`                             |
 
 ---
 

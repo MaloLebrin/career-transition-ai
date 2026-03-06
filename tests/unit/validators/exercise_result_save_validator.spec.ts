@@ -1,6 +1,9 @@
 import { test } from '@japa/runner'
 import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
-import { exerciceResultStatusValuesValues, exerciceResultTypesValues } from '#models/exercise_result'
+import {
+  exerciceResultStatusValuesValues,
+  exerciceResultTypesValues,
+} from '#models/exercise_result'
 
 test.group('saveExerciseResultValidator', () => {
   test('accepts a valid payload', async ({ assert }) => {
@@ -32,4 +35,3 @@ test.group('saveExerciseResultValidator', () => {
     await assert.rejects(() => saveExerciseResultValidator.validate(data))
   })
 })
-

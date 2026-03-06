@@ -32,7 +32,8 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
                 Bienvenue, {userName}
               </h1>
               <p className="text-brand-navy/60 text-sm mt-2">
-                Votre espace est prêt. Créez votre mot de passe pour vous connecter et commencer vos exercices.
+                Votre espace est prêt. Créez votre mot de passe pour vous connecter et commencer vos
+                exercices.
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -55,12 +56,7 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
                 onChange={(e) => setData('password_confirmation', e.target.value)}
                 error={errors.password_confirmation}
               />
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
-                disabled={processing}
-              >
+              <Button type="submit" className="w-full" size="lg" disabled={processing}>
                 {processing ? 'Création…' : 'Créer mon mot de passe et accéder à mon espace'}
               </Button>
             </form>

@@ -1,8 +1,7 @@
-
 export interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  logoUrl?: string;
-  createdAt: string;
+  id: string
+  name: string
+  slug: string
+  logoUrl?: string
+  createdAt: string
 }

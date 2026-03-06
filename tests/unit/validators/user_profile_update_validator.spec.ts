@@ -29,4 +29,3 @@ test.group('userProfileUpdateValidator', () => {
     )
   })
 })
-

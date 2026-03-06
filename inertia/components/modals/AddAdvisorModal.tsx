@@ -12,7 +12,7 @@ interface Props {
 const roles: { id: AdvisorRole; title: string; desc: string }[] = [
   { id: 'admin', title: 'Administrateur', desc: 'Gestion du cabinet, équipe et facturation' },
   { id: 'expert', title: 'Expert Référent', desc: 'Accompagnement et supervision de dossiers' },
-  { id: 'consultant', title: 'Consultant', desc: "Accompagnement de ses propres candidats" },
+  { id: 'consultant', title: 'Consultant', desc: 'Accompagnement de ses propres candidats' },
 ]
 
 const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
@@ -63,14 +63,24 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
           className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 z-10 p-2"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </Button>
 
         <div className="mb-10 text-center">
           <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
             </svg>
           </div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
@@ -130,8 +140,18 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
                   </div>
                   {data.role === r.id && (
                     <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                   )}

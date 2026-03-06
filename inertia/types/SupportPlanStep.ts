@@ -1,13 +1,12 @@
-
-import { ExerciseType } from './ExerciseType';
+import { ExerciseType } from './ExerciseType'
 
 export interface SupportPlanStep {
-  id: number;
-  title: string;
-  description: string;
-  dueDate: string;
-  completed: boolean;
-  notes?: string;
-  associatedExercise?: ExerciseType;
-  lastUpdated?: string;
+  id: number
+  title: string
+  description: string
+  dueDate: string
+  completed: boolean
+  notes?: string
+  associatedExercise?: ExerciseType
+  lastUpdated?: string
 }

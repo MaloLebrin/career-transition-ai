@@ -60,7 +60,9 @@ export class EmployeesService {
           .first()
 
         if (onboardedEmployee) {
-          throw new Error('Un utilisateur avec cet email possède déjà un compte actif dans cette organisation.')
+          throw new Error(
+            'Un utilisateur avec cet email possède déjà un compte actif dans cette organisation.'
+          )
         }
 
         // Utilisateur existant mais pas encore totalement onboardé : on recrée un token et on renvoie le lien.
@@ -115,8 +117,7 @@ export class EmployeesService {
       summary: payload.summary ?? employee.summary,
       name: payload.name ?? employee.name,
       currentRole: payload.currentRole ?? employee.currentRole,
-      onboarded:
-        typeof payload.onboarded === 'boolean' ? payload.onboarded : employee.onboarded,
+      onboarded: typeof payload.onboarded === 'boolean' ? payload.onboarded : employee.onboarded,
       nextAppointment: payload.nextAppointment
         ? DateTime.fromISO(payload.nextAppointment)
         : employee.nextAppointment,
@@ -125,4 +126,3 @@ export class EmployeesService {
     return employee
   }
 }
-

@@ -6,4 +6,3 @@ export const userProfileUpdateValidator = vine.compile(
     email: vine.string().trim().email().maxLength(255),
   })
 )
-

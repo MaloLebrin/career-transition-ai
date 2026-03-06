@@ -27,10 +27,7 @@ describe('PublicLayout', () => {
 
   test('applies optional className to wrapper', () => {
     render(
-      <PublicLayout
-        headerProps={{ onLogoClick: () => {} }}
-        className="flex flex-col"
-      >
+      <PublicLayout headerProps={{ onLogoClick: () => {} }} className="flex flex-col">
         <span data-testid="child">Child</span>
       </PublicLayout>
     )

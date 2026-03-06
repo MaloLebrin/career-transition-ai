@@ -11,9 +11,7 @@ describe('ValuesTool', () => {
 
     // Intro content
     expect(screen.getByText(/Classement des Valeurs/i)).toBeInTheDocument()
-    expect(
-      screen.getByText(/Classez les 10 valeurs universelles de Schwartz/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Classez les 10 valeurs universelles de Schwartz/i)).toBeInTheDocument()
 
     // Click the first available value button
     const valueButtons = screen.getAllByRole('button')
@@ -27,10 +25,7 @@ describe('ValuesTool', () => {
     expect(onSaveDraft).toHaveBeenCalled()
 
     // The hierarchy counter should reflect 1 selected value
-    expect(
-      screen.getByText(/Votre hiérarchie \(1\/10\)/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Votre hiérarchie \(1\/10\)/i)).toBeInTheDocument()
     expect(onSave).not.toHaveBeenCalled()
   })
 })
-

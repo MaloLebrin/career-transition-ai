@@ -18,8 +18,7 @@ export default class EmployeesController {
     const user = auth.user
     const organizationId = user?.organizationId ?? null
     // Admin sees all org employees; advisor sees only their advised employees
-    const advisorId =
-      user?.role === USERS_ROLES.ADVISOR ? user.id : null
+    const advisorId = user?.role === USERS_ROLES.ADVISOR ? user.id : null
 
     const query = Employee.query()
       .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))

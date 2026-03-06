@@ -1,2 +1,1 @@
-
-export type JobType = 'CDI' | 'CDD' | 'Alternance' | 'Freelance' | 'Stage';
+export type JobType = 'CDI' | 'CDD' | 'Alternance' | 'Freelance' | 'Stage'

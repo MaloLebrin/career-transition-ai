@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import React from 'react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import {
   Compass,
   BrainCircuit,
@@ -15,25 +14,25 @@ import {
   MessageSquare,
   Calendar,
   Award,
-} from 'lucide-react';
-import PublicLayout from '../layout/PublicLayout';
-import Badge from '../ui/Badge';
-import Button from '../ui/Button';
-import Logo from '../ui/Logo';
+} from 'lucide-react'
+import PublicLayout from '../layout/PublicLayout'
+import Badge from '../ui/Badge'
+import Button from '../ui/Button'
+import Logo from '../ui/Logo'
 
 interface LandingPageProps {
-  onEnterApp: () => void;
+  onEnterApp: () => void
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
-  const { scrollYProgress } = useScroll();
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -500]);
+  const { scrollYProgress } = useScroll()
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -200])
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, -500])
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+    const element = document.getElementById(id)
+    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <PublicLayout
@@ -81,8 +80,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </h1>
 
             <p className="text-xl md:text-2xl text-brand-navy/60 max-w-3xl leading-relaxed font-medium">
-              France Transition Travail fusionne la rigueur des sciences comportementales avec la puissance d&apos;analyse
-              de Gemini pour des bilans de compétences structurants et premium.
+              France Transition Travail fusionne la rigueur des sciences comportementales avec la
+              puissance d&apos;analyse de Gemini pour des bilans de compétences structurants et
+              premium.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -168,7 +168,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <div className="h-40 bg-brand-navy/5 rounded-[32px] p-6 flex items-end gap-2">
                     {[40, 70, 45, 90, 65, 80, 50, 85, 60, 75].map((h, i) => (
                       // eslint-disable-next-line react/no-array-index-key
-                      <div key={i} className="grow bg-brand-sage/30 rounded-t-lg" style={{ height: `${h}%` }} />
+                      <div
+                        key={i}
+                        className="grow bg-brand-sage/30 rounded-t-lg"
+                        style={{ height: `${h}%` }}
+                      />
                     ))}
                   </div>
 
@@ -207,7 +211,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-8 h-8 rounded-xl bg-brand-terracotta flex items-center justify-center text-white">
                   <BrainCircuit size={18} />
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">Analyse IA</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Analyse IA
+                </span>
               </div>
               <p className="text-xs font-bold text-brand-navy leading-relaxed italic">
                 &quot;Synergie détectée entre leadership naturel et agilité technique (94%).&quot;
@@ -223,7 +229,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-8 h-8 rounded-xl bg-brand-sage flex items-center justify-center text-white">
                   <Target size={18} />
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">Objectif</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Objectif
+                </span>
               </div>
               <p className="text-xs font-bold text-brand-navy leading-relaxed">
                 Reconversion vers : <br />
@@ -240,7 +248,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-7 h-7 rounded-lg bg-brand-navy flex items-center justify-center text-white">
                   <Zap size={14} />
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">Matching</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Matching
+                </span>
               </div>
               <div className="flex items-end gap-1">
                 <div className="h-8 w-2 bg-brand-sage rounded-full" />
@@ -257,7 +267,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             >
               <div className="flex items-center space-x-2 mb-2">
                 <ShieldCheck size={14} />
-                <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">Certifié</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">
+                  Certifié
+                </span>
               </div>
               <p className="text-[10px] font-bold">Bilan conforme Qualiopi</p>
             </motion.div>
@@ -271,7 +283,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-7 h-7 rounded-lg bg-brand-terracotta/10 flex items-center justify-center text-brand-terracotta">
                   <Compass size={14} />
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">Soft Skills</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Soft Skills
+                </span>
               </div>
               <div className="space-y-2">
                 <div className="h-1.5 w-full bg-brand-navy/5 rounded-full overflow-hidden">
@@ -291,7 +305,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-6 h-6 rounded-full bg-brand-sage/20 flex items-center justify-center text-brand-sage">
                   <MessageSquare size={12} />
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">Coach Feedback</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Coach Feedback
+                </span>
               </div>
               <p className="text-[10px] font-medium text-brand-navy/70 leading-tight">
                 &quot;Excellent profil pour le management de transition.&quot;
@@ -307,7 +323,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-7 h-7 rounded-lg bg-brand-navy/5 flex items-center justify-center text-brand-navy">
                   <Calendar size={14} />
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">Prochaine Session</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Prochaine Session
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-sage/10 flex flex-col items-center justify-center text-brand-sage">
@@ -316,7 +334,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-brand-navy">Entretien de synthèse</p>
-                  <p className="text-[9px] text-brand-navy/40 font-medium">14:30 • Cabinet Expert</p>
+                  <p className="text-[9px] text-brand-navy/40 font-medium">
+                    14:30 • Cabinet Expert
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -330,7 +350,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-6 h-6 rounded-full bg-brand-terracotta/20 flex items-center justify-center text-brand-terracotta">
                   <Award size={12} />
                 </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">Compétences</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
+                  Compétences
+                </span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {['Leadership', 'Agilité', 'RSE'].map((skill) => (
@@ -358,7 +380,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <span className="text-xl font-black tracking-tighter">TRANSITION PRO</span>
             <span className="text-xl font-black tracking-tighter">POLE EMPLOI</span>
             <span className="text-xl font-black tracking-tighter">APEC</span>
-            <span className="text-xl font-black tracking-tighter italic text-brand-sage">CABINETS EXPERTS</span>
+            <span className="text-xl font-black tracking-tighter italic text-brand-sage">
+              CABINETS EXPERTS
+            </span>
           </div>
         </div>
       </section>
@@ -373,8 +397,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 Plus qu&apos;un outil, <br className="hidden md:block" /> une méthode structurée.
               </h2>
               <p className="text-lg text-brand-navy/60 font-medium leading-relaxed">
-                Nous avons digitalisé les meilleurs outils du bilan de compétences pour offrir une expérience fluide,
-                structurante et hautement qualitative.
+                Nous avons digitalisé les meilleurs outils du bilan de compétences pour offrir une
+                expérience fluide, structurante et hautement qualitative.
               </p>
 
               <div className="space-y-6 pt-4">
@@ -436,7 +460,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       </section>
 
       {/* --- AI ENGINE SECTION --- */}
-      <section id="ai-engine" className="py-64 px-6 bg-brand-navy text-white relative overflow-hidden">
+      <section
+        id="ai-engine"
+        className="py-64 px-6 bg-brand-navy text-white relative overflow-hidden"
+      >
         <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-brand-sage/10 blur-[150px] rounded-full -mr-96 -mt-96 opacity-50" />
         <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-brand-terracotta/5 blur-[150px] rounded-full -ml-96 -mb-96 opacity-30" />
 
@@ -455,18 +482,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </h2>
 
             <p className="text-xl text-white/60 font-medium leading-relaxed max-w-xl">
-              Contrairement aux tests classiques qui se limitent à des scores, notre moteur analyse la sémantique de
-              chaque réponse pour détecter la cohérence et l&apos;enthousiasme.
+              Contrairement aux tests classiques qui se limitent à des scores, notre moteur analyse
+              la sémantique de chaque réponse pour détecter la cohérence et l&apos;enthousiasme.
             </p>
 
             <div className="grid grid-cols-2 gap-12 pt-8">
               <div className="space-y-2">
                 <div className="text-5xl font-bold text-white">99.2%</div>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Précision Sémantique</div>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                  Précision Sémantique
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-5xl font-bold text-white">-65%</div>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Temps de Synthèse</div>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                  Temps de Synthèse
+                </div>
               </div>
             </div>
           </div>
@@ -507,7 +538,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                       <Cpu size={24} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text:white/40">Statut du moteur</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text:white/40">
+                        Statut du moteur
+                      </p>
                       <p className="text-sm font-bold text-white">Analyse en temps réel active</p>
                     </div>
                   </div>
@@ -533,7 +566,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               Prêt à passer <br /> à la vitesse supérieure ?
             </h2>
             <p className="text-white/60 text-xl font-medium max-w-xl mx-auto">
-              Rejoignez les coachs et experts qui ont déjà automatisé leurs bilans avec France Transition Travail.
+              Rejoignez les coachs et experts qui ont déjà automatisé leurs bilans avec France
+              Transition Travail.
             </p>
             <div className="flex justify-center pt-6">
               <Button
@@ -548,11 +582,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="flex justify-center items-center space-x-8 pt-8">
               <div className="flex items-center space-x-2">
                 <ShieldCheck size={16} className="text-brand-sage" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">RGPD Compliant</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                  RGPD Compliant
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Zap size={16} className="text-brand-sage" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Setup Instantané</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                  Setup Instantané
+                </span>
               </div>
             </div>
           </motion.div>
@@ -566,12 +604,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="col-span-1 md:col-span-2 space-y-8">
               <Logo size="md" />
               <p className="text-brand-navy/50 max-w-sm leading-relaxed font-medium">
-                Plateforme d&apos;accompagnement à la transition professionnelle, alliant expertise humaine et analyse
-                qualitative par IA pour une clarté stratégique.
+                Plateforme d&apos;accompagnement à la transition professionnelle, alliant expertise
+                humaine et analyse qualitative par IA pour une clarté stratégique.
               </p>
             </div>
             <div className="space-y-6">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">Plateforme</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
+                Plateforme
+              </h4>
               <ul className="space-y-4">
                 <li>
                   <button
@@ -603,7 +643,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               </ul>
             </div>
             <div className="space-y-6">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">Légal</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
+                Légal
+              </h4>
               <ul className="space-y-4">
                 <li>
                   <a
@@ -653,16 +695,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
       </footer>
     </PublicLayout>
-  );
-};
+  )
+}
 
-const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; desc: string; delay: number; className?: string }> = ({
-  icon,
-  title,
-  desc,
-  delay,
-  className = '',
-}) => {
+const FeatureCard: React.FC<{
+  icon: React.ReactNode
+  title: string
+  desc: string
+  delay: number
+  className?: string
+}> = ({ icon, title, desc, delay, className = '' }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -677,7 +719,7 @@ const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; desc: string
       <h3 className="text-xl font-bold text-brand-navy mb-2">{title}</h3>
       <p className="text-sm text-brand-navy/50 font-medium leading-relaxed">{desc}</p>
     </motion.div>
-  );
-};
+  )
+}
 
-export default LandingPage;
+export default LandingPage

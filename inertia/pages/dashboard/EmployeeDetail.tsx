@@ -65,7 +65,9 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-brand-navy">{selectedEmployee.name}</h2>
-                <p className="text-brand-navy/60 text-sm font-medium">{selectedEmployee.currentRole}</p>
+                <p className="text-brand-navy/60 text-sm font-medium">
+                  {selectedEmployee.currentRole}
+                </p>
               </div>
             </div>
             <div className="flex space-x-2">
@@ -76,7 +78,12 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 isLoading={isGeneratingPDF}
                 disabled={!selectedEmployee?.plan.some((step) => step.completed)}
                 icon={
-                  <svg className="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4 stroke-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -172,7 +179,9 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   {selectedEmployee.skills.map((s, i) => (
                     <div key={i} className="space-y-1.5">
                       <div className="flex justify-between items-baseline">
-                        <span className="text-[10px] font-bold text-brand-navy uppercase">{s.name}</span>
+                        <span className="text-[10px] font-bold text-brand-navy uppercase">
+                          {s.name}
+                        </span>
                         <span className="text-[9px] font-bold text-brand-sage">{s.level}/5</span>
                       </div>
                       <div className="h-1 bg-brand-navy/5 rounded-full w-full">

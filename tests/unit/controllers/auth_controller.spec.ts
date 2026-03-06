@@ -165,4 +165,3 @@ test.group('AuthController super admin actions', () => {
     assert.isTrue(response.unauthorizedCalled)
   })
 })
-

@@ -8,7 +8,7 @@ test.group('updateEmployeeValidator', () => {
   })
 
   test('accepts advisorNotes only', async ({ assert }) => {
-    const payload = { advisorNotes: 'Notes d\'accompagnement.' }
+    const payload = { advisorNotes: "Notes d'accompagnement." }
     const result = await updateEmployeeValidator.validate(payload)
     assert.equal(result.advisorNotes, payload.advisorNotes)
   })

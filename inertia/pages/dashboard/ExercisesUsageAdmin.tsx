@@ -69,7 +69,8 @@ export default function ExercisesUsageAdmin({
           <div className="max-w-xl mx-auto text-center py-24 space-y-4">
             <h1 className="text-3xl font-bold text-brand-navy">Accès réservé</h1>
             <p className="text-brand-navy/60 text-sm font-medium">
-              Cette section est réservée aux administrateurs de la plateforme France Transition Carrière.
+              Cette section est réservée aux administrateurs de la plateforme France Transition
+              Carrière.
             </p>
           </div>
         </DashboardLayout>
@@ -122,7 +123,8 @@ export default function ExercisesUsageAdmin({
               Usage des exercices par organisation
             </h1>
             <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-              Volume d&apos;exercices complétés par cabinet et par type, sur la période sélectionnée.
+              Volume d&apos;exercices complétés par cabinet et par type, sur la période
+              sélectionnée.
             </p>
           </div>
 
@@ -135,21 +137,13 @@ export default function ExercisesUsageAdmin({
                 <span className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
                   Du
                 </span>
-                <Input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                />
+                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
                   Au
                 </span>
-                <Input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                />
+                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
@@ -179,7 +173,13 @@ export default function ExercisesUsageAdmin({
               <Button type="submit" size="sm" className="px-6">
                 Mettre à jour
               </Button>
-              <Button type="button" size="sm" variant="outline" className="px-6" onClick={handleExport}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="px-6"
+                onClick={handleExport}
+              >
                 Export CSV
               </Button>
             </div>
@@ -207,11 +207,19 @@ export default function ExercisesUsageAdmin({
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
                 {organizations.map((org) => (
-                  <tr key={org.id} className="hover:bg-brand-ivory/60 transition-colors cursor-pointer" onClick={() => {
-                    const params: Record<string, string> = { from, to }
-                    if (organizationId) params.organizationId = organizationId
-                    router.get('/dashboard/super-admin/exercises-usage', { ...params, organizationId: String(org.id) }, { preserveState: true, preserveScroll: true })
-                  }}>
+                  <tr
+                    key={org.id}
+                    className="hover:bg-brand-ivory/60 transition-colors cursor-pointer"
+                    onClick={() => {
+                      const params: Record<string, string> = { from, to }
+                      if (organizationId) params.organizationId = organizationId
+                      router.get(
+                        '/dashboard/super-admin/exercises-usage',
+                        { ...params, organizationId: String(org.id) },
+                        { preserveState: true, preserveScroll: true }
+                      )
+                    }}
+                  >
                     <td className="px-6 py-4 text-sm font-bold text-brand-navy underline decoration-brand-navy/20">
                       {org.name}
                     </td>
@@ -249,4 +257,3 @@ export default function ExercisesUsageAdmin({
     </>
   )
 }
-

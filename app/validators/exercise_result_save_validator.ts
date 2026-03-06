@@ -1,5 +1,8 @@
 import vine from '@vinejs/vine'
-import { exerciceResultStatusValuesValues, exerciceResultTypesValues } from '#models/exercise_result'
+import {
+  exerciceResultStatusValuesValues,
+  exerciceResultTypesValues,
+} from '#models/exercise_result'
 
 export const saveExerciseResultValidator = vine.compile(
   vine.object({
@@ -19,4 +22,3 @@ export const saveExerciseResultValidator = vine.compile(
     ),
   })
 )
-

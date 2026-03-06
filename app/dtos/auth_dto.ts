@@ -7,4 +7,3 @@ export type UserSessionDto = {
   name: string
   role: UserRole
 }
-

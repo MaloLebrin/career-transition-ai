@@ -16,7 +16,7 @@ test.group('Dashboard routes (functional)', () => {
     const res = await fetch(`${baseUrl()}/dashboard/employees`, {
       method: 'POST',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ name: 'Test', email: 'test@example.com' }),
     })
     assert.equal(res.status, 401)
@@ -39,10 +39,11 @@ test.group('Dashboard routes (functional)', () => {
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {
       method: 'POST',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
-    const setCookies = loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
+    const setCookies =
+      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
     const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
 
     const candidateEmail = `candidate-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
@@ -51,8 +52,8 @@ test.group('Dashboard routes (functional)', () => {
       redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Cookie: cookieHeader,
+        'Accept': 'application/json',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify({ name: 'New Candidate', email: candidateEmail }),
     })
@@ -74,7 +75,7 @@ test.group('Dashboard routes (functional)', () => {
     const res = await fetch(`${baseUrl()}/dashboard/settings/organization`, {
       method: 'PUT',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ name: 'My Org', slug: 'my-org' }),
     })
     assert.equal(res.status, 401)
@@ -96,10 +97,11 @@ test.group('Dashboard routes (functional)', () => {
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {
       method: 'POST',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email, password: 'secret123' }),
     })
-    const setCookies = loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
+    const setCookies =
+      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
     const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
 
     const user = await User.query().where('email', email).firstOrFail()
@@ -111,8 +113,8 @@ test.group('Dashboard routes (functional)', () => {
       redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Cookie: cookieHeader,
+        'Accept': 'application/json',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify({ name: newName, slug: org.slug }),
     })
@@ -134,7 +136,7 @@ test.group('Dashboard routes (functional)', () => {
     const res = await fetch(`${baseUrl()}/dashboard/settings/organization/advisors`, {
       method: 'POST',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
         name: 'New Advisor',
         email: 'advisor@example.com',
@@ -160,7 +162,7 @@ test.group('Dashboard routes (functional)', () => {
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {
       method: 'POST',
       redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ email, password: 'secret123' }),
     })
     const setCookies =
@@ -173,8 +175,8 @@ test.group('Dashboard routes (functional)', () => {
       redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Cookie: cookieHeader,
+        'Accept': 'application/json',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify({
         name: 'Invited Advisor',

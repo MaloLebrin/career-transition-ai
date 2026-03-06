@@ -2,92 +2,99 @@
  * @deprecated Navigation is now handled by Inertia routes and dashboard/* pages.
  * Use DashboardLayout + dashboard/Home, dashboard/EmployeeDetail, etc. instead.
  */
-import { router } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
-import { employeeUpdatePayload } from '../../helpers/employee_payload';
-import { useAuth } from '../../hooks/useAuth';
-import { useEmployee } from '../../hooks/useEmployee';
-import { useEmployees } from '../../hooks/useEmployees';
-import { useExercises } from '../../hooks/useExercises';
-import { ExerciseType, SupportPlanStep } from '../../types';
-import DesignSystem from '../design-system/DesignSystem';
-import CircleOfControlTool from '../exercises/CircleOfControlTool';
-import DISCTool from '../exercises/DISCTool';
-import LifeCurveTool from '../exercises/LifeCurveTool';
-import MotivationTool from '../exercises/MotivationTool';
-import PersonalityTool from '../exercises/PersonalityTool';
-import SkillMappingTool from '../exercises/SkillMappingTool';
-import TargetingTool from '../exercises/TargetingTool';
-import ValuesTool from '../exercises/ValuesTool';
-import AddEmployeeModal from '../modals/AddEmployeeModal';
-import StepDetailModal from '../modals/StepDetailModal';
-import OnboardingFlow from '../onboarding/OnboardingFlow';
-import ProfilePage from '../profile/ProfilePage';
-import OrganizationSettings from '../settings/OrganizationSettings';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Input from '../ui/Input';
-import NavButton from '../ui/NavButton';
-import StatCard from '../ui/StatCard';
-import Layout from './Layout';
+import { router } from '@inertiajs/react'
+import React, { useEffect, useState } from 'react'
+import { employeeUpdatePayload } from '../../helpers/employee_payload'
+import { useAuth } from '../../hooks/useAuth'
+import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployees } from '../../hooks/useEmployees'
+import { useExercises } from '../../hooks/useExercises'
+import { ExerciseType, SupportPlanStep } from '../../types'
+import DesignSystem from '../design-system/DesignSystem'
+import CircleOfControlTool from '../exercises/CircleOfControlTool'
+import DISCTool from '../exercises/DISCTool'
+import LifeCurveTool from '../exercises/LifeCurveTool'
+import MotivationTool from '../exercises/MotivationTool'
+import PersonalityTool from '../exercises/PersonalityTool'
+import SkillMappingTool from '../exercises/SkillMappingTool'
+import TargetingTool from '../exercises/TargetingTool'
+import ValuesTool from '../exercises/ValuesTool'
+import AddEmployeeModal from '../modals/AddEmployeeModal'
+import StepDetailModal from '../modals/StepDetailModal'
+import OnboardingFlow from '../onboarding/OnboardingFlow'
+import ProfilePage from '../profile/ProfilePage'
+import OrganizationSettings from '../settings/OrganizationSettings'
+import Button from '../ui/Button'
+import Card from '../ui/Card'
+import Input from '../ui/Input'
+import NavButton from '../ui/NavButton'
+import StatCard from '../ui/StatCard'
+import Layout from './Layout'
 
 const AppShell: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth()
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [activeNav, setActiveNav] = useState<'dashboard' | 'employees' | 'settings' | 'design-system'>('dashboard');
-  const [activeView, setActiveView] = useState<'detail' | 'exercise' | 'profile-edit' | 'org-settings' | 'design-system'>('detail');
-  const [currentTool, setCurrentTool] = useState<ExerciseType | null>(null);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
+  const [activeNav, setActiveNav] = useState<
+    'dashboard' | 'employees' | 'settings' | 'design-system'
+  >('dashboard')
+  const [activeView, setActiveView] = useState<
+    'detail' | 'exercise' | 'profile-edit' | 'org-settings' | 'design-system'
+  >('detail')
+  const [currentTool, setCurrentTool] = useState<ExerciseType | null>(null)
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
 
-  const { employees, filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm);
+  const { employees, filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm)
 
-  const userRole = user?.role || 'employee';
-  const targetId = userRole === 'employee' ? String(user?.id ?? 1) : selectedEmployeeId;
-  const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId);
+  const userRole = user?.role || 'employee'
+  const targetId = userRole === 'employee' ? String(user?.id ?? 1) : selectedEmployeeId
+  const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(selectedEmployee, async () => {
-    await refreshEmployee();
-    setActiveView('detail');
-    setCurrentTool(null);
-  });
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(
+    selectedEmployee,
+    async () => {
+      await refreshEmployee()
+      setActiveView('detail')
+      setCurrentTool(null)
+    }
+  )
 
   const handleLogout = () => {
-    logout();
-    setSelectedEmployeeId(null);
-    setCurrentTool(null);
-    setActiveView('detail');
-  };
+    logout()
+    setSelectedEmployeeId(null)
+    setCurrentTool(null)
+    setActiveView('detail')
+  }
 
   const handleDownloadPDF = async () => {
-    if (!selectedEmployee) return;
-    setIsGeneratingPDF(true);
+    if (!selectedEmployee) return
+    setIsGeneratingPDF(true)
     try {
-      const { generateComprehensivePDF } = await import('../services/pdfService');
-      await generateComprehensivePDF(selectedEmployee);
+      const { generateComprehensivePDF } = await import('../services/pdfService')
+      await generateComprehensivePDF(selectedEmployee)
     } catch (err) {
-      alert('Erreur PDF.');
+      alert('Erreur PDF.')
     } finally {
-      setIsGeneratingPDF(false);
+      setIsGeneratingPDF(false)
     }
-  };
+  }
 
   const getResultForStep = (step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercise) return null;
-    return selectedEmployee.exercises.find((res) => res.type === step.associatedExercise);
-  };
+    if (!selectedEmployee || !step.associatedExercise) return null
+    return selectedEmployee.exercises.find((res) => res.type === step.associatedExercise)
+  }
 
   useEffect(() => {
     if (userRole === 'advisor' && !selectedEmployeeId && employees.length > 0) {
-      setSelectedEmployeeId(String(employees[0].id));
+      setSelectedEmployeeId(String(employees[0].id))
     }
-  }, [userRole, employees, selectedEmployeeId]);
+  }, [userRole, employees, selectedEmployeeId])
 
   if (!user) {
-    return null;
+    return null
   }
 
   if (activeView === 'profile-edit' && userRole === 'employee' && selectedEmployee) {
@@ -95,24 +102,33 @@ const AppShell: React.FC = () => {
       <ProfilePage
         employee={selectedEmployee}
         onSave={(updated) => {
-          router.put(`/dashboard/employees/${selectedEmployee.id}`, employeeUpdatePayload(updated), {
-            onSuccess: () => setActiveView('detail'),
-          });
+          router.put(
+            `/dashboard/employees/${selectedEmployee.id}`,
+            employeeUpdatePayload(updated),
+            {
+              onSuccess: () => setActiveView('detail'),
+            }
+          )
         }}
         onBack={() => setActiveView('detail')}
       />
-    );
+    )
   }
 
   return (
-    <Layout userRole={userRole} onRoleChange={() => {}} onLogout={handleLogout} userName={user?.name}>
+    <Layout
+      userRole={userRole}
+      onRoleChange={() => {}}
+      onLogout={handleLogout}
+      userName={user?.name}
+    >
       {activeView === 'exercise' ? (
         <div className="animate-fadeIn max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <Button
               onClick={() => {
-                setActiveView('detail');
-                setCurrentTool(null);
+                setActiveView('detail')
+                setCurrentTool(null)
               }}
               variant="ghost"
               size="sm"
@@ -122,7 +138,9 @@ const AppShell: React.FC = () => {
             {isSavingDraft && (
               <div className="flex items-center space-x-2 text-slate-400">
                 <div className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-[10px] font-black uppercase tracking-widest italic">Sauvegarde auto...</span>
+                <span className="text-[10px] font-black uppercase tracking-widest italic">
+                  Sauvegarde auto...
+                </span>
               </div>
             )}
           </div>
@@ -132,7 +150,9 @@ const AppShell: React.FC = () => {
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...
                 <br />
-                <span className="text-sm font-bold text-brand-navy/40">Gemini décode votre profil vitaminé</span>
+                <span className="text-sm font-bold text-brand-navy/40">
+                  Gemini décode votre profil vitaminé
+                </span>
               </h3>
             </div>
           )}
@@ -159,7 +179,11 @@ const AppShell: React.FC = () => {
               />
             )}
             {currentTool === ExerciseType.PERSONALITY && (
-              <PersonalityTool onSave={(data, duration) => saveResult(ExerciseType.PERSONALITY, data, 10, duration)} />
+              <PersonalityTool
+                onSave={(data, duration) =>
+                  saveResult(ExerciseType.PERSONALITY, data, 10, duration)
+                }
+              />
             )}
             {currentTool === ExerciseType.TARGETING && (
               <TargetingTool
@@ -183,7 +207,9 @@ const AppShell: React.FC = () => {
             )}
             {currentTool === ExerciseType.SKILL_MAPPING && (
               <SkillMappingTool
-                onSave={(data, duration) => saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)}
+                onSave={(data, duration) =>
+                  saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
+                }
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
                 initialDraftPromise={loadDraft(ExerciseType.SKILL_MAPPING)}
                 experiences={selectedEmployee?.experiences || []}
@@ -191,7 +217,9 @@ const AppShell: React.FC = () => {
             )}
             {currentTool === ExerciseType.CIRCLE_OF_CONTROL && (
               <CircleOfControlTool
-                onSave={(data, duration) => saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)}
+                onSave={(data, duration) =>
+                  saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)
+                }
                 onSaveDraft={(data) => saveDraft(ExerciseType.CIRCLE_OF_CONTROL, data)}
                 initialDraftPromise={loadDraft(ExerciseType.CIRCLE_OF_CONTROL)}
               />
@@ -204,13 +232,15 @@ const AppShell: React.FC = () => {
             <div className="bg-white rounded-[24px] border border-brand-navy/5 p-3 sticky top-24 shadow-sm">
               <nav className="space-y-0.5">
                 <div className="px-3 py-2 mb-2">
-                  <h3 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">Navigation</h3>
+                  <h3 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
+                    Navigation
+                  </h3>
                 </div>
                 <NavButton
                   active={activeNav === 'dashboard'}
                   onClick={() => {
-                    setActiveNav('dashboard');
-                    setActiveView('detail');
+                    setActiveNav('dashboard')
+                    setActiveView('detail')
                   }}
                   icon="dashboard"
                   label="Bureau"
@@ -218,8 +248,8 @@ const AppShell: React.FC = () => {
                 <NavButton
                   active={activeNav === 'employees'}
                   onClick={() => {
-                    setActiveNav('employees');
-                    setActiveView('detail');
+                    setActiveNav('employees')
+                    setActiveView('detail')
                   }}
                   icon="users"
                   label="Candidats"
@@ -227,8 +257,8 @@ const AppShell: React.FC = () => {
                 <NavButton
                   active={activeNav === 'settings'}
                   onClick={() => {
-                    setActiveNav('settings');
-                    setActiveView('org-settings');
+                    setActiveNav('settings')
+                    setActiveView('org-settings')
                   }}
                   icon="settings"
                   label="Réglages"
@@ -236,8 +266,8 @@ const AppShell: React.FC = () => {
                 <NavButton
                   active={activeNav === 'design-system'}
                   onClick={() => {
-                    setActiveNav('design-system');
-                    setActiveView('design-system');
+                    setActiveNav('design-system')
+                    setActiveView('design-system')
                   }}
                   icon="palette"
                   label="Design"
@@ -245,7 +275,9 @@ const AppShell: React.FC = () => {
 
                 <div className="pt-4 mt-4 border-t border-brand-navy/5">
                   <div className="px-3 py-2">
-                    <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">Candidats</h4>
+                    <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
+                      Candidats
+                    </h4>
                   </div>
                   <div className="px-2 mb-3">
                     <Input
@@ -259,16 +291,18 @@ const AppShell: React.FC = () => {
                     {employeesLoading ? (
                       <div className="py-6 text-center">
                         <div className="w-4 h-4 border-2 border-brand-sage/10 border-t-brand-sage rounded-full animate-spin mx-auto mb-2"></div>
-                        <span className="text-[9px] font-bold text-brand-navy/40 uppercase tracking-widest">Chargement</span>
+                        <span className="text-[9px] font-bold text-brand-navy/40 uppercase tracking-widest">
+                          Chargement
+                        </span>
                       </div>
                     ) : filteredEmployees.length > 0 ? (
                       filteredEmployees.map((emp) => (
                         <button
                           key={emp.id}
                           onClick={() => {
-                            setSelectedEmployeeId(emp.id);
-                            setActiveNav('employees');
-                            setActiveView('detail');
+                            setSelectedEmployeeId(emp.id)
+                            setActiveNav('employees')
+                            setActiveView('detail')
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
                             Number(selectedEmployeeId) === emp.id && activeNav === 'employees'
@@ -286,7 +320,9 @@ const AppShell: React.FC = () => {
                       ))
                     ) : (
                       <div className="py-6 px-4 text-center">
-                        <p className="text-[9px] font-bold text-brand-navy/20 uppercase tracking-widest">Aucun résultat</p>
+                        <p className="text-[9px] font-bold text-brand-navy/20 uppercase tracking-widest">
+                          Aucun résultat
+                        </p>
                       </div>
                     )}
                   </div>
@@ -305,8 +341,18 @@ const AppShell: React.FC = () => {
                     size="md"
                     variant="secondary"
                     icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                     }
                   >
@@ -315,7 +361,11 @@ const AppShell: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <StatCard label="Total suivis" value={employees.length} color="navy" />
-                  <StatCard label="En attente" value={employees.filter((e) => !e.onboarded).length} color="terracotta" />
+                  <StatCard
+                    label="En attente"
+                    value={employees.filter((e) => !e.onboarded).length}
+                    color="terracotta"
+                  />
                   <StatCard
                     label="Étapes validées"
                     value={employees.reduce((acc, e) => acc + e.exercises.length, 0)}
@@ -330,7 +380,13 @@ const AppShell: React.FC = () => {
                     </h3>
                     <div className="space-y-4">
                       {employees
-                        .flatMap((e) => e.exercises.map((ex) => ({ ...ex, employeeName: e.name, employeeId: e.id })))
+                        .flatMap((e) =>
+                          e.exercises.map((ex) => ({
+                            ...ex,
+                            employeeName: e.name,
+                            employeeId: e.id,
+                          }))
+                        )
                         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                         .slice(0, 5)
                         .map((activity, idx) => (
@@ -343,8 +399,12 @@ const AppShell: React.FC = () => {
                                 {activity.employeeName[0]}
                               </div>
                               <div>
-                                <p className="text-sm font-bold text-brand-navy">{activity.employeeName}</p>
-                                <p className="text-[10px] font-medium text-brand-navy/60">{activity.type}</p>
+                                <p className="text-sm font-bold text-brand-navy">
+                                  {activity.employeeName}
+                                </p>
+                                <p className="text-[10px] font-medium text-brand-navy/60">
+                                  {activity.type}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right">
@@ -371,7 +431,8 @@ const AppShell: React.FC = () => {
                         .filter((e) => e.nextAppointment)
                         .sort(
                           (a, b) =>
-                            new Date(a.nextAppointment!).getTime() - new Date(b.nextAppointment!).getTime()
+                            new Date(a.nextAppointment!).getTime() -
+                            new Date(b.nextAppointment!).getTime()
                         )
                         .slice(0, 5)
                         .map((emp, idx) => (
@@ -396,7 +457,9 @@ const AppShell: React.FC = () => {
                               </div>
                               <div>
                                 <p className="text-sm font-bold text-brand-navy">{emp.name}</p>
-                                <p className="text-[10px] font-medium text-brand-navy/60">Accompagnement individuel</p>
+                                <p className="text-[10px] font-medium text-brand-navy/60">
+                                  Accompagnement individuel
+                                </p>
                               </div>
                             </div>
                             <div className="text-right">
@@ -424,8 +487,8 @@ const AppShell: React.FC = () => {
               <div className="animate-fadeIn">
                 <OrganizationSettings
                   onBack={() => {
-                    setActiveNav('dashboard');
-                    setActiveView('detail');
+                    setActiveNav('dashboard')
+                    setActiveView('detail')
                   }}
                 />
               </div>
@@ -433,8 +496,8 @@ const AppShell: React.FC = () => {
               <div className="animate-fadeIn">
                 <DesignSystem
                   onBack={() => {
-                    setActiveNav('dashboard');
-                    setActiveView('detail');
+                    setActiveNav('dashboard')
+                    setActiveView('detail')
                   }}
                 />
               </div>
@@ -446,8 +509,12 @@ const AppShell: React.FC = () => {
                       {selectedEmployee.name[0]}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-brand-navy">{selectedEmployee.name}</h2>
-                      <p className="text-brand-navy/60 text-sm font-medium">{selectedEmployee.currentRole}</p>
+                      <h2 className="text-2xl font-bold text-brand-navy">
+                        {selectedEmployee.name}
+                      </h2>
+                      <p className="text-brand-navy/60 text-sm font-medium">
+                        {selectedEmployee.currentRole}
+                      </p>
                     </div>
                   </div>
                   <div className="flex space-x-2">
@@ -458,7 +525,12 @@ const AppShell: React.FC = () => {
                       isLoading={isGeneratingPDF}
                       disabled={!selectedEmployee?.plan.some((step) => step.completed)}
                       icon={
-                        <svg className="w-4 h-4 stroke-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4 h-4 stroke-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -480,14 +552,20 @@ const AppShell: React.FC = () => {
                       <textarea
                         className="w-full bg-white/50 border border-brand-sage/10 rounded-3xl p-6 text-sm min-h-[120px] outline-none focus:ring-2 focus:ring-brand-sage transition-all resize-none"
                         defaultValue={selectedEmployee.advisorNotes || ''}
-                        onBlur={(e) => router.put(`/dashboard/employees/${targetId}`, { advisorNotes: e.target.value })}
+                        onBlur={(e) =>
+                          router.put(`/dashboard/employees/${targetId}`, {
+                            advisorNotes: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <Card className="p-10">
-                      <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-8">Feuille de Route</h3>
+                      <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-8">
+                        Feuille de Route
+                      </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {selectedEmployee.plan.map((step) => {
-                          const result = getResultForStep(step);
+                          const result = getResultForStep(step)
                           return (
                             <div
                               key={step.id}
@@ -518,7 +596,7 @@ const AppShell: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                          );
+                          )
                         })}
                       </div>
                     </Card>
@@ -532,8 +610,12 @@ const AppShell: React.FC = () => {
                         {selectedEmployee.skills.map((s, i) => (
                           <div key={i} className="space-y-1.5">
                             <div className="flex justify-between items-baseline">
-                              <span className="text-[10px] font-bold text-brand-navy uppercase">{s.name}</span>
-                              <span className="text-[9px] font-bold text-brand-sage">{s.level}/5</span>
+                              <span className="text-[10px] font-bold text-brand-navy uppercase">
+                                {s.name}
+                              </span>
+                              <span className="text-[9px] font-bold text-brand-sage">
+                                {s.level}/5
+                              </span>
                             </div>
                             <div className="h-1 bg-brand-navy/5 rounded-full w-full">
                               <div
@@ -558,9 +640,7 @@ const AppShell: React.FC = () => {
               userRole={userRole}
             />
           )}
-          {isAddModalOpen && (
-            <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />
-          )}
+          {isAddModalOpen && <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />}
         </div>
       ) : selectedEmployee && !selectedEmployee.onboarded ? (
         <OnboardingFlow
@@ -568,7 +648,7 @@ const AppShell: React.FC = () => {
           onComplete={(updated) => {
             router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated), {
               onSuccess: () => router.reload(),
-            });
+            })
           }}
         />
       ) : selectedEmployee ? (
@@ -580,7 +660,8 @@ const AppShell: React.FC = () => {
                 Hello, {selectedEmployee.name.split(' ')[0]} 🚀
               </h2>
               <p className="text-white/60 text-lg opacity-90 max-w-xl">
-                Votre transition vers <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est
+                Votre transition vers{' '}
+                <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est
                 boostée à l'IA.
               </p>
               <Button
@@ -623,8 +704,8 @@ const AppShell: React.FC = () => {
                         {step.associatedExercise && !step.completed && (
                           <Button
                             onClick={() => {
-                              setCurrentTool(step.associatedExercise!);
-                              setActiveView('exercise');
+                              setCurrentTool(step.associatedExercise!)
+                              setActiveView('exercise')
                             }}
                             className="mt-6"
                             variant="secondary"
@@ -665,7 +746,9 @@ const AppShell: React.FC = () => {
                 </div>
               )}
               <Card className="p-8">
-                <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6">Expertises</h3>
+                <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6">
+                  Expertises
+                </h3>
                 <div className="space-y-4">
                   {selectedEmployee.skills.slice(0, 5).map((s, i) => (
                     <div key={i} className="space-y-1.5">
@@ -688,8 +771,7 @@ const AppShell: React.FC = () => {
         </div>
       ) : null}
     </Layout>
-  );
-};
+  )
+}
 
-export default AppShell;
-
+export default AppShell

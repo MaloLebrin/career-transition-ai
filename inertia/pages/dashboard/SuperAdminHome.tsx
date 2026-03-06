@@ -24,7 +24,8 @@ export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
           <div className="max-w-xl mx-auto text-center py-24 space-y-4">
             <h1 className="text-3xl font-bold text-brand-navy">Accès réservé</h1>
             <p className="text-brand-navy/60 text-sm font-medium">
-              Cette section est réservée aux administrateurs de la plateforme France Transition Carrière.
+              Cette section est réservée aux administrateurs de la plateforme France Transition
+              Carrière.
             </p>
           </div>
         </DashboardLayout>
@@ -45,7 +46,8 @@ export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
               Supervision de la plateforme
             </h1>
             <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-              Synthèse globale de l’activité : organisations clientes, utilisateurs connectés au portail.
+              Synthèse globale de l’activité : organisations clientes, utilisateurs connectés au
+              portail.
             </p>
           </div>
 
@@ -59,4 +61,3 @@ export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
     </>
   )
 }
-

@@ -29,9 +29,7 @@ describe('AddEmployeeModal', () => {
     render(<AddEmployeeModal onClose={onClose} />)
 
     expect(screen.getByText(/Inviter un Talent/i)).toBeInTheDocument()
-    expect(
-      screen.getByText(/L'invitation sera envoyée par email/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/L'invitation sera envoyée par email/i)).toBeInTheDocument()
 
     // first button is the close (top-right); second is submit
     const buttons = screen.getAllByRole('button')
@@ -62,4 +60,3 @@ describe('AddEmployeeModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })
-

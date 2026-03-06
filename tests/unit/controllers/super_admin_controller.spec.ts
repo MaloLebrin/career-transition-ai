@@ -228,5 +228,3 @@ test.group('SuperAdminController.exerciseUsageExport', () => {
     assert.include(csv, 'motivation')
   })
 })
-
-

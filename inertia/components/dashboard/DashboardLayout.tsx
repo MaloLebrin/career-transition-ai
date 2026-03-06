@@ -13,7 +13,10 @@ interface DashboardLayoutProps {
   selectedEmployeeId?: string | null
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmployeeId = null }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  selectedEmployeeId = null,
+}) => {
   const { user, logout } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const { url } = usePage()
@@ -50,10 +53,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
                         Supervision
                       </h4>
                     </div>
-                    <NavLink href="/dashboard/super-admin" icon="dashboard" label="Supervision Plateforme" />
-                    <NavLink href="/dashboard/super-admin/organizations" icon="building" label="Organisations" />
+                    <NavLink
+                      href="/dashboard/super-admin"
+                      icon="dashboard"
+                      label="Supervision Plateforme"
+                    />
+                    <NavLink
+                      href="/dashboard/super-admin/organizations"
+                      icon="building"
+                      label="Organisations"
+                    />
                     <NavLink href="/dashboard/super-admin/users" icon="user" label="Utilisateurs" />
-                    <NavLink href="/dashboard/super-admin/exercises-usage" icon="target" label="Usage exercices" />
+                    <NavLink
+                      href="/dashboard/super-admin/exercises-usage"
+                      icon="target"
+                      label="Usage exercices"
+                    />
                   </>
                 )}
 
@@ -81,7 +96,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, selectedEmp
                       </div>
                     ) : filteredEmployees.length > 0 ? (
                       filteredEmployees.map((emp) => {
-                        const isActive = selectedEmployeeId !== null && Number(selectedEmployeeId) === emp.id && url.includes('/dashboard/employees/')
+                        const isActive =
+                          selectedEmployeeId !== null &&
+                          Number(selectedEmployeeId) === emp.id &&
+                          url.includes('/dashboard/employees/')
                         return (
                           <Link
                             key={emp.id}

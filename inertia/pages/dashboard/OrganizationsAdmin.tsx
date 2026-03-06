@@ -35,7 +35,8 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
           <div className="max-w-xl mx-auto text-center py-24 space-y-4">
             <h1 className="text-3xl font-bold text-brand-navy">Accès réservé</h1>
             <p className="text-brand-navy/60 text-sm font-medium">
-              Cette section est réservée aux administrateurs de la plateforme France Transition Carrière.
+              Cette section est réservée aux administrateurs de la plateforme France Transition
+              Carrière.
             </p>
           </div>
         </DashboardLayout>
@@ -81,7 +82,7 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
     if (
       // eslint-disable-next-line no-alert
       !window.confirm(
-        "Voulez-vous vraiment supprimer cette organisation ? Cette action est potentiellement irréversible."
+        'Voulez-vous vraiment supprimer cette organisation ? Cette action est potentiellement irréversible.'
       )
     ) {
       return
@@ -99,9 +100,12 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
               <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
                 Vue Super Admin
               </p>
-              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">Organisations clientes</h1>
+              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">
+                Organisations clientes
+              </h1>
               <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-                Liste des cabinets utilisant le portail, avec le volume de collaborateurs et de talents suivis.
+                Liste des cabinets utilisant le portail, avec le volume de collaborateurs et de
+                talents suivis.
               </p>
             </div>
             <div className="space-y-3 w-full md:w-auto">
@@ -190,8 +194,12 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">{org.usersCount}</td>
-                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">{org.employeesCount}</td>
+                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">
+                      {org.usersCount}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">
+                      {org.employeesCount}
+                    </td>
                     <td className="px-6 py-4 text-xs text-brand-navy/40">
                       {org.createdAt ? new Date(org.createdAt).toLocaleDateString('fr-FR') : '—'}
                     </td>
@@ -254,4 +262,3 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
     </>
   )
 }
-

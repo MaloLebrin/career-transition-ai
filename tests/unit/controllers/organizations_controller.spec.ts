@@ -248,8 +248,9 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     } as any)
 
     assert.lengthOf(service.inviteAdvisorCalls, 1)
-    assert.deepEqual(session.flashes, [['error', 'Cet email est déjà utilisé par un compte existant.']])
+    assert.deepEqual(session.flashes, [
+      ['error', 'Cet email est déjà utilisé par un compte existant.'],
+    ])
     assert.equal(response.redirectUrl, '/dashboard/settings')
   })
 })
-

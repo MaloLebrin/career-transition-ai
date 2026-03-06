@@ -122,4 +122,3 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     assert.equal(valuesCtx.flashes.success, 'Exercice Valeurs enregistré.')
   })
 })
-

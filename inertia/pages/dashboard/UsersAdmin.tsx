@@ -42,7 +42,8 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
           <div className="max-w-xl mx-auto text-center py-24 space-y-4">
             <h1 className="text-3xl font-bold text-brand-navy">Accès réservé</h1>
             <p className="text-brand-navy/60 text-sm font-medium">
-              Cette section est réservée aux administrateurs de la plateforme France Transition Carrière.
+              Cette section est réservée aux administrateurs de la plateforme France Transition
+              Carrière.
             </p>
           </div>
         </DashboardLayout>
@@ -84,9 +85,12 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
               <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
                 Vue Super Admin
               </p>
-              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">Utilisateurs de la plateforme</h1>
+              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">
+                Utilisateurs de la plateforme
+              </h1>
               <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-                Liste globale des comptes, avec leur rôle et leur cabinet associé. Vous pouvez ajuster les rôles en un clic.
+                Liste globale des comptes, avec leur rôle et leur cabinet associé. Vous pouvez
+                ajuster les rôles en un clic.
               </p>
             </div>
 
@@ -149,19 +153,21 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                     <td className="px-6 py-4 text-xs text-brand-navy/80">{ROLE_LABELS[u.role]}</td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
-                        {(['employee', 'advisor', 'admin', 'super_admin'] as UserRole[]).map((r) => (
-                          <Button
-                            key={r}
-                            type="button"
-                            size="xs"
-                            variant={u.role === r ? 'primary' : 'outline'}
-                            className="text-[10px]"
-                            disabled={u.role === r}
-                            onClick={() => handleChangeRole(u.id, r)}
-                          >
-                            {ROLE_LABELS[r]}
-                          </Button>
-                        ))}
+                        {(['employee', 'advisor', 'admin', 'super_admin'] as UserRole[]).map(
+                          (r) => (
+                            <Button
+                              key={r}
+                              type="button"
+                              size="xs"
+                              variant={u.role === r ? 'primary' : 'outline'}
+                              className="text-[10px]"
+                              disabled={u.role === r}
+                              onClick={() => handleChangeRole(u.id, r)}
+                            >
+                              {ROLE_LABELS[r]}
+                            </Button>
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -184,4 +190,3 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
     </>
   )
 }
-

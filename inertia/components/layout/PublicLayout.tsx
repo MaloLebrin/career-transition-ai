@@ -22,4 +22,3 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, children, clas
 }
 
 export default PublicLayout
-
