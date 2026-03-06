@@ -97,6 +97,13 @@ const sizeClasses = {
   lg: 'py-4 px-5 text-base',
 } as const
 
+/** Hauteur min. du conteneur pour aligner visuellement tous les champs (avec ou sans bouton d’action). */
+const minHeightBySize = {
+  sm: 'min-h-[42px]',
+  md: 'min-h-[54px]',
+  lg: 'min-h-[62px]',
+} as const
+
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -171,6 +178,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       'placeholder:text-brand-navy/20',
       'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50',
       sizeClasses[sizeVariant],
+      minHeightBySize[sizeVariant],
     ]
 
     const stateClasses = error
@@ -201,8 +209,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const hasActions = showClear || showPasswordBtn
     const inputClassName = hasAddons || hasActions ? addonInputClassName : standaloneInputClassName
+    // Wrapper sans padding : même hauteur que l'input seul (padding porté par l'input à l'intérieur)
     const actionsWrapperClassName = hasActions
-      ? `${standaloneInputClassName} flex items-stretch`
+      ? [
+          'flex items-stretch rounded-2xl border overflow-hidden bg-white outline-none font-medium transition-all',
+          'focus-within:ring-4 focus-within:outline-none',
+          error
+            ? 'border-rose-300 bg-rose-50 focus-within:border-rose-400 focus-within:ring-rose-400/10'
+            : success
+              ? 'border-emerald-300 focus-within:border-emerald-500 focus-within:ring-emerald-500/10'
+              : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
+          minHeightBySize[sizeVariant],
+          className,
+        ].join(' ')
       : ''
 
     const inputEl = (
