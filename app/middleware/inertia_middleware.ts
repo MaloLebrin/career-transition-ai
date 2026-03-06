@@ -6,13 +6,24 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
   share(ctx: HttpContext) {
     const { session, auth } = ctx as Partial<HttpContext>
     const request = ctx.request as typeof ctx.request & { csrfToken?: string }
+    const user = auth?.user
+    const userDto =
+      user === undefined
+        ? undefined
+        : {
+            id: user.id,
+            organizationId: user.organizationId,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          }
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       flash: ctx.inertia.always({
         error: session?.flashMessages.get('error'),
         success: session?.flashMessages.get('success'),
       }),
-      user: ctx.inertia.always(auth?.user ?? undefined),
+      user: ctx.inertia.always(userDto),
       csrfToken: request.csrfToken,
     }
   }
