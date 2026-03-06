@@ -8,21 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AppointmentSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'organizationId',
-    'employeeId',
-    'advisorId',
-    'scheduledAt',
-    'endedAt',
-    'type',
-    'status',
-    'notes',
-    'locationOrLink',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'organizationId', 'employeeId', 'advisorId', 'scheduledAt', 'endedAt', 'type', 'status', 'notes', 'locationOrLink', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = AppointmentSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -53,19 +39,7 @@ export class AppointmentSchema extends BaseModel {
 }
 
 export class EducationSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'employeeId',
-    'degree',
-    'school',
-    'startDate',
-    'endDate',
-    'isCurrent',
-    'description',
-    'sortOrder',
-    'createdAt',
-    'updatedAt',
-  ] as const
+  static $columns = ['id', 'employeeId', 'degree', 'school', 'startDate', 'endDate', 'isCurrent', 'description', 'sortOrder', 'createdAt', 'updatedAt'] as const
   $columns = EducationSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -109,24 +83,7 @@ export class EmployeeSkillSchema extends BaseModel {
 }
 
 export class EmployeeSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'organizationId',
-    'advisorId',
-    'userId',
-    'name',
-    'email',
-    'currentRole',
-    'targetRole',
-    'summary',
-    'advisorNotes',
-    'status',
-    'onboarded',
-    'nextAppointment',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'organizationId', 'advisorId', 'userId', 'name', 'email', 'currentRole', 'targetRole', 'summary', 'advisorNotes', 'status', 'onboarded', 'nextAppointment', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = EmployeeSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -163,19 +120,7 @@ export class EmployeeSchema extends BaseModel {
 }
 
 export class ExerciseResultSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'employeeId',
-    'type',
-    'status',
-    'date',
-    'duration',
-    'data',
-    'quantitativeScore',
-    'qualitativeAnalysis',
-    'createdAt',
-    'updatedAt',
-  ] as const
+  static $columns = ['id', 'employeeId', 'type', 'status', 'date', 'duration', 'data', 'quantitativeScore', 'qualitativeAnalysis', 'createdAt', 'updatedAt'] as const
   $columns = ExerciseResultSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -202,20 +147,7 @@ export class ExerciseResultSchema extends BaseModel {
 }
 
 export class ExperienceSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'employeeId',
-    'title',
-    'company',
-    'type',
-    'startDate',
-    'endDate',
-    'isCurrent',
-    'description',
-    'sortOrder',
-    'createdAt',
-    'updatedAt',
-  ] as const
+  static $columns = ['id', 'employeeId', 'title', 'company', 'type', 'startDate', 'endDate', 'isCurrent', 'description', 'sortOrder', 'createdAt', 'updatedAt'] as const
   $columns = ExperienceSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -244,19 +176,7 @@ export class ExperienceSchema extends BaseModel {
 }
 
 export class FileSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'organizationId',
-    'employeeId',
-    'type',
-    'name',
-    'path',
-    'mimeType',
-    'size',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'organizationId', 'employeeId', 'type', 'name', 'path', 'mimeType', 'size', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = FileSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -300,15 +220,7 @@ export class OnboardingTokenSchema extends BaseModel {
 }
 
 export class OrganizationSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'name',
-    'slug',
-    'logoUrl',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'name', 'slug', 'logoUrl', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = OrganizationSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -327,16 +239,7 @@ export class OrganizationSchema extends BaseModel {
 }
 
 export class SkillSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'organizationId',
-    'name',
-    'slug',
-    'category',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'organizationId', 'name', 'slug', 'category', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = SkillSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -357,19 +260,7 @@ export class SkillSchema extends BaseModel {
 }
 
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'employeeId',
-    'title',
-    'description',
-    'dueDate',
-    'completed',
-    'notes',
-    'associatedExercise',
-    'sortOrder',
-    'createdAt',
-    'updatedAt',
-  ] as const
+  static $columns = ['id', 'employeeId', 'title', 'description', 'dueDate', 'completed', 'notes', 'associatedExercise', 'sortOrder', 'createdAt', 'updatedAt'] as const
   $columns = SupportPlanStepSchema.$columns
   @column({ isPrimary: true })
   declare id: number
@@ -396,17 +287,7 @@ export class SupportPlanStepSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'id',
-    'organizationId',
-    'email',
-    'password',
-    'name',
-    'role',
-    'createdAt',
-    'updatedAt',
-    'deletedAt',
-  ] as const
+  static $columns = ['id', 'organizationId', 'email', 'password', 'name', 'role', 'createdAt', 'updatedAt', 'deletedAt'] as const
   $columns = UserSchema.$columns
   @column({ isPrimary: true })
   declare id: number
