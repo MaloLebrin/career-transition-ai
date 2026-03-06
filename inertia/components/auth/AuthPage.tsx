@@ -134,6 +134,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             <Input
               label="Email"
               type="email"
+              autoComplete="email"
               placeholder="votre@email.fr"
               required
               value={formData.email}
@@ -143,6 +144,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             <Input
               label="Mot de passe"
               type="password"
+              autoComplete="current-password"
               placeholder="••••••••"
               required
               value={formData.password}
