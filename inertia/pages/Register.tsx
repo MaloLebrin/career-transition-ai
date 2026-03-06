@@ -12,7 +12,7 @@ export default function Register() {
         register={register}
         error={error}
         onBackToLanding={() => router.visit('/')}
-        onAuthSuccess={() => router.visit('/dashboard')}
+        onAuthSuccess={() => { window.location.href = '/dashboard' }}
         onGoToLogin={() => router.visit('/auth/login')}
       />
     </>
