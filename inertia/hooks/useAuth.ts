@@ -3,23 +3,32 @@ import { usePage } from '@inertiajs/react'
 import { authService, type UserSession } from '../services/authService'
 
 export function useAuth() {
-  const [user, setUser] = useState<UserSession | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { props } = usePage<{ csrfToken?: string }>()
+  const { props } = usePage<{ csrfToken?: string; user?: UserSession }>()
   const csrfToken = props.csrfToken
+  const sharedUser = props.user ?? null
+
+  const [stateUser, setStateUser] = useState<UserSession | null>(null)
+  const [loading, setLoading] = useState(!sharedUser)
+  const [error, setError] = useState<string | null>(null)
+
+  const user = sharedUser ?? stateUser
 
   useEffect(() => {
-    const session = authService.getCurrentSession()
-    if (session) setUser(session)
-    setLoading(false)
-  }, [])
+    if (sharedUser) {
+      setLoading(false)
+      return
+    }
+    authService.getCurrentSession().then((session) => {
+      if (session) setStateUser(session)
+      setLoading(false)
+    })
+  }, [sharedUser])
 
   const login = async (email: string, password: string) => {
     setError(null)
     try {
       const session = await authService.login(email, password, csrfToken)
-      setUser(session)
+      setStateUser(session)
       return session
     } catch (err: any) {
       setError(err.message)
@@ -36,7 +45,7 @@ export function useAuth() {
     setError(null)
     try {
       const session = await authService.register(email, password, name, role, csrfToken)
-      setUser(session)
+      setStateUser(session)
       return session
     } catch (err: any) {
       setError(err.message)
@@ -46,7 +55,7 @@ export function useAuth() {
 
   const logout = () => {
     authService.logout(csrfToken)
-    setUser(null)
+    setStateUser(null)
   }
 
   return { user, loading, error, login, register, logout }

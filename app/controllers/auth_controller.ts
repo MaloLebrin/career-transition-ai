@@ -7,7 +7,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   public async me({ auth, response }: HttpContext) {
     if (!auth.user) {
@@ -18,22 +18,7 @@ export default class AuthController {
   }
 
   public async login({ request, auth, response, session }: HttpContext) {
-    const accept = request.header('accept') ?? ''
-    const wantsJson = accept.includes('application/json')
-    // #region agent log
-    fetch('http://127.0.0.1:7618/ingest/40f12f12-9cc0-42a3-b311-2c5b2683fff4', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '808aa1' },
-      body: JSON.stringify({
-        sessionId: '808aa1',
-        location: 'auth_controller.ts:login',
-        message: 'login entry',
-        data: { wantsJson, acceptHeader: accept.slice(0, 80) },
-        timestamp: Date.now(),
-        hypothesisId: 'H1',
-      }),
-    }).catch(() => { })
-    // #endregion
+    const wantsJson = request.header('accept')?.includes('application/json')
     try {
       const payload = await request.validateUsing(loginValidator)
       const user = await this.authService.verifyCredentials(payload.email, payload.password)
@@ -42,37 +27,9 @@ export default class AuthController {
         const dto = this.authService.toSession(user)
         return response.json(dto)
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7618/ingest/40f12f12-9cc0-42a3-b311-2c5b2683fff4', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '808aa1' },
-        body: JSON.stringify({
-          sessionId: '808aa1',
-          location: 'auth_controller.ts:login',
-          message: 'login success, sending 302 to /dashboard',
-          data: {},
-          timestamp: Date.now(),
-          hypothesisId: 'H2',
-        }),
-      }).catch(() => { })
-      // #endregion
       return response.redirect().status(303).toPath('/dashboard')
     } catch (error: any) {
       const message = error.message || 'Identifiants invalides'
-      // #region agent log
-      fetch('http://127.0.0.1:7618/ingest/40f12f12-9cc0-42a3-b311-2c5b2683fff4', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '808aa1' },
-        body: JSON.stringify({
-          sessionId: '808aa1',
-          location: 'auth_controller.ts:login',
-          message: 'login error, redirecting back',
-          data: { message: message.slice(0, 100) },
-          timestamp: Date.now(),
-          hypothesisId: 'H2',
-        }),
-      }).catch(() => { })
-      // #endregion
       if (wantsJson) {
         return response.unauthorized({ message })
       }
