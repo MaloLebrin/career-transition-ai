@@ -1,5 +1,5 @@
-import React, { memo } from 'react'
 import { Link, usePage } from '@inertiajs/react'
+import React, { memo } from 'react'
 
 export type NavLinkIcon = 'dashboard' | 'users' | 'settings' | 'palette'
 
@@ -75,7 +75,7 @@ const NavLink = memo(function NavLink({
   return (
     <Link
       href={href}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${
         active
           ? 'bg-brand-sage/10 text-brand-sage font-bold'
           : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
