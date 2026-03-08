@@ -1,5 +1,6 @@
 import React from 'react'
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
+import AppLink from '../../components/ui/AppLink'
 import PublicLayout from '../../components/layout/PublicLayout'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
@@ -24,11 +25,11 @@ export default function InvalidToken({ expired }: InvalidTokenProps) {
                 : 'Ce lien est invalide ou a déjà été utilisé.'}
             </p>
             <div className="mt-6">
-              <Link href="/auth/login">
+              <AppLink href="/auth/login">
                 <Button variant="outline" size="md">
                   Aller à la connexion
                 </Button>
-              </Link>
+              </AppLink>
             </div>
           </Card>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link, usePage } from '@inertiajs/react'
+import { usePage } from '@inertiajs/react'
+import AppLink from '../ui/AppLink'
 import Layout from '../layout/Layout'
 import NavLink from '../ui/NavLink'
 import Input from '../ui/Input'
@@ -101,7 +102,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                           Number(selectedEmployeeId) === emp.id &&
                           url.includes('/dashboard/employees/')
                         return (
-                          <Link
+                          <AppLink
                             key={emp.id}
                             href={`/dashboard/employees/${emp.id}`}
                             className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
@@ -116,7 +117,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                               }`}
                             />
                             <span className="text-[11px] font-medium truncate">{emp.name}</span>
-                          </Link>
+                          </AppLink>
                         )
                       })
                     ) : (

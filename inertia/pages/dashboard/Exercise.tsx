@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
+import AppLink from '../../components/ui/AppLink'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import Button from '../../components/ui/Button'
 import MotivationTool from '../../components/exercises/MotivationTool'
@@ -88,11 +89,11 @@ export default function DashboardExercise({
       <DashboardLayout selectedEmployeeId={employeeId || null}>
         <div className="animate-fadeIn max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-10">
-            <Link href={backHref}>
+            <AppLink href={backHref}>
               <Button variant="ghost" size="sm">
                 ← Retour
               </Button>
-            </Link>
+            </AppLink>
             {isSavingDraft && (
               <div className="flex items-center space-x-2 text-slate-400">
                 <div className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />

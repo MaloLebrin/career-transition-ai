@@ -1,4 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
+import AppLink from '../../components/ui/AppLink'
 import { useState } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import StepDetailModal from '../../components/modals/StepDetailModal'
@@ -143,24 +144,24 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                         )}
                         {step.associatedExercise && !result && (
                           <div className="pt-4">
-                            <Link
+                            <AppLink
                               href={`/dashboard/employees/${employeeId}/exercises/${step.associatedExercise}`}
                               className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
                             >
                               Démarrer l’exercice →
-                            </Link>
+                            </AppLink>
                           </div>
                         )}
                       </div>
                     )
                     return step.associatedExercise && !result ? (
-                      <Link
+                      <AppLink
                         key={step.id}
                         href={`/dashboard/employees/${employeeId}/exercises/${step.associatedExercise}`}
                         className="block"
                       >
                         {content}
-                      </Link>
+                      </AppLink>
                     ) : (
                       <div key={step.id} onClick={() => setSelectedStepForDetail(step)}>
                         {content}

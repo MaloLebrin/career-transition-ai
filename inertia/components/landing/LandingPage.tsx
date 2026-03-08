@@ -16,6 +16,7 @@ import {
   Award,
 } from 'lucide-react'
 import PublicLayout from '../layout/PublicLayout'
+import AppLink from '../ui/AppLink'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Logo from '../ui/Logo'
@@ -648,28 +649,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               </h4>
               <ul className="space-y-4">
                 <li>
-                  <a
+                  <AppLink
                     href="#"
                     className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                   >
                     Mentions Légales
-                  </a>
+                  </AppLink>
                 </li>
                 <li>
-                  <a
+                  <AppLink
                     href="#"
                     className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                   >
                     RGPD
-                  </a>
+                  </AppLink>
                 </li>
                 <li>
-                  <a
+                  <AppLink
                     href="#"
                     className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                   >
                     Support
-                  </a>
+                  </AppLink>
                 </li>
               </ul>
             </div>

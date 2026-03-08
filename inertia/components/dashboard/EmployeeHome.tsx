@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react'
+import AppLink from '../ui/AppLink'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import Button from '../ui/Button'
@@ -29,7 +29,7 @@ export default function EmployeeHome() {
             <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est boostée
             à l'IA.
           </p>
-          <Link href="/dashboard/profile">
+          <AppLink href="/dashboard/profile">
             <Button
               variant="outline"
               className="mt-10 bg-white text-brand-navy border-none"
@@ -37,7 +37,7 @@ export default function EmployeeHome() {
             >
               Mon Profil Vitaminé
             </Button>
-          </Link>
+          </AppLink>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -68,7 +68,7 @@ export default function EmployeeHome() {
                     </h4>
                     <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
                     {step.associatedExercise && !step.completed && (
-                      <Link href={`/dashboard/exercises/${step.associatedExercise}`}>
+                      <AppLink href={`/dashboard/exercises/${step.associatedExercise}`}>
                         <Button
                           className="mt-6"
                           variant="secondary"
@@ -89,8 +89,8 @@ export default function EmployeeHome() {
                           }
                         >
                           Démarrer
-                        </Button>
-                      </Link>
+</Button>
+                    </AppLink>
                     )}
                   </div>
                 </div>

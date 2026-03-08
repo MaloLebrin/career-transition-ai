@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react'
+import AppLink from '../components/ui/AppLink'
 
 export default function Home() {
   return (
@@ -10,7 +11,7 @@ export default function Home() {
       <div className="pt-4 h-full flex flex-col">
         {/* Header */}
         <div className="grow pb-4 bg-gradient-to-b from-sand-1 to-sand-2 flex justify-center items-center">
-          <a href="https://adonisjs.com" target="_blank" className="isolate">
+          <AppLink href="https://adonisjs.com" className="isolate">
             <svg className="w-16 h-16 fill-primary" viewBox="0 0 33 33">
               <path
                 fillRule="evenodd"
@@ -18,7 +19,7 @@ export default function Home() {
                 clipRule="evenodd"
               />
             </svg>
-          </a>
+          </AppLink>
         </div>
 
         {/* Bento with documentation, Adocasts, packages and Discord */}
@@ -76,10 +77,10 @@ export default function Home() {
 
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold">
-                  <a href="https://docs.adonisjs.com" target="_blank">
+                  <AppLink href="https://docs.adonisjs.com">
                     <span>Documentation</span>
                     <span className="absolute inset-0"></span>
-                  </a>
+                  </AppLink>
                 </h2>
 
                 <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
@@ -104,10 +105,10 @@ export default function Home() {
 
             <div className="space-y-1">
               <h2 className="text-lg font-semibold">
-                <a href="https://adocasts.com" target="_blank">
+                <AppLink href="https://adocasts.com">
                   <span>Adocasts</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
@@ -129,10 +130,10 @@ export default function Home() {
 
             <div className="space-y-1">
               <h2 className="text-lg font-semibold">
-                <a href="https://packages.adonisjs.com" target="_blank">
+                <AppLink href="https://packages.adonisjs.com">
                   <span>Packages</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
@@ -154,10 +155,10 @@ export default function Home() {
 
             <div className="space-y-1">
               <h2 className="text-lg font-semibold">
-                <a href="https://discord.gg/vDcEjq6" target="_blank">
+                <AppLink href="https://discord.gg/vDcEjq6">
                   <span>Discord</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
@@ -173,9 +174,8 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
               <h2 className="font-semibold text-sand-12">
-                <a
+                <AppLink
                   href="https://lucid.adonisjs.com"
-                  target="_blank"
                   className="flex flex-row gap-2"
                 >
                   <span className="bg-[#D5EAE7] h-6 w-6 flex justify-center items-center rounded">
@@ -195,7 +195,7 @@ export default function Home() {
                   </span>
                   <span>Lucid</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
@@ -220,7 +220,7 @@ export default function Home() {
 
             <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
               <h2 className="font-semibold text-sand-12">
-                <a href="https://vinejs.dev/" target="_blank" className="flex flex-row gap-2">
+                <AppLink href="https://vinejs.dev/" className="flex flex-row gap-2">
                   <span className="bg-[#F3DBFC] h-6 w-6 flex justify-center items-center rounded">
                     <svg className="h-4 w-4 fill-[#CA5AF2]" viewBox="0 0 24 24">
                       <path
@@ -235,7 +235,7 @@ export default function Home() {
                   </span>
                   <span>Vine</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
@@ -260,7 +260,7 @@ export default function Home() {
 
             <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
               <h2 className="font-semibold text-sand-12">
-                <a href="https://inertiajs.com/" target="_blank" className="flex flex-row gap-2">
+                <AppLink href="https://inertiajs.com/" className="flex flex-row gap-2">
                   <span className="bg-[#B8EAE0] h-6 w-6 flex justify-center items-center rounded">
                     <svg className="h-4 w-4 fill-[#4BBBA5]" viewBox="0 0 24 24">
                       <path
@@ -275,7 +275,7 @@ export default function Home() {
                   </span>
                   <span>InertiaJS</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
@@ -300,7 +300,7 @@ export default function Home() {
 
             <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
               <h2 className="font-semibold text-sand-12">
-                <a href="https://japa.dev" target="_blank" className="flex flex-row gap-2">
+                <AppLink href="https://japa.dev" className="flex flex-row gap-2">
                   <span className="bg-[#FACDDC] h-6 w-6 flex justify-center items-center rounded">
                     <svg className="h-4 w-4 fill-[#DD3074]" viewBox="0 0 256 256">
                       <path
@@ -311,7 +311,7 @@ export default function Home() {
                   </span>
                   <span>Japa</span>
                   <span className="absolute inset-0"></span>
-                </a>
+                </AppLink>
               </h2>
 
               <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
