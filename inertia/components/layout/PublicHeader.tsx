@@ -32,14 +32,16 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
 
         <div className="hidden md:flex items-center space-x-8">
           <button
+            type="button"
             onClick={onMethodologyClick}
-            className="text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
           >
             Méthodologie
           </button>
           <button
+            type="button"
             onClick={onAiClick}
-            className="text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
           >
             Intelligence Artificielle
           </button>
@@ -50,8 +52,9 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
           )}
           {!showAction && (
             <button
+              type="button"
               onClick={onLogoClick}
-              className="text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
+              className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
             >
               Retour à l'accueil
             </button>
