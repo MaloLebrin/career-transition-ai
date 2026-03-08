@@ -20,9 +20,15 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
   const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
+  const normalizeExerciseType = (t: string | undefined): string =>
+    (t ?? '').toUpperCase().replace(/-/g, '_')
+
   const getResultForStep = (step: SupportPlanStep) => {
     if (!selectedEmployee || !step.associatedExercise) return null
-    return selectedEmployee.exercises.find((res) => res.type === step.associatedExercise)
+    const stepType = normalizeExerciseType(step.associatedExercise)
+    return selectedEmployee.exercises.find(
+      (res) => normalizeExerciseType(res.type) === stepType
+    ) ?? null
   }
 
   const handleDownloadPDF = async () => {

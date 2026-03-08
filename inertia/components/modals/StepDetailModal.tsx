@@ -38,8 +38,9 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
     }
 
     const data = result.data ?? {}
+    const resultType = (result.type ?? '').toUpperCase().replace(/-/g, '_')
 
-    switch (result.type) {
+    switch (resultType) {
       case ExerciseType.SKILL_MAPPING:
         const mapping = Array.isArray(data.mapping) ? data.mapping : []
         return (
@@ -89,7 +90,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
             </div>
           </div>
         )
-      case ExerciseType.MOTIVATION:
+      case 'MOTIVATION':
         const motivationData = {
           ranked: Array.isArray(data.ranked) ? data.ranked : [],
           scores: data.scores && typeof data.scores === 'object' ? data.scores : {},
@@ -102,7 +103,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
             duration={result.duration}
           />
         )
-      case ExerciseType.LIFE_CURVE:
+      case 'LIFE_CURVE':
         const points = Array.isArray(data.points) ? data.points : []
         return (
           <div className="space-y-8 animate-fadeIn">
@@ -160,7 +161,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
             </div>
           </div>
         )
-      case ExerciseType.DISC:
+      case 'DISC':
         const discData = [
           { trait: 'D', value: Number(data.D) || 0, full: 100 },
           { trait: 'I', value: Number(data.I) || 0, full: 100 },
@@ -188,7 +189,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
             </ResponsiveContainer>
           </div>
         )
-      case ExerciseType.CIRCLE_OF_CONTROL:
+      case 'CIRCLE_OF_CONTROL':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-8 bg-violet-50 rounded-[48px] border border-violet-100 shadow-sm">
@@ -270,7 +271,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                 {step.completed ? 'Étape Validée' : 'En attente'}
               </Badge>
               <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-                Dossier #{step.id.substr(0, 4)}
+                Dossier #{String(step.id).slice(0, 8)}
               </span>
             </div>
             <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
