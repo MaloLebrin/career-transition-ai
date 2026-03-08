@@ -129,6 +129,23 @@ test.group('EmployeesController.storeFromDashboard', () => {
   })
 })
 
+test.group('EmployeesController.showProfileDashboard', () => {
+  test('returns 401 when user is not authenticated', async ({ assert }) => {
+    const service = new FakeEmployeesService()
+    const controller = new EmployeesController(service as any)
+    const response = makeResponse()
+
+    await controller.showProfileDashboard({
+      params: { id: '1' },
+      auth: { user: null },
+      response: response as any,
+      inertia: () => {},
+    } as any)
+
+    assert.isTrue(response.unauthorizedCalled)
+  })
+})
+
 test.group('EmployeesController.updateFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeEmployeesService()

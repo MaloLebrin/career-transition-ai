@@ -201,6 +201,34 @@ export default class EmployeesController {
   }
 
   /**
+   * Inertia page: employee profile (read-only view of identity, summary, experiences, educations, skills).
+   */
+  public async showProfileDashboard(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const employeeQuery = Employee.query()
+      .where('id', Number(ctx.params.id))
+      .where('organizationId', user.organizationId)
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('appointments')
+
+    const employee = await employeeQuery.firstOrFail()
+    const data = mapEmployee(employee)
+
+    return (ctx.inertia as any).render('dashboard/EmployeeProfile', {
+      employeeId: String(employee.id),
+      employee: data,
+    })
+  }
+
+  /**
    * Inertia page: employee detail for dashboard.
    */
   public async showDashboard(ctx: HttpContext) {

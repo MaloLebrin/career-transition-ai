@@ -87,6 +87,7 @@ router
     router.put('/profile', [AuthController, 'updateFromDashboard'])
 
     router.get('/employees', [EmployeesController, 'indexDashboard'])
+    router.get('/employees/:id/profile', [EmployeesController, 'showProfileDashboard'])
     router.get('/employees/:id', [EmployeesController, 'showDashboard'])
     router.get('/employees/:id/exercises', [ExerciseResultsController, 'exerciseListConseiller'])
     router.get('/employees/:id/exercise-results/:type', [

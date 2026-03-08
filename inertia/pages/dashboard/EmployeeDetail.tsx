@@ -78,7 +78,12 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 </p>
               </div>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
+              <AppLink href={`/dashboard/conseiller/employees/${employeeId}/profile`}>
+                <Button variant="outline" size="sm">
+                  Voir le profil
+                </Button>
+              </AppLink>
               <Button
                 onClick={handleDownloadPDF}
                 variant="dark"
