@@ -20,8 +20,16 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
     return `${mins}min ${secs}s`
   }
 
-  const top3 = data.ranked.slice(0, 3)
-  const bottom3 = [...data.ranked].reverse().slice(0, 3)
+  const ranked = Array.isArray(data.ranked) ? data.ranked : []
+  const top3 = ranked.slice(0, 3)
+  const bottom3 = [...ranked].reverse().slice(0, 3)
+  const matrix = Array.isArray(data.matrix) ? data.matrix : []
+  const getMatrixCell = (i: number, j: number): number | null => {
+    const row = matrix[i]
+    if (!Array.isArray(row)) return null
+    const val = row[j]
+    return typeof val === 'number' ? val : null
+  }
 
   return (
     <div className="space-y-12 animate-fadeIn">
@@ -146,7 +154,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
                           .map((_, j) => {
                             const isDiagonal = i === j
                             const isUpperTriangle = j > i
-                            const winner = isUpperTriangle ? data.matrix[i][j] : null
+                            const winner = isUpperTriangle ? getMatrixCell(i, j) : null
 
                             let bgColor = 'bg-white'
                             let content = ''
