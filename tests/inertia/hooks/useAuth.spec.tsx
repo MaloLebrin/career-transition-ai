@@ -12,8 +12,10 @@ const mockSession = {
 
 const mockCsrfToken = 'test-csrf-token'
 
+const mockRouterVisit = vi.fn()
 vi.mock('@inertiajs/react', () => ({
   usePage: vi.fn(() => ({ props: { csrfToken: mockCsrfToken } })),
+  router: { visit: (...args: unknown[]) => mockRouterVisit(...args) },
 }))
 
 vi.mock('../../../inertia/services/authService', () => ({
@@ -29,14 +31,15 @@ const { authService } = await import('../../../inertia/services/authService')
 
 describe('useAuth', () => {
   beforeEach(() => {
-    vi.mocked(authService.getCurrentSession).mockReturnValue(null)
+    vi.mocked(authService.getCurrentSession).mockResolvedValue(null as any)
     vi.mocked(authService.login).mockReset()
     vi.mocked(authService.register).mockReset()
     vi.mocked(authService.logout).mockReset()
+    mockRouterVisit.mockReset()
   })
 
   test('starts with loading then no user when no session', async () => {
-    vi.mocked(authService.getCurrentSession).mockReturnValue(null)
+    vi.mocked(authService.getCurrentSession).mockResolvedValue(null as any)
 
     const { result } = renderHook(() => useAuth())
 
@@ -47,7 +50,7 @@ describe('useAuth', () => {
   })
 
   test('starts with user when getCurrentSession returns session', async () => {
-    vi.mocked(authService.getCurrentSession).mockReturnValue(mockSession as any)
+    vi.mocked(authService.getCurrentSession).mockResolvedValue(mockSession as any)
 
     const { result } = renderHook(() => useAuth())
 
@@ -94,8 +97,9 @@ describe('useAuth', () => {
     expect(result.current.error).toBe('Invalid credentials')
   })
 
-  test('logout clears user', async () => {
-    vi.mocked(authService.getCurrentSession).mockReturnValue(mockSession as any)
+  test('logout clears user and redirects to login', async () => {
+    vi.mocked(authService.getCurrentSession).mockResolvedValue(mockSession as any)
+    vi.mocked(authService.logout).mockResolvedValue(undefined)
 
     const { result } = renderHook(() => useAuth())
 
@@ -103,12 +107,13 @@ describe('useAuth', () => {
       expect(result.current.user).toEqual(mockSession)
     })
 
-    act(() => {
-      result.current.logout()
+    await act(async () => {
+      await result.current.logout()
     })
 
     expect(result.current.user).toBe(null)
     expect(authService.logout).toHaveBeenCalledWith(mockCsrfToken)
+    expect(mockRouterVisit).toHaveBeenCalledWith('/auth/login')
   })
 
   test('register updates user on success', async () => {

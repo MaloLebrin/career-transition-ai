@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Button from '../ui/Button'
+import Card from '../ui/Card'
 import FlashBanner from './FlashBanner'
 import Logo from '../ui/Logo'
 
@@ -7,11 +8,17 @@ interface LayoutProps {
   children: React.ReactNode
   userRole: 'advisor' | 'employee' | 'admin' | 'super_admin'
   onRoleChange: (role: 'advisor' | 'employee') => void
-  onLogout: () => void
+  onLogout: () => void | Promise<void>
   userName?: string
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName }) => {
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+
+  const handleLogoutConfirm = () => {
+    void Promise.resolve(onLogout()).then(() => setShowLogoutModal(false))
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-ivory">
       <header className="bg-white border-b border-brand-navy/5 sticky top-0 z-50 shadow-sm">
@@ -55,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
             </div>
 
             <Button
-              onClick={onLogout}
+              onClick={() => setShowLogoutModal(true)}
               variant="outline"
               size="sm"
               className="group border-rose-100 text-rose-500 hover:bg-rose-50 hover:border-rose-200"
@@ -81,6 +88,35 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
         </div>
       </header>
       <FlashBanner />
+      {showLogoutModal && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-modal-title"
+        >
+          <Card className="w-full max-w-md p-8 animate-slideUp">
+            <h2 id="logout-modal-title" className="text-xl font-bold text-brand-navy mb-2">
+              Déconnexion
+            </h2>
+            <p className="text-brand-navy/60 text-sm mb-8">
+              Êtes-vous sûr de vouloir vous déconnecter ?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Annuler
+              </Button>
+              <Button variant="danger" size="md" onClick={handleLogoutConfirm}>
+                Se déconnecter
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
       <main className="grow max-w-7xl mx-auto px-6 py-10 w-full">{children}</main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">

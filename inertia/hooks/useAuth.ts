@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { usePage } from '@inertiajs/react'
+import { usePage, router } from '@inertiajs/react'
 import { authService, type UserSession } from '../services/authService'
 
 export function useAuth() {
@@ -53,9 +53,10 @@ export function useAuth() {
     }
   }
 
-  const logout = () => {
-    authService.logout(csrfToken)
+  const logout = async () => {
+    await authService.logout(csrfToken)
     setStateUser(null)
+    router.visit('/auth/login')
   }
 
   return { user, loading, error, login, register, logout }

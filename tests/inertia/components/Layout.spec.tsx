@@ -1,6 +1,10 @@
 import { describe, test, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import Layout from '../../../inertia/components/layout/Layout'
+
+vi.mock('@inertiajs/react', () => ({
+  usePage: vi.fn(() => ({ props: { flash: undefined } })),
+}))
 
 describe('Layout', () => {
   const defaultProps = {
@@ -22,21 +26,65 @@ describe('Layout', () => {
     expect(screen.getByTestId('content')).toBeInTheDocument()
   })
 
-  test('renders footer mention and calls onLogout when clicking Quitter', async () => {
-    const onLogout = vi.fn()
+  test('renders footer mention', () => {
+    render(
+      <Layout {...defaultProps}>
+        <div>Content</div>
+      </Layout>
+    )
+    expect(
+      screen.getByText(/France Transition Carrière .* Clarté Stratégique Humaine/)
+    ).toBeInTheDocument()
+  })
 
+  test('clicking Quitter opens logout confirmation modal', () => {
+    const onLogout = vi.fn()
     render(
       <Layout {...defaultProps} onLogout={onLogout}>
         <div>Content</div>
       </Layout>
     )
 
-    expect(
-      screen.getByText(/France Transition Carrière .* Clarté Stratégique Humaine/)
-    ).toBeInTheDocument()
+    const quitButton = screen.getByRole('button', { name: /Quitter/i })
+    fireEvent.click(quitButton)
 
-    const logoutButton = screen.getByRole('button', { name: /Quitter/i })
-    logoutButton.click()
+    expect(screen.getByRole('dialog', { name: /Déconnexion/i })).toBeInTheDocument()
+    expect(screen.getByText(/Êtes-vous sûr de vouloir vous déconnecter/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Annuler/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Se déconnecter/i })).toBeInTheDocument()
+    expect(onLogout).not.toHaveBeenCalled()
+  })
+
+  test('clicking Annuler in modal closes it and does not call onLogout', () => {
+    const onLogout = vi.fn()
+    render(
+      <Layout {...defaultProps} onLogout={onLogout}>
+        <div>Content</div>
+      </Layout>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Quitter/i }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Annuler/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(onLogout).not.toHaveBeenCalled()
+  })
+
+  test('clicking Se déconnecter in modal calls onLogout', async () => {
+    const onLogout = vi.fn()
+    render(
+      <Layout {...defaultProps} onLogout={onLogout}>
+        <div>Content</div>
+      </Layout>
+    )
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Quitter/i }))
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Se déconnecter/i }))
+    })
 
     expect(onLogout).toHaveBeenCalledTimes(1)
   })
