@@ -147,15 +147,70 @@ export default class ExerciseResultsController {
   }
 
   /**
-   * Conseiller: Inertia page listing all exercises for an employee.
+   * Conseiller: Inertia page listing exercise results for an employee (only realized exercises).
    */
   public async exerciseListConseiller({ auth, params, inertia, response, session }: HttpContext) {
     if (!auth.user) {
       return response.unauthorized()
     }
     const employeeId = Number(params.id)
+    let employee: Employee
     try {
-      await Employee.query()
+      employee = await Employee.query()
+        .where('id', employeeId)
+        .where('organizationId', auth.user.organizationId)
+        .preload('exerciseResults')
+        .firstOrFail()
+    } catch {
+      session.flash('error', 'Candidat introuvable.')
+      return response.redirect('/dashboard/conseiller/employees')
+    }
+    const titleBySlug: Record<string, string> = {}
+    for (const entry of EXERCISE_LIST) {
+      titleBySlug[entry.slug] = entry.title
+    }
+    const byType = new Map<string, { date: string; status: string }>()
+    for (const r of employee.exerciseResults || []) {
+      const slug = String(r.type)
+      const existing = byType.get(slug)
+      const dateStr = r.date ? r.date.toISO()! : (r.updatedAt?.toISO() ?? '')
+      if (!existing || dateStr > existing.date) {
+        byType.set(slug, { date: dateStr, status: r.status })
+      }
+    }
+    const results = Array.from(byType.entries())
+      .map(([slug, { date, status }]) => ({
+        slug,
+        title: titleBySlug[slug] ?? slug,
+        date,
+        status,
+      }))
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    return (inertia as any).render('dashboard/exercises/List', {
+      context: 'conseiller',
+      employeeId: String(employeeId),
+      results,
+    })
+  }
+
+  /**
+   * Conseiller: Inertia page showing one exercise result (read-only) for an employee.
+   */
+  public async showExerciseResultConseiller({
+    auth,
+    params,
+    inertia,
+    response,
+    session,
+  }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    const employeeId = Number(params.id)
+    const typeParam = String(params.type).toLowerCase()
+    let employee: Employee
+    try {
+      employee = await Employee.query()
         .where('id', employeeId)
         .where('organizationId', auth.user.organizationId)
         .firstOrFail()
@@ -163,10 +218,31 @@ export default class ExerciseResultsController {
       session.flash('error', 'Candidat introuvable.')
       return response.redirect('/dashboard/conseiller/employees')
     }
-    return (inertia as any).render('dashboard/exercises/List', {
-      exercises: EXERCISE_LIST,
-      context: 'conseiller',
-      employeeId: String(employeeId),
+    const latest = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', typeParam)
+      .orderBy('date', 'desc')
+      .orderBy('updatedAt', 'desc')
+      .first()
+    const exerciseTitle =
+      EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
+    const resultPayload = latest
+      ? {
+          id: latest.id,
+          type: typeParam,
+          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+          duration: latest.duration ?? 0,
+          data: latest.data ?? {},
+          quantitativeScore: latest.quantitativeScore ?? 0,
+          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+        }
+      : null
+    return (inertia as any).render('dashboard/ExerciseResultDetail', {
+      employeeId: String(employee.id),
+      employeeName: employee.name,
+      result: resultPayload,
+      exerciseType: typeParam,
+      exerciseTitle,
     })
   }
 

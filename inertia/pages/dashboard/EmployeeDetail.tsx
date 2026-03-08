@@ -8,6 +8,7 @@ import Card from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import type { Employee, SupportPlanStep } from '../../types'
+import { EXERCISE_LIST, EXERCISE_SLUGS } from '../../config/exercises'
 
 interface EmployeeDetailProps {
   employeeId: string
@@ -176,12 +177,56 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   })}
                 </div>
                 <div className="mt-8 pt-8 border-t border-brand-navy/5">
-                  <AppLink
-                    href={`/dashboard/conseiller/employees/${employeeId}/exercises`}
-                    className="text-brand-sage font-semibold text-sm hover:underline"
-                  >
-                    Tous les exercices →
-                  </AppLink>
+                  <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-4">
+                    Résultats des exercices
+                  </h3>
+                  {selectedEmployee.exercises.length === 0 ? (
+                    <p className="text-brand-navy/60 text-sm">
+                      Aucun exercice réalisé pour l&apos;instant.
+                    </p>
+                  ) : (
+                    (() => {
+                      const byType = new Map<string, typeof selectedEmployee.exercises[0]>()
+                      for (const res of selectedEmployee.exercises) {
+                        const key = (res.type as string).toLowerCase()
+                        const existing = byType.get(key)
+                        if (!existing || (res.date && (!existing.date || res.date > existing.date))) {
+                          byType.set(key, res)
+                        }
+                      }
+                      const latestResults = Array.from(byType.values())
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {latestResults.map((res) => {
+                            const slug =
+                              EXERCISE_SLUGS[res.type as keyof typeof EXERCISE_SLUGS] ??
+                              (res.type as string).toLowerCase()
+                            const title =
+                              EXERCISE_LIST.find((e) => e.slug === slug)?.title ?? (res.type as string)
+                            const dateStr = res.date
+                              ? new Date(res.date).toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
+                              : '—'
+                            return (
+                              <AppLink
+                                key={res.id}
+                                href={`/dashboard/conseiller/employees/${employeeId}/exercise-results/${slug}`}
+                                className="block p-4 rounded-2xl border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-md transition-all"
+                              >
+                                <h4 className="font-bold text-brand-navy">{title}</h4>
+                                <p className="text-brand-navy/60 text-xs mt-1">
+                                  Complété le {dateStr}
+                                </p>
+                              </AppLink>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()
+                  )}
                 </div>
               </Card>
             </div>

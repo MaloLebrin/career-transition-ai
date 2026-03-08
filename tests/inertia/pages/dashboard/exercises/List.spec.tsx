@@ -23,6 +23,11 @@ const mockExercises = [
   { slug: 'values', title: 'Recherche de Valeurs', description: 'Identifiez vos valeurs.' },
 ]
 
+const mockResults = [
+  { slug: 'motivation', title: 'Analyse Motivations', date: '2024-06-05T10:00:00.000Z', status: 'completed' },
+  { slug: 'values', title: 'Recherche de Valeurs', date: '2024-06-01T14:00:00.000Z', status: 'draft' },
+]
+
 describe('Exercise list page (dashboard/exercises/List)', () => {
   test('renders candidat context with title and exercise cards', () => {
     render(
@@ -41,23 +46,32 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
     expect(valuesLink).toHaveAttribute('href', '/dashboard/candidat/exercises/values')
   })
 
-  test('renders conseiller context with employeeId and correct links', () => {
+  test('renders conseiller context with results and links to result detail page', () => {
     render(
       <ExerciseList
-        exercises={mockExercises}
+        results={mockResults}
         context="conseiller"
         employeeId="42"
       />
     )
 
-    expect(screen.getByText('Exercices du candidat')).toBeInTheDocument()
+    expect(screen.getByText('Résultats des exercices')).toBeInTheDocument()
     expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
+    expect(screen.getByText('Recherche de Valeurs')).toBeInTheDocument()
 
     const motivationLink = screen.getByRole('link', { name: /Analyse Motivations/i })
     expect(motivationLink).toHaveAttribute(
       'href',
-      '/dashboard/conseiller/employees/42/exercises/motivation'
+      '/dashboard/conseiller/employees/42/exercise-results/motivation'
     )
+  })
+
+  test('conseiller with no results shows empty state', () => {
+    render(
+      <ExerciseList results={[]} context="conseiller" employeeId="42" />
+    )
+    expect(screen.getByText('Résultats des exercices')).toBeInTheDocument()
+    expect(screen.getByText(/Aucun exercice réalisé pour l'instant/)).toBeInTheDocument()
   })
 
   test('shows Retour link to correct back URL for candidat', () => {
@@ -66,10 +80,10 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
     expect(backLink).toHaveAttribute('href', '/dashboard/candidat')
   })
 
-  test('shows Retour link to employee detail for conseiller', () => {
+  test('shows Retour link to employee for conseiller', () => {
     render(
       <ExerciseList
-        exercises={mockExercises}
+        results={mockResults}
         context="conseiller"
         employeeId="7"
       />
