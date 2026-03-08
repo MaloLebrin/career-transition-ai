@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
           </Card>
         </div>
       )}
-      <main className="grow max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-10 w-full">{children}</main>
+      <main className="grow flex flex-col max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-10 w-full min-h-0">{children}</main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
           France Transition Carrière &copy; 2026 • Clarté Stratégique Humaine
