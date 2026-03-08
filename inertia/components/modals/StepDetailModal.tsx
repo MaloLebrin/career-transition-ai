@@ -37,8 +37,11 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
       )
     }
 
+    const data = result.data ?? {}
+
     switch (result.type) {
       case ExerciseType.SKILL_MAPPING:
+        const mapping = Array.isArray(data.mapping) ? data.mapping : []
         return (
           <div className="space-y-6 animate-fadeIn">
             <div className="bg-slate-900 p-10 rounded-[48px] text-white shadow-2xl mb-8 relative overflow-hidden">
@@ -47,7 +50,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                 <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
                   Poste analysé
                 </div>
-                <div className="text-3xl font-black tracking-tight">{result.data.jobTitle}</div>
+                <div className="text-3xl font-black tracking-tight">{data.jobTitle ?? '—'}</div>
               </div>
             </div>
             <div className="bg-white border border-slate-100 rounded-[48px] shadow-sm overflow-hidden">
@@ -67,7 +70,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {result.data.mapping.map((row: any, i: number) => (
+                    {mapping.map((row: any, i: number) => (
                       <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-8 text-xs font-black text-slate-900 align-top">
                           {row.mission}
@@ -87,16 +90,26 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
           </div>
         )
       case ExerciseType.MOTIVATION:
+        const motivationData = {
+          ranked: Array.isArray(data.ranked) ? data.ranked : [],
+          scores: data.scores && typeof data.scores === 'object' ? data.scores : {},
+          matrix: Array.isArray(data.matrix) ? data.matrix : [],
+        }
         return (
-          <MotivationResultView data={result.data} date={result.date} duration={result.duration} />
+          <MotivationResultView
+            data={motivationData}
+            date={result.date}
+            duration={result.duration}
+          />
         )
       case ExerciseType.LIFE_CURVE:
+        const points = Array.isArray(data.points) ? data.points : []
         return (
           <div className="space-y-8 animate-fadeIn">
             <div className="h-[400px] bg-slate-50 p-8 rounded-[48px] border border-slate-100">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={result.data.points}
+                  data={points}
                   margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -133,7 +146,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
               </ResponsiveContainer>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(result.data.reflection || {}).map(([key, value]: [string, any]) => (
+              {Object.entries(data.reflection || {}).map(([key, value]: [string, any]) => (
                 <div
                   key={key}
                   className="p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm"
@@ -149,10 +162,10 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
         )
       case ExerciseType.DISC:
         const discData = [
-          { trait: 'D', value: result.data.D, full: 100 },
-          { trait: 'I', value: result.data.I, full: 100 },
-          { trait: 'S', value: result.data.S, full: 100 },
-          { trait: 'C', value: result.data.C, full: 100 },
+          { trait: 'D', value: Number(data.D) || 0, full: 100 },
+          { trait: 'I', value: Number(data.I) || 0, full: 100 },
+          { trait: 'S', value: Number(data.S) || 0, full: 100 },
+          { trait: 'C', value: Number(data.C) || 0, full: 100 },
         ]
         return (
           <div className="flex justify-center h-[350px] bg-slate-50 rounded-[48px] p-8 border border-slate-100">
@@ -184,7 +197,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                 Sous contrôle
               </h4>
               <div className="flex flex-wrap gap-2">
-                {result.data.inControl?.map((item: string, i: number) => (
+                {(Array.isArray(data.inControl) ? data.inControl : []).map((item: string, i: number) => (
                   <span
                     key={i}
                     className="text-[10px] bg-white px-4 py-2 rounded-xl border border-violet-100 font-black text-slate-700 uppercase tracking-widest"
@@ -200,7 +213,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                 Hors contrôle
               </h4>
               <div className="flex flex-wrap gap-2">
-                {result.data.outControl?.map((item: string, i: number) => (
+                {(Array.isArray(data.outControl) ? data.outControl : []).map((item: string, i: number) => (
                   <span
                     key={i}
                     className="text-[10px] bg-white px-4 py-2 rounded-xl border border-pink-100 font-black text-slate-700 uppercase tracking-widest"
@@ -215,7 +228,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
       default:
         return (
           <pre className="text-xs bg-slate-50 p-6 rounded-[32px] overflow-auto border border-slate-100">
-            {JSON.stringify(result.data, null, 2)}
+            {JSON.stringify(data, null, 2)}
           </pre>
         )
     }
