@@ -27,6 +27,17 @@ interface Props {
   userRole: 'advisor' | 'employee'
 }
 
+function formatSessionDate(dateStr: string | undefined): string {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) => {
   const renderResult = () => {
     if (!result) {
@@ -314,14 +325,18 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                     <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                       Échéance prévue
                     </div>
-                    <div className="text-base font-black text-slate-900">{step.dueDate}</div>
+                    <div className="text-base font-black text-slate-900">
+                      {formatSessionDate(step.dueDate)}
+                    </div>
                   </div>
                   {result && (
                     <div>
                       <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Passage le
                       </div>
-                      <div className="text-base font-black text-slate-900">{result.date}</div>
+                      <div className="text-base font-black text-slate-900">
+                        {formatSessionDate(result.date)}
+                      </div>
                     </div>
                   )}
                   {result && (
