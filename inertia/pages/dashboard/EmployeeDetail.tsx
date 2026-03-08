@@ -84,6 +84,24 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   Voir le profil
                 </Button>
               </AppLink>
+              <a
+                href={`/dashboard/conseiller/employees/${employeeId}/dossier`}
+                className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"
+              >
+                <svg
+                  className="w-4 h-4 stroke-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Télécharger le dossier
+              </a>
               <Button
                 onClick={handleDownloadPDF}
                 variant="dark"

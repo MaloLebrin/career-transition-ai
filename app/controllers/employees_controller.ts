@@ -1,6 +1,10 @@
 import { USERS_ROLES } from '#models/user'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
+import {
+  buildDossierArchive,
+  dossierZipFilename,
+} from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { createEmployeeValidator } from '#validators/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee_update_validator'
@@ -226,6 +230,39 @@ export default class EmployeesController {
       employeeId: String(employee.id),
       employee: data,
     })
+  }
+
+  /**
+   * Download dossier ZIP (profil + results) for the given employee.
+   * Same access rules as showDashboard: org-scoped.
+   */
+  public async downloadDossier(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const employee = await Employee.query()
+      .where('id', Number(ctx.params.id))
+      .where('organizationId', user.organizationId)
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .first()
+
+    if (!employee) {
+      return ctx.response.notFound()
+    }
+
+    const filename = dossierZipFilename(employee.name)
+    ctx.response.header('Content-Type', 'application/zip')
+    ctx.response.header(
+      'Content-Disposition',
+      `attachment; filename="${filename}"`
+    )
+    const archive = await buildDossierArchive(employee)
+    ctx.response.stream(archive)
   }
 
   /**

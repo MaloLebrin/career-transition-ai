@@ -59,11 +59,28 @@ function makeSession() {
 
 function makeResponse() {
   let redirectUrl = ''
+  const headers: Record<string, string> = {}
+  let streamCalledWith: any = null
   return {
     redirectUrl,
+    headers,
+    streamCalledWith,
     unauthorizedCalled: false,
+    notFoundCalled: false,
     unauthorized() {
       this.unauthorizedCalled = true
+      return this
+    },
+    notFound() {
+      this.notFoundCalled = true
+      return this
+    },
+    header(key: string, value: string) {
+      this.headers[key] = value
+      return this
+    },
+    stream(body: any) {
+      this.streamCalledWith = body
       return this
     },
     redirect(url: string) {
@@ -143,6 +160,106 @@ test.group('EmployeesController.showProfileDashboard', () => {
     } as any)
 
     assert.isTrue(response.unauthorizedCalled)
+  })
+})
+
+test.group('EmployeesController.downloadDossier', () => {
+  test('returns 401 when user is not authenticated', async ({ assert }) => {
+    const service = new FakeEmployeesService()
+    const controller = new EmployeesController(service as any)
+    const response = makeResponse()
+
+    await controller.downloadDossier({
+      params: { id: '1' },
+      auth: { user: null },
+      response: response as any,
+    } as any)
+
+    assert.isTrue(response.unauthorizedCalled)
+  })
+
+  test('returns 404 when employee not found or not in user org', async ({
+    assert,
+  }) => {
+    const orgA = await Organization.create({
+      name: 'Org A Dossier',
+      slug: `org-a-dossier-${Date.now()}`,
+      logoUrl: null,
+    })
+    const orgB = await Organization.create({
+      name: 'Org B Dossier',
+      slug: `org-b-dossier-${Date.now()}`,
+      logoUrl: null,
+    })
+    const employee = await Employee.create({
+      organizationId: orgA.id,
+      advisorId: null,
+      userId: null,
+      name: 'Dossier Candidate',
+      email: `dossier-${Date.now()}@example.com`,
+      currentRole: 'Dev',
+      targetRole: null,
+      summary: null,
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+      nextAppointment: null,
+    })
+
+    const service = new FakeEmployeesService()
+    const controller = new EmployeesController(service as any)
+    const response = makeResponse()
+
+    await controller.downloadDossier({
+      params: { id: String(employee.id) },
+      auth: { user: { id: 1, organizationId: orgB.id } },
+      response: response as any,
+    } as any)
+
+    assert.isTrue(response.notFoundCalled)
+  })
+
+  test('sets zip headers and streams archive when authorized', async ({
+    assert,
+  }) => {
+    const org = await Organization.create({
+      name: 'Org Dossier Export',
+      slug: `org-dossier-export-${Date.now()}`,
+      logoUrl: null,
+    })
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: null,
+      userId: null,
+      name: 'Export Candidate',
+      email: `export-${Date.now()}@example.com`,
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: null,
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+      nextAppointment: null,
+    })
+
+    const service = new FakeEmployeesService()
+    const controller = new EmployeesController(service as any)
+    const response = makeResponse()
+
+    await controller.downloadDossier({
+      params: { id: String(employee.id) },
+      auth: { user: { id: 1, organizationId: org.id } },
+      response: response as any,
+    } as any)
+
+    assert.equal(response.headers['Content-Type'], 'application/zip')
+    assert.include(
+      response.headers['Content-Disposition'],
+      'attachment'
+    )
+    assert.include(response.headers['Content-Disposition'], 'Dossier_Export_Candidate.zip')
+    assert.isDefined(response.streamCalledWith)
+    assert.isFunction(response.streamCalledWith?.pipe)
   })
 })
 
