@@ -3,6 +3,8 @@ import ExerciseResultsController from '#controllers/exercise_results_controller'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
 
+const fakeEmployeesService = { getEmployeeForUser: async () => ({ id: 1 }) } as any
+
 function makeCtx(overrides: any = {}) {
   const flashes: Record<string, any> = {}
 
@@ -70,7 +72,7 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     const service = {
       saveResult: async () => {},
     } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx({ auth: { user: null } })
 
     await controller.storeFromDashboard(ctx)
@@ -81,12 +83,12 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
   test('calls service and flashes dynamic success message', async ({ assert }) => {
     const saveResult = async () => {}
     const service = { saveResult } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx()
 
     await controller.storeFromDashboard(ctx)
 
-    assert.equal(ctx.response.redirectUrl, '/dashboard/employees/1')
+    assert.equal(ctx.response.redirectUrl, '/dashboard/conseiller/employees/1')
     assert.equal(ctx.flashes.success, 'Exercice Motivation enregistré.')
   })
 
@@ -98,7 +100,7 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
         return {}
       },
     } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
 
     const motivationCtx = makeCtx()
     await controller.storeFromDashboard(motivationCtx)

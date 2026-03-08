@@ -3,6 +3,7 @@ import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
+import { authService } from '../../services/authService'
 import { hasErrors, validateLogin, type LoginErrors } from '../../lib/authValidation'
 
 interface LoginPageProps {
@@ -25,43 +26,20 @@ export default function LoginPage({
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     const data = { email: email.trim(), password }
     const nextErrors = validateLogin(data)
     setErrors(nextErrors)
     if (hasErrors(nextErrors)) {
-      e.preventDefault()
       return
     }
-    e.preventDefault()
     setSubmitError(null)
     setIsLoading(true)
-    const form = e.currentTarget
-    const body = new FormData(form)
     try {
-      const res = await fetch(form.action, {
-        method: 'POST',
-        body,
-        credentials: 'include',
-        redirect: 'manual',
-        headers: { Accept: 'text/html' },
-      })
-      const location = res.headers.get('Location')
-      if ((res.status === 303 || res.status === 302) && location?.includes('/dashboard')) {
-        window.location.href = location
-        return
-      }
-      if (res.ok) {
-        window.location.href = '/dashboard'
-        return
-      }
-      if (res.status === 302 && location?.includes('/auth/login')) {
-        setSubmitError('Identifiants invalides')
-        return
-      }
-      const text = await res.text()
-      setSubmitError(text && text.length < 200 ? text : 'Identifiants invalides')
-    } catch {
-      setSubmitError('Erreur de connexion.')
+      await authService.login(data.email, data.password, csrfToken)
+      window.location.href = '/dashboard'
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Identifiants invalides')
     } finally {
       setIsLoading(false)
     }

@@ -5,6 +5,7 @@
 
 export const controllers = {
   Auth: () => import('#controllers/auth_controller'),
+  Dashboard: () => import('#controllers/dashboard_controller'),
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),

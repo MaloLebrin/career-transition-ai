@@ -29,7 +29,7 @@ export default function EmployeeHome() {
             <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est boostée
             à l'IA.
           </p>
-          <AppLink href="/dashboard/profile">
+          <AppLink href="/dashboard/candidat/profile">
             <Button
               variant="outline"
               className="mt-10 bg-white text-brand-navy border-none"
@@ -68,7 +68,7 @@ export default function EmployeeHome() {
                     </h4>
                     <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
                     {step.associatedExercise && !step.completed && (
-                      <AppLink href={`/dashboard/exercises/${step.associatedExercise}`}>
+                      <AppLink href={`/dashboard/candidat/exercises/${step.associatedExercise}`}>
                         <Button
                           className="mt-6"
                           variant="secondary"

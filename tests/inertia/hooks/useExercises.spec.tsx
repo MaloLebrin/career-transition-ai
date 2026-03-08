@@ -87,7 +87,7 @@ describe('useExercises', () => {
     })
 
     expect(mockRouterPost).toHaveBeenCalledWith(
-      '/dashboard/employees/1/exercises/disc/draft',
+      '/dashboard/conseiller/employees/1/exercises/disc/draft',
       expect.objectContaining({ type: ExerciseType.DISC, data: { foo: 'bar' } }),
       expect.any(Object)
     )
@@ -106,7 +106,7 @@ describe('useExercises', () => {
 
     expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.DISC, { data: 'x' })
     expect(mockRouterPost).toHaveBeenCalledWith(
-      '/dashboard/employees/1/exercises/disc/result',
+      '/dashboard/conseiller/employees/1/exercises/disc/result',
       expect.objectContaining({ type: ExerciseType.DISC, status: 'completed' })
     )
     expect(apiService.saveExerciseResult).not.toHaveBeenCalled()

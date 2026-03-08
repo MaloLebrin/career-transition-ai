@@ -12,8 +12,8 @@ function baseUrl(): string {
 }
 
 test.group('Dashboard routes (functional)', () => {
-  test('POST /dashboard/employees returns 401 when unauthenticated', async ({ assert }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/employees`, {
+  test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({ assert }) => {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
       method: 'POST',
       redirect: 'manual',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -22,7 +22,7 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 401)
   })
 
-  test('POST /dashboard/employees creates employee and redirects when authenticated', async ({
+  test('POST /dashboard/conseiller/employees creates employee and redirects when authenticated', async ({
     assert,
   }) => {
     await app.boot()
@@ -47,7 +47,7 @@ test.group('Dashboard routes (functional)', () => {
     const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
 
     const candidateEmail = `candidate-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const res = await fetch(`${baseUrl()}/dashboard/employees`, {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
       method: 'POST',
       redirect: 'manual',
       headers: {
@@ -61,18 +61,18 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 302)
     const location = res.headers.get('location') ?? ''
     assert.isTrue(
-      location.includes('/dashboard/employees'),
-      `Expected redirect to /dashboard/employees, got ${location}`
+      location.includes('/dashboard/conseiller/employees'),
+      `Expected redirect to /dashboard/conseiller/employees, got ${location}`
     )
 
     const count = await Employee.query().where('email', candidateEmail).count('* as total')
     assert.equal(Number((count[0] as any).$extras.total), 1)
   })
 
-  test('PUT /dashboard/settings/organization returns 401 when unauthenticated', async ({
+  test('PUT /dashboard/conseiller/settings/organization returns 401 when unauthenticated', async ({
     assert,
   }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/settings/organization`, {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization`, {
       method: 'PUT',
       redirect: 'manual',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -81,7 +81,7 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 401)
   })
 
-  test('PUT /dashboard/settings/organization updates org and redirects when authenticated', async ({
+  test('PUT /dashboard/conseiller/settings/organization updates org and redirects when authenticated', async ({
     assert,
   }) => {
     await app.boot()
@@ -108,7 +108,7 @@ test.group('Dashboard routes (functional)', () => {
     const org = await Organization.findOrFail(user.organizationId)
     const newName = `Updated Org ${Date.now()}`
 
-    const res = await fetch(`${baseUrl()}/dashboard/settings/organization`, {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization`, {
       method: 'PUT',
       redirect: 'manual',
       headers: {
@@ -122,18 +122,18 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 302)
     const location = res.headers.get('location') ?? ''
     assert.isTrue(
-      location.includes('/dashboard/settings'),
-      `Expected redirect to /dashboard/settings, got ${location}`
+      location.includes('/dashboard/conseiller/settings'),
+      `Expected redirect to /dashboard/conseiller/settings, got ${location}`
     )
 
     await org.refresh()
     assert.equal(org.name, newName)
   })
 
-  test('POST /dashboard/settings/organization/advisors returns 401 when unauthenticated', async ({
+  test('POST /dashboard/conseiller/settings/organization/advisors returns 401 when unauthenticated', async ({
     assert,
   }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/settings/organization/advisors`, {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization/advisors`, {
       method: 'POST',
       redirect: 'manual',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -146,7 +146,7 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 401)
   })
 
-  test('POST /dashboard/settings/organization/advisors invites advisor and redirects when authenticated', async ({
+  test('POST /dashboard/conseiller/settings/organization/advisors invites advisor and redirects when authenticated', async ({
     assert,
   }) => {
     await app.boot()
@@ -170,7 +170,7 @@ test.group('Dashboard routes (functional)', () => {
     const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
 
     const invitedEmail = `invited-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const res = await fetch(`${baseUrl()}/dashboard/settings/organization/advisors`, {
+    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization/advisors`, {
       method: 'POST',
       redirect: 'manual',
       headers: {
@@ -188,8 +188,8 @@ test.group('Dashboard routes (functional)', () => {
     assert.equal(res.status, 302)
     const location = res.headers.get('location') ?? ''
     assert.isTrue(
-      location.includes('/dashboard/settings'),
-      `Expected redirect to /dashboard/settings, got ${location}`
+      location.includes('/dashboard/conseiller/settings'),
+      `Expected redirect to /dashboard/conseiller/settings, got ${location}`
     )
 
     const invitedUser = await User.query().where('email', invitedEmail).first()

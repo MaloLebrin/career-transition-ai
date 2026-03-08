@@ -5,6 +5,8 @@ import User from '#models/user'
 import Organization from '#models/organization'
 import hash from '@adonisjs/core/services/hash'
 
+const fakeEmployeesService = { getEmployeeForUser: async () => ({}), applyUpdate: () => {} } as any
+
 function makeSession() {
   const flashes: Array<[string, string]> = []
   return {
@@ -47,7 +49,7 @@ function makeResponse() {
 test.group('AuthController.updateFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new AuthService()
-    const controller = new AuthController(service as any)
+    const controller = new AuthController(service as any, fakeEmployeesService)
     const response = makeResponse()
 
     // @ts-expect-error minimal context
@@ -79,7 +81,7 @@ test.group('AuthController.updateFromDashboard', () => {
     })
 
     const service = new AuthService()
-    const controller = new AuthController(service as any)
+    const controller = new AuthController(service as any, fakeEmployeesService)
     const session = makeSession()
     const response = makeResponse()
 
@@ -101,7 +103,7 @@ test.group('AuthController.updateFromDashboard', () => {
     assert.equal(user.name, 'New Profile')
     assert.equal(user.email, newEmail)
     assert.deepEqual(session.flashes, [['success', 'Profil mis à jour.']])
-    assert.equal(response.redirectUrl, '/dashboard/settings')
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 })
 

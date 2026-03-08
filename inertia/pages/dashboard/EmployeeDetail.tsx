@@ -108,7 +108,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   defaultValue={selectedEmployee.advisorNotes || ''}
                   onBlur={(e) => {
                     const value = e.target.value
-                    router.put(`/dashboard/employees/${employeeId}`, { advisorNotes: value })
+                    router.put(`/dashboard/conseiller/employees/${employeeId}`, { advisorNotes: value })
                   }}
                 />
               </div>
@@ -145,7 +145,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                         {step.associatedExercise && !result && (
                           <div className="pt-4">
                             <AppLink
-                              href={`/dashboard/employees/${employeeId}/exercises/${step.associatedExercise}`}
+                              href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
                               className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
                             >
                               Démarrer l’exercice →
@@ -157,7 +157,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                     return step.associatedExercise && !result ? (
                       <AppLink
                         key={step.id}
-                        href={`/dashboard/employees/${employeeId}/exercises/${step.associatedExercise}`}
+                        href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
                         className="block"
                       >
                         {content}

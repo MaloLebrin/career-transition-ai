@@ -10,15 +10,23 @@ import AddAdvisorModal from '../modals/AddAdvisorModal'
 import { useAuth } from '../../hooks/useAuth'
 
 interface Props {
+  /** Passed from dashboard/Settings page (server-rendered). When omitted, loads via organizationId + API. */
+  organization?: Organization
+  members?: Advisor[]
   /** When omitted, loads the current user's organization via GET /api/organizations/current */
   organizationId?: string | number
   onBack: () => void
 }
 
-const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
+const OrganizationSettings: React.FC<Props> = ({
+  organization: organizationProp,
+  members: membersProp,
+  organizationId,
+  onBack,
+}) => {
   const { user } = useAuth()
-  const [org] = useState<Organization>(organization)
-  const [team] = useState<Advisor[]>(members)
+  const [org] = useState<Organization | undefined>(organizationProp)
+  const [team] = useState<Advisor[]>(membersProp ?? [])
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
 
@@ -33,6 +41,14 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
       profileForm.setData({ name: user.name, email: user.email })
     }
   }, [user?.id])
+
+  if (!org) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="animate-fadeIn max-w-5xl mx-auto space-y-10 pb-20">
@@ -75,7 +91,7 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
             <form
               onSubmit={(e) => {
                 e.preventDefault()
-                profileForm.put('/dashboard/profile', {
+                profileForm.put('/dashboard/conseiller/profile', {
                   onSuccess: () => {
                     setSuccess(true)
                     setTimeout(() => setSuccess(false), 3000)
@@ -128,7 +144,7 @@ const OrganizationSettings: React.FC<Props> = ({ organizationId, onBack }) => {
             <form
               onSubmit={(e) => {
                 e.preventDefault()
-                orgForm.put('/dashboard/settings/organization')
+                orgForm.put('/dashboard/conseiller/settings/organization')
               }}
               className="space-y-6"
             >

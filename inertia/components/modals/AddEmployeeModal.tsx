@@ -19,7 +19,7 @@ const AddEmployeeModal: React.FC<Props> = ({ onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    post('/dashboard/employees', {
+    post('/dashboard/conseiller/employees', {
       onSuccess: () => {
         reset()
         onClose()

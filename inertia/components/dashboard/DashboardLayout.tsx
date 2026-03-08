@@ -10,7 +10,7 @@ import { isAdvisorOrAdmin, isSuperAdmin } from '../../helpers/roles'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  /** For advisor: selected employee id to highlight in sidebar. From route /dashboard/employees/:id */
+  /** For advisor: selected employee id to highlight in sidebar. From route /dashboard/conseiller/employees/:id */
   selectedEmployeeId?: string | null
 }
 
@@ -43,10 +43,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     Navigation
                   </h3>
                 </div>
-                <NavLink href="/dashboard" icon="dashboard" label="Bureau" />
-                <NavLink href="/dashboard/employees" icon="users" label="Candidats" />
-                <NavLink href="/dashboard/settings" icon="settings" label="Réglages" />
-                <NavLink href="/dashboard/design-system" icon="palette" label="Design" />
+                <NavLink href="/dashboard/conseiller" icon="dashboard" label="Bureau" />
+                <NavLink href="/dashboard/conseiller/employees" icon="users" label="Candidats" />
+                <NavLink href="/dashboard/conseiller/settings" icon="settings" label="Réglages" />
+                <NavLink href="/dashboard/conseiller/design-system" icon="palette" label="Design" />
                 {superAdmin && (
                   <>
                     <div className="px-3 pt-4 mt-4 pb-2 border-t border-brand-navy/5">
@@ -100,11 +100,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         const isActive =
                           selectedEmployeeId !== null &&
                           Number(selectedEmployeeId) === emp.id &&
-                          url.includes('/dashboard/employees/')
+                          url.includes('/dashboard/conseiller/employees/')
                         return (
                           <AppLink
                             key={emp.id}
-                            href={`/dashboard/employees/${emp.id}`}
+                            href={`/dashboard/conseiller/employees/${emp.id}`}
                             className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
                               isActive
                                 ? 'bg-brand-sage/10 text-brand-sage'

@@ -21,13 +21,16 @@ export default class EmployeeSeeder extends BaseSeeder {
     const skills = await Skill.query().whereNull('organizationId').select('id', 'slug')
     const bySlug = Object.fromEntries(skills.map((s) => [s.slug, s.id]))
 
+    const hubertUser = await User.findBy('email', 'h.duboc@example.fr')
+    const maloUser = await User.findBy('email', 'm.lebrin@example.fr')
+
     // ----- Hubert Duboc (CV réel) -----
     const hubert = await Employee.updateOrCreate(
       { email: 'h.duboc@example.fr', organizationId: org.id },
       {
         organizationId: org.id,
         advisorId: advisor.id,
-        userId: null,
+        userId: hubertUser?.id ?? null,
         name: 'Hubert Duboc',
         email: 'h.duboc@example.fr',
         currentRole: 'Directeur Adjoint - RESQME Europe',
@@ -120,7 +123,7 @@ export default class EmployeeSeeder extends BaseSeeder {
       {
         organizationId: org.id,
         advisorId: advisor.id,
-        userId: null,
+        userId: maloUser?.id ?? null,
         name: 'Malo Lebrin',
         email: 'm.lebrin@example.fr',
         currentRole: 'Lead développeur',

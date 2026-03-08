@@ -17,7 +17,7 @@ export default function DashboardEmployees({ employees }: DashboardEmployeesProp
 
   useEffect(() => {
     if (user?.role === 'advisor' && employees.length > 0) {
-      router.visit(`/dashboard/employees/${employees[0].id}`)
+      router.visit(`/dashboard/conseiller/employees/${employees[0].id}`)
     }
   }, [user?.role, employees])
 

@@ -18,7 +18,7 @@ export default function DashboardSettings({ organization, members }: DashboardSe
           <OrganizationSettings
             organization={organization}
             members={members}
-            onBack={() => router.visit('/dashboard')}
+            onBack={() => router.visit('/dashboard/conseiller')}
           />
         </div>
       </DashboardLayout>

@@ -51,7 +51,7 @@ describe('AddAdvisorModal', () => {
 
     expect(mockPost).toHaveBeenCalledTimes(1)
     expect(mockPost).toHaveBeenCalledWith(
-      '/dashboard/settings/organization/advisors',
+      '/dashboard/conseiller/settings/organization/advisors',
       expect.objectContaining({
         onSuccess: expect.any(Function),
       })

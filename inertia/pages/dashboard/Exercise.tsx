@@ -51,14 +51,20 @@ export default function DashboardExercise({
     return draftsByType[slug] ?? null
   }
 
+  const isCandidat = !employeeId
+  const exercisesBasePath = isCandidat
+    ? '/dashboard/candidat/exercises'
+    : `/dashboard/conseiller/employees/${employeeId}/exercises`
+  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()
-      if (employeeId) router.visit(`/dashboard/employees/${employeeId}`)
-      else router.visit('/dashboard')
+      router.visit(backHref)
     },
     {
+      exercisesBasePath,
       motivation: { initialDraft: getInitialDraft(ExerciseType.MOTIVATION) },
       values: { initialDraft: getInitialDraft(ExerciseType.VALUES) },
       personality: { initialDraft: getInitialDraft(ExerciseType.PERSONALITY) },
@@ -71,7 +77,6 @@ export default function DashboardExercise({
   )
 
   const exerciseType = EXERCISE_TYPES[type] ?? null
-  const backHref = employeeId ? `/dashboard/employees/${employeeId}` : '/dashboard'
 
   useEffect(() => {
     if (!user) router.visit('/auth/login')

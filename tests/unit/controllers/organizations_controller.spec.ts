@@ -178,7 +178,7 @@ test.group('OrganizationsController.updateFromDashboard', () => {
     assert.equal(service.updateCalls[0].org.id, org.id)
     assert.deepEqual(service.updateCalls[0].payload, payload)
     assert.deepEqual(session.flashes, [['success', 'Cabinet mis à jour.']])
-    assert.equal(response.redirectUrl, '/dashboard/settings')
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 })
 
@@ -224,7 +224,7 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     assert.equal(service.inviteAdvisorCalls[0].email, payload.email)
     assert.equal(service.inviteAdvisorCalls[0].role, payload.role)
     assert.deepEqual(session.flashes, [['success', 'Collaborateur invité.']])
-    assert.equal(response.redirectUrl, '/dashboard/settings')
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 
   test('on duplicate email sets error flash and redirects', async ({ assert }) => {
@@ -251,6 +251,6 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     assert.deepEqual(session.flashes, [
       ['error', 'Cet email est déjà utilisé par un compte existant.'],
     ])
-    assert.equal(response.redirectUrl, '/dashboard/settings')
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 })

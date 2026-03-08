@@ -24,7 +24,7 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    post('/dashboard/settings/organization/advisors', {
+    post('/dashboard/conseiller/settings/organization/advisors', {
       onSuccess: () => {
         reset()
         onClose()

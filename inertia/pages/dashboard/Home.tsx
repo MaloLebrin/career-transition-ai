@@ -9,7 +9,11 @@ import { useEmployee } from '../../hooks/useEmployee'
 import { isAdvisorOrAdmin } from '../../helpers/roles'
 import { employeeUpdatePayload } from '../../helpers/employee_payload'
 
-export default function DashboardHome() {
+interface HomeProps {
+  dashboardContext?: 'candidat' | 'conseiller'
+}
+
+export default function DashboardHome({ dashboardContext }: HomeProps) {
   const { user } = useAuth()
   const userRole = user?.role || 'employee'
   const targetId = user?.id || '1'
@@ -23,7 +27,10 @@ export default function DashboardHome() {
 
   if (!user) return null
 
-  if (!isAdvisorOrAdmin(userRole) && selectedEmployee && !selectedEmployee.onboarded) {
+  const isAdvisor = isAdvisorOrAdmin(userRole)
+  const showCandidatContent = dashboardContext === 'candidat' || (!dashboardContext && !isAdvisor)
+
+  if (showCandidatContent && selectedEmployee && !selectedEmployee.onboarded) {
     return (
       <>
         <Head title="Onboarding" />
@@ -31,8 +38,11 @@ export default function DashboardHome() {
           <OnboardingFlow
             employee={selectedEmployee}
             onComplete={(updated) => {
-              router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated), {
-                onSuccess: () => router.reload(),
+              router.put('/dashboard/candidat/profile', {
+                ...employeeUpdatePayload(updated),
+                onboarded: true,
+              }, {
+                onSuccess: () => router.visit('/dashboard/candidat'),
               })
             }}
           />
@@ -41,11 +51,12 @@ export default function DashboardHome() {
     )
   }
 
+  const showAdvisorHome = dashboardContext === 'conseiller' || (!dashboardContext && isAdvisor)
   return (
     <>
       <Head title="Tableau de bord" />
       <DashboardLayout>
-        {isAdvisorOrAdmin(userRole) ? <AdvisorHome /> : <EmployeeHome />}
+        {showAdvisorHome ? <AdvisorHome /> : <EmployeeHome />}
       </DashboardLayout>
     </>
   )

@@ -36,15 +36,11 @@ export default function DashboardProfile() {
         <ProfilePage
           employee={selectedEmployee}
           onSave={(updated) => {
-            router.put(
-              `/dashboard/employees/${selectedEmployee.id}`,
-              employeeUpdatePayload(updated),
-              {
-                onSuccess: () => router.visit('/dashboard'),
-              }
-            )
+            router.put('/dashboard/candidat/profile', employeeUpdatePayload(updated), {
+              onSuccess: () => router.visit('/dashboard/candidat'),
+            })
           }}
-          onBack={() => router.visit('/dashboard')}
+          onBack={() => router.visit('/dashboard/candidat')}
         />
       </DashboardLayout>
     </>

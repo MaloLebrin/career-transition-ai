@@ -47,7 +47,7 @@ describe('AddEmployeeModal', () => {
 
     expect(mockPost).toHaveBeenCalledTimes(1)
     expect(mockPost).toHaveBeenCalledWith(
-      '/dashboard/employees',
+      '/dashboard/conseiller/employees',
       expect.objectContaining({
         onSuccess: expect.any(Function),
       })

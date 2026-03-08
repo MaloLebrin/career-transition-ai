@@ -9,6 +9,7 @@
 
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+const DashboardController = () => import('#controllers/dashboard_controller')
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
@@ -50,13 +51,34 @@ router
   })
   .prefix('/onboarding')
 
-// Dashboard (Inertia) routes. Requires auth; for admin-only use .use(['auth', 'admin'])
+// Dashboard entry: redirect to role-specific area
 router
   .group(() => {
-    // Dashboard: home uses dashboard/Home (replaces single Dashboard page)
-    // @ts-expect-error Inertia page name from generated types
-    router.on('/').renderInertia('dashboard/Home', {})
+    router.get('/', [DashboardController, 'index'])
+  })
+  .use([middleware.auth()])
+  .prefix('/dashboard')
 
+// Dashboard candidat (employee only)
+router
+  .group(() => {
+    router.get('/', [DashboardController, 'candidatHome'])
+    router.get('/profile', ({ inertia }) =>
+      (inertia as any).render('dashboard/Profile', {})
+    )
+    router.put('/profile', [AuthController, 'updateProfileCandidat'])
+    router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
+    router.post('/exercises/:type/draft', [ExerciseResultsController, 'saveDraftFromDashboardCandidat'])
+    router.post('/exercises/:type/result', [ExerciseResultsController, 'storeFromDashboardCandidat'])
+  })
+  .use([middleware.auth(), middleware.candidate()])
+  .prefix('/dashboard/candidat')
+
+// Dashboard conseiller (advisor, admin, super_admin)
+router
+  .group(() => {
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/').renderInertia('dashboard/Home', { dashboardContext: 'conseiller' })
     // Inertia form submissions (before :id routes)
     router.post('/employees', [EmployeesController, 'storeFromDashboard'])
     router.put('/employees/:id', [EmployeesController, 'updateFromDashboard'])
@@ -179,8 +201,8 @@ router
       (inertia as any).render('dashboard/Exercise', { type: params.type })
     )
   })
-  .use([middleware.auth()])
-  .prefix('/dashboard')
+  .use([middleware.auth(), middleware.advisorOrAdmin()])
+  .prefix('/dashboard/conseiller')
 
 // Super admin only dashboard routes
 router

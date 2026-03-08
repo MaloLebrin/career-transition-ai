@@ -60,6 +60,6 @@ export default class OnboardingController {
 
     await auth.use('web').login(user)
     session.flash('success', 'Mot de passe créé. Bienvenue !')
-    return response.redirect('/dashboard')
+    return response.redirect('/dashboard/candidat')
   }
 }

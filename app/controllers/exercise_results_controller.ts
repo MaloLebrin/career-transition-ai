@@ -1,6 +1,7 @@
 import Employee from '#models/employee'
 import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
 import { ExerciseResultsService } from '#services/exercise_results_service'
+import { EmployeesService } from '#services/employees_service'
 import {
   fetchExerciseDraftValidator,
   saveExerciseDraftValidator,
@@ -11,7 +12,10 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ExerciseResultsController {
-  constructor(private service: ExerciseResultsService) {}
+  constructor(
+    private service: ExerciseResultsService,
+    private employeesService: EmployeesService
+  ) {}
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -114,7 +118,7 @@ export default class ExerciseResultsController {
     const typeKey = String(payload.type)
     const label = typeLabelMap[typeKey] ?? 'Exercice'
     session.flash('success', `Exercice ${label} enregistré.`)
-    return response.redirect(`/dashboard/employees/${employeeId}`)
+    return response.redirect(`/dashboard/conseiller/employees/${employeeId}`)
   }
   /**
    * Inertia page: exercise with initial draft/result for supported types.
@@ -169,5 +173,118 @@ export default class ExerciseResultsController {
       employeeId: String(employee.id),
       initialDraftsByType,
     })
+  }
+
+  /**
+   * Candidat: Inertia page for exercise (no employeeId; employee resolved from auth.user).
+   */
+  public async showDashboardCandidat({ auth, params, inertia, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    const typeParam = String(params.type).toLowerCase()
+
+    const draftTypes = [
+      EXERCICE_RESULTS_TYPES.MOTIVATION,
+      EXERCICE_RESULTS_TYPES.VALUES,
+      EXERCICE_RESULTS_TYPES.PERSONALITY,
+      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
+      EXERCICE_RESULTS_TYPES.TARGETING,
+      EXERCICE_RESULTS_TYPES.DISC,
+      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
+      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
+    ] as const
+
+    const initialDraftsByType: Record<string, any> = {}
+    for (const exerciseType of draftTypes) {
+      if (typeParam !== exerciseType) continue
+      const draft = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .andWhere('type', exerciseType)
+        .andWhere('status', 'draft')
+        .orderBy('updatedAt', 'desc')
+        .first()
+      initialDraftsByType[exerciseType] = draft
+        ? {
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
+        : null
+      break
+    }
+
+    return (inertia as any).render('dashboard/Exercise', {
+      type: params.type,
+      initialDraftsByType,
+    })
+  }
+
+  /**
+   * Candidat: save draft for current user's employee.
+   */
+  public async saveDraftFromDashboardCandidat({ auth, params, request, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    const payload = await request.validateUsing(saveExerciseDraftValidator)
+
+    await this.service.saveDraft({
+      employeeId: employee.id,
+      type: payload.type,
+      data: payload.data,
+    })
+
+    return response.redirect().back()
+  }
+
+  /**
+   * Candidat: save exercise result for current user's employee.
+   */
+  public async storeFromDashboardCandidat({
+    auth,
+    params,
+    request,
+    response,
+    session,
+  }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    const payload = await request.validateUsing(saveExerciseResultValidator)
+
+    await this.service.saveResult({
+      employeeId: employee.id,
+      type: payload.type,
+      status: payload.status,
+      date: payload.date,
+      duration: payload.duration,
+      data: payload.data,
+      quantitativeScore: payload.quantitativeScore,
+      qualitativeAnalysis: payload.qualitativeAnalysis,
+      plan: payload.plan,
+    })
+
+    const typeLabelMap: Record<string, string> = {
+      [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'Motivation',
+      [EXERCICE_RESULTS_TYPES.VALUES]: 'Valeurs',
+      [EXERCICE_RESULTS_TYPES.PERSONALITY]: 'Personnalité',
+      [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: 'Courbe de vie',
+      [EXERCICE_RESULTS_TYPES.TARGETING]: 'Ciblage',
+      [EXERCICE_RESULTS_TYPES.DISC]: 'DISC',
+      [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'Cartographie des compétences',
+      [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'Cercle de contrôle',
+    }
+
+    const label = typeLabelMap[String(payload.type)] ?? 'Exercice'
+    session.flash('success', `Exercice ${label} enregistré.`)
+    return response.redirect('/dashboard/candidat')
   }
 }

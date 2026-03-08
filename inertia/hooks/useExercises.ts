@@ -9,6 +9,8 @@ export function useExercises(
   employee: Employee | null,
   onComplete: () => void,
   options?: {
+    /** Base URL for draft/result (e.g. /dashboard/candidat/exercises or /dashboard/conseiller/employees/:id/exercises). If not set, uses /dashboard/employees/:id/exercises. */
+    exercisesBasePath?: string
     motivation?: { initialDraft?: ExerciseDraft | null }
     values?: { initialDraft?: ExerciseDraft | null }
     personality?: { initialDraft?: ExerciseDraft | null }
@@ -21,6 +23,9 @@ export function useExercises(
 ) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isSavingDraft, setIsSavingDraft] = useState(false)
+  const basePath =
+    options?.exercisesBasePath ??
+    (employee ? `/dashboard/conseiller/employees/${employee.id}/exercises` : '/dashboard/candidat/exercises')
 
   const loadDraft = useCallback(
     async (type: ExerciseType) => {
@@ -68,7 +73,7 @@ export function useExercises(
       }
       const slug = EXERCISE_SLUGS[type]
       if (slug && EXERCISES_WITH_INERTIA_DRAFT.has(type)) {
-        await router.post(`/dashboard/employees/${employee.id}/exercises/${slug}/draft`, draft, {
+        await router.post(`${basePath}/${slug}/draft`, draft, {
           preserveScroll: true,
           preserveState: true,
         })
@@ -118,7 +123,7 @@ export function useExercises(
 
       const slug = EXERCISE_SLUGS[type]
       if (slug) {
-        await router.post(`/dashboard/employees/${employee.id}/exercises/${slug}/result`, {
+        await router.post(`${basePath}/${slug}/result`, {
           type,
           status: 'completed',
           date: newResult.date,

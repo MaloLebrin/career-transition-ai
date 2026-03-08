@@ -125,7 +125,7 @@ test.group('EmployeesController.storeFromDashboard', () => {
     assert.equal(session.flashes[0][0], 'success')
     assert.include(session.flashes[0][1], 'Candidat ajouté')
     assert.include(session.flashes[0][1], 'email')
-    assert.equal(response.redirectUrl, '/dashboard/employees')
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/employees')
   })
 })
 
@@ -187,7 +187,7 @@ test.group('EmployeesController.updateFromDashboard', () => {
     } as any)
 
     assert.deepEqual(session.flashes, [['success', 'Candidat mis à jour.']])
-    assert.equal(response.redirectUrl, `/dashboard/employees/${employee.id}`)
+    assert.equal(response.redirectUrl, `/dashboard/conseiller/employees/${employee.id}`)
 
     await employee.refresh()
     assert.equal(employee.advisorNotes, 'Updated notes from test')

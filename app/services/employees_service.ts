@@ -109,6 +109,28 @@ export class EmployeesService {
     return mapEmployee(employee)
   }
 
+  /**
+   * Get the employee record linked to the given user (candidate self-service).
+   */
+  public async getEmployeeForUser(user: User): Promise<Employee> {
+    const employee = await Employee.query()
+      .where('userId', user.id)
+      .where('organizationId', user.organizationId)
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .preload('experiences')
+      .preload('educations')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('appointments')
+      .first()
+
+    if (!employee) {
+      throw new Error('Profil candidat introuvable.')
+    }
+
+    return employee
+  }
+
   public applyUpdate(employee: Employee, payload: UpdateEmployeeInput): Employee {
     employee.merge({
       advisorNotes: payload.advisorNotes ?? employee.advisorNotes,

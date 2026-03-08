@@ -86,7 +86,7 @@ export default class OrganizationsController {
     const payload = await request.validateUsing(updateOrganizationValidator)
     await this.organizationsService.update(org, payload)
     session.flash('success', 'Cabinet mis à jour.')
-    return response.redirect('/dashboard/settings')
+    return response.redirect('/dashboard/conseiller/settings')
   }
 
   /**
@@ -104,11 +104,11 @@ export default class OrganizationsController {
         role: payload.role,
       })
       session.flash('success', 'Collaborateur invité.')
-      return response.redirect('/dashboard/settings')
+      return response.redirect('/dashboard/conseiller/settings')
     } catch (err: any) {
       if (err.message?.includes('déjà utilisé')) {
         session.flash('error', err.message)
-        return response.redirect('/dashboard/settings')
+        return response.redirect('/dashboard/conseiller/settings')
       }
       throw err
     }

@@ -39,12 +39,23 @@ export default class EmployeesController {
 
   /**
    * JSON API: show single employee.
+   * When the current user is an employee and the requested id is their user id,
+   * returns the employee record linked to that user (by userId), not by employee id.
    */
   public async show({ params, auth, response }: HttpContext) {
-    const organizationId = auth.user?.organizationId ?? null
+    const user = auth.user
+    const organizationId = user?.organizationId ?? null
+    const requestedId = Number(params.id)
+
+    const isSelfRequest =
+      user?.role === USERS_ROLES.EMPLOYEE && user.id === requestedId
 
     const employeeQuery = Employee.query()
-      .where('id', Number(params.id))
+      .if(
+        isSelfRequest,
+        (q) => q.where('userId', requestedId),
+        (q) => q.where('id', requestedId)
+      )
       .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
@@ -130,7 +141,7 @@ export default class EmployeesController {
     }
 
     session.flash('success', 'Candidat ajouté. Un lien d’activation a été envoyé par email.')
-    return response.redirect('/dashboard/employees')
+    return response.redirect('/dashboard/conseiller/employees')
   }
 
   /**
@@ -158,7 +169,7 @@ export default class EmployeesController {
     await employee.save()
 
     session.flash('success', 'Candidat mis à jour.')
-    return response.redirect(`/dashboard/employees/${params.id}`)
+    return response.redirect(`/dashboard/conseiller/employees/${params.id}`)
   }
 
   /**
