@@ -76,16 +76,31 @@ export default function DashboardExercise({
     }
   )
 
-  const exerciseType = EXERCISE_TYPES[type] ?? null
+  const exerciseType =
+    EXERCISE_TYPES[type] ?? (typeof type === 'string' ? EXERCISE_TYPES[type.toUpperCase()] : null) ?? null
 
   useEffect(() => {
     if (!user) router.visit('/auth/login')
   }, [user])
 
-  if (!user) return null
+  if (!user) {
+    return (
+      <DashboardLayout selectedEmployeeId={employeeId || null}>
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    )
+  }
   if (!exerciseType) {
     router.visit(backHref)
-    return null
+    return (
+      <DashboardLayout selectedEmployeeId={employeeId || null}>
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (

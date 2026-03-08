@@ -123,7 +123,7 @@ export default class ExerciseResultsController {
   /**
    * Inertia page: exercise with initial draft/result for supported types.
    */
-  public async showDashboard({ auth, params, inertia, response }: HttpContext) {
+  public async showDashboard({ auth, params, inertia, response, session }: HttpContext) {
     if (!auth.user) {
       return response.unauthorized()
     }
@@ -131,11 +131,19 @@ export default class ExerciseResultsController {
     const employeeId = Number(params.id)
     const typeParam = String(params.type).toLowerCase()
 
-    const employee = await Employee.query()
-      .where('id', employeeId)
-      .where('organizationId', auth.user.organizationId)
-      .preload('exerciseResults')
-      .firstOrFail()
+    let employee: Employee | null
+    try {
+      employee = await Employee.query()
+        .where('id', employeeId)
+        .where('organizationId', auth.user.organizationId)
+        .preload('exerciseResults')
+        .firstOrFail()
+    } catch {
+      session.flash('error', 'Candidat introuvable.')
+      return response.redirect('/dashboard/conseiller/employees')
+    }
+
+    const employeeRecord = employee
 
     const draftTypes = [
       EXERCICE_RESULTS_TYPES.MOTIVATION,
@@ -152,14 +160,14 @@ export default class ExerciseResultsController {
     for (const exerciseType of draftTypes) {
       if (typeParam !== exerciseType) continue
       const draft = await ExerciseResult.query()
-        .where('employeeId', employee.id)
+        .where('employeeId', employeeRecord.id)
         .andWhere('type', exerciseType)
         .andWhere('status', 'draft')
         .orderBy('updatedAt', 'desc')
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employee.id,
+            employeeId: employeeRecord.id,
             type: exerciseType,
             lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
             data: draft.data,
@@ -170,7 +178,7 @@ export default class ExerciseResultsController {
 
     return (inertia as any).render('dashboard/Exercise', {
       type: params.type,
-      employeeId: String(employee.id),
+      employeeId: String(employeeRecord.id),
       initialDraftsByType,
     })
   }
