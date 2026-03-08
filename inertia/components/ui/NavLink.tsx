@@ -67,10 +67,13 @@ const NavLink = memo(function NavLink({
   'aria-label': ariaLabel,
 }: NavLinkProps) {
   const { url } = usePage()
+  const isAreaRoot = ['/dashboard/conseiller', '/dashboard/candidat', '/dashboard/super-admin'].includes(
+    href
+  )
   const active =
     href === '/dashboard'
       ? url === '/dashboard' || url === '/dashboard/'
-      : url === href || url.startsWith(href + '/')
+      : url === href || url === href + '/' || (!isAreaRoot && url.startsWith(href + '/'))
 
   return (
     <Link
