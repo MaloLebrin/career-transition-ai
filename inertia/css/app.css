@@ -15,6 +15,9 @@
 
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
+
+  /* Conteneur global : plus large sur grands écrans (2xl = 1536px+) */
+  --width-app-container: 96rem; /* 1536px */
 }
 
 @layer base {

@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
   return (
     <div className="min-h-screen flex flex-col bg-brand-ivory">
       <header className="bg-white border-b border-brand-navy/5 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+        <div className="max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 h-20 flex justify-between items-center">
           <button
             type="button"
             className="flex items-center space-x-3 cursor-pointer border-none bg-transparent p-0"
@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
           </Card>
         </div>
       )}
-      <main className="grow max-w-7xl mx-auto px-6 py-10 w-full">{children}</main>
+      <main className="grow max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-10 w-full">{children}</main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
           France Transition Carrière &copy; 2026 • Clarté Stratégique Humaine

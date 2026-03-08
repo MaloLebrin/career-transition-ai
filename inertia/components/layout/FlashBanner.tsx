@@ -37,7 +37,7 @@ export default function FlashBanner() {
           : 'bg-rose-50 border-rose-200 text-rose-800 border'
       }
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      <div className="max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-3 flex items-center justify-between gap-4">
         <p className="text-sm font-medium">{message}</p>
         <button
           type="button"

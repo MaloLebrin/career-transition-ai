@@ -21,7 +21,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
 }) => {
   return (
     <nav className="fixed top-0 w-full z-100 bg-white/80 backdrop-blur-xl border-b border-brand-navy/5 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto flex justify-between items-center">
         <button
           type="button"
           onClick={onLogoClick}
