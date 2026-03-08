@@ -17,6 +17,15 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/EmployeeDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeDetail.tsx'))['default']>
     'dashboard/Employees': ExtractProps<(typeof import('../../inertia/pages/dashboard/Employees.tsx'))['default']>
     'dashboard/Exercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/Exercise.tsx'))['default']>
+    'dashboard/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CircleOfControl.tsx'))['default']>
+    'dashboard/exercises/DISC': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/DISC.tsx'))['default']>
+    'dashboard/exercises/LifeCurve': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/LifeCurve.tsx'))['default']>
+    'dashboard/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/List.tsx'))['default']>
+    'dashboard/exercises/Motivation': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Motivation.tsx'))['default']>
+    'dashboard/exercises/Personality': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Personality.tsx'))['default']>
+    'dashboard/exercises/SkillMapping': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/SkillMapping.tsx'))['default']>
+    'dashboard/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Targeting.tsx'))['default']>
+    'dashboard/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Values.tsx'))['default']>
     'dashboard/ExercisesUsageAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExercisesUsageAdmin.tsx'))['default']>
     'dashboard/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/Home.tsx'))['default']>
     'dashboard/OrganizationsAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/OrganizationsAdmin.tsx'))['default']>

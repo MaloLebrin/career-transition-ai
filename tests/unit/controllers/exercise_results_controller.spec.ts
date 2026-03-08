@@ -2,11 +2,14 @@ import { test } from '@japa/runner'
 import ExerciseResultsController from '#controllers/exercise_results_controller'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
+import { EXERCISE_LIST } from '../../../shared/exercises.js'
 
 const fakeEmployeesService = { getEmployeeForUser: async () => ({ id: 1 }) } as any
 
 function makeCtx(overrides: any = {}) {
   const flashes: Record<string, any> = {}
+  let inertiaRenderPage: string | null = null
+  let inertiaRenderProps: any = null
 
   return {
     auth: overrides.auth ?? { user: { id: 1, organizationId: 10 } },
@@ -59,11 +62,15 @@ function makeCtx(overrides: any = {}) {
       },
     },
     inertia: {
-      render(_: string, props: any) {
+      render(page: string, props: any) {
+        inertiaRenderPage = page
+        inertiaRenderProps = props
         return props
       },
     },
     flashes,
+    _inertiaRenderPage: () => inertiaRenderPage,
+    _inertiaRenderProps: () => inertiaRenderProps,
   } as any
 }
 
@@ -122,5 +129,44 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     })
     await controller.storeFromDashboard(valuesCtx)
     assert.equal(valuesCtx.flashes.success, 'Exercice Valeurs enregistré.')
+  })
+})
+
+test.group('ExerciseResultsController.exerciseListCandidat', () => {
+  test('returns unauthorized when no auth user', async ({ assert }) => {
+    const service = {} as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const ctx = makeCtx({ auth: { user: null } })
+
+    await controller.exerciseListCandidat(ctx)
+
+    assert.isTrue(ctx.response.unauthorizedCalled)
+  })
+
+  test('renders dashboard/exercises/List with exercises and context candidat', async ({
+    assert,
+  }) => {
+    const service = {} as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const ctx = makeCtx()
+
+    await controller.exerciseListCandidat(ctx)
+
+    assert.equal(ctx._inertiaRenderPage(), 'dashboard/exercises/List')
+    assert.deepEqual(ctx._inertiaRenderProps().exercises, EXERCISE_LIST)
+    assert.equal(ctx._inertiaRenderProps().context, 'candidat')
+    assert.isUndefined(ctx._inertiaRenderProps().employeeId)
+  })
+})
+
+test.group('ExerciseResultsController.exerciseListConseiller', () => {
+  test('returns unauthorized when no auth user', async ({ assert }) => {
+    const service = {} as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const ctx = makeCtx({ auth: { user: null }, params: { id: 42 } })
+
+    await controller.exerciseListConseiller(ctx)
+
+    assert.isTrue(ctx.response.unauthorizedCalled)
   })
 })

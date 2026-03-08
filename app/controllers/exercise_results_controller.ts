@@ -1,5 +1,18 @@
 import Employee from '#models/employee'
 import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
+import { EXERCISE_LIST } from '../../shared/exercises.js'
+
+/** Map exercise type (slug) to dedicated Inertia page. Unknown type falls back to dashboard/Exercise. */
+const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {
+  [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'dashboard/exercises/Motivation',
+  [EXERCICE_RESULTS_TYPES.VALUES]: 'dashboard/exercises/Values',
+  [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: 'dashboard/exercises/LifeCurve',
+  [EXERCICE_RESULTS_TYPES.PERSONALITY]: 'dashboard/exercises/Personality',
+  [EXERCICE_RESULTS_TYPES.TARGETING]: 'dashboard/exercises/Targeting',
+  [EXERCICE_RESULTS_TYPES.DISC]: 'dashboard/exercises/DISC',
+  [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'dashboard/exercises/SkillMapping',
+  [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'dashboard/exercises/CircleOfControl',
+}
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EmployeesService } from '#services/employees_service'
 import {
@@ -121,6 +134,43 @@ export default class ExerciseResultsController {
     return response.redirect(`/dashboard/conseiller/employees/${employeeId}`)
   }
   /**
+   * Candidat: Inertia page listing all exercises (no :type).
+   */
+  public async exerciseListCandidat({ auth, inertia, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    return (inertia as any).render('dashboard/exercises/List', {
+      exercises: EXERCISE_LIST,
+      context: 'candidat',
+    })
+  }
+
+  /**
+   * Conseiller: Inertia page listing all exercises for an employee.
+   */
+  public async exerciseListConseiller({ auth, params, inertia, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    const employeeId = Number(params.id)
+    try {
+      await Employee.query()
+        .where('id', employeeId)
+        .where('organizationId', auth.user.organizationId)
+        .firstOrFail()
+    } catch {
+      session.flash('error', 'Candidat introuvable.')
+      return response.redirect('/dashboard/conseiller/employees')
+    }
+    return (inertia as any).render('dashboard/exercises/List', {
+      exercises: EXERCISE_LIST,
+      context: 'conseiller',
+      employeeId: String(employeeId),
+    })
+  }
+
+  /**
    * Inertia page: exercise with initial draft/result for supported types.
    */
   public async showDashboard({ auth, params, inertia, response, session }: HttpContext) {
@@ -176,11 +226,58 @@ export default class ExerciseResultsController {
       break
     }
 
-    return (inertia as any).render('dashboard/Exercise', {
-      type: params.type,
-      employeeId: String(employeeRecord.id),
-      initialDraftsByType,
-    })
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const props =
+      pageName === 'dashboard/Exercise'
+        ? { type: params.type, employeeId: String(employeeRecord.id), initialDraftsByType }
+        : { employeeId: String(employeeRecord.id), initialDraftsByType }
+    return (inertia as any).render(pageName, props)
+  }
+
+  /**
+   * Conseiller: Inertia page for exercise without employee context (same as candidat: use current user's employee).
+   */
+  public async showDashboardConseillerExerciseSelf({ auth, params, inertia, response }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    const typeParam = String(params.type).toLowerCase()
+    const draftTypes = [
+      EXERCICE_RESULTS_TYPES.MOTIVATION,
+      EXERCICE_RESULTS_TYPES.VALUES,
+      EXERCICE_RESULTS_TYPES.PERSONALITY,
+      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
+      EXERCICE_RESULTS_TYPES.TARGETING,
+      EXERCICE_RESULTS_TYPES.DISC,
+      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
+      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
+    ] as const
+    const initialDraftsByType: Record<string, any> = {}
+    for (const exerciseType of draftTypes) {
+      if (typeParam !== exerciseType) continue
+      const draft = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .andWhere('type', exerciseType)
+        .andWhere('status', 'draft')
+        .orderBy('updatedAt', 'desc')
+        .first()
+      initialDraftsByType[exerciseType] = draft
+        ? {
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
+        : null
+      break
+    }
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const props =
+      pageName === 'dashboard/Exercise'
+        ? { type: params.type, initialDraftsByType }
+        : { initialDraftsByType }
+    return (inertia as any).render(pageName, props)
   }
 
   /**
@@ -225,16 +322,18 @@ export default class ExerciseResultsController {
       break
     }
 
-    return (inertia as any).render('dashboard/Exercise', {
-      type: params.type,
-      initialDraftsByType,
-    })
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const props =
+      pageName === 'dashboard/Exercise'
+        ? { type: params.type, initialDraftsByType }
+        : { initialDraftsByType }
+    return (inertia as any).render(pageName, props)
   }
 
   /**
    * Candidat: save draft for current user's employee.
    */
-  public async saveDraftFromDashboardCandidat({ auth, params, request, response }: HttpContext) {
+  public async saveDraftFromDashboardCandidat({ auth, request, response }: HttpContext) {
     if (!auth.user) {
       return response.unauthorized()
     }
@@ -256,7 +355,6 @@ export default class ExerciseResultsController {
    */
   public async storeFromDashboardCandidat({
     auth,
-    params,
     request,
     response,
     session,

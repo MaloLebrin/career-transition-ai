@@ -15,6 +15,7 @@ export type ScannedRoutes = {
     'dashboard.index': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
+    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
@@ -23,6 +24,7 @@ export type ScannedRoutes = {
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'dashboard.exercises.motivation.draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.motivation.result': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -43,6 +45,7 @@ export type ScannedRoutes = {
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -68,11 +71,14 @@ export type ScannedRoutes = {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
@@ -88,11 +94,14 @@ export type ScannedRoutes = {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }

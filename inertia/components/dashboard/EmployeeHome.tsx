@@ -96,6 +96,14 @@ export default function EmployeeHome() {
                 </div>
               ))}
             </div>
+            <div className="mt-8 pt-8 border-t border-brand-navy/5">
+              <AppLink
+                href="/dashboard/candidat/exercises"
+                className="text-brand-sage font-semibold text-sm hover:underline"
+              >
+                Voir tous les exercices →
+              </AppLink>
+            </div>
           </Card>
         </div>
         <div className="lg:col-span-4 space-y-8">

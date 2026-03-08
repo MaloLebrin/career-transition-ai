@@ -67,6 +67,7 @@ router
       (inertia as any).render('dashboard/Profile', {})
     )
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
+    router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
     router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
     router.post('/exercises/:type/draft', [ExerciseResultsController, 'saveDraftFromDashboardCandidat'])
     router.post('/exercises/:type/result', [ExerciseResultsController, 'storeFromDashboardCandidat'])
@@ -87,6 +88,7 @@ router
 
     router.get('/employees', [EmployeesController, 'indexDashboard'])
     router.get('/employees/:id', [EmployeesController, 'showDashboard'])
+    router.get('/employees/:id/exercises', [ExerciseResultsController, 'exerciseListConseiller'])
     router.get('/employees/:id/exercises/:type', [ExerciseResultsController, 'showDashboard'])
     router
       .post('/employees/:id/exercises/motivation/draft', [
@@ -197,9 +199,7 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/profile').renderInertia('dashboard/Profile', {})
 
-    router.get('/exercises/:type', ({ params, inertia }) =>
-      (inertia as any).render('dashboard/Exercise', { type: params.type })
-    )
+    router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardConseillerExerciseSelf'])
   })
   .use([middleware.auth(), middleware.advisorOrAdmin()])
   .prefix('/dashboard/conseiller')

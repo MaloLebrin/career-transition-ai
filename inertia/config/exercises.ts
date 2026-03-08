@@ -1,5 +1,8 @@
 import { ExerciseType } from '../types'
-import { EXERCICE_RESULTS_TYPES } from '../../shared/exercises.js'
+import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '../../shared/exercises.js'
+
+export type { ExerciseListEntry } from '../../shared/exercises.js'
+export { EXERCISE_LIST }
 
 /**
  * Slugs utilisés dans les routes Inertia / Adonis pour chaque type d'exercice.

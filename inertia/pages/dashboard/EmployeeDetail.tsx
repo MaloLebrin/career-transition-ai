@@ -175,6 +175,14 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                     )
                   })}
                 </div>
+                <div className="mt-8 pt-8 border-t border-brand-navy/5">
+                  <AppLink
+                    href={`/dashboard/conseiller/employees/${employeeId}/exercises`}
+                    className="text-brand-sage font-semibold text-sm hover:underline"
+                  >
+                    Tous les exercices →
+                  </AppLink>
+                </div>
               </Card>
             </div>
             <div className="lg:col-span-4 space-y-8">
