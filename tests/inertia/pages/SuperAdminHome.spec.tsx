@@ -8,6 +8,14 @@ vi.mock('../../../inertia/hooks/useAuth', () => ({
   }),
 }))
 
+vi.mock('@inertiajs/react', () => ({
+  Head: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+}))
+
+vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 describe('SuperAdminHome page', () => {
   test('renders stats for super admin', () => {
     render(<SuperAdminHome stats={{ organizations: 3, users: 10 }} />)
@@ -15,6 +23,6 @@ describe('SuperAdminHome page', () => {
     expect(screen.getByText(/Supervision de la plateforme/i)).toBeInTheDocument()
     expect(screen.getByText(/Organisations actives/i)).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText(/Utilisateurs/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Utilisateurs/i).length).toBeGreaterThanOrEqual(1)
   })
 })

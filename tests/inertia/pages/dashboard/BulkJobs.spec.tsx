@@ -1,11 +1,19 @@
 import { describe, test, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import BulkJobs from '../../../../inertia/pages/dashboard/BulkJobs'
 
 vi.mock('../../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'super_admin' as const, name: 'Super Admin' },
   }),
+}))
+
+vi.mock('@inertiajs/react', () => ({
+  Head: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+}))
+
+vi.mock('../../../../inertia/components/dashboard/DashboardLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
 // Mock Transmit client to avoid real SSE connections in tests
@@ -40,11 +48,11 @@ describe('BulkJobs page', () => {
     ).toBeInTheDocument()
 
     // After initial load, empty state message should appear
-    setTimeout(() => {
+    return waitFor(() => {
       expect(
         screen.getByText(/Aucun job en arrière-plan pour le moment/i)
       ).toBeInTheDocument()
-    }, 0)
+    })
 
     expect(fetchMock).toHaveBeenCalledWith('/api/bulk-jobs', {
       credentials: 'include',

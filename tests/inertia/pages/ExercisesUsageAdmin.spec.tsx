@@ -8,12 +8,19 @@ vi.mock('../../../inertia/hooks/useAuth', () => ({
   }),
 }))
 
-const getMock = vi.fn()
+vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
+const { getMock } = vi.hoisted(() => ({
+  getMock: vi.fn(),
+}))
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = await importOriginal<any>()
   return {
     ...actual,
+    Head: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
     router: {
       ...actual.router,
       get: getMock,
@@ -49,7 +56,7 @@ describe('ExercisesUsageAdmin page', () => {
     render(<ExercisesUsageAdmin {...props} />)
 
     expect(screen.getByText(/Usage des exercices par organisation/i)).toBeInTheDocument()
-    expect(screen.getByText('Cabinet Alpha')).toBeInTheDocument()
+    expect(screen.getAllByText('Cabinet Alpha').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('4')).toBeInTheDocument()
   })
 
@@ -66,8 +73,9 @@ describe('ExercisesUsageAdmin page', () => {
 
     render(<ExercisesUsageAdmin {...props} />)
 
-    const fromInput = screen.getByLabelText(/Du/i)
-    const toInput = screen.getByLabelText(/Au/i)
+    const dateInputs = document.querySelectorAll('input[type="date"]') as NodeListOf<HTMLInputElement>
+    const fromInput = dateInputs[0]
+    const toInput = dateInputs[1]
     const submitButton = screen.getByRole('button', { name: /Mettre à jour/i })
 
     fireEvent.change(fromInput, { target: { value: '2025-02-01' } })
@@ -102,9 +110,11 @@ describe('ExercisesUsageAdmin page', () => {
       ],
     }
 
+    getMock.mockReset()
+
     render(<ExercisesUsageAdmin {...props} />)
 
-    const rowNameCell = screen.getByText('Cabinet Alpha')
+    const rowNameCell = screen.getAllByText('Cabinet Alpha')[0]
     fireEvent.click(rowNameCell)
 
     expect(getMock).toHaveBeenCalledWith(

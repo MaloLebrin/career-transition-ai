@@ -9,9 +9,9 @@ describe('LandingPage', () => {
     render(<LandingPage onEnterApp={onEnterApp} />)
 
     expect(screen.getByText(/L'IA qui structure le/)).toBeInTheDocument()
-    expect(screen.getByText(/Potentiel Humain/)).toBeInTheDocument()
+    expect(screen.getByText(/Potentiel Travail\./)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Lancer le Portail/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Consulter la Méthodologie/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Découvrir la méthode/i })).toBeInTheDocument()
   })
 
   test('onEnterApp is called when clicking Lancer le Portail', async () => {

@@ -8,12 +8,19 @@ vi.mock('../../../inertia/hooks/useAuth', () => ({
   }),
 }))
 
-const postMock = vi.fn()
+vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
+const { postMock } = vi.hoisted(() => ({
+  postMock: vi.fn(),
+}))
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = await importOriginal<any>()
   return {
     ...actual,
+    Head: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
     router: {
       ...actual.router,
       post: postMock,

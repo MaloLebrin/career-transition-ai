@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import TargetingTool from '../../../inertia/components/exercises/TargetingTool'
 
 vi.mock('../../../inertia/services/geminiService', () => ({
@@ -34,13 +34,10 @@ describe('TargetingTool', () => {
       addButton.click()
     })
 
-    const nameInput = screen.getByPlaceholderText(/AFPA, L'Oréal, Startup X/i)
-    act(() => {
-      nameInput.focus()
-      // @ts-expect-error jsdom typing
-      nameInput.value = 'AFPA'
-      nameInput.dispatchEvent(new Event('input', { bubbles: true }))
-    })
+    const nameInput = screen.getByPlaceholderText(
+      /AFPA, L'Oréal, Startup X/i
+    ) as HTMLInputElement
+    fireEvent.change(nameInput, { target: { value: 'AFPA' } })
 
     const saveButton = screen.getByRole('button', { name: /Valider mon ciblage expert/i })
     act(() => {

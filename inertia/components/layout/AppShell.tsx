@@ -73,7 +73,7 @@ const AppShell: React.FC = () => {
     if (!selectedEmployee) return
     setIsGeneratingPDF(true)
     try {
-      const { generateComprehensivePDF } = await import('../services/pdfService')
+      const { generateComprehensivePDF } = await import('../../services/pdfService')
       await generateComprehensivePDF(selectedEmployee)
     } catch (err) {
       alert('Erreur PDF.')

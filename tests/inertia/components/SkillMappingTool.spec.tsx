@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from 'vitest'
-import { render, screen, act, waitFor } from '@testing-library/react'
+import { render, screen, act, waitFor, fireEvent } from '@testing-library/react'
 import SkillMappingTool from '../../../inertia/components/exercises/SkillMappingTool'
 
 vi.mock('../../../inertia/services/geminiService', () => ({
@@ -29,17 +29,16 @@ describe('SkillMappingTool', () => {
 
     expect(screen.getByText(/Racontez votre parcours/i)).toBeInTheDocument()
 
-    const textarea = screen.getByPlaceholderText(/Dans mon dernier poste/i)
+    const textarea = screen.getByPlaceholderText(
+      /Dans mon dernier poste/i
+    ) as HTMLTextAreaElement
 
     await act(async () => {
-      textarea.dispatchEvent(
-        new Event('input', {
-          bubbles: true,
-          cancelable: true,
-        })
-      )
-      ;(textarea as HTMLTextAreaElement).value =
-        "Dans mon dernier poste, j'étais responsable de..."
+      fireEvent.change(textarea, {
+        target: {
+          value: "Dans mon dernier poste, j'étais responsable de...",
+        },
+      })
     })
 
     // Le bouton doit être activé dès qu'il y a un texte suffisamment long
@@ -79,7 +78,32 @@ describe('SkillMappingTool', () => {
       />
     )
 
-    // Passer directement à l'étape 2 en ajoutant une ligne
+    // Passer à l'étape 2 en remplissant le récit puis en cliquant sur le bouton
+    const textarea = screen.getByPlaceholderText(
+      /Dans mon dernier poste/i
+    ) as HTMLTextAreaElement
+
+    await act(async () => {
+      fireEvent.change(textarea, {
+        target: {
+          value: "Dans mon dernier poste, j'étais responsable de...",
+        },
+      })
+    })
+
+    const processButton = screen.getByRole('button', {
+      name: /Restructurer mon récit/i,
+    })
+
+    await act(async () => {
+      processButton.click()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText(/Validation des Acquis/i)).toBeInTheDocument()
+    })
+
+    // Puis ajouter une ligne manuelle sur l'étape 2
     const addRowButton = screen.getByRole('button', {
       name: /Ajouter une ligne/i,
     })
@@ -91,13 +115,7 @@ describe('SkillMappingTool', () => {
     const missionInputs = screen.getAllByPlaceholderText('Mission...')
     await act(async () => {
       const input = missionInputs[0] as HTMLTextAreaElement
-      input.value = 'Nouvelle mission'
-      input.dispatchEvent(
-        new Event('input', {
-          bubbles: true,
-          cancelable: true,
-        })
-      )
+      fireEvent.change(input, { target: { value: 'Nouvelle mission' } })
     })
 
     const saveButton = screen.getByRole('button', {
@@ -113,5 +131,5 @@ describe('SkillMappingTool', () => {
     expect(payload.mapping.length).toBeGreaterThan(0)
     expect(duration).toBeGreaterThanOrEqual(0)
   })
-}
+})
 
