@@ -1,18 +1,22 @@
 import Organization from '#models/organization'
 import User from '#models/user'
 import ExerciseResult from '#models/exercise_result'
+import LogExerciseUsageExport from '#jobs/log_exercise_usage_export'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 
-function assertSuperAdminOrFail(ctx: HttpContext) {
+function assertSuperAdminOrFail(ctx: HttpContext): boolean {
   const { auth, response } = ctx
   if (!auth.user) {
-    return response.unauthorized()
+    response.unauthorized()
+    return false
   }
   if (auth.user.role !== 'super_admin') {
-    return response.forbidden()
+    response.forbidden()
+    return false
   }
+  return true
 }
 
 export default class SuperAdminController {
@@ -20,8 +24,9 @@ export default class SuperAdminController {
    * Inertia page: super admin home with global metrics.
    */
   public async home({ inertia, response, auth }: HttpContext) {
-    const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
-    if (guardResult) return guardResult
+    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
+      return
+    }
 
     const organizationsCount = await Organization.query().count('* as total')
     const usersCount = await User.query().count('* as total')
@@ -41,8 +46,9 @@ export default class SuperAdminController {
    * Inertia page: list all organizations with basic aggregates.
    */
   public async organizations({ inertia, response, auth }: HttpContext) {
-    const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
-    if (guardResult) return guardResult
+    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
+      return
+    }
 
     const organizations = await Organization.query().preload('users').preload('employees')
 
@@ -64,8 +70,9 @@ export default class SuperAdminController {
    * Inertia page: aggregated exercise usage per organization for a given period.
    */
   public async exerciseUsage({ inertia, response, auth, request }: HttpContext) {
-    const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
-    if (guardResult) return guardResult
+    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
+      return
+    }
 
     const qs = request.qs()
     const from =
@@ -197,6 +204,13 @@ export default class SuperAdminController {
 
     const rows = await query
 
+    await LogExerciseUsageExport.dispatch({
+      userId: auth.user.id,
+      from,
+      to,
+      organizationId,
+    }).toQueue('analytics')
+
     const header = ['organization_id', 'organization_name', 'type', 'count']
     const lines = [header.join(',')]
 
@@ -224,8 +238,9 @@ export default class SuperAdminController {
    * Inertia page: list all users with global filters and role overview.
    */
   public async users({ inertia, response, auth }: HttpContext) {
-    const guardResult = assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)
-    if (guardResult) return guardResult
+    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
+      return
+    }
 
     const users = await User.query().preload('organization')
 
