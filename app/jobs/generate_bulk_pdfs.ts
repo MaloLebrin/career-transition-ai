@@ -1,6 +1,7 @@
 import BulkJob, { BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#models/bulk_job'
 import Employee from '#models/employee'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
+import { broadcastBulkJobUpdated } from '#services/bulk_job_events_service'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
@@ -35,6 +36,7 @@ export default class GenerateBulkPdfs extends Job<GenerateBulkPdfsPayload> {
     bulkJob.status = BULK_JOB_STATUSES.PROCESSING
     bulkJob.startedAt = DateTime.now()
     await bulkJob.save()
+    broadcastBulkJobUpdated(bulkJob)
 
     try {
       const meta = (bulkJob.meta || {}) as PdfMeta
@@ -63,11 +65,13 @@ export default class GenerateBulkPdfs extends Job<GenerateBulkPdfsPayload> {
       bulkJob.status = BULK_JOB_STATUSES.COMPLETED
       bulkJob.finishedAt = DateTime.now()
       await bulkJob.save()
+      broadcastBulkJobUpdated(bulkJob)
     } catch (error: any) {
       bulkJob.status = BULK_JOB_STATUSES.FAILED
       bulkJob.errorMessage = error?.message || 'Unknown error while generating bulk PDFs'
       bulkJob.finishedAt = DateTime.now()
       await bulkJob.save()
+      broadcastBulkJobUpdated(bulkJob)
 
       logger.error('GenerateBulkPdfs failed', {
         bulkJobId,

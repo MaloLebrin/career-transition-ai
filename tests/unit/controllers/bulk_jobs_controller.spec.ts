@@ -7,6 +7,8 @@ import BulkJob, {
 } from '#models/bulk_job'
 import Organization from '#models/organization'
 import User, { USERS_ROLES } from '#models/user'
+import { QueueManager } from '@adonisjs/queue'
+import SendBulkEmails from '#jobs/send_bulk_emails'
 
 function makeResponse() {
   return {
@@ -42,7 +44,10 @@ function makeResponse() {
   }
 }
 
-test.group('BulkJobsController.storeEmails', () => {
+test.group('BulkJobsController.storeEmails', (group) => {
+  group.each.teardown(() => {
+    QueueManager.restore()
+  })
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const controller = new BulkJobsController()
     const response = makeResponse()
@@ -57,6 +62,7 @@ test.group('BulkJobsController.storeEmails', () => {
   })
 
   test('creates a bulk job for org and returns DTO for super admin', async ({ assert }) => {
+    const fake = QueueManager.fake()
     const org = await Organization.create({
       name: 'Bulk Org',
       slug: `bulk-org-${Date.now()}`,
@@ -99,6 +105,11 @@ test.group('BulkJobsController.storeEmails', () => {
     assert.equal(job!.type, BULK_JOB_TYPES.EMAILS)
     assert.equal(job!.scope, BULK_JOB_SCOPES.ORG)
     assert.equal(job!.status, BULK_JOB_STATUSES.PENDING)
+
+    fake.assertPushed(SendBulkEmails, {
+      payload: { bulkJobId: dto.id },
+      queue: 'emails',
+    })
   })
 })
 

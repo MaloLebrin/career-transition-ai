@@ -4,6 +4,9 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -68,8 +71,13 @@ export type ScannedRoutes = {
     'organizations.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.index_advisors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'bulk_jobs.store_emails': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.store_pdfs': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
+    'event_stream': { paramsTuple?: []; params?: {} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
@@ -94,8 +102,11 @@ export type ScannedRoutes = {
     'organizations.current': { paramsTuple?: []; params?: {} }
     'organizations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.index_advisors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
+    'event_stream': { paramsTuple?: []; params?: {} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
@@ -120,8 +131,12 @@ export type ScannedRoutes = {
     'organizations.current': { paramsTuple?: []; params?: {} }
     'organizations.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.index_advisors': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
+    'subscribe': { paramsTuple?: []; params?: {} }
+    'unsubscribe': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
@@ -155,6 +170,8 @@ export type ScannedRoutes = {
     'exercise_results.save_draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.fetch_draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'bulk_jobs.store_emails': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.store_pdfs': { paramsTuple?: []; params?: {} }
   }
   PUT: {
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }

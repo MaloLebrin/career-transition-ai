@@ -9,6 +9,7 @@
 
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+import transmit from '@adonisjs/transmit/services/main'
 const DashboardController = () => import('#controllers/dashboard_controller')
 const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
 const EmployeesController = () => import('#controllers/employees_controller')
@@ -31,6 +32,11 @@ router
   })
   .use([middleware.guest()])
 router.get('/auth', ({ response }) => response.redirect('/auth/login'))
+
+// Server-Sent Events (Transmit) routes, protected by auth
+transmit.registerRoutes((route) => {
+  route.middleware(middleware.auth())
+})
 
 // Auth JSON API
 router
@@ -64,14 +70,18 @@ router
 router
   .group(() => {
     router.get('/', [DashboardController, 'candidatHome'])
-    router.get('/profile', ({ inertia }) =>
-      (inertia as any).render('dashboard/Profile', {})
-    )
+    router.get('/profile', ({ inertia }) => (inertia as any).render('dashboard/Profile', {}))
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
     router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
     router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
-    router.post('/exercises/:type/draft', [ExerciseResultsController, 'saveDraftFromDashboardCandidat'])
-    router.post('/exercises/:type/result', [ExerciseResultsController, 'storeFromDashboardCandidat'])
+    router.post('/exercises/:type/draft', [
+      ExerciseResultsController,
+      'saveDraftFromDashboardCandidat',
+    ])
+    router.post('/exercises/:type/result', [
+      ExerciseResultsController,
+      'storeFromDashboardCandidat',
+    ])
   })
   .use([middleware.auth(), middleware.candidate()])
   .prefix('/dashboard/candidat')
@@ -206,7 +216,10 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/profile').renderInertia('dashboard/Profile', {})
 
-    router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardConseillerExerciseSelf'])
+    router.get('/exercises/:type', [
+      ExerciseResultsController,
+      'showDashboardConseillerExerciseSelf',
+    ])
   })
   .use([middleware.auth(), middleware.advisorOrAdmin()])
   .prefix('/dashboard/conseiller')
@@ -223,6 +236,8 @@ router
     router.post('/users/:id/role', [SuperAdminController, 'updateUserRole'])
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/bulk-jobs').renderInertia('dashboard/BulkJobs', {})
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.admin()])
