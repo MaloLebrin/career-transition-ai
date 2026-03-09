@@ -10,6 +10,7 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 const DashboardController = () => import('#controllers/dashboard_controller')
+const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
@@ -252,5 +253,15 @@ router
         router.post('/:id/advisors', [OrganizationsController, 'storeAdvisor'])
       })
       .prefix('/organizations')
+
+    // Bulk jobs (emails / PDFs) + tracking
+    router
+      .group(() => {
+        router.post('/emails', [BulkJobsController, 'storeEmails'])
+        router.post('/pdfs', [BulkJobsController, 'storePdfs'])
+        router.get('/', [BulkJobsController, 'index'])
+        router.get('/:id', [BulkJobsController, 'show'])
+      })
+      .prefix('/bulk-jobs')
   })
   .prefix('/api')
