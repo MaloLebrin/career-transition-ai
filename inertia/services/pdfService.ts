@@ -22,12 +22,15 @@ export async function generateComprehensivePDF(employee: Employee) {
   renderRoot.style.top = '0'
   renderRoot.style.width = '210mm'
   renderRoot.style.backgroundColor = '#ffffff'
-  renderRoot.className = 'font-sans text-slate-900'
+  // Avoid Tailwind v4 computed colors (oklch) that html2canvas cannot parse
+  renderRoot.style.color = '#0f172a'
+  renderRoot.style.fontFamily = 'Inter, ui-sans-serif, system-ui, sans-serif'
+  renderRoot.className = ''
   document.body.appendChild(renderRoot)
 
   const styleTag = document.createElement('style')
   styleTag.innerHTML = `
-    .pdf-page { width: 210mm; min-height: 297mm; padding: 20mm; box-sizing: border-box; background: white; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .pdf-page { width: 210mm; min-height: 297mm; padding: 20mm; box-sizing: border-box; background: white; color: #0f172a; position: relative; overflow: hidden; display: flex; flex-direction: column; }
     .pdf-header { border-bottom: 1.5pt solid #e2e8f0; padding-bottom: 4mm; margin-bottom: 8mm; display: flex; justify-content: space-between; align-items: flex-end; }
     .pdf-footer { position: absolute; bottom: 8mm; left: 20mm; right: 20mm; border-top: 0.5pt solid #e2e8f0; padding-top: 3mm; display: flex; justify-content: space-between; font-size: 7pt; color: #94a3b8; font-weight: 800; text-transform: uppercase; }
     .section-title { font-size: 22pt; font-weight: 900; color: #0f172a; letter-spacing: -0.04em; margin-bottom: 6mm; text-transform: uppercase; border-left: 5pt solid #8B5CF6; padding-left: 5mm; }
