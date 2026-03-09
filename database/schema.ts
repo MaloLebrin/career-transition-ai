@@ -52,6 +52,51 @@ export class AppointmentSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class BulkJobSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'errorMessage',
+    'finishedAt',
+    'id',
+    'meta',
+    'organizationId',
+    'queueJobId',
+    'scope',
+    'startedAt',
+    'status',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
+  $columns = BulkJobSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare errorMessage: string | null
+  @column.dateTime()
+  declare finishedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare meta: any | null
+  @column()
+  declare organizationId: number | null
+  @column()
+  declare queueJobId: string | null
+  @column()
+  declare scope: string
+  @column.dateTime()
+  declare startedAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
 export class EducationSchema extends BaseModel {
   static $columns = [
     'createdAt',
