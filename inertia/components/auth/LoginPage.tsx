@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import { router } from '@inertiajs/react'
+import React, { useCallback, useState } from 'react'
+import { hasErrors, validateLogin, type LoginErrors } from '../../lib/authValidation'
 import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
-import { authService } from '../../services/authService'
-import { hasErrors, validateLogin, type LoginErrors } from '../../lib/authValidation'
 
 interface LoginPageProps {
   csrfToken?: string
@@ -23,9 +23,8 @@ export default function LoginPage({
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
-  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     const data = { email: email.trim(), password }
     const nextErrors = validateLogin(data)
@@ -33,17 +32,19 @@ export default function LoginPage({
     if (hasErrors(nextErrors)) {
       return
     }
-    setSubmitError(null)
     setIsLoading(true)
-    try {
-      await authService.login(data.email, data.password, csrfToken)
-      window.location.href = '/dashboard'
-    } catch (err: any) {
-      setSubmitError(err?.message || 'Identifiants invalides')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    router.post(
+      '/auth/login',
+      {
+        email: data.email,
+        password: data.password,
+        ...(csrfToken ? { _csrf: csrfToken } : {}),
+      },
+      {
+        onFinish: () => setIsLoading(false),
+      }
+    )
+  }, [email, password, csrfToken, router])
 
   return (
     <PublicLayout
@@ -88,7 +89,7 @@ export default function LoginPage({
             </p>
           </div>
 
-          {(error || submitError) && (
+          {error && (
             <div className="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start space-x-3 animate-shake">
               <svg
                 className="w-5 h-5 text-rose-500 shrink-0 mt-0.5"
@@ -103,7 +104,7 @@ export default function LoginPage({
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p className="text-xs font-bold text-rose-600">{error || submitError}</p>
+              <p className="text-xs font-bold text-rose-600">{error}</p>
             </div>
           )}
 
