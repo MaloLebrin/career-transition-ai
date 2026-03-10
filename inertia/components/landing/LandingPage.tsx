@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Compass,
   Cpu,
-  Disc,
   ShieldCheck,
   Target,
   Users,
@@ -12,7 +11,7 @@ import {
 } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import React from 'react'
-import { AiAnalisys, Appointnement, Certification, CoachFeedback, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
+import { AiAnalisys, Appointnement, Certification, CoachFeedback, Disc, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import Badge from '../ui/Badge'
