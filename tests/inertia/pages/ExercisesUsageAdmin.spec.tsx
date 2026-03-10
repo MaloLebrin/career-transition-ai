@@ -114,8 +114,10 @@ describe('ExercisesUsageAdmin page', () => {
 
     render(<ExercisesUsageAdmin {...props} />)
 
-    const rowNameCell = screen.getAllByText('Cabinet Alpha')[0]
-    fireEvent.click(rowNameCell)
+    const cabinetAlphaCells = screen.getAllByText('Cabinet Alpha')
+    const tableCell = cabinetAlphaCells.find((el) => el.tagName === 'TD')
+    expect(tableCell).toBeTruthy()
+    fireEvent.click(tableCell as HTMLElement)
 
     expect(getMock).toHaveBeenCalledWith(
       '/dashboard/super-admin/exercises-usage',

@@ -368,7 +368,7 @@ const AppShell: React.FC = () => {
                   />
                   <StatCard
                     label="Étapes validées"
-                    value={employees.reduce((acc, e) => acc + e.exercises.length, 0)}
+                    value={employees.reduce((acc, e) => acc + (e.exercises?.length ?? 0), 0)}
                     color="sage"
                   />
                 </div>
@@ -381,7 +381,7 @@ const AppShell: React.FC = () => {
                     <div className="space-y-4">
                       {employees
                         .flatMap((e) =>
-                          e.exercises.map((ex) => ({
+                          (e.exercises ?? []).map((ex) => ({
                             ...ex,
                             employeeName: e.name,
                             employeeId: e.id,
@@ -414,7 +414,7 @@ const AppShell: React.FC = () => {
                             </div>
                           </div>
                         ))}
-                      {employees.reduce((acc, e) => acc + e.exercises.length, 0) === 0 && (
+                      {employees.reduce((acc, e) => acc + (e.exercises?.length ?? 0), 0) === 0 && (
                         <p className="text-center py-8 text-brand-navy/40 text-xs font-medium italic">
                           Aucune activité récente
                         </p>

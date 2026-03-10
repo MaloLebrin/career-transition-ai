@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import AppShell from '../../../inertia/components/layout/AppShell'
 
 const mockLogout = vi.fn()
@@ -49,6 +49,7 @@ vi.mock('@inertiajs/react', () => ({
   router: {
     put: vi.fn(),
   },
+  usePage: vi.fn(() => ({ props: { flash: undefined } })),
 }))
 
 describe('AppShell', () => {
@@ -65,16 +66,19 @@ describe('AppShell', () => {
 
     // Navigation items for advisor
     expect(screen.getByText('Bureau')).toBeInTheDocument()
-    expect(screen.getByText('Candidats')).toBeInTheDocument()
+    expect(screen.getAllByText('Candidats').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Réglages')).toBeInTheDocument()
     expect(screen.getByText('Design')).toBeInTheDocument()
   })
 
-  test('calls logout and resets state when clicking Quitter', () => {
+  test('calls logout and resets state when clicking Quitter', async () => {
     render(<AppShell />)
 
     const logoutButton = screen.getByRole('button', { name: /Quitter/i })
-    logoutButton.click()
+    fireEvent.click(logoutButton)
+
+    const confirmButton = await screen.findByRole('button', { name: /Se déconnecter/i })
+    fireEvent.click(confirmButton)
 
     expect(mockLogout).toHaveBeenCalledTimes(1)
   })
