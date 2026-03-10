@@ -115,7 +115,6 @@ Checklist des points à traiter avant ou pour la mise en production.
 ### Onboarding & emails
 
 - [ ] **Envoi d’email réel** — Remplacer le stub dans `app/services/onboarding_notify_service.ts` par un vrai envoi (ex. `@adonisjs/mail`) pour les liens d’activation candidats.
-- [ ] **Variable `APP_URL`** — Utiliser une URL d’application fixe en prod (ex. `APP_URL` dans `.env`) pour générer les liens d’onboarding et les redirections.
 - [ ] **(Optionnel) Doublon Employee** — En cas de ré-invitation (même email, pas encore onboardé), éviter de créer un second `Employee` : réutiliser celui existant (recherche par email + organisation) ou documenter le comportement actuel.
 
 ### Sécurité & configuration

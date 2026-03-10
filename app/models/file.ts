@@ -17,6 +17,7 @@ export type FileType = (typeof FILES_TYPES)[keyof typeof FILES_TYPES]
 export const filesTypesValues = Object.values(FILES_TYPES)
 
 export default class File extends BaseModel {
+  // TODO: configure the file driver
   @column({ isPrimary: true })
   declare id: number
 
