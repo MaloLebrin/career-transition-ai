@@ -43,10 +43,10 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
       */}
       <Card className="w-full max-w-6xl relative animate-slideUp overflow-hidden flex flex-col max-h-[92vh] p-0">
         {/* Bouton de fermeture fixe par rapport au scroll */}
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="sm"
+        <Button 
+          onClick={onClose} 
+          variant="ghost" 
+          size="sm" 
           className="absolute top-8 right-8 z-[210] bg-slate-50"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                   <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] mb-8">
                     Notes Accompagnateur
                   </h3>
-                  <textarea
+                  <textarea 
                     className="w-full bg-white/50 border border-orange-100 rounded-[32px] p-6 text-sm min-h-[200px] outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none italic font-bold text-orange-900 placeholder:text-orange-200 shadow-inner"
                     placeholder="Saisissez vos observations pour aider le candidat..."
                     defaultValue={step.notes || ''}
