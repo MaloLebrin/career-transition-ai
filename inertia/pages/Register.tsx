@@ -1,18 +1,17 @@
-import { Head, router } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import RegisterPage from '../components/auth/RegisterPage'
-import { useAuth } from '../hooks/useAuth'
 
 export default function Register() {
-  const { register, error } = useAuth()
+  const { props } = usePage<{ csrfToken?: string; flash?: { error?: string } }>()
+  const flashError = props.flash?.error
 
   return (
     <>
       <Head title="Création de compte" />
       <RegisterPage
-        register={register}
-        error={error}
+        csrfToken={props.csrfToken}
+        error={flashError ?? null}
         onBackToLanding={() => router.visit('/')}
-        onAuthSuccess={() => { window.location.href = '/dashboard' }}
         onGoToLogin={() => router.visit('/auth/login')}
       />
     </>

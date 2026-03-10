@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { router } from '@inertiajs/react'
 import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -6,49 +7,42 @@ import Input from '../ui/Input'
 import { hasErrors, validateRegister, type RegisterErrors } from '../../lib/authValidation'
 
 interface RegisterPageProps {
-  onAuthSuccess: () => void
+  csrfToken?: string
   onBackToLanding: () => void
   onGoToLogin: () => void
-  register: (email: string, password: string, name: string, role: 'advisor') => Promise<any>
   error: string | null
 }
 
-export default function RegisterPage({
-  onAuthSuccess,
-  onBackToLanding,
-  onGoToLogin,
-  register,
-  error,
-}: RegisterPageProps) {
+export default function RegisterPage({ csrfToken, onBackToLanding, onGoToLogin, error }: RegisterPageProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [organizationName, setOrganizationName] = useState('')
-  const [role] = useState<'advisor'>('advisor')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<RegisterErrors>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data = { email, password, name, organizationName, role }
+    const data = { email, password, name, organizationName, role: 'advisor' as const }
     const nextErrors = validateRegister(data)
     setErrors(nextErrors)
     if (hasErrors(nextErrors)) return
 
     setIsLoading(true)
-    try {
-      await register(
-        data.email.trim(),
-        data.password,
-        data.name.trim(),
-        data.organizationName.trim()
-      )
-      onAuthSuccess()
-    } catch {
-      // Erreur affichée via la prop error
-    } finally {
-      setIsLoading(false)
-    }
+    router.post(
+      '/auth/register',
+      {
+        email: data.email.trim(),
+        password: data.password,
+        name: data.name.trim(),
+        organizationName: data.organizationName.trim(),
+        role: data.role,
+        ...(csrfToken ? { _csrf: csrfToken } : {}),
+      },
+      {
+        onFinish: () => setIsLoading(false),
+      }
+    )
   }
 
   return (
@@ -115,7 +109,14 @@ export default function RegisterPage({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <form
+            action="/auth/register"
+            method="POST"
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            noValidate
+          >
+            {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
             <Input
               label="Organisation / Cabinet"
               placeholder="France Transition Paris"

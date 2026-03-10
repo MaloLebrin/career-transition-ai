@@ -1,4 +1,4 @@
-import type { UserSession } from '../services/authService'
+import type { UserSession } from '../types/auth'
 
 type Role = UserSession['role'] | undefined | null
 

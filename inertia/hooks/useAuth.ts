@@ -1,70 +1,26 @@
-import { router, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { authService, type UserSession } from '../services/authService';
+import { router, usePage } from '@inertiajs/react'
+import { useState } from 'react'
+import type { UserSession } from '../types/auth'
 
 export function useAuth() {
   const { props } = usePage<{ csrfToken?: string; user?: UserSession }>()
   const csrfToken = props.csrfToken
   const sharedUser = props.user ?? null
 
-  const [stateUser, setStateUser] = useState<UserSession | null>(null)
-  const [loading, setLoading] = useState(!sharedUser)
+  const [stateUser] = useState<UserSession | null>(null)
+  const loading = false
   const [error, setError] = useState<string | null>(null)
 
   const user = sharedUser ?? stateUser
 
-  useEffect(() => {
-    if (sharedUser) {
-      setLoading(false)
-      return
-    }
-    authService.getCurrentSession().then((session) => {
-      if (session) setStateUser(session)
-      setLoading(false)
-    })
-  }, [sharedUser])
-
-  const login = async (email: string, password: string) => {
-    setError(null)
-    try {
-      const session = await authService.login(email, password, csrfToken)
-      setStateUser(session)
-      return session
-    } catch (err: any) {
-      setError(err.message)
-      throw err
-    }
-  }
-
-  const register = async (
-    email: string,
-    password: string,
-    name: string,
-    organizationName: string
-  ) => {
-    setError(null)
-    try {
-      const session = await authService.register(
-        email,
-        password,
-        name,
-        organizationName,
-        'advisor',
-        csrfToken
-      )
-      setStateUser(session)
-      return session
-    } catch (err: any) {
-      setError(err.message)
-      throw err
-    }
-  }
-
   const logout = async () => {
-    await authService.logout(csrfToken)
-    setStateUser(null)
-    router.visit('/auth/login')
+    setError(null)
+    router.post('/auth/logout', csrfToken ? { _csrf: csrfToken } : {}, {
+      onFinish: () => {
+        router.visit('/auth/login')
+      },
+    })
   }
 
-  return { user, loading, error, login, register, logout }
+  return { user, loading, error, logout }
 }
