@@ -1,7 +1,11 @@
 import type { UserSessionDto } from '#dtos/auth_dto'
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
+import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import Organization from '#models/organization'
 import User, { USERS_ROLES, type UserRole } from '#models/user'
 import { toSessionDto } from '#utils/dto'
+import db from '@adonisjs/lucid/services/db'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 
@@ -27,39 +31,52 @@ export class AuthService {
   public async verifyCredentials(email: string, password: string): Promise<User> {
     const user = await User.findBy('email', email)
     if (!user) {
-      throw new Error('Identifiants invalides')
+      throw new InvalidCredentialsException()
     }
-    // Même service que le modèle User (hash.make) : hash.verify détecte l'algo depuis le hash ($scrypt$…)
     const isValid = await hash.verify(user.password, password)
     if (!isValid) {
-      throw new Error('Identifiants invalides')
+      throw new InvalidCredentialsException()
     }
     return user
   }
 
   /**
    * Registers a new advisor (and creates its organization).
+   * Throws if email or organization name is already used.
    */
   public async register(input: RegisterInput): Promise<UserSessionDto> {
-    const existing = await User.findBy('email', input.email)
-    if (existing) {
-      throw new Error('Cet email est déjà utilisé.')
+    const existingUser = await User.findBy('email', input.email)
+    if (existingUser) {
+      throw new EmailAlreadyUsedException()
     }
 
-    // Create a dedicated organization for this advisor
-    const org = await Organization.create({
-      name: input.organizationName,
-    })
+    const existingOrg = await Organization.findBy('name', input.organizationName.trim())
+    if (existingOrg) {
+      throw new OrganizationNameAlreadyUsedException()
+    }
 
-    const user = await User.create({
-      organizationId: org.id,
-      email: input.email,
-      name: input.name,
-      password: input.password,
-      role: USERS_ROLES.ADVISOR,
-    })
-
-    return toSessionDto(user)
+    const trx = await db.transaction()
+    try {
+      const org = await Organization.create(
+        { name: input.organizationName.trim() },
+        { client: trx }
+      )
+      const user = await User.create(
+        {
+          organizationId: org.id,
+          email: input.email,
+          name: input.name,
+          password: input.password,
+          role: USERS_ROLES.ADVISOR,
+        },
+        { client: trx }
+      )
+      await trx.commit()
+      return toSessionDto(user)
+    } catch (err) {
+      await trx.rollback()
+      throw err
+    }
   }
 
   /**
@@ -73,7 +90,7 @@ export class AuthService {
         .first()
 
       if (existing) {
-        throw new Error('Cet email est déjà utilisé.')
+        throw new EmailAlreadyUsedException()
       }
     }
 

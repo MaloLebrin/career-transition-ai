@@ -22,46 +22,28 @@ export default class AuthController {
     return response.json(dto)
   }
 
-  public async login({ request, auth, response, session }: HttpContext) {
+  public async login({ request, auth, response }: HttpContext) {
     const wantsJson = request.header('accept')?.includes('application/json')
-    try {
-      const payload = await request.validateUsing(loginValidator)
-      const user = await this.authService.verifyCredentials(payload.email, payload.password)
-      await auth.use('web').login(user)
-      if (wantsJson) {
-        const dto = this.authService.toSession(user)
-        return response.json(dto)
-      }
-      return response.redirect().status(303).toPath('/dashboard')
-    } catch (error: any) {
-      const message = error.message || 'Identifiants invalides'
-      if (wantsJson) {
-        return response.unauthorized({ message })
-      }
-      session.flash('error', message)
-      return response.redirect().back()
+    const payload = await request.validateUsing(loginValidator)
+    const user = await this.authService.verifyCredentials(payload.email, payload.password)
+    await auth.use('web').login(user)
+    if (wantsJson) {
+      const dto = this.authService.toSession(user)
+      return response.json(dto)
     }
+    return response.redirect().status(303).toPath('/dashboard')
   }
 
-  public async register({ request, auth, response, session }: HttpContext) {
+  public async register({ request, auth, response }: HttpContext) {
     const wantsJson = request.header('accept')?.includes('application/json')
-    try {
-      const payload = await request.validateUsing(registerValidator)
-      const dto = await this.authService.register(payload)
-      const user = await this.authService.verifyCredentials(payload.email, payload.password)
-      await auth.use('web').login(user)
-      if (wantsJson) {
-        return response.json(dto)
-      }
-      return response.redirect().status(303).toPath('/dashboard')
-    } catch (error: any) {
-      const message = error.message || 'Erreur lors de la création du compte.'
-      if (wantsJson) {
-        return response.badRequest({ message })
-      }
-      session.flash('error', message)
-      return response.redirect().back()
+    const payload = await request.validateUsing(registerValidator)
+    const dto = await this.authService.register(payload)
+    const user = await this.authService.verifyCredentials(payload.email, payload.password)
+    await auth.use('web').login(user)
+    if (wantsJson) {
+      return response.json(dto)
     }
+    return response.redirect().status(303).toPath('/dashboard')
   }
 
   public async logout({ auth, response }: HttpContext) {
@@ -127,20 +109,10 @@ export default class AuthController {
     if (!auth.user) {
       return response.unauthorized()
     }
-
     const payload = await request.validateUsing(userProfileUpdateValidator)
-
-    try {
-      await this.authService.updateProfile(auth.user, payload)
-      session.flash('success', 'Profil mis à jour.')
-      return response.redirect('/dashboard/conseiller/settings')
-    } catch (error: any) {
-      if (error.message?.includes('déjà utilisé')) {
-        session.flash('error', error.message)
-        return response.redirect('/dashboard/conseiller/settings')
-      }
-      throw error
-    }
+    await this.authService.updateProfile(auth.user, payload)
+    session.flash('success', 'Profil mis à jour.')
+    return response.redirect('/dashboard/conseiller/settings')
   }
 
   /**
@@ -150,35 +122,23 @@ export default class AuthController {
     if (!auth.user) {
       return response.unauthorized()
     }
-
     const payload = await request.validateUsing(candidatProfileUpdateValidator)
-
-    try {
-      if (payload.name !== undefined || payload.email !== undefined) {
-        await this.authService.updateProfile(auth.user, {
-          name: payload.name ?? auth.user.name,
-          email: payload.email ?? auth.user.email,
-        })
-      }
-
-      const employee = await this.employeesService.getEmployeeForUser(auth.user)
-      this.employeesService.applyUpdate(employee, {
-        name: payload.name ?? employee.name,
-        currentRole: payload.currentRole ?? employee.currentRole,
-        targetRole: payload.targetRole ?? employee.targetRole ?? undefined,
-        summary: payload.summary ?? employee.summary ?? undefined,
-        onboarded: payload.onboarded ?? employee.onboarded,
+    if (payload.name !== undefined || payload.email !== undefined) {
+      await this.authService.updateProfile(auth.user, {
+        name: payload.name ?? auth.user.name,
+        email: payload.email ?? auth.user.email,
       })
-      await employee.save()
-
-      session.flash('success', 'Profil mis à jour.')
-      return response.redirect('/dashboard/candidat')
-    } catch (error: any) {
-      if (error.message?.includes('déjà utilisé') || error.message?.includes('Profil candidat')) {
-        session.flash('error', error.message)
-        return response.redirect('/dashboard/candidat/profile')
-      }
-      throw error
     }
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    this.employeesService.applyUpdate(employee, {
+      name: payload.name ?? employee.name,
+      currentRole: payload.currentRole ?? employee.currentRole,
+      targetRole: payload.targetRole ?? employee.targetRole ?? undefined,
+      summary: payload.summary ?? employee.summary ?? undefined,
+      onboarded: payload.onboarded ?? employee.onboarded,
+    })
+    await employee.save()
+    session.flash('success', 'Profil mis à jour.')
+    return response.redirect('/dashboard/candidat')
   }
 }

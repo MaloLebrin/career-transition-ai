@@ -1,6 +1,21 @@
+import DomainException from '#exceptions/domain_exception'
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
+import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import app from '@adonisjs/core/services/app'
 import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
+
+const DOMAIN_EXCEPTIONS = [
+  DomainException,
+  EmailAlreadyUsedException,
+  OrganizationNameAlreadyUsedException,
+  InvalidCredentialsException,
+]
+
+function isDomainException(error: unknown): error is InstanceType<(typeof DOMAIN_EXCEPTIONS)[number]> {
+  return DOMAIN_EXCEPTIONS.some((C) => error instanceof C)
+}
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
@@ -17,6 +32,16 @@ export default class HttpExceptionHandler extends ExceptionHandler {
   protected renderStatusPages = app.inProduction
 
   /**
+   * Erreurs métier attendues : ne pas envoyer aux services de monitoring.
+   */
+  protected ignoreCodes = [
+    'E_EMAIL_ALREADY_USED',
+    'E_ORGANIZATION_NAME_ALREADY_USED',
+    'E_INVALID_CREDENTIALS',
+    'E_DOMAIN_ERROR',
+  ]
+
+  /**
    * Status pages is a collection of error code range and a callback
    * to return the HTML contents to send as a response.
    */
@@ -28,10 +53,19 @@ export default class HttpExceptionHandler extends ExceptionHandler {
   }
 
   /**
-   * The method is used for handling errors and returning
-   * response to the client
+   * Domain exceptions (auth, validation métier) : en requête Inertia on fait
+   * flash + redirect back ; en JSON on renvoie status + message.
    */
   async handle(error: unknown, ctx: HttpContext) {
+    if (isDomainException(error)) {
+      const message = error.message
+      const status = (error as { status?: number }).status ?? 400
+      if (ctx.request.header('x-inertia') === 'true') {
+        ctx.session.flash('error', message)
+        return ctx.response.redirect().back()
+      }
+      return ctx.response.status(status).json({ message })
+    }
     return super.handle(error, ctx)
   }
 
