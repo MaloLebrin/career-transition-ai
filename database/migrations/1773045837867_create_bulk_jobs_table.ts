@@ -1,4 +1,4 @@
-import { BULK_JOB_STATUSES } from '#models/bulk_job.js'
+import { BULK_JOB_STATUSES } from '#models/bulk_job'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {

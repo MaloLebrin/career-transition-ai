@@ -1,6 +1,6 @@
 # Plan de tests manuels – France Transition Carrière
 
-Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalités décrites dans `FEATURES.md`.
+Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalités décrites dans `FEATURES.md`.
 
 ---
 
@@ -33,9 +33,8 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnali
 
 - **Étapes**
   1. Depuis la page d’auth, cliquer “Créer un compte” / “S’inscrire”.
-  2. Choisir le rôle “Salarié”.
-  3. Remplir nom, email valide, mot de passe ≥ 6 caractères.
-  4. Soumettre le formulaire.
+  2. Remplir nom, email valide, mot de passe ≥ 6 caractères.
+  3. Soumettre le formulaire.
 - **Vérifications**
   - En cas de champ manquant, message d’erreur approprié.
   - En cas d’email valide et mot de passe suffisant, inscription réussie (pas d’erreur visible).
@@ -72,8 +71,8 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnali
   3. Recliquer sur “Quitter”.
   4. Cliquer sur “Se déconnecter”.
 - **Vérifications**
-  - Étape 2 : la modale se ferme, on reste connecté.
-  - Étape 4 : la session est fermée, on retourne vers une page publique / login.
+  - Étape 2 : la modale se ferme, on reste connecté.
+  - Étape 4 : la session est fermée, on retourne vers une page publique / login.
 
 ---
 
@@ -110,7 +109,7 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnali
   3. Soumettre.
 - **Vérifications**
   - En cas de champ manquant, messages d’erreur.
-  - En cas de succès : message “Candidat ajouté…”, redirection vers la liste ou le détail.
+  - En cas de succès : message “Candidat ajouté…”, redirection vers la liste ou le détail.
   - Le nouveau candidat apparaît bien dans la liste.
 
 ### 4.2. Invitation & onboarding
@@ -129,11 +128,11 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnali
 - **Étapes**
   1. Depuis la liste des candidats, ouvrir la fiche d’un candidat complet.
 - **Vérifications**
-  - Bloc Profil : email, rôle actuel, rôle cible, statut.
+  - Bloc Profil : email, rôle actuel, rôle cible, statut.
   - Bloc “Bref / Résumé” présent avec le texte attendu.
-  - Bloc Expériences : au moins une expérience listée avec poste, entreprise, dates, description.
-  - Bloc Formations : au moins une formation.
-  - Bloc Compétences : compétences avec niveaux.
+  - Bloc Expériences : au moins une expérience listée avec poste, entreprise, dates, description.
+  - Bloc Formations : au moins une formation.
+  - Bloc Compétences : compétences avec niveaux.
 
 - **États vides**
   - **Étapes**
@@ -390,5 +389,5 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnali
 ---
 
 Ce document doit être utilisé comme **checklist de recette manuelle**.  
-Pour chaque scénario, tu peux noter : _OK_, _KO_, commentaires, date de test, et version de l’application.
+Pour chaque scénario, tu peux noter : _OK_, _KO_, commentaires, date de test, et version de l’application.
 
