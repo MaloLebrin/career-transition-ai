@@ -59,6 +59,7 @@ export class AuthService {
     let org = await Organization.findBy('slug', 'ftc-paris')
     if (!org) {
       org = await Organization.create({
+        // TODO: use the organization service to create the organization And do not hardcode the name and slug
         name: 'France Transition Carrière Paris',
         slug: 'ftc-paris',
       })
