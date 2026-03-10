@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import {
   buildDossierArchive,
   dossierZipFilename,
@@ -10,7 +11,8 @@ import ExerciseResult, {
   exerciceResultStatusValues,
 } from '#models/exercise_result'
 
-test.group('dossier_export_service', () => {
+test.group('dossier_export_service', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('dossierZipFilename returns safe filename', ({ assert }) => {
     assert.equal(dossierZipFilename('Jean Dupont'), 'Dossier_Jean_Dupont.zip')
     assert.equal(dossierZipFilename('Marie-Claire'), 'Dossier_Marie-Claire.zip')

@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import app from '@adonisjs/core/services/app'
 import env from '#start/env'
 import { AuthService } from '#services/auth_service'
@@ -11,7 +12,8 @@ function baseUrl(): string {
   return `http://${env.get('HOST')}:${env.get('PORT')}`
 }
 
-test.group('Dashboard routes (functional)', () => {
+test.group('Dashboard routes (functional)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({ assert }) => {
     const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
       method: 'POST',
@@ -34,6 +36,7 @@ test.group('Dashboard routes (functional)', () => {
       password,
       name: 'Advisor Test',
       role: USERS_ROLES.ADVISOR,
+      organizationName: `Org ${Date.now()}`,
     })
 
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {
@@ -92,6 +95,7 @@ test.group('Dashboard routes (functional)', () => {
       password: 'secret123',
       name: 'Settings User',
       role: USERS_ROLES.ADVISOR,
+      organizationName: `Settings Org ${Date.now()}`,
     })
 
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {
@@ -157,6 +161,7 @@ test.group('Dashboard routes (functional)', () => {
       password: 'secret123',
       name: 'Owner',
       role: USERS_ROLES.ADVISOR,
+      organizationName: `Owner Org ${Date.now()}`,
     })
 
     const loginRes = await fetch(`${baseUrl()}/auth/login`, {

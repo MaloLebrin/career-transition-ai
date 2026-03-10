@@ -1,7 +1,9 @@
 import Skill from '#models/skill'
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 
-test.group('Skill slug hook', () => {
+test.group('Skill slug hook', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('generates slug from name when creating', async ({ assert }) => {
     const skill = await Skill.create({ name: 'Prospection commerciale', organizationId: null })
 

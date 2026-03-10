@@ -1,10 +1,12 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import hash from '@adonisjs/core/services/hash'
 import { AuthService } from '#services/auth_service'
 import Organization from '#models/organization'
 import User, { USERS_ROLES } from '#models/user'
 
-test.group('AuthService', () => {
+test.group('AuthService', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('toSession returns dto from user', async ({ assert }) => {
     const org = await Organization.create({
       name: 'Org',
@@ -38,6 +40,7 @@ test.group('AuthService', () => {
       password,
       name: 'Valid User',
       role: USERS_ROLES.ADVISOR,
+      organizationName: `Org ${Date.now()}`,
     })
 
     const result = await service.verifyCredentials(uniqueEmail, password)
@@ -65,6 +68,7 @@ test.group('AuthService', () => {
       password: 'secret123',
       name: 'New User',
       role: USERS_ROLES.ADVISOR,
+      organizationName: `Org ${Date.now()}`,
     })
 
     assert.equal(dto.email, uniqueEmail)
@@ -97,6 +101,7 @@ test.group('AuthService', () => {
         password: 'secret123',
         name: 'Other User',
         role: USERS_ROLES.ADVISOR,
+        organizationName: 'Other Org',
       })
       assert.fail('Expected register to throw')
     } catch (error: any) {

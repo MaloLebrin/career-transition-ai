@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import AuthController from '#controllers/auth_controller'
 import { AuthService } from '#services/auth_service'
 import User from '#models/user'
@@ -46,7 +47,8 @@ function makeResponse() {
   }
 }
 
-test.group('AuthController.updateFromDashboard', () => {
+test.group('AuthController.updateFromDashboard', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new AuthService()
     const controller = new AuthController(service as any, fakeEmployeesService)
@@ -107,7 +109,8 @@ test.group('AuthController.updateFromDashboard', () => {
   })
 })
 
-test.group('AuthController super admin actions', () => {
+test.group('AuthController super admin actions', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('impersonate returns 401 when not authenticated', async ({ assert }) => {
     const controller = new AuthController({} as any)
     const response = makeResponse()

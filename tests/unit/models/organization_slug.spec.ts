@@ -1,14 +1,9 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import Organization from '#models/organization'
 
 test.group('Organization slug hook', (group) => {
-  group.each.setup(async () => {
-    await Organization.query()
-      .where('name', 'My Company')
-      .orWhere('slug', 'like', 'my-company%')
-      .orWhere('slug', 'custom-slug')
-      .delete()
-  })
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('generates slug from name when creating', async ({ assert }) => {
     const org = await Organization.create({ name: 'My Company', logoUrl: null })
@@ -26,12 +21,13 @@ test.group('Organization slug hook', (group) => {
   })
 
   test('does not override explicit slug', async ({ assert }) => {
+    const explicitSlug = `custom-slug-${Date.now()}`
     const org = await Organization.create({
       name: 'Custom Org',
-      slug: 'custom-slug',
+      slug: explicitSlug,
       logoUrl: null,
     })
 
-    assert.equal(org.slug, 'custom-slug')
+    assert.equal(org.slug, explicitSlug)
   })
 })

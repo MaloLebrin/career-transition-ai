@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import BulkJobsController from '#controllers/bulk_jobs_controller'
 import BulkJob, {
   BULK_JOB_SCOPES,
@@ -45,6 +46,7 @@ function makeResponse() {
 }
 
 test.group('BulkJobsController.storeEmails', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.teardown(() => {
     QueueManager.restore()
   })

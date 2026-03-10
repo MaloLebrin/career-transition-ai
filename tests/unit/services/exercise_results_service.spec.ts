@@ -1,19 +1,27 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { DateTime } from 'luxon'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import Employee from '#models/employee'
+import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
 import ExerciseResult, {
   EXERCICE_RESULTS_TYPES,
   exerciceResultStatusValues,
 } from '#models/exercise_result'
 
-test.group('ExerciseResultsService', () => {
+test.group('ExerciseResultsService', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('saveResult creates exercise result and updates plan', async ({ assert }) => {
     const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'Exercise Org',
+      slug: `exercise-org-${Date.now()}`,
+      logoUrl: null,
+    })
 
     const employee = await Employee.create({
-      organizationId: 1,
+      organizationId: org.id,
       advisorId: null,
       userId: null,
       name: 'Exercise Candidate',
@@ -66,9 +74,14 @@ test.group('ExerciseResultsService', () => {
 
   test('saveDraft creates or updates draft result', async ({ assert }) => {
     const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'Draft Org',
+      slug: `draft-org-${Date.now()}`,
+      logoUrl: null,
+    })
 
     const employee = await Employee.create({
-      organizationId: 1,
+      organizationId: org.id,
       advisorId: null,
       userId: null,
       name: 'Draft Candidate',
@@ -115,9 +128,14 @@ test.group('ExerciseResultsService', () => {
 
   test('fetchDraft returns null when no draft and dto when exists', async ({ assert }) => {
     const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'FetchDraft Org',
+      slug: `fetch-draft-org-${Date.now()}`,
+      logoUrl: null,
+    })
 
     const employee = await Employee.create({
-      organizationId: 1,
+      organizationId: org.id,
       advisorId: null,
       userId: null,
       name: 'Fetch Draft Candidate',

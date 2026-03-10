@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
 import Organization from '#models/organization'
 import User from '#models/user'
@@ -44,7 +45,8 @@ function makeCtx(overrides: any = {}) {
   } as any
 }
 
-test.group('SuperAdminController.exerciseUsage', () => {
+test.group('SuperAdminController.exerciseUsage', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns unauthorized when user is missing', async ({ assert }) => {
     const controller = new SuperAdminController()
     const ctx = makeCtx({ auth: { user: null } })
@@ -155,7 +157,8 @@ test.group('SuperAdminController.exerciseUsage', () => {
   })
 })
 
-test.group('SuperAdminController.exerciseUsageExport', () => {
+test.group('SuperAdminController.exerciseUsageExport', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns CSV export for super admin', async ({ assert }) => {
     const org = await Organization.create({
       name: 'Org CSV',

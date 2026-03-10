@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import hash from '@adonisjs/core/services/hash'
 import { OrganizationsService } from '#services/organizations_service'
 import Organization from '#models/organization'
@@ -9,7 +10,8 @@ function uniqueSlug() {
   return `org-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-test.group('OrganizationsService', () => {
+test.group('OrganizationsService', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('getById returns OrganizationDto when org exists', async ({ assert }) => {
     const service = new OrganizationsService()
     const org = await Organization.create({

@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import EmployeesController from '#controllers/employees_controller'
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { EmployeesService } from '#services/employees_service'
@@ -146,7 +147,8 @@ test.group('EmployeesController.storeFromDashboard', () => {
   })
 })
 
-test.group('EmployeesController.showProfileDashboard', () => {
+test.group('EmployeesController.showProfileDashboard', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeEmployeesService()
     const controller = new EmployeesController(service as any)
@@ -163,7 +165,8 @@ test.group('EmployeesController.showProfileDashboard', () => {
   })
 })
 
-test.group('EmployeesController.downloadDossier', () => {
+test.group('EmployeesController.downloadDossier', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeEmployeesService()
     const controller = new EmployeesController(service as any)
@@ -263,7 +266,8 @@ test.group('EmployeesController.downloadDossier', () => {
   })
 })
 
-test.group('EmployeesController.updateFromDashboard', () => {
+test.group('EmployeesController.updateFromDashboard', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeEmployeesService()
     const controller = new EmployeesController(service as any)

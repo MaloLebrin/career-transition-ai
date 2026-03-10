@@ -1,14 +1,22 @@
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { DateTime } from 'luxon'
 import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
+import Organization from '#models/organization'
 
-test.group('EmployeesService', () => {
+test.group('EmployeesService', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('create creates an employee and returns EmployeeDto', async ({ assert }) => {
     const service = new EmployeesService()
+    const org = await Organization.create({
+      name: 'Employees Org',
+      slug: `employees-org-${Date.now()}`,
+      logoUrl: null,
+    })
 
     const dto = await service.create({
-      organizationId: 1,
+      organizationId: org.id,
       advisorId: null,
       name: 'New Candidate',
       email: 'new@example.com',
@@ -19,7 +27,7 @@ test.group('EmployeesService', () => {
 
     assert.equal(dto.name, 'New Candidate')
     assert.equal(dto.email, 'new@example.com')
-    assert.equal(dto.organizationId, '1')
+    assert.equal(dto.organizationId, String(org.id))
     assert.equal(dto.currentRole, 'Développeur')
     assert.equal(dto.targetRole, 'Lead Dev')
     // status may rely on DB default; just ensure it's one of expected values when set
@@ -31,9 +39,14 @@ test.group('EmployeesService', () => {
 
   test('applyUpdate merges fields correctly', async ({ assert }) => {
     const service = new EmployeesService()
+    const org = await Organization.create({
+      name: 'ApplyUpdate Org',
+      slug: `apply-update-org-${Date.now()}`,
+      logoUrl: null,
+    })
 
     const employee = await Employee.create({
-      organizationId: 1,
+      organizationId: org.id,
       advisorId: null,
       userId: null,
       name: 'Jane Doe',

@@ -4,12 +4,15 @@ import Education from '#models/education'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Experience from '#models/experience'
+import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
 import { test } from '@japa/runner'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { DateTime } from 'luxon'
 
-test.group('Employee mapper', () => {
+test.group('Employee mapper', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('maps exercice type enum to front constant', ({ assert }) => {
     assert.equal(exerciceTypeToFront('motivation'), 'MOTIVATION')
     assert.equal(exerciceTypeToFront('values'), 'VALUES')
@@ -17,10 +20,15 @@ test.group('Employee mapper', () => {
   })
 
   test('maps employee with relations to EmployeeDto shape', async ({ assert }) => {
-    const orgId = 1
+    const org = await Organization.create({
+      name: 'Mapper Org',
+      slug: `mapper-org-${Date.now()}`,
+      logoUrl: null,
+    })
+    const orgId = org.id
 
     const employee = await Employee.create({
-      organizationId: orgId,
+      organizationId: org.id,
       advisorId: null,
       userId: null,
       name: 'Jane Doe',
