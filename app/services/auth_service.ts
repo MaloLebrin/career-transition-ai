@@ -1,6 +1,7 @@
 import type { UserSessionDto } from '#dtos/auth_dto'
 import Organization from '#models/organization'
 import User, { USERS_ROLES, type UserRole } from '#models/user'
+import { toSessionDto } from '#utils/dto'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 
@@ -15,16 +16,6 @@ type RegisterInput = {
 type UpdateProfileInput = {
   name: string
   email: string
-}
-
-function toSessionDto(user: User): UserSessionDto {
-  return {
-    id: user.id,
-    organizationId: user.organizationId,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  }
 }
 
 @inject()
