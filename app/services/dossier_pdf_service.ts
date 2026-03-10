@@ -1,5 +1,6 @@
 import type Employee from '#models/employee'
 import type ExerciseResult from '#models/exercise_result'
+import { DateTime } from 'luxon'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 const MARGIN = 48
@@ -248,7 +249,9 @@ export async function generateResultPdf(result: ExerciseResult): Promise<Buffer>
   y = PAGE_HEIGHT - 72
 
   const meta: string[] = []
-  if (result.date) meta.push(result.date)
+  if (result.date) {
+    meta.push(DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date))
+  }
   if (result.duration != null) meta.push(`${result.duration} min`)
   if (result.quantitativeScore != null) meta.push(`Score : ${result.quantitativeScore}`)
   if (meta.length) {

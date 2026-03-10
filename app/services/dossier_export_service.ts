@@ -1,5 +1,4 @@
 import type Employee from '#models/employee'
-import type ExerciseResult from '#models/exercise_result'
 import archiver from 'archiver'
 import { generateProfilPdf, generateResultPdf } from '#services/dossier_pdf_service'
 

@@ -139,7 +139,7 @@ export default class EmployeesController {
     } catch (err: any) {
       if (err.message?.includes('existe déjà')) {
         session.flash('error', err.message)
-        return response.redirectBack()
+        return response.redirect().back()
       }
       throw err
     }

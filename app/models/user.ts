@@ -13,6 +13,7 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   passwordColumnName: 'password',
 })
 
+// @ts-expect-error AuthFinder mixin expects hashPassword generic signature; our concrete override is correct at runtime
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
   declare id: number
@@ -27,7 +28,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare password: string
 
   @beforeSave()
-  static async hashPassword(user: User) {
+  static async hashPassword(this: typeof User, user: User) {
     if (!user.$dirty.password) return
     const p = user.password
     const alreadyHashed =
