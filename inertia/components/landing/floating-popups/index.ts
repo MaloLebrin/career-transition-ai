@@ -1,0 +1,10 @@
+export * from './AiAnalisys'
+export * from './Appointnement'
+export * from './Certification'
+export * from './CoachFeedback'
+export * from './Disc'
+export * from './Matching'
+export * from './Purposes'
+export * from './Skills'
+export * from './SoftSkills'
+

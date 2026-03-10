@@ -1,20 +1,18 @@
-import React from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
 import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
   Compass,
-  BrainCircuit,
+  Cpu,
+  Disc,
+  ShieldCheck,
   Target,
   Users,
-  ArrowRight,
-  CheckCircle2,
-  ShieldCheck,
-  Zap,
-  BarChart3,
-  Cpu,
-  MessageSquare,
-  Calendar,
-  Award,
+  Zap
 } from 'lucide-react'
+import { motion, useScroll, useTransform } from 'motion/react'
+import React from 'react'
+import { AiAnalisys, Appointnement, Certification, CoachFeedback, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import Badge from '../ui/Badge'
@@ -144,7 +142,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
               <div className="bg-white grid grid-cols-12 min-h-[500px]">
                 <div className="col-span-3 border-r border-brand-navy/5 p-6 space-y-6 hidden md:block">
-                  <Logo size="sm" showText={false} />
+                  <Logo size="sm" />
                   <div className="space-y-3">
                     <div className="h-2 w-full bg-brand-navy/5 rounded-full" />
                     <div className="h-2 w-2/3 bg-brand-navy/5 rounded-full" />
@@ -203,169 +201,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </div>
 
             {/* Floating Popups */}
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute -top-12 -right-6 md:-right-12 w-64 bg-white p-6 rounded-[32px] shadow-2xl border border-brand-navy/5 z-20 text-left"
-            >
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-brand-terracotta flex items-center justify-center text-white">
-                  <BrainCircuit size={18} />
-                </div>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Analyse IA
-                </span>
-              </div>
-              <p className="text-xs font-bold text-brand-navy leading-relaxed italic">
-                &quot;Synergie détectée entre leadership naturel et agilité technique (94%).&quot;
-              </p>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 15, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              className="absolute top-1/2 -left-6 md:-left-20 w-60 bg-white p-6 rounded-[32px] shadow-2xl border border-brand-navy/5 z-20 text-left"
-            >
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-brand-sage flex items-center justify-center text-white">
-                  <Target size={18} />
-                </div>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Objectif
-                </span>
-              </div>
-              <p className="text-xs font-bold text-brand-navy leading-relaxed">
-                Reconversion vers : <br />
-                <span className="text-brand-sage">Responsable RSE</span>
-              </p>
-            </motion.div>
-
-            <motion.div
-              animate={{ x: [0, 10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-              className="absolute -bottom-10 right-10 w-56 bg-white p-5 rounded-[28px] shadow-2xl border border-brand-navy/5 z-20 text-left hidden md:block"
-            >
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-brand-navy flex items-center justify-center text-white">
-                  <Zap size={14} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Matching
-                </span>
-              </div>
-              <div className="flex items-end gap-1">
-                <div className="h-8 w-2 bg-brand-sage rounded-full" />
-                <div className="h-12 w-2 bg-brand-sage rounded-full" />
-                <div className="h-10 w-2 bg-brand-sage rounded-full" />
-                <span className="ml-2 text-lg font-black text-brand-navy">87%</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute top-10 left-1/4 w-48 bg-brand-sage text-white p-4 rounded-[24px] shadow-xl z-20 text-left hidden lg:block"
-            >
-              <div className="flex items-center space-x-2 mb-2">
-                <ShieldCheck size={14} />
-                <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">
-                  Certifié
-                </span>
-              </div>
-              <p className="text-[10px] font-bold">Bilan conforme Qualiopi</p>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-              className="absolute bottom-1/4 -right-4 md:-right-16 w-52 bg-white p-5 rounded-[28px] shadow-2xl border border-brand-navy/5 z-20 text-left hidden xl:block"
-            >
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-brand-terracotta/10 flex items-center justify-center text-brand-terracotta">
-                  <Compass size={14} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Soft Skills
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="h-1.5 w-full bg-brand-navy/5 rounded-full overflow-hidden">
-                  <div className="h-full w-[85%] bg-brand-terracotta" />
-                </div>
-                <p className="text-[9px] font-bold text-brand-navy/60">Adaptabilité : 85%</p>
-              </div>
-            </motion.div>
-
-            {/* NEW POPUPS */}
-            <motion.div
-              animate={{ x: [0, -10, 0] }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-              className="absolute top-1/3 -right-20 w-48 bg-white p-4 rounded-[24px] shadow-2xl border border-brand-navy/5 z-20 text-left hidden 2xl:block"
-            >
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-6 h-6 rounded-full bg-brand-sage/20 flex items-center justify-center text-brand-sage">
-                  <MessageSquare size={12} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Coach Feedback
-                </span>
-              </div>
-              <p className="text-[10px] font-medium text-brand-navy/70 leading-tight">
-                &quot;Excellent profil pour le management de transition.&quot;
-              </p>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-              className="absolute -bottom-16 left-1/4 w-56 bg-white p-5 rounded-[28px] shadow-2xl border border-brand-navy/5 z-20 text-left hidden lg:block"
-            >
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-brand-navy/5 flex items-center justify-center text-brand-navy">
-                  <Calendar size={14} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Prochaine Session
-                </span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-sage/10 flex flex-col items-center justify-center text-brand-sage">
-                  <span className="text-[8px] font-bold">MARS</span>
-                  <span className="text-sm font-black leading-none">12</span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-brand-navy">Entretien de synthèse</p>
-                  <p className="text-[9px] text-brand-navy/40 font-medium">
-                    14:30 • Cabinet Expert
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute top-1/4 -left-32 w-44 bg-white p-4 rounded-[24px] shadow-2xl border border-brand-navy/5 z-20 text-left hidden 2xl:block"
-            >
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-6 h-6 rounded-full bg-brand-terracotta/20 flex items-center justify-center text-brand-terracotta">
-                  <Award size={12} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Compétences
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {['Leadership', 'Agilité', 'RSE'].map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-2 py-0.5 bg-brand-navy/5 rounded-full text-[8px] font-bold text-brand-navy/60"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+            <AiAnalisys />
+            <Purposes />
+            <Matching />
+            <Certification />
+            <SoftSkills />
+            <Disc />  
+            <CoachFeedback />
+            <Appointnement />
+            <Skills />
           </motion.div>
         </div>
       </section>
