@@ -126,7 +126,7 @@ describe('useAuth', () => {
     })
 
     await act(async () => {
-      await result.current.register('new@example.com', 'secret', 'New User', 'advisor')
+      await result.current.register('new@example.com', 'secret', 'New User', 'New Org')
     })
 
     expect(result.current.user).toEqual(mockSession)
@@ -134,6 +134,7 @@ describe('useAuth', () => {
       'new@example.com',
       'secret',
       'New User',
+      'New Org',
       'advisor',
       mockCsrfToken
     )

@@ -9,12 +9,7 @@ interface RegisterPageProps {
   onAuthSuccess: () => void
   onBackToLanding: () => void
   onGoToLogin: () => void
-  register: (
-    email: string,
-    password: string,
-    name: string,
-    role: 'advisor' | 'employee'
-  ) => Promise<any>
+  register: (email: string, password: string, name: string, role: 'advisor') => Promise<any>
   error: string | null
 }
 
@@ -28,20 +23,26 @@ export default function RegisterPage({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<'advisor' | 'employee'>('employee')
+  const [organizationName, setOrganizationName] = useState('')
+  const [role] = useState<'advisor'>('advisor')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<RegisterErrors>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data = { email, password, name, role }
+    const data = { email, password, name, organizationName, role }
     const nextErrors = validateRegister(data)
     setErrors(nextErrors)
     if (hasErrors(nextErrors)) return
 
     setIsLoading(true)
     try {
-      await register(data.email.trim(), data.password, data.name.trim(), data.role)
+      await register(
+        data.email.trim(),
+        data.password,
+        data.name.trim(),
+        data.organizationName.trim()
+      )
       onAuthSuccess()
     } catch {
       // Erreur affichée via la prop error
@@ -116,6 +117,14 @@ export default function RegisterPage({
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <Input
+              label="Organisation / Cabinet"
+              placeholder="France Transition Paris"
+              required
+              value={organizationName}
+              onChange={(e) => setOrganizationName(e.target.value)}
+              error={errors.organizationName}
+            />
+            <Input
               label="Nom complet"
               placeholder="Jean Dupont"
               required
@@ -144,38 +153,9 @@ export default function RegisterPage({
               error={errors.password}
               hint="Au moins 6 caractères."
             />
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2 block">
-                Type de compte <span className="text-rose-500" aria-hidden>*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('employee')}
-                  className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest border-2 transition-all active:scale-95 ${
-                    role === 'employee'
-                      ? 'bg-brand-sage/10 border-brand-sage text-brand-sage'
-                      : 'bg-white border-brand-navy/5 text-brand-navy/20'
-                  }`}
-                >
-                  Salarié
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('advisor')}
-                  className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest border-2 transition-all active:scale-95 ${
-                    role === 'advisor'
-                      ? 'bg-brand-sage/10 border-brand-sage text-brand-sage'
-                      : 'bg-white border-brand-navy/5 text-brand-navy/20'
-                  }`}
-                >
-                  Conseiller
-                </button>
-              </div>
-              {errors.role && (
-                <p className="text-[9px] font-bold text-rose-500 px-2">{errors.role}</p>
-              )}
-            </div>
+            <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2">
+              Création de compte <span className="text-brand-sage">Conseiller / Cabinet Expert</span>
+            </p>
             <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
               Créer mon compte
             </Button>

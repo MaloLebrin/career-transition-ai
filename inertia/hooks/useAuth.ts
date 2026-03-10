@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { usePage, router } from '@inertiajs/react'
-import { authService, type UserSession } from '../services/authService'
+import { router, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { authService, type UserSession } from '../services/authService';
 
 export function useAuth() {
   const { props } = usePage<{ csrfToken?: string; user?: UserSession }>()
@@ -40,11 +40,18 @@ export function useAuth() {
     email: string,
     password: string,
     name: string,
-    role: 'advisor' | 'employee'
+    organizationName: string
   ) => {
     setError(null)
     try {
-      const session = await authService.register(email, password, name, role, csrfToken)
+      const session = await authService.register(
+        email,
+        password,
+        name,
+        organizationName,
+        'advisor',
+        csrfToken
+      )
       setStateUser(session)
       return session
     } catch (err: any) {

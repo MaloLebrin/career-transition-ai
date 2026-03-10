@@ -68,15 +68,12 @@ describe('authValidation', () => {
       name: 'Jean Dupont',
       email: 'jean@example.com',
       password: 'secret12',
-      role: 'employee',
+      organizationName: 'Cabinet Expert',
+      role: 'advisor',
     }
 
     test('returns no errors for valid payload', () => {
       expect(validateRegister(valid)).toEqual({})
-    })
-
-    test('accepts role advisor', () => {
-      expect(validateRegister({ ...valid, role: 'advisor' })).toEqual({})
     })
 
     test('returns error when name is empty', () => {
@@ -95,16 +92,16 @@ describe('authValidation', () => {
       expect(validateRegister({ ...valid, password: '12345' }).password).toContain('6')
     })
 
-    test('returns error when role is missing', () => {
-      expect(validateRegister({ ...valid, role: undefined as any }).role).toBe(
-        'Veuillez choisir un type de compte.'
+    test("returns error when organization name is empty", () => {
+      expect(validateRegister({ ...valid, organizationName: '' }).organizationName).toBe(
+        "Le nom de l’organisation est requis."
       )
     })
 
-    test('returns error when role is invalid', () => {
-      expect(validateRegister({ ...valid, role: 'admin' as any }).role).toBe(
-        'Veuillez choisir un type de compte.'
-      )
+    test('returns error when organization name exceeds 255 characters', () => {
+      expect(
+        validateRegister({ ...valid, organizationName: 'a'.repeat(256) }).organizationName
+      ).toContain('255')
     })
 
     test('returns multiple errors for multiple invalid fields', () => {
@@ -112,12 +109,13 @@ describe('authValidation', () => {
         name: '',
         email: 'x',
         password: '1',
-        role: undefined as any,
+        organizationName: '',
+        role: 'advisor',
       })
       expect(errors.name).toBeDefined()
       expect(errors.email).toBeDefined()
       expect(errors.password).toBeDefined()
-      expect(errors.role).toBeDefined()
+      expect(errors.organizationName).toBeDefined()
     })
   })
 

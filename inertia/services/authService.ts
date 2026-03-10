@@ -41,15 +41,16 @@ export const authService = {
     email: string,
     password: string,
     name: string,
-    role: 'advisor' | 'employee',
+    organizationName: string,
+    role: 'advisor',
     csrfToken?: string
   ): Promise<UserSession> {
     const response = await fetch('/auth/register', {
       method: 'POST',
       credentials: 'include',
       headers: headersWithCsrf(csrfToken, { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ email, password, name, role }),
-    })
+      body: JSON.stringify({ email, password, name, role, organizationName }),
+    }) // TODO: use inertia request instead of fetch
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}))

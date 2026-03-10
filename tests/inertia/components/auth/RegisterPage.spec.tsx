@@ -14,12 +14,11 @@ describe('RegisterPage', () => {
   test('renders register form with title and fields', () => {
     render(<RegisterPage {...defaultProps} />)
 
-    expect(screen.getByText('Création de compte')).toBeInTheDocument()
+    expect(screen.getAllByText('Création de compte')[0]).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/France Transition Paris/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Jean Dupont/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/votre@email/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Créer mon compte/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Salarié/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Conseiller/ })).toBeInTheDocument()
   })
 
   test('displays error when error prop is set', () => {
@@ -33,22 +32,13 @@ describe('RegisterPage', () => {
     expect(defaultProps.onGoToLogin).toHaveBeenCalledTimes(1)
   })
 
-  test('toggles role when Salarié and Conseiller are clicked', () => {
-    render(<RegisterPage {...defaultProps} />)
-    const employeeBtn = screen.getByRole('button', { name: /Salarié/ })
-    const advisorBtn = screen.getByRole('button', { name: /Conseiller/ })
-
-    expect(employeeBtn).toHaveClass('border-brand-sage')
-    fireEvent.click(advisorBtn)
-    expect(advisorBtn).toHaveClass('border-brand-sage')
-    fireEvent.click(employeeBtn)
-    expect(employeeBtn).toHaveClass('border-brand-sage')
-  })
-
   test('shows validation errors and does not call register when name is empty', async () => {
     const register = vi.fn().mockResolvedValue(undefined)
     render(<RegisterPage {...defaultProps} register={register} />)
 
+    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+      target: { value: 'Mon Cabinet' },
+    })
     fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
       target: { value: 'user@example.com' },
     })
@@ -67,6 +57,9 @@ describe('RegisterPage', () => {
     const register = vi.fn().mockResolvedValue(undefined)
     render(<RegisterPage {...defaultProps} register={register} />)
 
+    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+      target: { value: 'Mon Cabinet' },
+    })
     fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {
       target: { value: 'Jean Dupont' },
     })
@@ -88,6 +81,9 @@ describe('RegisterPage', () => {
     const register = vi.fn().mockResolvedValue(undefined)
     render(<RegisterPage {...defaultProps} register={register} />)
 
+    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+      target: { value: 'Mon Cabinet' },
+    })
     fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {
       target: { value: 'Jean Dupont' },
     })
@@ -105,7 +101,7 @@ describe('RegisterPage', () => {
     expect(register).not.toHaveBeenCalled()
   })
 
-  test('calls register and onAuthSuccess when form is valid (employee)', async () => {
+  test('calls register and onAuthSuccess when form is valid (advisor only)', async () => {
     const register = vi.fn().mockResolvedValue(undefined)
     render(
       <RegisterPage
@@ -115,6 +111,9 @@ describe('RegisterPage', () => {
       />
     )
 
+    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+      target: { value: 'Mon Cabinet' },
+    })
     fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {
       target: { value: 'Jean Dupont' },
     })
@@ -127,36 +126,14 @@ describe('RegisterPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Créer mon compte/ }))
 
     await waitFor(() => {
-      expect(register).toHaveBeenCalledWith('jean@example.com', 'password1', 'Jean Dupont', 'employee')
+      expect(register).toHaveBeenCalledWith(
+        'jean@example.com',
+        'password1',
+        'Jean Dupont',
+        'Mon Cabinet'
+      )
     })
     expect(defaultProps.onAuthSuccess).toHaveBeenCalled()
-  })
-
-  test('calls register with role advisor when Conseiller is selected', async () => {
-    const register = vi.fn().mockResolvedValue(undefined)
-    render(
-      <RegisterPage
-        {...defaultProps}
-        register={register}
-        onAuthSuccess={defaultProps.onAuthSuccess}
-      />
-    )
-
-    fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {
-      target: { value: 'Jean Dupont' },
-    })
-    fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
-      target: { value: 'jean@example.com' },
-    })
-    fireEvent.change(screen.getByPlaceholderText(/••••••••/), {
-      target: { value: 'password1' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: /Conseiller/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Créer mon compte/ }))
-
-    await waitFor(() => {
-      expect(register).toHaveBeenCalledWith('jean@example.com', 'password1', 'Jean Dupont', 'advisor')
-    })
   })
 
   test('uses PublicLayout with back to landing', () => {

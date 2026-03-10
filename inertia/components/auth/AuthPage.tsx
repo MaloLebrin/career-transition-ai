@@ -12,7 +12,7 @@ interface AuthPageProps {
     email: string,
     password: string,
     name: string,
-    role: 'advisor' | 'employee'
+    organizationName: string
   ) => Promise<any>
   error: string | null
 }
@@ -30,7 +30,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
     email: '',
     password: '',
     name: '',
-    role: 'employee' as 'advisor' | 'employee',
+    organizationName: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +40,12 @@ const AuthPage: React.FC<AuthPageProps> = ({
       if (mode === 'login') {
         await login(formData.email, formData.password)
       } else {
-        await register(formData.email, formData.password, formData.name, formData.role)
+        await register(
+          formData.email,
+          formData.password,
+          formData.name,
+          formData.organizationName
+        )
       }
       onAuthSuccess()
     } catch (err) {
@@ -97,7 +102,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
             <p className="text-brand-navy/40 font-medium">
               {mode === 'login'
                 ? 'Saisissez vos identifiants pour continuer.'
-                : 'Remplissez les champs pour créer votre espace.'}
+                : 'Création de compte réservée aux conseillers et cabinets experts.'}
             </p>
           </div>
 
@@ -121,6 +126,18 @@ const AuthPage: React.FC<AuthPageProps> = ({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {mode === 'register' && (
+              <Input
+                label="Organisation / Cabinet"
+                placeholder="France Transition Paris"
+                required
+                value={formData.organizationName}
+                onChange={(e) =>
+                  setFormData({ ...formData, organizationName: e.target.value })
+                }
+              />
+            )}
+
             {mode === 'register' && (
               <Input
                 label="Nom complet"
@@ -152,27 +169,9 @@ const AuthPage: React.FC<AuthPageProps> = ({
             />
 
             {mode === 'register' && (
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2">
-                  Type de compte
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'employee' })}
-                    className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest border-2 transition-all active:scale-95 ${formData.role === 'employee' ? 'bg-brand-sage/10 border-brand-sage text-brand-sage' : 'bg-white border-brand-navy/5 text-brand-navy/20'}`}
-                  >
-                    Salarié
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'advisor' })}
-                    className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest border-2 transition-all active:scale-95 ${formData.role === 'advisor' ? 'bg-brand-sage/10 border-brand-sage text-brand-sage' : 'bg-white border-brand-navy/5 text-brand-navy/20'}`}
-                  >
-                    Conseiller
-                  </button>
-                </div>
-              </div>
+              <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2">
+                Création de compte <span className="text-brand-sage">Conseiller / Cabinet Expert</span>
+              </p>
             )}
 
             <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>

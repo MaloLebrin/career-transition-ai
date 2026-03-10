@@ -9,6 +9,7 @@ type RegisterInput = {
   password: string
   name: string
   role: UserRole
+  organizationName: string
 }
 
 type UpdateProfileInput = {
@@ -46,8 +47,7 @@ export class AuthService {
   }
 
   /**
-   * Registers a new user for the default demo organization (ftc-paris).
-   * This keeps the demo behaviour while persisting users properly.
+   * Registers a new advisor (and creates its organization).
    */
   public async register(input: RegisterInput): Promise<UserSessionDto> {
     const existing = await User.findBy('email', input.email)
@@ -55,27 +55,17 @@ export class AuthService {
       throw new Error('Cet email est déjà utilisé.')
     }
 
-    // Find or create the default demo organization
-    let org = await Organization.findBy('slug', 'ftc-paris')
-    if (!org) {
-      org = await Organization.create({
-        // TODO: use the organization service to create the organization And do not hardcode the name and slug
-        name: 'France Transition Carrière Paris',
-        slug: 'ftc-paris',
-      })
-    }
-
-    const role: UserRole =
-      input.role === USERS_ROLES.ADVISOR || input.role === USERS_ROLES.EMPLOYEE
-        ? input.role
-        : USERS_ROLES.ADVISOR
+    // Create a dedicated organization for this advisor
+    const org = await Organization.create({
+      name: input.organizationName,
+    })
 
     const user = await User.create({
       organizationId: org.id,
       email: input.email,
       name: input.name,
       password: input.password,
-      role,
+      role: USERS_ROLES.ADVISOR,
     })
 
     return toSessionDto(user)

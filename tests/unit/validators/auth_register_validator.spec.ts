@@ -7,6 +7,7 @@ test.group('registerValidator', () => {
       email: 'user@example.com',
       password: 'secret123',
       name: 'Test User',
+      organizationName: 'Test Org',
       role: 'advisor',
     }
 

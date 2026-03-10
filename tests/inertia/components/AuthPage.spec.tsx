@@ -30,6 +30,7 @@ describe('AuthPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/Création de compte/)).toBeInTheDocument()
     })
+    expect(screen.getByPlaceholderText(/France Transition Paris/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Jean Dupont/)).toBeInTheDocument()
   })
 
