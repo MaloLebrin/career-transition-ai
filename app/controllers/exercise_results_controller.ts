@@ -346,9 +346,9 @@ export default class ExerciseResultsController {
         : null
       break
     }
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/CandidatExercise'
     const props =
-      pageName === 'dashboard/Exercise'
+      pageName === 'dashboard/CandidatExercise'
         ? { type: params.type, initialDraftsByType }
         : { initialDraftsByType }
     return (inertia as any).render(pageName, props)
@@ -396,9 +396,9 @@ export default class ExerciseResultsController {
       break
     }
 
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/CandidatExercise'
     const props =
-      pageName === 'dashboard/Exercise'
+      pageName === 'dashboard/CandidatExercise'
         ? { type: params.type, initialDraftsByType }
         : { initialDraftsByType }
     return (inertia as any).render(pageName, props)
