@@ -1,5 +1,14 @@
 import Employee from '#models/employee'
 import ExerciseResult, { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
+import { EmployeesService } from '#services/employees_service'
+import { ExerciseResultsService } from '#services/exercise_results_service'
+import {
+  fetchExerciseDraftValidator,
+  saveExerciseDraftValidator,
+} from '#validators/exercise_draft_validator'
+import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
+import { inject } from '@adonisjs/core'
+import type { HttpContext } from '@adonisjs/core/http'
 import { EXERCISE_LIST } from '../../shared/exercises.js'
 
 /** Map exercise type (slug) to dedicated Inertia page. Unknown type falls back to dashboard/Exercise. */
@@ -13,22 +22,13 @@ const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {
   [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'dashboard/exercises/SkillMapping',
   [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'dashboard/exercises/CircleOfControl',
 }
-import { ExerciseResultsService } from '#services/exercise_results_service'
-import { EmployeesService } from '#services/employees_service'
-import {
-  fetchExerciseDraftValidator,
-  saveExerciseDraftValidator,
-} from '#validators/exercise_draft_validator'
-import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
-import { inject } from '@adonisjs/core'
-import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
     private employeesService: EmployeesService
-  ) {}
+  ) { }
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -222,18 +222,17 @@ export default class ExerciseResultsController {
       .orderBy('date', 'desc')
       .orderBy('updatedAt', 'desc')
       .first()
-    const exerciseTitle =
-      EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
+    const exerciseTitle = EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
     const resultPayload = latest
       ? {
-          id: latest.id,
-          type: typeParam,
-          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
-          duration: latest.duration ?? 0,
-          data: latest.data ?? {},
-          quantitativeScore: latest.quantitativeScore ?? 0,
-          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
-        }
+        id: latest.id,
+        type: typeParam,
+        date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+        duration: latest.duration ?? 0,
+        data: latest.data ?? {},
+        quantitativeScore: latest.quantitativeScore ?? 0,
+        qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+      }
       : null
     return (inertia as any).render('dashboard/ExerciseResultDetail', {
       employeeId: String(employee.id),
@@ -291,11 +290,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employeeRecord.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employeeRecord.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -311,7 +310,12 @@ export default class ExerciseResultsController {
   /**
    * Conseiller: Inertia page for exercise without employee context (same as candidat: use current user's employee).
    */
-  public async showDashboardConseillerExerciseSelf({ auth, params, inertia, response }: HttpContext) {
+  public async showDashboardConseillerExerciseSelf({
+    auth,
+    params,
+    inertia,
+    response,
+  }: HttpContext) {
     if (!auth.user) {
       return response.unauthorized()
     }
@@ -338,11 +342,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employee.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employee.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -387,11 +391,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employee.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employee.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -427,12 +431,7 @@ export default class ExerciseResultsController {
   /**
    * Candidat: save exercise result for current user's employee.
    */
-  public async storeFromDashboardCandidat({
-    auth,
-    request,
-    response,
-    session,
-  }: HttpContext) {
+  public async storeFromDashboardCandidat({ auth, request, response, session }: HttpContext) {
     if (!auth.user) {
       return response.unauthorized()
     }

@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Head } from '@inertiajs/react'
 import { Transmit } from '@adonisjs/transmit-client'
+import { Head } from '@inertiajs/react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import { useAuth } from '../../hooks/useAuth'
-import { isSuperAdmin } from '../../helpers/roles'
 import Badge from '../../components/ui/Badge'
+import { useAuth } from '../../hooks/useAuth'
 
 type BulkJobStatus = 'pending' | 'processing' | 'completed' | 'failed'
 type BulkJobType = 'emails' | 'pdfs' | 'mixed'
@@ -124,7 +123,7 @@ export default function BulkJobs() {
       if (unsubscribe) {
         unsubscribe()
       }
-      subscription.delete().catch(() => {})
+      subscription.delete().catch(() => { })
     }
   }, [transmit, user])
 
