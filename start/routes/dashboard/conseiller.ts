@@ -17,7 +17,7 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/design-system').renderInertia('dashboard/DesignSystem', {})
     // @ts-expect-error Inertia page name from generated types
-    router.on('/profile').renderInertia('dashboard/Profile', {})
+    router.on('/profile').renderInertia('dashboard/ConseillerProfile', {})
     router.put('/profile', [AuthController, 'updateFromDashboard'])
 
     router.get('/exercises/:type', [

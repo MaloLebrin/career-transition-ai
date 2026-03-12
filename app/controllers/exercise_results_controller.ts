@@ -140,9 +140,8 @@ export default class ExerciseResultsController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    return (inertia as any).render('dashboard/exercises/List', {
+    return (inertia as any).render('dashboard/exercises/CandidatList', {
       exercises: EXERCISE_LIST,
-      context: 'candidat',
     })
   }
 
@@ -186,8 +185,7 @@ export default class ExerciseResultsController {
         status,
       }))
       .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    return (inertia as any).render('dashboard/exercises/List', {
-      context: 'conseiller',
+    return (inertia as any).render('dashboard/exercises/ConseillerList', {
       employeeId: String(employeeId),
       results,
     })
@@ -302,9 +300,9 @@ export default class ExerciseResultsController {
       break
     }
 
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/Exercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/ConseillerExercise'
     const props =
-      pageName === 'dashboard/Exercise'
+      pageName === 'dashboard/ConseillerExercise'
         ? { type: params.type, employeeId: String(employeeRecord.id), initialDraftsByType }
         : { employeeId: String(employeeRecord.id), initialDraftsByType }
     return (inertia as any).render(pageName, props)

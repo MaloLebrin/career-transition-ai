@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import ProfilePage from '../../components/profile/ProfilePage'
@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/useEmployee'
 import { employeeUpdatePayload } from '../../helpers/employee_payload'
 
-export default function DashboardProfile() {
+export default function ConseillerProfile() {
   const { user } = useAuth()
   const targetId = user?.id || '1'
   const { employee: selectedEmployee } = useEmployee(targetId)
@@ -18,14 +18,11 @@ export default function DashboardProfile() {
   if (!user) return null
   if (!selectedEmployee) {
     return (
-      <>
-        <Head title="Mon profil" />
-        <DashboardLayout>
-          <div className="flex items-center justify-center min-h-[200px]">
-            <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-          </div>
-        </DashboardLayout>
-      </>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
     )
   }
 
@@ -36,11 +33,11 @@ export default function DashboardProfile() {
         <ProfilePage
           employee={selectedEmployee}
           onSave={(updated) => {
-            router.put('/dashboard/candidat/profile', employeeUpdatePayload(updated), {
-              onSuccess: () => router.visit('/dashboard/candidat'),
+            router.put('/dashboard/conseiller/profile', employeeUpdatePayload(updated) as any, {
+              onSuccess: () => router.visit('/dashboard/conseiller/profile'),
             })
           }}
-          onBack={() => router.visit('/dashboard/candidat')}
+          onBack={() => router.visit('/dashboard/conseiller')}
         />
       </DashboardLayout>
     </>

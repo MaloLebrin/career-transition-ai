@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Head, router } from '@inertiajs/react'
 import AppLink from '../../components/ui/AppLink'
@@ -18,9 +18,9 @@ import { useEmployee } from '../../hooks/useEmployee'
 import { useExercises } from '../../hooks/useExercises'
 import { EXERCISE_SLUGS } from '../../config/exercises'
 
-interface ExerciseProps {
+interface ConseillerExerciseProps {
   type: string
-  employeeId?: string
+  employeeId: string
   initialDraftsByType?: Record<string, ExerciseDraft | null>
 }
 
@@ -35,29 +35,24 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
   CIRCLE_OF_CONTROL: ExerciseType.CIRCLE_OF_CONTROL,
 }
 
-export default function DashboardExercise({
+export default function ConseillerExercise({
   type,
   employeeId,
   initialDraftsByType,
-}: ExerciseProps) {
+}: ConseillerExerciseProps) {
   const { user } = useAuth()
-  const targetId = employeeId || user?.id || '1'
-  const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
+  const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeId)
 
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[exerciseType]
-    if (!slug) return null
-    return draftsByType[slug] ?? null
+    return slug ? draftsByType[slug] ?? null : null
   }
 
-  const isCandidat = !employeeId
-  const exercisesBasePath = isCandidat
-    ? '/dashboard/candidat/exercises'
-    : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = `/dashboard/conseiller/employees/${employeeId}`
+  const exercisesBasePath = `${backHref}/exercises`
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()
@@ -77,36 +72,18 @@ export default function DashboardExercise({
   )
 
   const exerciseType =
-    EXERCISE_TYPES[type] ?? (typeof type === 'string' ? EXERCISE_TYPES[type.toUpperCase()] : null) ?? null
+    EXERCISE_TYPES[type.toUpperCase()] ?? null
 
   useEffect(() => {
     if (!user) router.visit('/auth/login')
   }, [user])
 
-  if (!user) {
-    return (
-      <DashboardLayout selectedEmployeeId={employeeId || null}>
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-  if (!exerciseType) {
-    router.visit(backHref)
-    return (
-      <DashboardLayout selectedEmployeeId={employeeId || null}>
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
-    )
-  }
+  if (!user || !exerciseType) return null
 
   return (
     <>
       <Head title={`Exercice ${type}`} />
-      <DashboardLayout selectedEmployeeId={employeeId || null}>
+      <DashboardLayout selectedEmployeeId={employeeId}>
         <div className="animate-fadeIn max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <AppLink href={backHref}>
@@ -162,7 +139,6 @@ export default function DashboardExercise({
                 onSave={(data, duration) =>
                   saveResult(ExerciseType.PERSONALITY, data, 10, duration)
                 }
-                // Personality currently has no explicit draft UI, but results are saved via Inertia.
               />
             )}
             {exerciseType === ExerciseType.TARGETING && (
