@@ -1,5 +1,5 @@
-import type { HttpContext } from '@adonisjs/core/http'
 import { USERS_ROLES } from '#models/user'
+import type { HttpContext } from '@adonisjs/core/http'
 
 /**
  * Redirects authenticated user to the correct dashboard area based on role.
@@ -28,6 +28,6 @@ export default class DashboardController {
    * Candidat dashboard home (Inertia).
    */
   public async candidatHome({ inertia }: HttpContext) {
-    return (inertia as any).render('dashboard/Home', { dashboardContext: 'candidat' })
+    return (inertia as any).render('dashboard/CandidatHome', {})
   }
 }

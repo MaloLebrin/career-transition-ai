@@ -13,7 +13,7 @@ router
      * General routes
      */
     // @ts-expect-error Inertia page name from generated types
-    router.on('/').renderInertia('dashboard/Home', { dashboardContext: 'conseiller' })
+    router.on('/').renderInertia('dashboard/ConseillerHome')
     // @ts-expect-error Inertia page name from generated types
     router.on('/design-system').renderInertia('dashboard/DesignSystem', {})
     // @ts-expect-error Inertia page name from generated types

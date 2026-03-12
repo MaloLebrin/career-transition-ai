@@ -30,7 +30,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Targeting.tsx'))['default']>
     'dashboard/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Values.tsx'))['default']>
     'dashboard/ExercisesUsageAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExercisesUsageAdmin.tsx'))['default']>
-    'dashboard/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/Home.tsx'))['default']>
     'dashboard/OrganizationsAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/OrganizationsAdmin.tsx'))['default']>
     'dashboard/Profile': ExtractProps<(typeof import('../../inertia/pages/dashboard/Profile.tsx'))['default']>
     'dashboard/Settings': ExtractProps<(typeof import('../../inertia/pages/dashboard/Settings.tsx'))['default']>
@@ -44,5 +43,7 @@ declare module '@adonisjs/inertia/types' {
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
+    'dashboard/CandidatHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatHome.tsx'))['default']>
+    'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
   }
 }
