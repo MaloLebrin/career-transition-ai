@@ -23,26 +23,19 @@ export default class AuthController {
   }
 
   public async login({ request, auth, response }: HttpContext) {
-    const wantsJson = request.header('accept')?.includes('application/json')
     const payload = await request.validateUsing(loginValidator)
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
-    if (wantsJson) {
-      const dto = this.authService.toSession(user)
-      return response.json(dto)
-    }
+
     return response.redirect().status(303).toPath('/dashboard')
   }
 
   public async register({ request, auth, response }: HttpContext) {
-    const wantsJson = request.header('accept')?.includes('application/json')
     const payload = await request.validateUsing(registerValidator)
-    const dto = await this.authService.register(payload)
+    await this.authService.register(payload)
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
-    if (wantsJson) {
-      return response.json(dto)
-    }
+
     return response.redirect().status(303).toPath('/dashboard')
   }
 
