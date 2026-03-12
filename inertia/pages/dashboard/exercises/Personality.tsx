@@ -7,7 +7,7 @@ import Button from '../../../components/ui/Button'
 import PersonalityTool from '../../../components/exercises/PersonalityTool'
 import { ExerciseType } from '../../../types'
 import { useAuth } from '../../../hooks/useAuth'
-import { useEmployee } from '../../../hooks/useEmployee'
+import { useEmployee } from '../../../hooks/use_employee'
 import { useExercises } from '../../../hooks/useExercises'
 
 interface PersonalityExerciseProps {

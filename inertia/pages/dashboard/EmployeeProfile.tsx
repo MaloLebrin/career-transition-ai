@@ -4,7 +4,7 @@ import AppLink from '../../components/ui/AppLink'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import Card from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployee } from '../../hooks/use_employee'
 import type { Employee } from '../../types'
 
 interface EmployeeProfileProps {

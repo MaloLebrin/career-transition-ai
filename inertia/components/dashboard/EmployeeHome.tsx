@@ -1,6 +1,6 @@
 import AppLink from '../ui/AppLink'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployee } from '../../hooks/use_employee'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 export default function EmployeeHome() {

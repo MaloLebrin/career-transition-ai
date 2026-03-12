@@ -4,7 +4,7 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import EmployeeHome from '../../components/dashboard/EmployeeHome'
 import OnboardingFlow from '../../components/onboarding/OnboardingFlow'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployee } from '../../hooks/use_employee'
 import { employeeUpdatePayload } from '../../helpers/employee_payload'
 
 export default function CandidatHome() {

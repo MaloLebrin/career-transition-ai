@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useEmployees } from '../../hooks/useEmployees'
+import { useEmployees } from '../../hooks/use_employees'
 import AddEmployeeModal from '../modals/AddEmployeeModal'
 import Button from '../ui/Button'
 import Card from '../ui/Card'

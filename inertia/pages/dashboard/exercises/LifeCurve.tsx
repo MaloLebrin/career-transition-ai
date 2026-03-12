@@ -7,7 +7,7 @@ import Button from '../../../components/ui/Button'
 import LifeCurveTool from '../../../components/exercises/LifeCurveTool'
 import { ExerciseType, type ExerciseDraft } from '../../../types'
 import { useAuth } from '../../../hooks/useAuth'
-import { useEmployee } from '../../../hooks/useEmployee'
+import { useEmployee } from '../../../hooks/use_employee'
 import { useExercises } from '../../../hooks/useExercises'
 import { EXERCISE_SLUGS } from '../../../config/exercises'
 

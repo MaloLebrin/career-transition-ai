@@ -7,7 +7,7 @@ import Button from '../../../components/ui/Button'
 import TargetingTool from '../../../components/exercises/TargetingTool'
 import { ExerciseType } from '../../../types'
 import { useAuth } from '../../../hooks/useAuth'
-import { useEmployee } from '../../../hooks/useEmployee'
+import { useEmployee } from '../../../hooks/use_employee'
 import { useExercises } from '../../../hooks/useExercises'
 
 interface TargetingExerciseProps {

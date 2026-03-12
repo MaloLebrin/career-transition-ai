@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import AppLink from '../ui/AppLink'
 import Input from '../ui/Input'
 import NavLink from '../ui/NavLink'
-import { useEmployees } from '../../hooks/useEmployees'
+import { useEmployees } from '../../hooks/use_employees'
 
 interface AdvisorSidebarProps {
   /** Selected employee id to highlight. From route /dashboard/conseiller/employees/:id */

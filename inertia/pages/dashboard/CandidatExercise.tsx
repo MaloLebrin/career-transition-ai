@@ -14,7 +14,7 @@ import SkillMappingTool from '../../components/exercises/SkillMappingTool'
 import CircleOfControlTool from '../../components/exercises/CircleOfControlTool'
 import { ExerciseType, type ExerciseDraft } from '../../types'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployee } from '../../hooks/use_employee'
 import { useExercises } from '../../hooks/useExercises'
 import { EXERCISE_SLUGS } from '../../config/exercises'
 

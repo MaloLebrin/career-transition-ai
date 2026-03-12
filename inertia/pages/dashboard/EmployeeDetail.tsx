@@ -6,7 +6,7 @@ import StepDetailModal from '../../components/modals/StepDetailModal'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/useEmployee'
+import { useEmployee } from '../../hooks/use_employee'
 import type { Employee, SupportPlanStep } from '../../types'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '../../config/exercises'
 

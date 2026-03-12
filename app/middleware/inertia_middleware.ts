@@ -1,9 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
+import Employee from '#models/employee'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
-  share(ctx: HttpContext) {
+  async share(ctx: HttpContext) {
     const { session, auth } = ctx as Partial<HttpContext>
     const request = ctx.request as typeof ctx.request & { csrfToken?: string }
     const user = auth?.user
@@ -17,6 +18,18 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             name: user.name,
             role: user.role,
           }
+
+    let employees: any[] = []
+    if (user) {
+      if (user.role === 'advisor') {
+        employees = await Employee.query().where('advisorId', user.id).orderBy('name', 'asc')
+      } else if (user.role === 'admin' || user.role === 'super_admin') {
+        employees = await Employee.query()
+          .where('organizationId', user.organizationId)
+          .orderBy('name', 'asc')
+      }
+    }
+
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       flash: ctx.inertia.always({
@@ -24,6 +37,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         success: session?.flashMessages.get('success'),
       }),
       user: ctx.inertia.always(userDto),
+      employees: ctx.inertia.always(employees),
       csrfToken: request.csrfToken,
     }
   }
