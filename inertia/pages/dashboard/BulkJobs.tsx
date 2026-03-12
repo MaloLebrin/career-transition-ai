@@ -48,11 +48,15 @@ const SCOPE_LABELS: Record<BulkJobScope, string> = {
   org: 'Organisation',
 }
 
-export default function BulkJobs() {
+interface BulkJobsProps {
+  jobs: BulkJobDto[]
+}
+
+export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
   const { user } = useAuth()
-  const [jobs, setJobs] = useState<BulkJobDto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [jobs, setJobs] = useState<BulkJobDto[]>(initialJobs)
+  const [loading] = useState(false)
+  const [error] = useState<string | null>(null)
 
   const transmit = useMemo(
     () =>
@@ -62,37 +66,6 @@ export default function BulkJobs() {
     []
   )
 
-  useEffect(() => {
-    let isMounted = true
-
-    async function fetchJobs() {
-      try {
-        setLoading(true)
-        const res = await fetch('/api/bulk-jobs', { credentials: 'include' })
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP ${res.status}`)
-        }
-        const data = (await res.json()) as BulkJobDto[]
-        if (isMounted) {
-          setJobs(data)
-        }
-      } catch (e: any) {
-        if (isMounted) {
-          setError(e?.message ?? 'Impossible de charger les jobs')
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchJobs()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   useEffect(() => {
     if (!user) return

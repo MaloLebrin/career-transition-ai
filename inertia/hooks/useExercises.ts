@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useCallback, useState } from 'react'
 import { EXERCISES_WITH_INERTIA_DRAFT, EXERCISE_SLUGS } from '../config/exercises'
-import { apiService } from '../services/apiService'
 import { analyzeExerciseResult } from '../services/geminiService'
 import { Employee, ExerciseDraft, ExerciseResult, ExerciseType } from '../types'
 
@@ -56,7 +55,9 @@ export function useExercises(
         return options.circleOfControl.initialDraft
       }
 
-      return await apiService.fetchExerciseDraft(employee.id, type)
+      // Les brouillons sont désormais passés via props initiales (Inertia).
+      // On évite les fetchs asynchrones ici.
+      return null
     },
     [employee, options]
   )
@@ -73,14 +74,12 @@ export function useExercises(
       }
       const slug = EXERCISE_SLUGS[type]
       if (slug && EXERCISES_WITH_INERTIA_DRAFT.has(type)) {
-        await router.post(`${basePath}/${slug}/draft`, draft, {
+        await router.post(`${basePath}/${slug}/draft`, draft as any, {
           preserveScroll: true,
           preserveState: true,
         })
-      } else {
-        // Fallback pour types non configurés (ex: futurs exercices).
-        await apiService.saveExerciseDraft(draft)
       }
+      // Fallback retiré : tout passe par Inertia.
     } catch (err) {
       console.error('Draft save error:', err)
     } finally {
@@ -107,39 +106,26 @@ export function useExercises(
         minute: '2-digit',
       })
 
-      const newResult: ExerciseResult = {
-        id: Math.random().toString(36).substr(2, 9),
-        type,
-        date: new Date().toISOString().split('T')[0],
-        duration,
-        data,
-        quantitativeScore: quantScore,
-        qualitativeAnalysis: analysis,
-      }
-
-      const updatedPlan = employee.plan.map((step) =>
-        step.associatedExercise === type ? { ...step, completed: true, lastUpdated: now } : step
-      )
-
       const slug = EXERCISE_SLUGS[type]
       if (slug) {
         await router.post(`${basePath}/${slug}/result`, {
           type,
           status: 'completed',
-          date: newResult.date,
+          date: new Date().toISOString().split('T')[0],
           duration,
           data,
           quantitativeScore: quantScore,
           qualitativeAnalysis: analysis,
-          plan: updatedPlan.map((step) => ({
+          plan: employee.plan.map((step) =>
+            step.associatedExercise === type
+              ? { ...step, completed: true, lastUpdated: now }
+              : step
+          ).map((step) => ({
             id: step.id,
             completed: step.completed,
             lastUpdated: step.lastUpdated,
           })),
         })
-      } else {
-        // Fallback pour types non configurés.
-        await apiService.saveExerciseResult(employee.id, newResult, updatedPlan)
       }
       onComplete()
     } catch (err) {

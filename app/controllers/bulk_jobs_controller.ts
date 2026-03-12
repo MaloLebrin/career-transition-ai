@@ -123,10 +123,11 @@ export default class BulkJobsController {
     return response.created(serializeBulkJob(bulkJob))
   }
 
-  public async index({ auth, request, response }: HttpContext) {
+  public async index({ auth, request, inertia }: HttpContext) {
     const user = auth.user
     if (!user) {
-      return response.unauthorized()
+      // Pour Inertia, on redirige plutôt vers login si possible, mais ici on gère le guard
+      return
     }
 
     const qs = request.qs() as { status?: string; type?: string }
@@ -149,9 +150,10 @@ export default class BulkJobsController {
       query = query.where('type', qs.type)
     }
 
-    const jobs = await query.orderBy('createdAt', 'desc').limit(100)
+    const jobRecords = await query.orderBy('createdAt', 'desc').limit(100)
+    const jobs = jobRecords.map(serializeBulkJob)
 
-    return response.json(jobs.map(serializeBulkJob))
+    return (inertia as any).render('dashboard/BulkJobs', { jobs })
   }
 
   public async show({ auth, params, response }: HttpContext) {

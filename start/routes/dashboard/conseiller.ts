@@ -5,6 +5,7 @@ const AuthController = () => import('#controllers/auth_controller')
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
+const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
 
 // Dashboard conseiller (advisor, admin, super_admin)
 router
@@ -19,6 +20,8 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/profile').renderInertia('dashboard/ConseillerProfile', {})
     router.put('/profile', [AuthController, 'updateFromDashboard'])
+    router.get('/bulk-jobs', [BulkJobsController, 'index'])
+    router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
 
     router.get('/exercises/:type', [
       ExerciseResultsController,

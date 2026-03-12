@@ -8,10 +8,10 @@
 */
 
 import './routes/auth.js'
-import './routes/onboarding.js'
-import './routes/transmit.js'
-import './routes/dashboard/index.js'
 import './routes/dashboard/candidat.js'
 import './routes/dashboard/conseiller.js'
+import './routes/dashboard/index.js'
 import './routes/dashboard/super_admin.js'
-import './routes/api.js'
+import './routes/onboarding.js'
+import './routes/transmit.js'
+

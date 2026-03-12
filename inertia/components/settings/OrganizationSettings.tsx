@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useForm } from '@inertiajs/react'
 import { Organization, Advisor, AdvisorRole } from '../../types'
-import { apiService } from '../../services/apiService'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Card from '../ui/Card'
@@ -79,7 +78,6 @@ const OrganizationSettings: React.FC<Props> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Identité du Conseiller & Cabinet */}
         <div className="lg:col-span-7 space-y-8">
-          {/* Mon Profil Personnel */}
           <Card className="space-y-8 p-10 border-2 border-violet-100 bg-white">
             <h3 className="text-xl font-black text-slate-900 flex items-center">
               <span className="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center mr-3">
