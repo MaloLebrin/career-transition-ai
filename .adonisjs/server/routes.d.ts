@@ -19,6 +19,7 @@ export type ScannedRoutes = {
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.store_from_dashboard': { paramsTuple?: []; params?: {} }
@@ -66,6 +67,7 @@ export type ScannedRoutes = {
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -88,6 +90,7 @@ export type ScannedRoutes = {
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

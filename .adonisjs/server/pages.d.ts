@@ -14,12 +14,20 @@ declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'Auth': ExtractProps<(typeof import('../../inertia/pages/Auth.tsx'))['default']>
     'dashboard/BulkJobs': ExtractProps<(typeof import('../../inertia/pages/dashboard/BulkJobs.tsx'))['default']>
+    'dashboard/CandidatExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatExercise.tsx'))['default']>
+    'dashboard/CandidatHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatHome.tsx'))['default']>
+    'dashboard/CandidatProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatProfile.tsx'))['default']>
+    'dashboard/ConseillerExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerExercise.tsx'))['default']>
+    'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
+    'dashboard/ConseillerProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerProfile.tsx'))['default']>
     'dashboard/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/DesignSystem.tsx'))['default']>
     'dashboard/EmployeeDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeDetail.tsx'))['default']>
     'dashboard/EmployeeProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeProfile.tsx'))['default']>
     'dashboard/Employees': ExtractProps<(typeof import('../../inertia/pages/dashboard/Employees.tsx'))['default']>
     'dashboard/ExerciseResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExerciseResultDetail.tsx'))['default']>
+    'dashboard/exercises/CandidatList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CandidatList.tsx'))['default']>
     'dashboard/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CircleOfControl.tsx'))['default']>
+    'dashboard/exercises/ConseillerList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/ConseillerList.tsx'))['default']>
     'dashboard/exercises/DISC': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/DISC.tsx'))['default']>
     'dashboard/exercises/LifeCurve': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/LifeCurve.tsx'))['default']>
     'dashboard/exercises/Motivation': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Motivation.tsx'))['default']>
@@ -40,13 +48,5 @@ declare module '@adonisjs/inertia/types' {
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
-    'dashboard/CandidatHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatHome.tsx'))['default']>
-    'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
-    'dashboard/CandidatProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatProfile.tsx'))['default']>
-    'dashboard/ConseillerProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerProfile.tsx'))['default']>
-    'dashboard/exercises/CandidatList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CandidatList.tsx'))['default']>
-    'dashboard/exercises/ConseillerList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/ConseillerList.tsx'))['default']>
-    'dashboard/CandidatExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatExercise.tsx'))['default']>
-    'dashboard/ConseillerExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerExercise.tsx'))['default']>
   }
 }

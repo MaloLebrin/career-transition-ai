@@ -21,7 +21,6 @@ router
     router.on('/profile').renderInertia('dashboard/ConseillerProfile', {})
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/bulk-jobs', [BulkJobsController, 'index'])
-    router.put('/settings/organization', [OrganizationsController, 'updateFromDashboard'])
 
     router.get('/exercises/:type', [
       ExerciseResultsController,
