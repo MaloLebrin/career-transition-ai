@@ -2,6 +2,7 @@ import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import { BadgeVariant } from '../../components/ui/Badge'
 import Badge from '../../components/ui/Badge'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -29,11 +30,11 @@ const STATUS_LABELS: Record<BulkJobStatus, string> = {
   failed: 'Erreur',
 }
 
-const STATUS_VARIANTS: Record<BulkJobStatus, 'navy' | 'success' | 'danger' | 'outline'> = {
-  pending: 'outline',
-  processing: 'navy',
-  completed: 'success',
-  failed: 'danger',
+const STATUS_VARIANTS: Record<BulkJobStatus, BadgeVariant> = {
+  pending: 'slate',
+  processing: 'indigo',
+  completed: 'lime',
+  failed: 'pink',
 }
 
 const TYPE_LABELS: Record<BulkJobType, string> = {

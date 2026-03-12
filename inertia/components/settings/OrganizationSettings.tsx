@@ -12,15 +12,12 @@ interface Props {
   /** Passed from dashboard/Settings page (server-rendered). When omitted, loads via organizationId + API. */
   organization?: Organization
   members?: Advisor[]
-  /** When omitted, loads the current user's organization via GET /api/organizations/current */
-  organizationId?: string | number
   onBack: () => void
 }
 
 const OrganizationSettings: React.FC<Props> = ({
   organization: organizationProp,
   members: membersProp,
-  organizationId,
   onBack,
 }) => {
   const { user } = useAuth()
