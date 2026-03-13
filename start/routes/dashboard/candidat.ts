@@ -8,7 +8,9 @@ const ExerciseResultsController = () => import('#controllers/exercise_results_co
 router
   .group(() => {
     router.get('/', [DashboardController, 'candidatHome'])
-    router.get('/profile', ({ inertia }) => (inertia as any).render('dashboard/CandidatProfile', {}))
+    router.get('/profile', ({ inertia }) =>
+      (inertia as any).render('dashboard/CandidatProfile', {})
+    )
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
     router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
     router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])

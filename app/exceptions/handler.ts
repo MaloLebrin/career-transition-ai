@@ -13,7 +13,9 @@ const DOMAIN_EXCEPTIONS = [
   InvalidCredentialsException,
 ]
 
-function isDomainException(error: unknown): error is InstanceType<(typeof DOMAIN_EXCEPTIONS)[number]> {
+function isDomainException(
+  error: unknown
+): error is InstanceType<(typeof DOMAIN_EXCEPTIONS)[number]> {
   return DOMAIN_EXCEPTIONS.some((C) => error instanceof C)
 }
 

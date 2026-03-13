@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react'
-import { Employee, Experience, Education, Skill } from '../../types'
+import React, { useRef, useState } from 'react'
 import { extractCVData } from '../../services/geminiService'
+import { Employee, Skill } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'

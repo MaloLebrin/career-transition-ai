@@ -11,7 +11,7 @@ export async function sendOnboardingEmail(
   baseUrl: string
 ): Promise<void> {
   const link = `${baseUrl}/onboarding/${token.token}`
-  // eslint-disable-next-line no-console
+
   console.info('[Onboarding] Invitation link for %s: %s', user.email, link)
   // TODO: use Mail.send(new OnboardingMail(user, link))
 }

@@ -8,7 +8,21 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class AppointmentSchema extends BaseModel {
-  static $columns = ['advisorId', 'createdAt', 'deletedAt', 'employeeId', 'endedAt', 'id', 'locationOrLink', 'notes', 'organizationId', 'scheduledAt', 'status', 'type', 'updatedAt'] as const
+  static $columns = [
+    'advisorId',
+    'createdAt',
+    'deletedAt',
+    'employeeId',
+    'endedAt',
+    'id',
+    'locationOrLink',
+    'notes',
+    'organizationId',
+    'scheduledAt',
+    'status',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = AppointmentSchema.$columns
   @column()
   declare advisorId: number | null
@@ -39,7 +53,21 @@ export class AppointmentSchema extends BaseModel {
 }
 
 export class BulkJobSchema extends BaseModel {
-  static $columns = ['createdAt', 'errorMessage', 'finishedAt', 'id', 'meta', 'organizationId', 'queueJobId', 'scope', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'createdAt',
+    'errorMessage',
+    'finishedAt',
+    'id',
+    'meta',
+    'organizationId',
+    'queueJobId',
+    'scope',
+    'startedAt',
+    'status',
+    'type',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = BulkJobSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -70,7 +98,19 @@ export class BulkJobSchema extends BaseModel {
 }
 
 export class EducationSchema extends BaseModel {
-  static $columns = ['createdAt', 'degree', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'school', 'sortOrder', 'startDate', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'degree',
+    'description',
+    'employeeId',
+    'endDate',
+    'id',
+    'isCurrent',
+    'school',
+    'sortOrder',
+    'startDate',
+    'updatedAt',
+  ] as const
   $columns = EducationSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -114,7 +154,24 @@ export class EmployeeSkillSchema extends BaseModel {
 }
 
 export class EmployeeSchema extends BaseModel {
-  static $columns = ['advisorId', 'advisorNotes', 'createdAt', 'currentRole', 'deletedAt', 'email', 'id', 'name', 'nextAppointment', 'onboarded', 'organizationId', 'status', 'summary', 'targetRole', 'updatedAt', 'userId'] as const
+  static $columns = [
+    'advisorId',
+    'advisorNotes',
+    'createdAt',
+    'currentRole',
+    'deletedAt',
+    'email',
+    'id',
+    'name',
+    'nextAppointment',
+    'onboarded',
+    'organizationId',
+    'status',
+    'summary',
+    'targetRole',
+    'updatedAt',
+    'userId',
+  ] as const
   $columns = EmployeeSchema.$columns
   @column()
   declare advisorId: number | null
@@ -151,7 +208,19 @@ export class EmployeeSchema extends BaseModel {
 }
 
 export class ExerciseResultSchema extends BaseModel {
-  static $columns = ['createdAt', 'data', 'date', 'duration', 'employeeId', 'id', 'qualitativeAnalysis', 'quantitativeScore', 'status', 'type', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'data',
+    'date',
+    'duration',
+    'employeeId',
+    'id',
+    'qualitativeAnalysis',
+    'quantitativeScore',
+    'status',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = ExerciseResultSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -178,7 +247,20 @@ export class ExerciseResultSchema extends BaseModel {
 }
 
 export class ExperienceSchema extends BaseModel {
-  static $columns = ['company', 'createdAt', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'sortOrder', 'startDate', 'title', 'type', 'updatedAt'] as const
+  static $columns = [
+    'company',
+    'createdAt',
+    'description',
+    'employeeId',
+    'endDate',
+    'id',
+    'isCurrent',
+    'sortOrder',
+    'startDate',
+    'title',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = ExperienceSchema.$columns
   @column()
   declare company: string
@@ -207,7 +289,19 @@ export class ExperienceSchema extends BaseModel {
 }
 
 export class FileSchema extends BaseModel {
-  static $columns = ['createdAt', 'deletedAt', 'employeeId', 'id', 'mimeType', 'name', 'organizationId', 'path', 'size', 'type', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'deletedAt',
+    'employeeId',
+    'id',
+    'mimeType',
+    'name',
+    'organizationId',
+    'path',
+    'size',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = FileSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -251,7 +345,15 @@ export class OnboardingTokenSchema extends BaseModel {
 }
 
 export class OrganizationSchema extends BaseModel {
-  static $columns = ['createdAt', 'deletedAt', 'id', 'logoUrl', 'name', 'slug', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'deletedAt',
+    'id',
+    'logoUrl',
+    'name',
+    'slug',
+    'updatedAt',
+  ] as const
   $columns = OrganizationSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -270,7 +372,18 @@ export class OrganizationSchema extends BaseModel {
 }
 
 export class QueueJobSchema extends BaseModel {
-  static $columns = ['acquiredAt', 'data', 'error', 'executeAt', 'finishedAt', 'id', 'queue', 'score', 'status', 'workerId'] as const
+  static $columns = [
+    'acquiredAt',
+    'data',
+    'error',
+    'executeAt',
+    'finishedAt',
+    'id',
+    'queue',
+    'score',
+    'status',
+    'workerId',
+  ] as const
   $columns = QueueJobSchema.$columns
   @column()
   declare acquiredAt: bigint | number | null
@@ -295,7 +408,22 @@ export class QueueJobSchema extends BaseModel {
 }
 
 export class QueueScheduleSchema extends BaseModel {
-  static $columns = ['createdAt', 'cronExpression', 'everyMs', 'fromDate', 'id', 'lastRunAt', 'name', 'nextRunAt', 'payload', 'runCount', 'runLimit', 'status', 'timezone', 'toDate'] as const
+  static $columns = [
+    'createdAt',
+    'cronExpression',
+    'everyMs',
+    'fromDate',
+    'id',
+    'lastRunAt',
+    'name',
+    'nextRunAt',
+    'payload',
+    'runCount',
+    'runLimit',
+    'status',
+    'timezone',
+    'toDate',
+  ] as const
   $columns = QueueScheduleSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -328,7 +456,16 @@ export class QueueScheduleSchema extends BaseModel {
 }
 
 export class SkillSchema extends BaseModel {
-  static $columns = ['category', 'createdAt', 'deletedAt', 'id', 'name', 'organizationId', 'slug', 'updatedAt'] as const
+  static $columns = [
+    'category',
+    'createdAt',
+    'deletedAt',
+    'id',
+    'name',
+    'organizationId',
+    'slug',
+    'updatedAt',
+  ] as const
   $columns = SkillSchema.$columns
   @column()
   declare category: string | null
@@ -349,7 +486,19 @@ export class SkillSchema extends BaseModel {
 }
 
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = ['associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'id', 'notes', 'sortOrder', 'title', 'updatedAt'] as const
+  static $columns = [
+    'associatedExercise',
+    'completed',
+    'createdAt',
+    'description',
+    'dueDate',
+    'employeeId',
+    'id',
+    'notes',
+    'sortOrder',
+    'title',
+    'updatedAt',
+  ] as const
   $columns = SupportPlanStepSchema.$columns
   @column()
   declare associatedExercise: string | null
@@ -376,7 +525,17 @@ export class SupportPlanStepSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'deletedAt', 'email', 'id', 'name', 'organizationId', 'password', 'role', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'deletedAt',
+    'email',
+    'id',
+    'name',
+    'organizationId',
+    'password',
+    'role',
+    'updatedAt',
+  ] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

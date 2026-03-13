@@ -1,10 +1,7 @@
 import { USERS_ROLES } from '#models/user'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
-import {
-  buildDossierArchive,
-  dossierZipFilename,
-} from '#services/dossier_export_service'
+import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { createEmployeeValidator } from '#validators/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee_update_validator'
@@ -51,8 +48,7 @@ export default class EmployeesController {
     const organizationId = user?.organizationId ?? null
     const requestedId = Number(params.id)
 
-    const isSelfRequest =
-      user?.role === USERS_ROLES.EMPLOYEE && user.id === requestedId
+    const isSelfRequest = user?.role === USERS_ROLES.EMPLOYEE && user.id === requestedId
 
     const employeeQuery = Employee.query()
       .if(
@@ -257,10 +253,7 @@ export default class EmployeesController {
 
     const filename = dossierZipFilename(employee.name)
     ctx.response.header('Content-Type', 'application/zip')
-    ctx.response.header(
-      'Content-Disposition',
-      `attachment; filename="${filename}"`
-    )
+    ctx.response.header('Content-Disposition', `attachment; filename="${filename}"`)
     const archive = await buildDossierArchive(employee)
     ctx.response.stream(archive)
   }

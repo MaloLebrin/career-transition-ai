@@ -11,13 +11,12 @@ afterEach(() => {
 // Provide browser APIs that are missing in jsdom but used by the UI
 if (!('IntersectionObserver' in globalThis)) {
   class IntersectionObserverStub {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(_callback: any, _options?: any) {}
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+
     observe() {}
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+
     unobserve() {}
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+
     disconnect() {}
   }
 

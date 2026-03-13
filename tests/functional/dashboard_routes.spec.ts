@@ -14,7 +14,9 @@ function baseUrl(): string {
 
 test.group('Dashboard routes (functional)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({ assert }) => {
+  test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({
+    assert,
+  }) => {
     const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
       method: 'POST',
       redirect: 'manual',

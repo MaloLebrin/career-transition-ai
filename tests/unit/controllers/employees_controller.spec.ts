@@ -181,9 +181,7 @@ test.group('EmployeesController.downloadDossier', (group) => {
     assert.isTrue(response.unauthorizedCalled)
   })
 
-  test('returns 404 when employee not found or not in user org', async ({
-    assert,
-  }) => {
+  test('returns 404 when employee not found or not in user org', async ({ assert }) => {
     const orgA = await Organization.create({
       name: 'Org A Dossier',
       slug: `org-a-dossier-${Date.now()}`,
@@ -222,9 +220,7 @@ test.group('EmployeesController.downloadDossier', (group) => {
     assert.isTrue(response.notFoundCalled)
   })
 
-  test('sets zip headers and streams archive when authorized', async ({
-    assert,
-  }) => {
+  test('sets zip headers and streams archive when authorized', async ({ assert }) => {
     const org = await Organization.create({
       name: 'Org Dossier Export',
       slug: `org-dossier-export-${Date.now()}`,
@@ -256,10 +252,7 @@ test.group('EmployeesController.downloadDossier', (group) => {
     } as any)
 
     assert.equal(response.headers['Content-Type'], 'application/zip')
-    assert.include(
-      response.headers['Content-Disposition'],
-      'attachment'
-    )
+    assert.include(response.headers['Content-Disposition'], 'attachment')
     assert.include(response.headers['Content-Disposition'], 'Dossier_Export_Candidate.zip')
     assert.isDefined(response.streamCalledWith)
     assert.isFunction(response.streamCalledWith?.pipe)

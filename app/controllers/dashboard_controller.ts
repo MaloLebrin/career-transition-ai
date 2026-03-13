@@ -1,5 +1,6 @@
 import Employee from '#models/employee'
 import { USERS_ROLES } from '#models/user'
+import EmployeeTransformer from '#transformers/employee_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
 
 /**
@@ -47,8 +48,8 @@ export default class DashboardController {
       return response.unauthorized()
     }
 
-    return (inertia as any).render('dashboard/CandidatHome', {
-      employee: employee.serialize(),
+    return inertia.render('dashboard/CandidatHome', {
+      employee: EmployeeTransformer.transform(employee),
     })
   }
 }

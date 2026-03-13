@@ -28,7 +28,7 @@ export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
     private employeesService: EmployeesService
-  ) { }
+  ) {}
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -225,14 +225,14 @@ export default class ExerciseResultsController {
     const exerciseTitle = EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
     const resultPayload = latest
       ? {
-        id: latest.id,
-        type: typeParam,
-        date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
-        duration: latest.duration ?? 0,
-        data: latest.data ?? {},
-        quantitativeScore: latest.quantitativeScore ?? 0,
-        qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
-      }
+          id: latest.id,
+          type: typeParam,
+          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+          duration: latest.duration ?? 0,
+          data: latest.data ?? {},
+          quantitativeScore: latest.quantitativeScore ?? 0,
+          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+        }
       : null
     return (inertia as any).render('dashboard/ExerciseResultDetail', {
       employeeId: String(employee.id),
@@ -290,11 +290,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employeeRecord.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employeeRecord.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }
@@ -342,11 +342,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }
@@ -391,11 +391,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }

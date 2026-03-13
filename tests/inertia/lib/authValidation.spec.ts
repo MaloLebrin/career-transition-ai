@@ -92,9 +92,9 @@ describe('authValidation', () => {
       expect(validateRegister({ ...valid, password: '12345' }).password).toContain('6')
     })
 
-    test("returns error when organization name is empty", () => {
+    test('returns error when organization name is empty', () => {
       expect(validateRegister({ ...valid, organizationName: '' }).organizationName).toBe(
-        "Le nom de l’organisation est requis."
+        'Le nom de l’organisation est requis.'
       )
     })
 

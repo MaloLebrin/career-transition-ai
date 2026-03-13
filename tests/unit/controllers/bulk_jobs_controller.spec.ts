@@ -1,11 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import BulkJobsController from '#controllers/bulk_jobs_controller'
-import BulkJob, {
-  BULK_JOB_SCOPES,
-  BULK_JOB_STATUSES,
-  BULK_JOB_TYPES,
-} from '#models/bulk_job'
+import BulkJob, { BULK_JOB_SCOPES, BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#models/bulk_job'
 import Organization from '#models/organization'
 import User, { USERS_ROLES } from '#models/user'
 import { QueueManager } from '@adonisjs/queue'
@@ -114,4 +110,3 @@ test.group('BulkJobsController.storeEmails', (group) => {
     })
   })
 })
-

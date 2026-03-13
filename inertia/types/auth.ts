@@ -5,4 +5,3 @@ export interface UserSession {
   name: string
   role: 'advisor' | 'employee' | 'admin' | 'super_admin'
 }
-

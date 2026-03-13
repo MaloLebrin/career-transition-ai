@@ -1,8 +1,9 @@
-import AppLink from '../ui/AppLink'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
+import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
+
 export default function EmployeeHome() {
   const { user } = useAuth()
   const targetId = user?.id || '1'
@@ -50,19 +51,17 @@ export default function EmployeeHome() {
               {selectedEmployee.plan.map((step, idx) => (
                 <div key={step.id} className="relative flex items-start group">
                   <div
-                    className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
-                      step.completed
+                    className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${step.completed
                         ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
                         : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
-                    }`}
+                      }`}
                   >
                     {step.completed ? '✓' : idx + 1}
                   </div>
                   <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
                     <h4
-                      className={`font-bold text-xl ${
-                        step.completed ? 'text-brand-navy/40' : 'text-brand-navy'
-                      }`}
+                      className={`font-bold text-xl ${step.completed ? 'text-brand-navy/40' : 'text-brand-navy'
+                        }`}
                     >
                       {step.title}
                     </h4>
@@ -89,8 +88,8 @@ export default function EmployeeHome() {
                           }
                         >
                           Démarrer
-</Button>
-                    </AppLink>
+                        </Button>
+                      </AppLink>
                     )}
                   </div>
                 </div>

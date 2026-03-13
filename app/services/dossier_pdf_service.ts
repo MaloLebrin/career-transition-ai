@@ -34,7 +34,12 @@ const EXERCISE_TYPE_LABELS: Record<string, string> = {
   skill_mapping: 'Cartographie des compétences',
 }
 
-function wrapText(text: string, maxWidth: number, font: { widthOfTextAtSize: (t: string, s: number) => number }, size: number): string[] {
+function wrapText(
+  text: string,
+  maxWidth: number,
+  font: { widthOfTextAtSize: (t: string, s: number) => number },
+  size: number
+): string[] {
   const lines: string[] = []
   const words = text.replace(/\s+/g, ' ').trim().split(' ')
   let current = ''
@@ -54,8 +59,7 @@ function wrapText(text: string, maxWidth: number, font: { widthOfTextAtSize: (t:
 
 function getSkills(employee: Employee): Array<{ name: string; level: number }> {
   return (employee.skills || []).map((s) => {
-    const level =
-      Number((s as unknown as { $extras?: { level?: number } }).$extras?.level) || 3
+    const level = Number((s as unknown as { $extras?: { level?: number } }).$extras?.level) || 3
     const bounded = Number.isNaN(level) ? 3 : Math.min(5, Math.max(1, level))
     return { name: s.name, level: bounded }
   })
@@ -76,7 +80,10 @@ export async function generateProfilPdf(employee: Employee): Promise<Buffer> {
     }
   }
 
-  const drawLine = (text: string, opts: { indent?: number; size?: number; color?: ReturnType<typeof rgb> } = {}) => {
+  const drawLine = (
+    text: string,
+    opts: { indent?: number; size?: number; color?: ReturnType<typeof rgb> } = {}
+  ) => {
     ensureSpace(LINE_HEIGHT)
     const size = opts.size ?? BODY_SIZE
     const color = opts.color ?? COLORS.navy
@@ -161,7 +168,9 @@ export async function generateProfilPdf(employee: Employee): Promise<Buffer> {
     drawSectionTitle('Expériences')
     for (const e of experiences) {
       ensureSpace(LINE_HEIGHT * 3)
-      const dates = e.endDate ? `${e.startDate} – ${e.endDate}` : e.startDate + (e.isCurrent ? ' – à ce jour' : '')
+      const dates = e.endDate
+        ? `${e.startDate} – ${e.endDate}`
+        : e.startDate + (e.isCurrent ? ' – à ce jour' : '')
       drawLine(`${e.title}`, { indent: 0 })
       drawLine(`${e.company} · ${dates}`, { indent: 12, color: COLORS.gray, size: SMALL_SIZE })
       if (e.description) {
@@ -178,7 +187,9 @@ export async function generateProfilPdf(employee: Employee): Promise<Buffer> {
     drawSectionTitle('Formations')
     for (const e of educations) {
       ensureSpace(LINE_HEIGHT * 3)
-      const dates = e.endDate ? `${e.startDate} – ${e.endDate}` : e.startDate + (e.isCurrent ? ' – en cours' : '')
+      const dates = e.endDate
+        ? `${e.startDate} – ${e.endDate}`
+        : e.startDate + (e.isCurrent ? ' – en cours' : '')
       drawLine(`${e.degree}`, { indent: 0 })
       drawLine(`${e.school} · ${dates}`, { indent: 12, color: COLORS.gray, size: SMALL_SIZE })
       if (e.description) {
@@ -250,7 +261,9 @@ export async function generateResultPdf(result: ExerciseResult): Promise<Buffer>
 
   const meta: string[] = []
   if (result.date) {
-    meta.push(DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date))
+    meta.push(
+      DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date)
+    )
   }
   if (result.duration != null) meta.push(`${result.duration} min`)
   if (result.quantitativeScore != null) meta.push(`Score : ${result.quantitativeScore}`)

@@ -24,7 +24,9 @@ export function useExercises(
   const [isSavingDraft, setIsSavingDraft] = useState(false)
   const basePath =
     options?.exercisesBasePath ??
-    (employee ? `/dashboard/conseiller/employees/${employee.id}/exercises` : '/dashboard/candidat/exercises')
+    (employee
+      ? `/dashboard/conseiller/employees/${employee.id}/exercises`
+      : '/dashboard/candidat/exercises')
 
   const loadDraft = useCallback(
     async (type: ExerciseType) => {
@@ -116,15 +118,17 @@ export function useExercises(
           data,
           quantitativeScore: quantScore,
           qualitativeAnalysis: analysis,
-          plan: employee.plan.map((step) =>
-            step.associatedExercise === type
-              ? { ...step, completed: true, lastUpdated: now }
-              : step
-          ).map((step) => ({
-            id: step.id,
-            completed: step.completed,
-            lastUpdated: step.lastUpdated,
-          })),
+          plan: employee.plan
+            .map((step) =>
+              step.associatedExercise === type
+                ? { ...step, completed: true, lastUpdated: now }
+                : step
+            )
+            .map((step) => ({
+              id: step.id,
+              completed: step.completed,
+              lastUpdated: step.lastUpdated,
+            })),
         })
       }
       onComplete()
