@@ -13,11 +13,12 @@ export type ScannedRoutes = {
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
-    'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
+    'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
@@ -67,6 +68,7 @@ export type ScannedRoutes = {
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
     'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
@@ -90,6 +92,7 @@ export type ScannedRoutes = {
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
     'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }

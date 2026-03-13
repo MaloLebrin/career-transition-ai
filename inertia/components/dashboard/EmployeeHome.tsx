@@ -1,15 +1,14 @@
-import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/use_employee'
+import { EmployeeData } from '../../types/Employee'
 import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
-export default function EmployeeHome() {
-  const { user } = useAuth()
-  const targetId = user?.id || '1'
-  const { employee: selectedEmployee } = useEmployee(targetId)
-
-  if (!selectedEmployee) {
+export default function EmployeeHome({
+  employee,
+}: {
+  employee: EmployeeData
+}) {
+  if (!employee) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
@@ -23,11 +22,11 @@ export default function EmployeeHome() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-brand-sage/10 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Hello, {selectedEmployee.name.split(' ')[0]} 🚀
+            Hello, {employee.name.split(' ')[0]} 🚀
           </h2>
           <p className="text-white/60 text-lg opacity-90 max-w-xl">
             Votre transition vers{' '}
-            <span className="text-white font-bold">{selectedEmployee.targetRole}</span> est boostée
+            <span className="text-white font-bold">{employee.targetRole}</span> est boostée
             à l'IA.
           </p>
           <AppLink href="/dashboard/candidat/profile">
@@ -48,12 +47,12 @@ export default function EmployeeHome() {
               Ma Feuille de Route
             </h3>
             <div className="space-y-10">
-              {selectedEmployee.plan.map((step, idx) => (
+              {employee.plan.map((step, idx) => (
                 <div key={step.id} className="relative flex items-start group">
                   <div
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${step.completed
-                        ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
-                        : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
+                      ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
+                      : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
                       }`}
                   >
                     {step.completed ? '✓' : idx + 1}
@@ -106,13 +105,13 @@ export default function EmployeeHome() {
           </Card>
         </div>
         <div className="lg:col-span-4 space-y-8">
-          {selectedEmployee.advisorNotes && (
+          {employee.advisorNotes && (
             <div className="bg-brand-sage/5 p-8 rounded-[40px] border border-brand-sage/10 shadow-sm">
               <h3 className="text-sm font-bold text-brand-sage uppercase tracking-widest mb-4">
                 Conseils Expert
               </h3>
               <p className="text-brand-navy/80 text-sm font-medium italic">
-                &quot;{selectedEmployee.advisorNotes}&quot;
+                &quot;{employee.advisorNotes}&quot;
               </p>
             </div>
           )}
@@ -121,7 +120,7 @@ export default function EmployeeHome() {
               Expertises
             </h3>
             <div className="space-y-4">
-              {selectedEmployee.skills.slice(0, 5).map((s, i) => (
+              {employee.skills.slice(0, 5).map((s, i) => (
                 <div key={i} className="space-y-1.5">
                   <div className="flex justify-between text-[10px] font-bold text-brand-navy/60 uppercase">
                     <span>{s.name}</span>
