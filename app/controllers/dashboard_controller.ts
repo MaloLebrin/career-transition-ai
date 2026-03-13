@@ -48,7 +48,7 @@ export default class DashboardController {
       return response.unauthorized()
     }
 
-    return inertia.render('dashboard/CandidatHome', {
+    return (inertia as any).render('dashboard/CandidatHome', {
       employee: EmployeeTransformer.transform(employee),
     })
   }
