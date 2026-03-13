@@ -52,4 +52,35 @@ export default class DashboardController {
       employee: EmployeeTransformer.transform(employee),
     })
   }
+
+  /**
+   * Candidat dashboard onboarding (Inertia).
+   */
+  public async candidatOnboarding({ inertia, auth, response }: HttpContext) {
+    const user = auth.user
+    if (!user) {
+      return response.unauthorized()
+    }
+
+    const employee = await Employee.query()
+      .where('user_id', user.id)
+      .preload('skills')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('experiences')
+      .preload('educations')
+      .first()
+
+    if (!employee) {
+      return response.unauthorized()
+    }
+
+    if (employee.onboarded) {
+      return response.redirect('/dashboard/candidat')
+    }
+
+    return (inertia as any).render('dashboard/CandidatOnboarding', {
+      employee: EmployeeTransformer.transform(employee),
+    })
+  }
 }
