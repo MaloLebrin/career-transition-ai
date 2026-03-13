@@ -1,3 +1,4 @@
+import Employee from '#models/employee'
 import { USERS_ROLES } from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -27,7 +28,27 @@ export default class DashboardController {
   /**
    * Candidat dashboard home (Inertia).
    */
-  public async candidatHome({ inertia }: HttpContext) {
-    return (inertia as any).render('dashboard/CandidatHome', {})
+  public async candidatHome({ inertia, auth, response }: HttpContext) {
+    const user = auth.user
+    if (!user) {
+      return response.unauthorized()
+    }
+
+    const employee = await Employee.query()
+      .where('user_id', user.id)
+      .preload('skills')
+      .preload('exerciseResults')
+      .preload('supportPlanSteps')
+      .preload('experiences')
+      .preload('educations')
+      .first()
+
+    if (!employee) {
+      return response.unauthorized()
+    }
+
+    return (inertia as any).render('dashboard/CandidatHome', {
+      employee: employee.serialize(),
+    })
   }
 }
