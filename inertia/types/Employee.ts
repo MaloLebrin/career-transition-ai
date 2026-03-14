@@ -72,5 +72,7 @@ export type EmployeeData = {
     institution: string
     startDate: string
     endDate: string | null
+    description: string
   }>
+  // TODO: use model types to generate this type
 }

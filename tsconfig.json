@@ -8,7 +8,8 @@
       "#validators/*": ["./app/validators/*"],
       "#dtos/*": ["./app/dtos/*"],
       "#controllers/*": ["./app/controllers/*"],
-      "#jobs/*": ["./app/jobs/*"]
+      "#jobs/*": ["./app/jobs/*"],
+      "#shared/*": ["./shared/*"]
     },
     "rootDir": "./",
     "outDir": "./build",
