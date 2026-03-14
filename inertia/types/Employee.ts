@@ -1,3 +1,4 @@
+import { ExperienceType } from '../../app/models/experience'
 import { Education } from './Education'
 import { ExerciseResult } from './ExerciseResult'
 import { Experience } from './Experience'
@@ -65,6 +66,9 @@ export type EmployeeData = {
     startDate: string
     endDate: string | null
     description: string
+    type: ExperienceType | null
+    isCurrent: boolean | null
+    sortOrder: number | null
   }>
   educations: Array<{
     id: number
