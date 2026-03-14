@@ -13,6 +13,7 @@ export type ScannedRoutes = {
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
@@ -66,6 +67,7 @@ export type ScannedRoutes = {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
@@ -90,6 +92,7 @@ export type ScannedRoutes = {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }

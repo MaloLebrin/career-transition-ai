@@ -15,8 +15,6 @@ interface EmployeeProfileProps {
 export default function EmployeeProfile({ employeeId, employee }: EmployeeProfileProps) {
   const backHref = `/dashboard/conseiller/employees/${employeeId}`
 
-  console.log(employee, 'employee')
-
   if (!employee) {
     return (
       <DashboardLayout selectedEmployeeId={employeeId}>

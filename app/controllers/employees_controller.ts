@@ -1,6 +1,6 @@
-import { USERS_ROLES } from '#models/user'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
+import { USERS_ROLES } from '#models/user'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { createEmployeeValidator } from '#validators/employee_create_validator'
@@ -10,7 +10,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EmployeesController {
-  constructor(private employeesService: EmployeesService) {}
+  constructor(private employeesService: EmployeesService) { }
 
   /**
    * JSON API: list employees visible to current user.
@@ -210,7 +210,7 @@ export default class EmployeesController {
     }
 
     const employeeQuery = Employee.query()
-      .where('id', Number(ctx.params.id))
+      .where('user_id', user.id)
       .where('organizationId', user.organizationId)
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
@@ -222,8 +222,10 @@ export default class EmployeesController {
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)
 
+    console.log(data, 'data')
+
     return (ctx.inertia as any).render('dashboard/EmployeeProfile', {
-      employeeId: String(employee.id),
+      employeeId: employee.id,
       employee: data,
     })
   }
