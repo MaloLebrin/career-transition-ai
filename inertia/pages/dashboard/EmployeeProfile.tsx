@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
+import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/ExperiencesCard'
-import { Skills } from '~/components/landing/floating-popups'
 import { EmployeeData } from '~/types'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import AppLink from '../../components/ui/AppLink'
@@ -13,8 +13,6 @@ interface EmployeeProfileProps {
 }
 
 export default function EmployeeProfile({ employeeId, employee }: EmployeeProfileProps) {
-  const backHref = `/dashboard/conseiller/employees/${employeeId}`
-
   if (!employee) {
     return (
       <DashboardLayout selectedEmployeeId={employeeId}>
@@ -29,7 +27,7 @@ export default function EmployeeProfile({ employeeId, employee }: EmployeeProfil
     <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`Profil - ${employee.name}`} />
       <div className="animate-fadeIn max-w-4xl mx-auto space-y-10">
-        <AppLink href={backHref} className="inline-flex items-center gap-2 text-brand-navy/70 hover:text-brand-navy text-sm font-medium transition-colors">
+        <AppLink href="/dashboard/candidat" className="inline-flex items-center gap-2 text-brand-navy/70 hover:text-brand-navy text-sm font-medium transition-colors">
           <span>←</span>
           <span>Retour à la fiche candidat</span>
         </AppLink>
