@@ -1,7 +1,7 @@
+import { type EmployeeStatus } from '#shared/constants/employee'
 import { type ExperienceType } from '#shared/constants/experience'
 import { Education } from './Education'
 import { ExerciseResult } from './ExerciseResult'
-import { type EmployeeStatus } from '#shared/constants/employee'
 import { Experience } from './Experience'
 import { Skill } from './Skill'
 import { SupportPlanStep } from './SupportPlanStep'
@@ -76,10 +76,12 @@ export type EmployeeData = {
   educations: Array<{
     id: number
     degree: string
-    institution: string
+    school: string
     startDate: string
     endDate: string | null
     description: string
+    isCurrent: boolean | null
+    sortOrder: number | null
   }>
   // TODO: use model types to generate this type
 }
