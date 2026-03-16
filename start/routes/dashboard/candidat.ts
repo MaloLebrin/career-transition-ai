@@ -32,6 +32,7 @@ router
     // Routes not requiring onboarding
     router.get('/onboarding', [DashboardController, 'candidatOnboarding'])
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
+    router.put('/skills', [() => import('#controllers/employee_skills_controller')])
   })
   .use([middleware.auth(), middleware.candidate()])
   .prefix('/dashboard/candidat')

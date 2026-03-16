@@ -1,13 +1,13 @@
-import { DateTime } from 'luxon'
-import Employee from '#models/employee'
-import { EmployeeStatus } from '#shared/constants/employee'
-import User from '#models/user'
-import OnboardingToken from '#models/onboarding_token'
-import hash from '@adonisjs/core/services/hash'
-import { mapEmployee } from '#mappers/employee_mapper'
 import type { EmployeeDto } from '#dtos/employee_dto'
+import { mapEmployee } from '#mappers/employee_mapper'
+import Employee from '#models/employee'
+import OnboardingToken from '#models/onboarding_token'
+import User from '#models/user'
 import { sendOnboardingEmail } from '#services/onboarding_notify_service'
+import { EmployeeStatus } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/constants/user'
+import hash from '@adonisjs/core/services/hash'
+import { DateTime } from 'luxon'
 
 type CreateEmployeeInput = {
   organizationId: number
@@ -114,6 +114,7 @@ export class EmployeesService {
    * Get the employee record linked to the given user (candidate self-service).
    */
   public async getEmployeeForUser(user: User): Promise<Employee> {
+    // TODO: optimise this function
     const employee = await Employee.query()
       .where('userId', user.id)
       .where('organizationId', user.organizationId)

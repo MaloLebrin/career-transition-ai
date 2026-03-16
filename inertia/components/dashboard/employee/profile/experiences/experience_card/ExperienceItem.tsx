@@ -1,16 +1,15 @@
 import { Pencil } from 'lucide-react';
-import { useState } from 'react';
 import { EmployeeData } from '~/types';
 import { formatDate } from '../../../../../../../shared/helpers/date';
 import { ExperienceForm } from '../ExperienceForm';
 
 interface ExperienceItemProps {
   experience: EmployeeData['experiences'][0]
+  isEditing: boolean
+  setIsEditing: (isEditing: boolean) => void
 }
 
-export const ExperienceItem = ({ experience }: ExperienceItemProps) => {
-  const [isEditing, setIsEditing] = useState(false)
-
+export const ExperienceItem = ({ experience, isEditing, setIsEditing }: ExperienceItemProps) => {
   return (
     <li className={`relative pb-10 last:pb-0 border-b border-brand-navy/5 last:border-0 ${!isEditing ? 'flex gap-6 group' : ''}`}>
       {isEditing ? (

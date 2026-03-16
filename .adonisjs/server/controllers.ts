@@ -8,10 +8,12 @@ export const controllers = {
   BulkJobs: () => import('#controllers/bulk_jobs_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),
+  EmployeeSkills: () => import('#controllers/employee_skills_controller'),
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
+  Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
 }
