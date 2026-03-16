@@ -8,7 +8,7 @@ export const updateEducationValidator = vine.create({
   startDate: vine
     .date()
     .before('today')
-    .transform((value) => (value ? DateTime.fromJSDate(value) : null)),
+    .transform((value) => DateTime.fromJSDate(value)),
   endDate: vine
     .date()
     .afterField('startDate')
