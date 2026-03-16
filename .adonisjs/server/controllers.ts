@@ -9,6 +9,7 @@ export const controllers = {
   Dashboard: () => import('#controllers/dashboard_controller'),
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
+  Experiences: () => import('#controllers/experiences_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),

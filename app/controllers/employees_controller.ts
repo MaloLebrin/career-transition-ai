@@ -222,8 +222,6 @@ export default class EmployeesController {
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)
 
-    console.log(data, 'data')
-
     return (ctx.inertia as any).render('dashboard/EmployeeProfile', {
       employeeId: employee.id,
       employee: data,
