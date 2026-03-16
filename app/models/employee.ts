@@ -1,3 +1,4 @@
+import type { EmployeeStatus } from '#shared/constants/employee'
 import Appointment from '#models/appointment'
 import Education from '#models/education'
 import Experience from '#models/experience'
@@ -10,16 +11,6 @@ import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/luc
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import ExerciseResult from './exercise_result.js'
-
-export const EMPLOYEES_STATUS = {
-  ACTIVE: 'active',
-  completed: 'completed',
-  ON_HOLD: 'on-hold',
-} as const
-
-export type EmployeeStatus = (typeof EMPLOYEES_STATUS)[keyof typeof EMPLOYEES_STATUS]
-
-export const employeeStatusValues = Object.values(EMPLOYEES_STATUS)
 
 export default class Employee extends BaseModel {
   static table = 'employees'

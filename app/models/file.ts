@@ -1,20 +1,9 @@
+import type { FileType } from '#shared/constants/file'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-
-export const FILES_TYPES = {
-  CV: 'cv',
-  COVER_LETTER: 'cover_letter',
-  CERTIFICATE: 'certificate',
-  DIPLOMA: 'diploma',
-  OTHER: 'other',
-} as const
-
-export type FileType = (typeof FILES_TYPES)[keyof typeof FILES_TYPES]
-
-export const filesTypesValues = Object.values(FILES_TYPES)
 
 export default class File extends BaseModel {
   // TODO: configure the file driver

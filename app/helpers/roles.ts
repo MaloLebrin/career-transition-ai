@@ -1,5 +1,5 @@
-import type { UserRole } from '#models/user'
-import { USERS_ROLES } from '#models/user'
+import type { UserRole } from '#shared/constants/user'
+import { USERS_ROLES } from '#shared/constants/user'
 
 /**
  * User has admin or super_admin role (organization admin).

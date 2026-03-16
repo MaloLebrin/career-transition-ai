@@ -6,9 +6,14 @@ import { BadgeVariant } from '../../components/ui/Badge'
 import Badge from '../../components/ui/Badge'
 import { useAuth } from '../../hooks/useAuth'
 
-type BulkJobStatus = 'pending' | 'processing' | 'completed' | 'failed'
-type BulkJobType = 'emails' | 'pdfs' | 'mixed'
-type BulkJobScope = 'single' | 'batch' | 'org'
+import {
+  BULK_JOB_SCOPES,
+  BULK_JOB_STATUSES,
+  BULK_JOB_TYPES,
+  type BulkJobScope,
+  type BulkJobStatus,
+  type BulkJobType,
+} from '#shared/constants/bulk_job'
 
 type BulkJobDto = {
   id: number
@@ -24,29 +29,29 @@ type BulkJobDto = {
 }
 
 const STATUS_LABELS: Record<BulkJobStatus, string> = {
-  pending: 'En attente',
-  processing: 'En cours',
-  completed: 'Terminé',
-  failed: 'Erreur',
+  [BULK_JOB_STATUSES.PENDING]: 'En attente',
+  [BULK_JOB_STATUSES.PROCESSING]: 'En cours',
+  [BULK_JOB_STATUSES.COMPLETED]: 'Terminé',
+  [BULK_JOB_STATUSES.FAILED]: 'Erreur',
 }
 
 const STATUS_VARIANTS: Record<BulkJobStatus, BadgeVariant> = {
-  pending: 'slate',
-  processing: 'indigo',
-  completed: 'lime',
-  failed: 'pink',
+  [BULK_JOB_STATUSES.PENDING]: 'slate',
+  [BULK_JOB_STATUSES.PROCESSING]: 'indigo',
+  [BULK_JOB_STATUSES.COMPLETED]: 'lime',
+  [BULK_JOB_STATUSES.FAILED]: 'pink',
 }
 
 const TYPE_LABELS: Record<BulkJobType, string> = {
-  emails: 'Emails',
-  pdfs: 'PDFs',
-  mixed: 'Mixte',
+  [BULK_JOB_TYPES.EMAILS]: 'Emails',
+  [BULK_JOB_TYPES.PDFS]: 'PDFs',
+  [BULK_JOB_TYPES.MIXED]: 'Mixte',
 }
 
 const SCOPE_LABELS: Record<BulkJobScope, string> = {
-  single: 'Individuel',
-  batch: 'Batch',
-  org: 'Organisation',
+  [BULK_JOB_SCOPES.SINGLE]: 'Individuel',
+  [BULK_JOB_SCOPES.BATCH]: 'Batch',
+  [BULK_JOB_SCOPES.ORG]: 'Organisation',
 }
 
 interface BulkJobsProps {

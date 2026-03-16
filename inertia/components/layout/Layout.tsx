@@ -1,3 +1,4 @@
+import { USERS_ROLES, type UserRole } from '#shared/constants/user'
 import React, { useState } from 'react'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -6,8 +7,8 @@ import Logo from '../ui/Logo'
 
 interface LayoutProps {
   children: React.ReactNode
-  userRole: 'advisor' | 'employee' | 'admin' | 'super_admin'
-  onRoleChange: (role: 'advisor' | 'employee') => void
+  userRole: UserRole
+  onRoleChange: (role: UserRole) => void
   onLogout: () => void | Promise<void>
   userName?: string
 }
@@ -46,11 +47,11 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
                   {userName || 'Utilisateur'}
                 </div>
                 <div className="text-[9px] font-bold text-brand-sage uppercase tracking-widest mt-1">
-                  {userRole === 'advisor' && 'Expert Accompagnateur'}
-                  {(userRole === 'admin' || userRole === 'super_admin') && 'Administrateur'}
-                  {userRole === 'employee' && 'Candidat Transition'}
-                  {!['advisor', 'admin', 'super_admin', 'employee'].includes(userRole) &&
-                    'Utilisateur'}
+                  {userRole === USERS_ROLES.ADVISOR && 'Expert Accompagnateur'}
+                  {(userRole === USERS_ROLES.ADMIN || userRole === USERS_ROLES.SUPER_ADMIN) &&
+                    'Administrateur'}
+                  {userRole === USERS_ROLES.EMPLOYEE && 'Candidat Transition'}
+                  {!Object.values(USERS_ROLES).includes(userRole as any) && 'Utilisateur'}
                 </div>
               </div>
               <div className="h-10 w-10 rounded-2xl bg-brand-ivory border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">

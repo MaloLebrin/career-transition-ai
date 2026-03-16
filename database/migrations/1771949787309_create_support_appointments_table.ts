@@ -1,5 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { APPOINTMENTS_STATUSES, appointmentStatusValues } from '../../app/models/appointment.js'
+import { APPOINTMENTS_STATUSES, appointmentStatusValues } from '../../shared/constants/appointment.js'
 
 export default class extends BaseSchema {
   protected tableName = 'appointments'

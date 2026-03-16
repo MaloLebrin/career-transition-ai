@@ -1,6 +1,6 @@
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
-import { USERS_ROLES } from '#models/user'
+import { USERS_ROLES } from '#shared/constants/user'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { createEmployeeValidator } from '#validators/employee_create_validator'

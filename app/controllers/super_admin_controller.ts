@@ -1,5 +1,6 @@
 import Organization from '#models/organization'
 import User from '#models/user'
+import { USERS_ROLES, userRolesValues } from '#shared/constants/user'
 import ExerciseResult from '#models/exercise_result'
 import LogExerciseUsageExport from '#jobs/log_exercise_usage_export'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -267,13 +268,13 @@ export default class SuperAdminController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    if (auth.user.role !== 'super_admin') {
+    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
       return response.forbidden()
     }
 
     const updateRoleValidator = vine.compile(
       vine.object({
-        role: vine.enum(['employee', 'advisor', 'admin', 'super_admin'] as const),
+        role: vine.enum(userRolesValues),
       })
     )
 
@@ -299,7 +300,7 @@ export default class SuperAdminController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    if (auth.user.role !== 'super_admin') {
+    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
       return response.forbidden()
     }
 
@@ -337,7 +338,7 @@ export default class SuperAdminController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    if (auth.user.role !== 'super_admin') {
+    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
       return response.forbidden()
     }
 

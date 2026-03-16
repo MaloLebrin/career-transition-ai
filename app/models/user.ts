@@ -1,3 +1,4 @@
+import type { UserRole } from '#shared/constants/user'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { compose } from '@adonisjs/core/helpers'
 import hash from '@adonisjs/core/services/hash'
@@ -70,14 +71,3 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @hasMany(() => Appointment, { foreignKey: 'advisorId' })
   declare appointments: HasMany<typeof Appointment>
 }
-
-export const USERS_ROLES = {
-  ADVISOR: 'advisor',
-  EMPLOYEE: 'employee',
-  ADMIN: 'admin',
-  SUPER_ADMIN: 'super_admin',
-} as const
-
-export type UserRole = (typeof USERS_ROLES)[keyof typeof USERS_ROLES]
-
-export const userRolesValues = Object.values(USERS_ROLES)

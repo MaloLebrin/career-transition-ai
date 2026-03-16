@@ -1,12 +1,13 @@
 import { DateTime } from 'luxon'
 import Employee from '#models/employee'
+import { EmployeeStatus } from '#shared/constants/employee'
 import User from '#models/user'
 import OnboardingToken from '#models/onboarding_token'
 import hash from '@adonisjs/core/services/hash'
 import { mapEmployee } from '#mappers/employee_mapper'
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { sendOnboardingEmail } from '#services/onboarding_notify_service'
-import { USERS_ROLES } from '#models/user'
+import { USERS_ROLES } from '#shared/constants/user'
 
 type CreateEmployeeInput = {
   organizationId: number
@@ -25,7 +26,7 @@ type CreateEmployeeOptions = {
 
 type UpdateEmployeeInput = {
   advisorNotes?: string
-  status?: Employee['status']
+  status?: EmployeeStatus
   targetRole?: string
   summary?: string
   name?: string

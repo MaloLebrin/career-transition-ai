@@ -1,4 +1,5 @@
-import BulkJob, { BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#models/bulk_job'
+import BulkJob from '#models/bulk_job'
+import { BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#shared/constants/bulk_job'
 import Employee from '#models/employee'
 import { broadcastBulkJobUpdated } from '#services/bulk_job_events_service'
 import logger from '@adonisjs/core/services/logger'

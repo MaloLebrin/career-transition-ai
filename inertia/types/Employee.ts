@@ -1,6 +1,7 @@
-import { ExperienceType } from '../../app/models/experience'
+import { type ExperienceType } from '#shared/constants/experience'
 import { Education } from './Education'
 import { ExerciseResult } from './ExerciseResult'
+import { type EmployeeStatus } from '#shared/constants/employee'
 import { Experience } from './Experience'
 import { Skill } from './Skill'
 import { SupportPlanStep } from './SupportPlanStep'
@@ -18,12 +19,14 @@ export interface Employee {
   advisorNotes?: string
   experiences: Experience[]
   educations: Education[]
-  status: 'active' | 'completed' | 'on-hold'
+  status: EmployeeStatus
   onboarded: boolean
   exercises: ExerciseResult[]
   nextAppointment?: string
   plan: SupportPlanStep[]
 }
+
+export type { EmployeeStatus }
 
 export type EmployeeData = {
   id: number

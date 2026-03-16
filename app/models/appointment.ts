@@ -1,20 +1,10 @@
+import type { AppointmentStatus } from '#shared/constants/appointment'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-
-export const APPOINTMENTS_STATUSES = {
-  SCHEDULED: 'scheduled',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
-  NO_SHOW: 'no_show',
-} as const
-
-export type AppointmentStatus = (typeof APPOINTMENTS_STATUSES)[keyof typeof APPOINTMENTS_STATUSES]
-
-export const appointmentStatusValues = Object.values(APPOINTMENTS_STATUSES)
 
 export default class Appointment extends BaseModel {
   @column({ isPrimary: true })

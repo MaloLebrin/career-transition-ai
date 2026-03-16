@@ -2,11 +2,12 @@ import React, { useMemo, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../hooks/useAuth'
+import { USERS_ROLES, userRolesValues } from '#shared/constants/user'
 import { isSuperAdmin } from '../../helpers/roles'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 
-type UserRole = 'employee' | 'advisor' | 'admin' | 'super_admin'
+import { type UserRole } from '#shared/constants/user'
 
 interface UserItem {
   id: number
@@ -22,10 +23,10 @@ interface UsersAdminProps {
 }
 
 const ROLE_LABELS: Record<UserRole, string> = {
-  employee: 'Employé',
-  advisor: 'Conseiller',
-  admin: 'Admin orga',
-  super_admin: 'Super admin',
+  [USERS_ROLES.EMPLOYEE]: 'Employé',
+  [USERS_ROLES.ADVISOR]: 'Conseiller',
+  [USERS_ROLES.ADMIN]: 'Admin orga',
+  [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
 }
 
 export default function UsersAdmin({ users }: UsersAdminProps) {
@@ -106,10 +107,10 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                 className="border border-brand-navy/10 rounded-xl text-xs px-3 py-2 text-brand-navy/80 bg-white"
               >
                 <option value="all">Tous les rôles</option>
-                <option value="employee">Employé</option>
-                <option value="advisor">Conseiller</option>
-                <option value="admin">Admin orga</option>
-                <option value="super_admin">Super admin</option>
+                <option value={USERS_ROLES.EMPLOYEE}>Employé</option>
+                <option value={USERS_ROLES.ADVISOR}>Conseiller</option>
+                <option value={USERS_ROLES.ADMIN}>Admin orga</option>
+                <option value={USERS_ROLES.SUPER_ADMIN}>Super admin</option>
               </select>
             </div>
           </div>
@@ -153,8 +154,7 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                     <td className="px-6 py-4 text-xs text-brand-navy/80">{ROLE_LABELS[u.role]}</td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
-                        {(['employee', 'advisor', 'admin', 'super_admin'] as UserRole[]).map(
-                          (r) => (
+                        {userRolesValues.map((r) => (
                             <Button
                               key={r}
                               type="button"

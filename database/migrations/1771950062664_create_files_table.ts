@@ -1,5 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { filesTypesValues } from '../../app/models/file.js'
+import { filesTypesValues } from '../../shared/constants/file.js'
 
 export default class extends BaseSchema {
   protected tableName = 'files'

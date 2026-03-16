@@ -1,5 +1,5 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { employeeStatusValues } from '../../app/models/employee.js'
+import { employeeStatusValues } from '../../shared/constants/employee.js'
 
 export default class extends BaseSchema {
   protected tableName = 'employees'

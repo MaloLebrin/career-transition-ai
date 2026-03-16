@@ -1,12 +1,13 @@
-import BulkJob, {
+import BulkJob from '#models/bulk_job'
+import {
   BULK_JOB_SCOPES,
   BULK_JOB_STATUSES,
   BULK_JOB_TYPES,
   type BulkJobScope,
   type BulkJobStatus,
   type BulkJobType,
-} from '#models/bulk_job'
-import { USERS_ROLES } from '#models/user'
+} from '#shared/constants/bulk_job'
+import { USERS_ROLES } from '#shared/constants/user'
 import GenerateBulkPdfs from '#jobs/generate_bulk_pdfs'
 import SendBulkEmails from '#jobs/send_bulk_emails'
 import type { HttpContext } from '@adonisjs/core/http'

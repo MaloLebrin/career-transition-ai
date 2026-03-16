@@ -2,7 +2,7 @@ import hash from '@adonisjs/core/services/hash'
 import type { AdvisorDto, AdvisorRoleDto, OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES } from '#models/user'
+import { USERS_ROLES } from '#shared/constants/user'
 import { randomBytes } from 'node:crypto'
 
 function mapOrganization(org: Organization): OrganizationDto {

@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
@@ -84,9 +85,11 @@ export default function EmployeeProfile({ employeeId, employee }: EmployeeProfil
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">Statut</span>
               <span className="text-brand-navy font-medium">
-                {employee.status === 'active' && 'Actif'}
-                {employee.status === 'completed' && 'Terminé'}
-                {employee.status === 'on-hold' && 'En pause'}
+                {employee.status === EMPLOYEES_STATUS.ACTIVE && 'Actif'}
+                {employee.status === EMPLOYEES_STATUS.COMPLETED && 'Terminé'}
+                {employee.status === EMPLOYEES_STATUS.ON_HOLD && 'En pause'}
+                {employee.status === EMPLOYEES_STATUS.ARCHIVED && 'Archivé'}
+                {employee.status === EMPLOYEES_STATUS.ONBOARDING && 'En onboarding'}
               </span>
             </div>
           </div>
