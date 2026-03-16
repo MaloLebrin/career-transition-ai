@@ -15,7 +15,6 @@ export const experienceCreateValidator = vine.create({
     .transform((value) => DateTime.fromJSDate(value)),
   endDate: vine
     .date()
-    .before('today')
     .afterField('startDate')
     .nullable()
     .transform((value) => (value ? DateTime.fromJSDate(value) : null)),
