@@ -1,9 +1,10 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import hash from '@adonisjs/core/services/hash'
-import { AuthService } from '#services/auth_service'
 import Organization from '#models/organization'
-import User, { USERS_ROLES } from '#models/user'
+import User from '#models/user'
+import { AuthService } from '#services/auth_service'
+import { USERS_ROLES } from '#shared/constants/user'
+import hash from '@adonisjs/core/services/hash'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 
 test.group('AuthService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())

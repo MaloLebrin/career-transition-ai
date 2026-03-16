@@ -1,11 +1,13 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
 import BulkJobsController from '#controllers/bulk_jobs_controller'
-import BulkJob, { BULK_JOB_SCOPES, BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#models/bulk_job'
-import Organization from '#models/organization'
-import User, { USERS_ROLES } from '#models/user'
-import { QueueManager } from '@adonisjs/queue'
 import SendBulkEmails from '#jobs/send_bulk_emails'
+import BulkJob from '#models/bulk_job'
+import Organization from '#models/organization'
+import User from '#models/user'
+import { BULK_JOB_SCOPES, BULK_JOB_STATUSES, BULK_JOB_TYPES } from '#shared/constants/bulk_job'
+import { USERS_ROLES } from '#shared/constants/user'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { QueueManager } from '@adonisjs/queue'
+import { test } from '@japa/runner'
 
 function makeResponse() {
   return {

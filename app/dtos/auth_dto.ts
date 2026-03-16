@@ -1,4 +1,4 @@
-import type { UserRole } from '#models/user'
+import { UserRole } from '#shared/constants/user'
 
 export type UserSessionDto = {
   id: number

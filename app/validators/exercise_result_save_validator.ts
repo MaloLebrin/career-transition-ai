@@ -1,8 +1,8 @@
-import vine from '@vinejs/vine'
 import {
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
-} from '#models/exercise_result'
+} from '#shared/constants/exercises'
+import vine from '@vinejs/vine'
 
 export const saveExerciseResultValidator = vine.create({
   type: vine.enum(exerciceResultTypesValues),

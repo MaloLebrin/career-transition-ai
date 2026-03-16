@@ -1,14 +1,12 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import { DateTime } from 'luxon'
-import { ExerciseResultsService } from '#services/exercise_results_service'
 import Employee from '#models/employee'
+import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
-import ExerciseResult, {
-  EXERCICE_RESULTS_TYPES,
-  exerciceResultStatusValues,
-} from '#models/exercise_result'
+import { ExerciseResultsService } from '#services/exercise_results_service'
+import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 
 test.group('ExerciseResultsService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())

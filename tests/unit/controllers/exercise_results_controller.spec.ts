@@ -1,8 +1,7 @@
-import { test } from '@japa/runner'
 import ExerciseResultsController from '#controllers/exercise_results_controller'
 import { ExerciseResultsService } from '#services/exercise_results_service'
-import { EXERCICE_RESULTS_TYPES } from '#models/exercise_result'
-import { EXERCISE_LIST } from '../../../shared/exercises.js'
+import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
+import { test } from '@japa/runner'
 
 const fakeEmployeesService = { getEmployeeForUser: async () => ({ id: 1 }) } as any
 
@@ -77,7 +76,7 @@ function makeCtx(overrides: any = {}) {
 test.group('ExerciseResultsController.storeFromDashboard', () => {
   test('returns unauthorized when no auth user', async ({ assert }) => {
     const service = {
-      saveResult: async () => {},
+      saveResult: async () => { },
     } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx({ auth: { user: null } })
@@ -88,7 +87,7 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
   })
 
   test('calls service and flashes dynamic success message', async ({ assert }) => {
-    const saveResult = async () => {}
+    const saveResult = async () => { }
     const service = { saveResult } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx()

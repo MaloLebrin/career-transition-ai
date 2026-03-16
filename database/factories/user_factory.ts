@@ -1,4 +1,5 @@
-import User, { UserRole, userRolesValues } from '#models/user'
+import User from '#models/user'
+import { UserRole, userRolesValues } from '#shared/constants/user'
 import hash from '@adonisjs/core/services/hash'
 import factory from '@adonisjs/lucid/factories'
 

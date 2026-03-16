@@ -1,7 +1,7 @@
+import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '../../shared/constants/exercises.js'
 import { ExerciseType } from '../types'
-import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '../../shared/exercises.js'
 
-export type { ExerciseListEntry } from '../../shared/exercises.js'
+export type { ExerciseListEntry } from '../../shared/constants/exercises.js'
 export { EXERCISE_LIST }
 
 /**

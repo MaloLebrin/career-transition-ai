@@ -1,12 +1,10 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import Employee from '#models/employee'
+import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
-import ExerciseResult, {
-  EXERCICE_RESULTS_TYPES,
-  exerciceResultStatusValues,
-} from '#models/exercise_result'
+import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
+import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 
 test.group('dossier_export_service', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())

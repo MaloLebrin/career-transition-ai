@@ -1,9 +1,9 @@
+import { EXERCICE_RESULTS_TYPES, exerciceResultTypesValues } from '#shared/constants/exercises'
 import vine from '@vinejs/vine'
-import { exerciceResultTypesValues } from '#models/exercise_result'
 
 export const saveExerciseDraftValidator = vine.create({
   employeeId: vine.string(),
-  type: vine.enum(exerciceResultTypesValues),
+  type: vine.enum(EXERCICE_RESULTS_TYPES),
   data: vine.object({}).allowUnknownProperties(),
 })
 
