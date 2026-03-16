@@ -1,10 +1,10 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import hash from '@adonisjs/core/services/hash'
-import { OrganizationsService } from '#services/organizations_service'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES } from '#models/user'
+import { OrganizationsService } from '#services/organizations_service'
+import { USERS_ROLES } from '#shared/constants/user'
+import hash from '@adonisjs/core/services/hash'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 
 function uniqueSlug() {
   return `org-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`

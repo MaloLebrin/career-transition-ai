@@ -1,5 +1,5 @@
 import Employee from '#models/employee'
-import { USERS_ROLES } from '#models/user'
+import { USERS_ROLES } from '#shared/constants/user'
 import EmployeeTransformer from '#transformers/employee_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
 

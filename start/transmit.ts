@@ -1,4 +1,4 @@
-import { USERS_ROLES } from '#models/user'
+import { USERS_ROLES } from '#shared/constants/user'
 import transmit from '@adonisjs/transmit/services/main'
 
 // User-specific bulk jobs channel: users/:id/bulk-jobs

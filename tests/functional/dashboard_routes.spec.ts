@@ -1,12 +1,12 @@
-import { test } from '@japa/runner'
-import testUtils from '@adonisjs/core/services/test_utils'
-import app from '@adonisjs/core/services/app'
-import env from '#start/env'
-import { AuthService } from '#services/auth_service'
-import { USERS_ROLES } from '#models/user'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { AuthService } from '#services/auth_service'
+import { USERS_ROLES } from '#shared/constants/user'
+import env from '#start/env'
+import app from '@adonisjs/core/services/app'
+import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 
 function baseUrl(): string {
   return `http://${env.get('HOST')}:${env.get('PORT')}`
