@@ -1,4 +1,6 @@
+import { experiencesTypesValues } from '#models/experience.js'
 import vine from '@vinejs/vine'
+import { DateTime } from 'luxon'
 
 /**
  * Payload for POST /dashboard/employee/profile/experiences (user + linked employee fields).
@@ -6,8 +8,17 @@ import vine from '@vinejs/vine'
 export const experienceCreateValidator = vine.create({
   title: vine.string().trim().minLength(1).maxLength(255),
   company: vine.string().trim().maxLength(255),
-  startDate: vine.date().before('today'),
-  endDate: vine.date().before('today').afterField('startDate').nullable(),
+  type: vine.enum(experiencesTypesValues),
+  startDate: vine
+    .date()
+    .before('today')
+    .transform((value) => DateTime.fromJSDate(value)),
+  endDate: vine
+    .date()
+    .before('today')
+    .afterField('startDate')
+    .nullable()
+    .transform((value) => (value ? DateTime.fromJSDate(value) : null)),
   isCurrent: vine.boolean().nullable(),
   description: vine.string().trim().maxLength(5000).nullable(),
 })
