@@ -1,5 +1,5 @@
+import { experiencesTypesValues } from '#shared/constants/experience'
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { experiencesTypesValues } from '../../app/models/experience.js'
 
 export default class extends BaseSchema {
   protected tableName = 'experiences'

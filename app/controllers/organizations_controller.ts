@@ -1,13 +1,13 @@
+import Organization from '#models/organization'
 import { OrganizationsService } from '#services/organizations_service'
-import { inviteAdvisorValidator } from '#validators/invite_advisor_validator'
-import { updateOrganizationValidator } from '#validators/organization_update_validator'
+import { updateOrganizationValidator } from '#validators/organization/organization_update_validator.js'
+import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator.js'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import Organization from '#models/organization'
 
 @inject()
 export default class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(private organizationsService: OrganizationsService) { }
 
   /** Returns the authenticated user's organization (no id in URL). */
   public async current({ auth, response }: HttpContext) {

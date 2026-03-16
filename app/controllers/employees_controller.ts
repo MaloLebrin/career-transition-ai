@@ -1,10 +1,10 @@
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
-import { USERS_ROLES } from '#shared/constants/user'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
-import { createEmployeeValidator } from '#validators/employee_create_validator'
-import { updateEmployeeValidator } from '#validators/employee_update_validator'
+import { USERS_ROLES } from '#shared/constants/user'
+import { createEmployeeValidator } from '#validators/employee/employee_create_validator.js'
+import { updateEmployeeValidator } from '#validators/employee/employee_update_validator.js'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 

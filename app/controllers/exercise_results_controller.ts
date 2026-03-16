@@ -2,14 +2,14 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
+import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import {
   fetchExerciseDraftValidator,
   saveExerciseDraftValidator,
-} from '#validators/exercise_draft_validator'
-import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
+} from '#validators/exercise/exercise_draft_validator.js'
+import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator.js'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
-import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '../../shared/constants/exercises'
 
 /** Map exercise type (slug) to dedicated Inertia page. Unknown type falls back to dashboard/Exercise. */
 const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {

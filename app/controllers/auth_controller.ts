@@ -1,9 +1,9 @@
 import { AuthService } from '#services/auth_service'
 import { EmployeesService } from '#services/employees_service'
-import { loginValidator } from '#validators/auth_login_validator'
-import { registerValidator } from '#validators/auth_register_validator'
-import { candidatProfileUpdateValidator } from '#validators/candidat_profile_update_validator'
-import { userProfileUpdateValidator } from '#validators/user_profile_update_validator'
+import { loginValidator } from '#validators/auth/auth_login_validator.js'
+import { registerValidator } from '#validators/auth/auth_register_validator.js'
+import { candidatProfileUpdateValidator } from '#validators/profile/candidat_profile_update_validator.js'
+import { userProfileUpdateValidator } from '#validators/user/user_profile_update_validator.js'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -12,7 +12,7 @@ export default class AuthController {
   constructor(
     private authService: AuthService,
     private employeesService: EmployeesService
-  ) {}
+  ) { }
 
   public async me({ auth, response }: HttpContext) {
     if (!auth.user) {
