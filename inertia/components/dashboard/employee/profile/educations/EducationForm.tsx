@@ -12,6 +12,7 @@ interface EducationFormProps {
 
 export const EducationForm = ({ education, onCancel, onSuccess }: EducationFormProps) => {
   const { data, setData, post, put, processing, errors, isDirty } = useForm({
+    id: education.id,
     degree: education.degree,
     school: education.school,
     startDate: education.startDate,
@@ -19,6 +20,8 @@ export const EducationForm = ({ education, onCancel, onSuccess }: EducationFormP
     description: education.description,
     isCurrent: education.isCurrent,
   })
+
+  console.log(data, 'data')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

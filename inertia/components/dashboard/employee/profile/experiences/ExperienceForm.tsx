@@ -29,7 +29,6 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
       put(`/dashboard/candidat/experiences`, {
         onSuccess: () => onSuccess?.(),
       });
-    } else {
       post('/dashboard/candidat/experiences', {
         onSuccess: () => onSuccess?.(),
       });
