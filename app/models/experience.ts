@@ -1,21 +1,8 @@
+import { ExperienceType } from '#shared/constants/experience'
 import Employee from '#models/employee'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-
-export const EXPERIENCES_TYPES = {
-  CDI: 'cdi',
-  CDD: 'cdd',
-  INTERIM: 'interim',
-  FREELANCE: 'freelance',
-  INDEPENDENT: 'independent',
-  ALTERNANCE: 'alternance',
-  OTHER: 'other',
-} as const
-
-export type ExperienceType = (typeof EXPERIENCES_TYPES)[keyof typeof EXPERIENCES_TYPES]
-
-export const experiencesTypesValues = Object.values(EXPERIENCES_TYPES)
 
 export default class Experience extends BaseModel {
   @column({ isPrimary: true })

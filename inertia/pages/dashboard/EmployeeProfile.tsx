@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
-import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/ExperiencesCard'
+import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
 import { EmployeeData } from '~/types'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import AppLink from '../../components/ui/AppLink'

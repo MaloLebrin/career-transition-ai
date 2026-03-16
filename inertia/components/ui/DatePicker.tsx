@@ -1,8 +1,8 @@
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, useMemo } from 'react'
 import ReactDatePicker, { registerLocale } from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { fr } from 'date-fns/locale/fr'
-import { format, parse, parseISO } from 'date-fns'
+import { format, parse, parseISO, isValid } from 'date-fns'
 
 registerLocale('fr', fr)
 
@@ -52,11 +52,21 @@ const DatePicker = memo(function DatePicker({
     [onChange, valueFormat]
   )
 
-  const selectedDate = value
-    ? isMonth
-      ? parse(value, 'yyyy-MM', new Date())
-      : parseISO(value)
-    : null
+  const selectedDate = useMemo(() => {
+    if (!value) return null
+    
+    // Try parseISO first as it's the most common format from server
+    const isoDate = parseISO(value)
+    if (isValid(isoDate)) return isoDate
+
+    // Fallback to custom month parsing if needed
+    if (isMonth) {
+      const parsedMonth = parse(value, 'yyyy-MM', new Date())
+      if (isValid(parsedMonth)) return parsedMonth
+    }
+    
+    return null
+  }, [value, isMonth])
 
   const inputClassName = [
     'w-full p-4 bg-white border rounded-2xl outline-none font-medium transition-all text-sm h-[54px]',
@@ -91,7 +101,7 @@ const DatePicker = memo(function DatePicker({
       <ReactDatePicker
         id={id}
         selected={selectedDate}
-        onChange={handleChange}
+        onChange={handleChange as any}
         dateFormat={dateFormat}
         showMonthYearPicker={isMonth}
         locale="fr"
@@ -100,8 +110,8 @@ const DatePicker = memo(function DatePicker({
         disabled={disabled}
         className={inputClassName}
         wrapperClassName="w-full"
-        aria-invalid={Boolean(error)}
-        aria-required={required}
+        aria-invalid={error ? "true" : "false"}
+        aria-required={required ? "true" : "false"}
         aria-describedby={
           [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') || undefined
         }
