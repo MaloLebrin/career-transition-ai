@@ -2,8 +2,10 @@ import { EducationService } from '#services/education_service'
 import { createEducationValidator } from '#validators/education/create_education_validator'
 import { updateEducationValidator } from '#validators/education/update_education_validator'
 import { idEntityValidator } from '#validators/id_entity_validator'
+import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 
+@inject()
 export default class EducationsController {
   constructor(private educationService: EducationService) { }
 

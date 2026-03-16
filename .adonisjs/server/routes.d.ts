@@ -23,6 +23,9 @@ export type ScannedRoutes = {
     'experiences.store': { paramsTuple?: []; params?: {} }
     'experiences.update': { paramsTuple?: []; params?: {} }
     'experiences.delete': { paramsTuple?: []; params?: {} }
+    'educations.store': { paramsTuple?: []; params?: {} }
+    'educations.update': { paramsTuple?: []; params?: {} }
+    'educations.delete': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
@@ -126,6 +129,7 @@ export type ScannedRoutes = {
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'experiences.store': { paramsTuple?: []; params?: {} }
+    'educations.store': { paramsTuple?: []; params?: {} }
     'employees.store_from_dashboard': { paramsTuple?: []; params?: {} }
     'dashboard.exercises.motivation.draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.motivation.result': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -152,12 +156,14 @@ export type ScannedRoutes = {
   PUT: {
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
     'experiences.update': { paramsTuple?: []; params?: {} }
+    'educations.update': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
     'experiences.delete': { paramsTuple?: []; params?: {} }
+    'educations.delete': { paramsTuple?: []; params?: {} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

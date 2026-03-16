@@ -23,12 +23,13 @@ export const EducationItem = ({ education }: EducationItemProps) => {
         </div>
       ) : (
         <>
-          <div key={education.id} className="pb-8 last:pb-0 border-b border-brand-navy/5 last:border-0">
+          <div key={education.id} className="pb-8 last:pb-0">
             <h3 className="text-lg font-bold text-brand-navy">{education.degree}</h3>
             <p className="text-brand-navy/70 mt-1">{education.school}</p>
-            <p className="text-brand-navy/50 text-sm mt-1">
-              {formatDate(education.startDate)}
-              {education.endDate ? formatDate(education.endDate) : 'Aujourd\'hui'}
+            <p className="text-brand-navy/50 text-sm mt-1 space-x-0.5">
+              <span>{formatDate(education.startDate)}</span>
+              <span>-</span>
+              <span>{education.endDate ? formatDate(education.endDate) : 'Aujourd\'hui'}</span>
             </p>
             {education.description && (
               <p className="text-brand-navy/60 mt-3 leading-relaxed text-sm">
