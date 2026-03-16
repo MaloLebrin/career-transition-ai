@@ -39,7 +39,7 @@ const DatePicker = memo(function DatePicker({
   const labelId = `${id}-label`
   const isMonth = type === 'month'
   const dateFormat = isMonth ? 'MM/yyyy' : 'dd/MM/yyyy'
-  const valueFormat = isMonth ? 'yyyy-MM' : 'yyyy-MM-dd'
+  const valueFormat = isMonth ? 'yyyy-MM-01' : 'yyyy-MM-dd'
 
   const handleChange = useCallback(
     (date: Date | null) => {

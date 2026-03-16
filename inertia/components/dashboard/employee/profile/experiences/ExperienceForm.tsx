@@ -16,9 +16,9 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
     id: experience.id,
     title: experience.title,
     company: experience.company,
-    type: experience.type || 'cdi',
-    startDate: experience.startDate,
-    endDate: experience.endDate || '',
+    type: experience.type?.toLowerCase() || 'cdi',
+    startDate: experience.startDate ? experience.startDate.split('T')[0] : '',
+    endDate: experience.endDate ? experience.endDate.split('T')[0] : '',
     description: experience.description || '',
     isCurrent: experience.isCurrent || false,
   });
@@ -104,7 +104,13 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
           type="checkbox"
           id="isCurrent"
           checked={data.isCurrent}
-          onChange={(e) => setData('isCurrent', e.target.checked)}
+          onChange={(e) => {
+            const isChecked = e.target.checked
+            setData('isCurrent', isChecked)
+            if (isChecked) {
+              setData('endDate', null)
+            }
+          }}
           className="w-4 h-4 rounded text-brand-sage focus:ring-brand-sage"
         />
         <label htmlFor="isCurrent" className="ml-2 text-xs font-bold text-brand-navy/60 cursor-pointer">

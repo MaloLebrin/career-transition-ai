@@ -1,7 +1,7 @@
 import { ExperienceService } from '#services/experience_service'
 import { experienceCreateValidator } from '#validators/experiences/experience_create_validator'
 import { experienceUpdateValidator } from '#validators/experiences/experience_update_validator'
-import { idEntityValidator } from '#validators/id_entity_validator.js'
+import { idEntityValidator } from '#validators/id_entity_validator'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 
@@ -15,7 +15,7 @@ export default class ExperiencesController {
       ...data,
       isCurrent: data.isCurrent || false,
     })
-    return response.redirect('dashboard/employee/profile')
+    return response.redirect('/dashboard/candidat/profile')
   }
 
   async update({ request, response }: HttpContext) {
@@ -24,12 +24,12 @@ export default class ExperiencesController {
       ...data,
       isCurrent: data.isCurrent || false,
     })
-    return response.redirect('dashboard/employee/profile')
+    return response.redirect('/dashboard/candidat/profile')
   }
 
   async delete({ request, response }: HttpContext) {
     const { id } = await request.validateUsing(idEntityValidator)
     await this.experienceService.delete(id)
-    return response.redirect('dashboard/employee/profile')
+    return response.redirect('/dashboard/candidat/profile')
   }
 }

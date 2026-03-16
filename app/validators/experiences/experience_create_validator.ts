@@ -1,4 +1,4 @@
-import { experiencesTypesValues } from '#models/experience.js'
+import { experiencesTypesValues } from '#shared/constants/experience'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 
