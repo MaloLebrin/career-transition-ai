@@ -1,7 +1,10 @@
-import { Pencil } from 'lucide-react';
-import { EmployeeData } from '~/types';
-import { formatDate } from '../../../../../../../shared/helpers/date';
-import { ExperienceForm } from '../ExperienceForm';
+import { router } from '@inertiajs/react'
+import { Pencil, Trash } from 'lucide-react'
+import { useState } from 'react'
+import ConfirmModal, { type ConfirmModalState } from '~/components/ui/ConfirmModal'
+import { EmployeeData } from '~/types'
+import { formatDate } from '../../../../../../../shared/helpers/date'
+import { ExperienceForm } from '../ExperienceForm'
 
 interface ExperienceItemProps {
   experience: EmployeeData['experiences'][0]
@@ -10,6 +13,9 @@ interface ExperienceItemProps {
 }
 
 export const ExperienceItem = ({ experience, isEditing, setIsEditing }: ExperienceItemProps) => {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [deleteState, setDeleteState] = useState<ConfirmModalState>('idle')
+
   return (
     <li className={`relative pb-10 last:pb-0 border-b border-brand-navy/5 last:border-0 ${!isEditing ? 'flex gap-6 group' : ''}`}>
       {isEditing ? (
@@ -46,16 +52,58 @@ export const ExperienceItem = ({ experience, isEditing, setIsEditing }: Experien
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setIsEditing(true)
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(true)
+              }}
+              className="opacity-0 group-hover:opacity-100 absolute top-0 right-10 p-2 text-brand-navy/20 hover:text-brand-sage transition-all cursor-pointer"
+              title="Modifier"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsDeleteOpen(true)
+              }}
+              className="opacity-0 group-hover:opacity-100 absolute top-0 right-0 p-2 text-brand-navy/20 hover:text-rose-500 transition-all cursor-pointer"
+              title="Supprimer"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </div>
+
+          <ConfirmModal
+            isOpen={isDeleteOpen}
+            title="Supprimer l'expérience"
+            description="Cette action est définitive."
+            variant="danger"
+            state={deleteState}
+            confirmLabel="Supprimer"
+            onCancel={() => {
+              if (deleteState === 'loading') return
+              setIsDeleteOpen(false)
+              setDeleteState('idle')
             }}
-            className="opacity-0 group-hover:opacity-100 absolute top-0 right-0 p-2 text-brand-navy/20 hover:text-brand-sage transition-all cursor-pointer"
-            title="Modifier"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
+            onConfirm={() => {
+              if (!experience.id) return
+              setDeleteState('loading')
+              router.delete('/dashboard/candidat/experiences', {
+                data: { id: experience.id },
+                onSuccess: () => {
+                  setDeleteState('success')
+                  setIsDeleteOpen(false)
+                  setDeleteState('idle')
+                },
+                onError: () => {
+                  setDeleteState('error')
+                },
+              })
+            }}
+            errorMessage="Impossible de supprimer l'expérience. Réessaie."
+          />
         </>
       )}
     </li>
