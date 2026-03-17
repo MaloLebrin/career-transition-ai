@@ -1,5 +1,5 @@
-import { Head } from '@inertiajs/react'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { Head } from '@inertiajs/react'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
@@ -27,7 +27,7 @@ export default function EmployeeProfile({ employeeId, employee }: EmployeeProfil
   return (
     <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`Profil - ${employee.name}`} />
-      <div className="animate-fadeIn max-w-4xl mx-auto space-y-10">
+      <div className="animate-fadeIn mx-auto space-y-10">
         <AppLink href="/dashboard/candidat" className="inline-flex items-center gap-2 text-brand-navy/70 hover:text-brand-navy text-sm font-medium transition-colors">
           <span>←</span>
           <span>Retour à la fiche candidat</span>
