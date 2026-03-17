@@ -28,7 +28,7 @@ test('ConfirmModal renders title, description and actions', () => {
   )
 
   expect(screen.getByRole('dialog')).toBeInTheDocument()
-  expect(screen.getByText('Supprimer')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Supprimer' })).toBeInTheDocument()
   expect(screen.getByText('Cette action est définitive.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument()

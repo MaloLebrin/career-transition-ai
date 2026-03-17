@@ -10,7 +10,7 @@ export type ButtonVariant =
   | 'lime'
   | 'terracotta'
 
-export type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -33,6 +33,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 }
 
 const SIZES: Record<ButtonSize, string> = {
+  xs: 'px-3 py-2 text-[9px] uppercase tracking-wider rounded-md',
   sm: 'px-4 py-2 text-[10px] uppercase tracking-wider rounded-xl',
   md: 'px-6 py-3.5 text-sm rounded-2xl',
   lg: 'px-10 py-5 text-base rounded-3xl',
