@@ -66,7 +66,7 @@ export default class EmployeesController {
 
     const employee = await employeeQuery.firstOrFail()
 
-    const data = mapEmployee(employee)
+    const data = mapEmployee(employee) // TODO: remove this mapper
 
     return response.json(data)
   }

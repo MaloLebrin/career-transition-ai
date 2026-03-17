@@ -2,7 +2,14 @@ import Experience from '#models/experience'
 
 type TempExperience = Pick<
   Experience,
-  'title' | 'company' | 'type' | 'startDate' | 'endDate' | 'isCurrent' | 'description'
+  | 'title'
+  | 'company'
+  | 'type'
+  | 'startDate'
+  | 'endDate'
+  | 'isCurrent'
+  | 'description'
+  | 'employeeId'
 >
 
 export class ExperienceService {
@@ -10,7 +17,7 @@ export class ExperienceService {
     return Experience.create(data)
   }
 
-  async update(id: number, data: TempExperience) {
+  async update(id: number, data: Omit<TempExperience, 'employeeId'> & { employeeId?: number }) {
     const experience = await Experience.findOrFail(id)
 
     experience.merge(data)

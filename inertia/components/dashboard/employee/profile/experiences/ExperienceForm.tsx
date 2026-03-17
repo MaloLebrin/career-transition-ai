@@ -6,7 +6,7 @@ import Input from '~/components/ui/Input';
 import { EmployeeData } from '~/types';
 
 interface ExperienceFormProps {
-  experience: EmployeeData['experiences'][0];
+  experience: Omit<EmployeeData['experiences'][0], 'id'> & { id?: number };
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -25,11 +25,13 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(data, 'experience')
     if (experience.id) {
-      put(`/dashboard/candidat/experiences`, {
+      put(`/dashboard/candidat/experiences`, data, {
         onSuccess: () => onSuccess?.(),
       });
-      post('/dashboard/candidat/experiences', {
+    } else {
+      post('/dashboard/candidat/experiences', data, {
         onSuccess: () => onSuccess?.(),
       });
     }

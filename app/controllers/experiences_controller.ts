@@ -1,19 +1,26 @@
+import { EmployeesService } from '#services/employees_service'
 import { ExperienceService } from '#services/experience_service'
 import { experienceCreateValidator } from '#validators/experiences/experience_create_validator'
 import { experienceUpdateValidator } from '#validators/experiences/experience_update_validator'
 import { idEntityValidator } from '#validators/id_entity_validator'
 import { inject } from '@adonisjs/core'
-import { HttpContext } from '@adonisjs/core/http'
+import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ExperiencesController {
-  constructor(private experienceService: ExperienceService) { }
+  constructor(
+    private experienceService: ExperienceService,
+    private employeesService: EmployeesService
+  ) { }
 
-  async store({ request, response }: HttpContext) {
+  async store({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(experienceCreateValidator)
+    const user = auth.user!
+    const employee = await this.employeesService.getEmployeeForUser(user)
     await this.experienceService.create({
       ...data,
       isCurrent: data.isCurrent || false,
+      employeeId: employee.id,
     })
     return response.redirect('/dashboard/candidat/profile')
   }
