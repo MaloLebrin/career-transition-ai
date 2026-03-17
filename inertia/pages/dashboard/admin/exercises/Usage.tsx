@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react'
 import { Head, router } from '@inertiajs/react'
-import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import { useAuth } from '../../hooks/useAuth'
-import { isSuperAdmin } from '../../helpers/roles'
-import Input from '../../components/ui/Input'
-import Button from '../../components/ui/Button'
-import Badge from '../../components/ui/Badge'
+import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { useAuth } from '~/hooks/useAuth'
+import { isSuperAdmin } from '~/helpers/roles'
+import Input from '~/components/ui/Input'
+import Button from '~/components/ui/Button'
+import Badge from '~/components/ui/Badge'
 
 type TotalsByType = Record<string, number>
 

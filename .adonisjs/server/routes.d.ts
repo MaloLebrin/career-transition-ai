@@ -4,6 +4,8 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -63,13 +65,12 @@ export type ScannedRoutes = {
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
   GET: {
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
@@ -91,10 +92,10 @@ export type ScannedRoutes = {
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
@@ -116,10 +117,10 @@ export type ScannedRoutes = {
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {
+    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
@@ -149,7 +150,6 @@ export type ScannedRoutes = {
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }

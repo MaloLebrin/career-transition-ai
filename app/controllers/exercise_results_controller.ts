@@ -13,14 +13,14 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 /** Map exercise type (slug) to dedicated Inertia page. Unknown type falls back to dashboard/Exercise. */
 const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {
-  [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'dashboard/exercises/Motivation',
-  [EXERCICE_RESULTS_TYPES.VALUES]: 'dashboard/exercises/Values',
-  [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: 'dashboard/exercises/LifeCurve',
-  [EXERCICE_RESULTS_TYPES.PERSONALITY]: 'dashboard/exercises/Personality',
-  [EXERCICE_RESULTS_TYPES.TARGETING]: 'dashboard/exercises/Targeting',
-  [EXERCICE_RESULTS_TYPES.DISC]: 'dashboard/exercises/DISC',
-  [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'dashboard/exercises/SkillMapping',
-  [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'dashboard/exercises/CircleOfControl',
+  [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'dashboard/shared/exercises/Motivation',
+  [EXERCICE_RESULTS_TYPES.VALUES]: 'dashboard/shared/exercises/Values',
+  [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: 'dashboard/shared/exercises/LifeCurve',
+  [EXERCICE_RESULTS_TYPES.PERSONALITY]: 'dashboard/shared/exercises/Personality',
+  [EXERCICE_RESULTS_TYPES.TARGETING]: 'dashboard/shared/exercises/Targeting',
+  [EXERCICE_RESULTS_TYPES.DISC]: 'dashboard/shared/exercises/DISC',
+  [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: 'dashboard/shared/exercises/SkillMapping',
+  [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'dashboard/shared/exercises/CircleOfControl',
 }
 
 @inject()
@@ -140,7 +140,7 @@ export default class ExerciseResultsController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    return (inertia as any).render('dashboard/exercises/CandidatList', {
+    return (inertia as any).render('dashboard/employee/exercises/List', {
       exercises: EXERCISE_LIST,
     })
   }
@@ -185,7 +185,7 @@ export default class ExerciseResultsController {
         status,
       }))
       .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    return (inertia as any).render('dashboard/exercises/ConseillerList', {
+    return (inertia as any).render('dashboard/conseiller/exercises/List', {
       employeeId: String(employeeId),
       results,
     })
@@ -234,7 +234,7 @@ export default class ExerciseResultsController {
         qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
       }
       : null
-    return (inertia as any).render('dashboard/ExerciseResultDetail', {
+    return (inertia as any).render('dashboard/conseiller/exercises/ResultDetail', {
       employeeId: String(employee.id),
       employeeName: employee.name,
       result: resultPayload,
@@ -299,9 +299,9 @@ export default class ExerciseResultsController {
       break
     }
 
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/ConseillerExercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/conseiller/exercises/Home'
     const props =
-      pageName === 'dashboard/ConseillerExercise'
+      pageName === 'dashboard/conseiller/exercises/Home'
         ? { type: params.type, employeeId: String(employeeRecord.id), initialDraftsByType }
         : { employeeId: String(employeeRecord.id), initialDraftsByType }
     return (inertia as any).render(pageName, props)
@@ -350,9 +350,9 @@ export default class ExerciseResultsController {
         : null
       break
     }
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/CandidatExercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
     const props =
-      pageName === 'dashboard/CandidatExercise'
+      pageName === 'dashboard/employee/exercises/Home'
         ? { type: params.type, initialDraftsByType }
         : { initialDraftsByType }
     return (inertia as any).render(pageName, props)
@@ -400,9 +400,9 @@ export default class ExerciseResultsController {
       break
     }
 
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/CandidatExercise'
+    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
     const props =
-      pageName === 'dashboard/CandidatExercise'
+      pageName === 'dashboard/employee/exercises/Home'
         ? { type: params.type, initialDraftsByType }
         : { initialDraftsByType }
     return (inertia as any).render(pageName, props)

@@ -1,10 +1,10 @@
 import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
-import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import { BadgeVariant } from '../../components/ui/Badge'
-import Badge from '../../components/ui/Badge'
-import { useAuth } from '../../hooks/useAuth'
+import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { BadgeVariant } from '~/components/ui/Badge'
+import Badge from '~/components/ui/Badge'
+import { useAuth } from '~/hooks/useAuth'
 
 import {
   BULK_JOB_SCOPES,

@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
-import AppLink from '../../../components/ui/AppLink'
-import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import Card from '../../../components/ui/Card'
-import { useAuth } from '../../../hooks/useAuth'
-import type { ExerciseListEntry } from '../../../config/exercises'
+import AppLink from '~/components/ui/AppLink'
+import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import Card from '~/components/ui/Card'
+import { useAuth } from '~/hooks/useAuth'
+import type { ExerciseListEntry } from '~/config/exercises'
 
 interface CandidatExerciseListProps {
   exercises: ExerciseListEntry[]

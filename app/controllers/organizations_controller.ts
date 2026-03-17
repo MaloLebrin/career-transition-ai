@@ -129,7 +129,7 @@ export default class OrganizationsController {
     }
     const members = await this.organizationsService.listAdvisors(orgId)
 
-    return (inertia as any).render('dashboard/Settings', {
+    return (inertia as any).render('dashboard/conseiller/settings/Home', {
       organization,
       members,
     })

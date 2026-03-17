@@ -4,9 +4,9 @@ import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
 import { EmployeeData } from '~/types'
-import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import AppLink from '../../components/ui/AppLink'
-import Card from '../../components/ui/Card'
+import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import AppLink from '~/components/ui/AppLink'
+import Card from '~/components/ui/Card'
 
 interface EmployeeProfileProps {
   employeeId: string

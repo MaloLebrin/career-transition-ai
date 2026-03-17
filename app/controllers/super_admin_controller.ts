@@ -35,7 +35,7 @@ export default class SuperAdminController {
     const totalOrgs = Number(organizationsCount[0].$extras.total || 0)
     const totalUsers = Number(usersCount[0].$extras.total || 0)
 
-    return (inertia as any).render('dashboard/SuperAdminHome', {
+    return (inertia as any).render('dashboard/admin/home/Home', {
       stats: {
         organizations: totalOrgs,
         users: totalUsers,
@@ -62,7 +62,7 @@ export default class SuperAdminController {
       createdAt: org.createdAt?.toISO() ?? null,
     }))
 
-    return (inertia as any).render('dashboard/OrganizationsAdmin', {
+    return (inertia as any).render('dashboard/admin/organizations/Index', {
       organizations: items,
     })
   }
@@ -146,7 +146,7 @@ export default class SuperAdminController {
 
     const allOrgs = await Organization.query().select('id', 'name').orderBy('name', 'asc')
 
-    return (inertia as any).render('dashboard/ExercisesUsageAdmin', {
+    return (inertia as any).render('dashboard/admin/exercises/Usage', {
       filters: {
         from,
         to,
@@ -256,7 +256,7 @@ export default class SuperAdminController {
       createdAt: user.createdAt?.toISO() ?? null,
     }))
 
-    return (inertia as any).render('dashboard/UsersAdmin', {
+    return (inertia as any).render('dashboard/admin/users/Index', {
       users: items,
     })
   }

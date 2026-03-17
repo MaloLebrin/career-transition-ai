@@ -6,7 +6,7 @@ const SuperAdminController = () => import('#controllers/super_admin_controller')
 router
   .group(() => {
     // @ts-expect-error Inertia page name from generated types
-    router.on('/').renderInertia('dashboard/SuperAdminHome', {})
+    router.on('/').renderInertia('dashboard/admin/home/Home', {})
     router.get('/organizations', [SuperAdminController, 'organizations'])
     router.post('/organizations', [SuperAdminController, 'storeOrganization'])
     router.delete('/organizations/:id', [SuperAdminController, 'destroyOrganization'])
@@ -15,7 +15,7 @@ router
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
     // @ts-expect-error Inertia page name from generated types
-    router.on('/bulk-jobs').renderInertia('dashboard/BulkJobs', {})
+    router.on('/bulk-jobs').renderInertia('dashboard/admin/jobs/Index', {})
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.admin()])

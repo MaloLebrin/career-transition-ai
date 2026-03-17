@@ -197,7 +197,7 @@ export default class EmployeesController {
     const employees = await query
     const data = employees.map(mapEmployee)
 
-    return (ctx.inertia as any).render('dashboard/Employees', { employees: data })
+    return (ctx.inertia as any).render('dashboard/conseiller/employees/List', { employees: data })
   }
 
   /**
@@ -222,7 +222,7 @@ export default class EmployeesController {
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)
 
-    return (ctx.inertia as any).render('dashboard/EmployeeProfile', {
+    return (ctx.inertia as any).render('dashboard/employee/profile/Home', {
       employeeId: employee.id,
       employee: data,
     })
@@ -280,7 +280,7 @@ export default class EmployeesController {
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)
 
-    return (ctx.inertia as any).render('dashboard/EmployeeDetail', {
+    return (ctx.inertia as any).render('dashboard/conseiller/employees/Detail', {
       employeeId: String(employee.id),
       employee: data,
     })

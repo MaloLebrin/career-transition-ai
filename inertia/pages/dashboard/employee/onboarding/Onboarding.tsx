@@ -1,8 +1,8 @@
 import { Head, router } from '@inertiajs/react'
-import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import OnboardingFlow from '../../components/onboarding/OnboardingFlow'
-import { employeeUpdatePayload } from '../../helpers/employee_payload'
-import { EmployeeData } from '../../types/Employee'
+import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import OnboardingFlow from '~/components/onboarding/OnboardingFlow'
+import { employeeUpdatePayload } from '~/helpers/employee_payload'
+import { EmployeeData } from '~/types/Employee'
 
 export default function CandidatOnboarding({
   employee,

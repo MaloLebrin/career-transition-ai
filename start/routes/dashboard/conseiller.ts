@@ -14,11 +14,11 @@ router
      * General routes
      */
     // @ts-expect-error Inertia page name from generated types
-    router.on('/').renderInertia('dashboard/ConseillerHome')
+    router.on('/').renderInertia('dashboard/conseiller/home/Home')
     // @ts-expect-error Inertia page name from generated types
-    router.on('/design-system').renderInertia('dashboard/DesignSystem', {})
+    router.on('/design-system').renderInertia('dashboard/dev/design_system/DesignSystem', {})
     // @ts-expect-error Inertia page name from generated types
-    router.on('/profile').renderInertia('dashboard/ConseillerProfile', {})
+    router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {})
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/bulk-jobs', [BulkJobsController, 'index'])
 

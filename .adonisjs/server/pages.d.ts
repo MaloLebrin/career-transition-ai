@@ -13,20 +13,32 @@ type ExtractProps<T> =
 declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'Auth': ExtractProps<(typeof import('../../inertia/pages/Auth.tsx'))['default']>
-    'dashboard/BulkJobs': ExtractProps<(typeof import('../../inertia/pages/dashboard/BulkJobs.tsx'))['default']>
-    'dashboard/CandidatExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatExercise.tsx'))['default']>
-    'dashboard/CandidatHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatHome.tsx'))['default']>
-    'dashboard/CandidatOnboarding': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatOnboarding.tsx'))['default']>
+    'dashboard/admin/exercises/Usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/exercises/Usage.tsx'))['default']>
+    'dashboard/admin/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/home/Home.tsx'))['default']>
+    'dashboard/admin/jobs/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/jobs/Index.tsx'))['default']>
+    'dashboard/admin/organizations/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/organizations/Index.tsx'))['default']>
+    'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
     'dashboard/CandidatProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatProfile.tsx'))['default']>
+    'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
+    'dashboard/conseiller/employees/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/List.tsx'))['default']>
+    'dashboard/conseiller/exercises/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/Home.tsx'))['default']>
+    'dashboard/conseiller/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/List.tsx'))['default']>
+    'dashboard/conseiller/exercises/ResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/ResultDetail.tsx'))['default']>
+    'dashboard/conseiller/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/home/Home.tsx'))['default']>
+    'dashboard/conseiller/profile/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/profile/Home.tsx'))['default']>
+    'dashboard/conseiller/settings/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/settings/Home.tsx'))['default']>
     'dashboard/ConseillerExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerExercise.tsx'))['default']>
     'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
     'dashboard/ConseillerProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerProfile.tsx'))['default']>
     'dashboard/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/DesignSystem.tsx'))['default']>
+    'dashboard/employee/exercises/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/Home.tsx'))['default']>
+    'dashboard/employee/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/List.tsx'))['default']>
+    'dashboard/employee/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/home/Home.tsx'))['default']>
+    'dashboard/employee/onboarding/Onboarding': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/onboarding/Onboarding.tsx'))['default']>
+    'dashboard/employee/profile/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/profile/Home.tsx'))['default']>
     'dashboard/EmployeeDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeDetail.tsx'))['default']>
-    'dashboard/EmployeeProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeProfile.tsx'))['default']>
     'dashboard/Employees': ExtractProps<(typeof import('../../inertia/pages/dashboard/Employees.tsx'))['default']>
     'dashboard/ExerciseResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExerciseResultDetail.tsx'))['default']>
-    'dashboard/exercises/CandidatList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CandidatList.tsx'))['default']>
     'dashboard/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CircleOfControl.tsx'))['default']>
     'dashboard/exercises/ConseillerList': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/ConseillerList.tsx'))['default']>
     'dashboard/exercises/DISC': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/DISC.tsx'))['default']>
@@ -36,11 +48,15 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/exercises/SkillMapping': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/SkillMapping.tsx'))['default']>
     'dashboard/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Targeting.tsx'))['default']>
     'dashboard/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Values.tsx'))['default']>
-    'dashboard/ExercisesUsageAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExercisesUsageAdmin.tsx'))['default']>
-    'dashboard/OrganizationsAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/OrganizationsAdmin.tsx'))['default']>
     'dashboard/Settings': ExtractProps<(typeof import('../../inertia/pages/dashboard/Settings.tsx'))['default']>
-    'dashboard/SuperAdminHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/SuperAdminHome.tsx'))['default']>
-    'dashboard/UsersAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/UsersAdmin.tsx'))['default']>
+    'dashboard/shared/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/CircleOfControl.tsx'))['default']>
+    'dashboard/shared/exercises/DISC': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/DISC.tsx'))['default']>
+    'dashboard/shared/exercises/LifeCurve': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/LifeCurve.tsx'))['default']>
+    'dashboard/shared/exercises/Motivation': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Motivation.tsx'))['default']>
+    'dashboard/shared/exercises/Personality': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Personality.tsx'))['default']>
+    'dashboard/shared/exercises/SkillMapping': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/SkillMapping.tsx'))['default']>
+    'dashboard/shared/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Targeting.tsx'))['default']>
+    'dashboard/shared/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Values.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>

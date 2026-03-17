@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Employee } from '../types'
 
+/**
+ * @deprecated
+ */
 export function useEmployee(id: string | number | null, initial?: Employee | null) {
   const [employee, setEmployee] = useState<Employee | null>(initial ?? null)
   const [loading, setLoading] = useState(false)
