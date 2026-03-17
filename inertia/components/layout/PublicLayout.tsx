@@ -1,5 +1,4 @@
 import React from 'react'
-import FlashMessages from '../ui/FlashMessages'
 import PublicHeader, { PublicHeaderProps } from './PublicHeader'
 
 interface PublicLayoutProps {
@@ -17,9 +16,6 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, children, clas
       }
     >
       <PublicHeader {...headerProps} />
-      <div className="px-4 pt-4 max-w-2xl mx-auto">
-        <FlashMessages />
-      </div>
       {children}
     </div>
   )

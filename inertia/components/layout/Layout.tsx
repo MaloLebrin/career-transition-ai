@@ -2,8 +2,8 @@ import { USERS_ROLES, type UserRole } from '#shared/constants/user'
 import React, { useState } from 'react'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
-import FlashBanner from './FlashBanner'
 import Logo from '../ui/Logo'
+import FlashBanner from './FlashBanner'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
   return (
     <div className="min-h-screen flex flex-col bg-brand-ivory">
       <header className="bg-white border-b border-brand-navy/5 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 h-20 flex justify-between items-center">
+        <div className="max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 h-20 flex justify-between items-center">
           <button
             type="button"
             className="flex items-center space-x-3 cursor-pointer border-none bg-transparent p-0"

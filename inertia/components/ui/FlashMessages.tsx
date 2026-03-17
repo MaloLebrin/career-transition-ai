@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/react'
-import React from 'react'
 
 const FLASH_PROP = 'flash' as const
 
