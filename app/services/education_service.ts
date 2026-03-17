@@ -2,7 +2,7 @@ import Education from '#models/education'
 
 type CreateEducationData = Pick<
   Education,
-  'degree' | 'school' | 'startDate' | 'endDate' | 'isCurrent' | 'description'
+  'degree' | 'school' | 'startDate' | 'endDate' | 'isCurrent' | 'description' | 'employeeId'
 >
 
 export class EducationService {
@@ -10,7 +10,7 @@ export class EducationService {
     return Education.create(data)
   }
 
-  async update(id: number, data: CreateEducationData) {
+  async update(id: number, data: Omit<CreateEducationData, 'employeeId'>) {
     const education = await Education.findOrFail(id)
 
     education.merge(data)

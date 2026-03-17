@@ -5,7 +5,7 @@ import Input from '~/components/ui/Input';
 import { EmployeeData } from '~/types';
 
 interface EducationFormProps {
-  education: EmployeeData['educations'][0];
+  education: Omit<EmployeeData['educations'][0], 'id'> & { id?: number };
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -18,10 +18,8 @@ export const EducationForm = ({ education, onCancel, onSuccess }: EducationFormP
     startDate: education.startDate,
     endDate: education.endDate,
     description: education.description,
-    isCurrent: education.isCurrent,
+    isCurrent: education.isCurrent || false,
   })
-
-  console.log(data, 'data')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

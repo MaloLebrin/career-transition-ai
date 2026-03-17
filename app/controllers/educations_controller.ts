@@ -1,20 +1,27 @@
 import { EducationService } from '#services/education_service'
+import { EmployeesService } from '#services/employees_service'
 import { createEducationValidator } from '#validators/education/create_education_validator'
 import { updateEducationValidator } from '#validators/education/update_education_validator'
 import { idEntityValidator } from '#validators/id_entity_validator'
 import { inject } from '@adonisjs/core'
-import { HttpContext } from '@adonisjs/core/http'
+import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EducationsController {
-  constructor(private educationService: EducationService) { }
+  constructor(
+    private educationService: EducationService,
+    private employeesService: EmployeesService
+  ) { }
 
-  async store({ request, response }: HttpContext) {
+  async store({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(createEducationValidator)
+    const user = auth.user!
+    const employee = await this.employeesService.getEmployeeForUser(user)
     await this.educationService.create({
       ...data,
       description: data.description || null,
       isCurrent: data.isCurrent || false,
+      employeeId: employee.id,
     })
     return response.redirect('/dashboard/candidat/profile')
   }
