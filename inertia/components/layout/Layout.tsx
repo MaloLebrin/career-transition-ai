@@ -1,7 +1,8 @@
-import { USERS_ROLES, type UserRole } from '#shared/constants/user'
+import { type UserRole } from '#shared/constants/user'
 import React, { useState } from 'react'
+import { Avatar } from '~/components/layout/header/Avatar'
+import { LogoutModal } from '~/components/ui/LogoutModal'
 import Button from '../ui/Button'
-import Card from '../ui/Card'
 import Logo from '../ui/Logo'
 import FlashBanner from './FlashBanner'
 
@@ -41,26 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
           </button>
 
           <div className="flex items-center space-x-2 md:space-x-6">
-            <div className="hidden sm:flex items-center space-x-4 mr-2">
-              <div className="text-right">
-                <div className="text-xs font-bold text-brand-navy leading-none">
-                  {userName || 'Utilisateur'}
-                </div>
-                <div className="text-[9px] font-bold text-brand-sage uppercase tracking-widest mt-1">
-                  {userRole === USERS_ROLES.ADVISOR && 'Expert Accompagnateur'}
-                  {(userRole === USERS_ROLES.ADMIN || userRole === USERS_ROLES.SUPER_ADMIN) &&
-                    'Administrateur'}
-                  {userRole === USERS_ROLES.EMPLOYEE && 'Candidat Transition'}
-                  {!Object.values(USERS_ROLES).includes(userRole as any) && 'Utilisateur'}
-                </div>
-              </div>
-              <div className="h-10 w-10 rounded-2xl bg-brand-ivory border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName || 'Felix'}`}
-                  alt="avatar"
-                />
-              </div>
-            </div>
+            <Avatar userName={userName} userRole={userRole} />
 
             <Button
               onClick={() => setShowLogoutModal(true)}
@@ -90,35 +72,9 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
       </header>
       <FlashBanner />
       {showLogoutModal && (
-        <div
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logout-modal-title"
-        >
-          <Card className="w-full max-w-md p-8 animate-slideUp">
-            <h2 id="logout-modal-title" className="text-xl font-bold text-brand-navy mb-2">
-              Déconnexion
-            </h2>
-            <p className="text-brand-navy/60 text-sm mb-8">
-              Êtes-vous sûr de vouloir vous déconnecter ?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => setShowLogoutModal(false)}
-              >
-                Annuler
-              </Button>
-              <Button variant="danger" size="md" onClick={handleLogoutConfirm}>
-                Se déconnecter
-              </Button>
-            </div>
-          </Card>
-        </div>
+        <LogoutModal onClose={() => setShowLogoutModal(false)} onLogout={handleLogoutConfirm} />
       )}
-      <main className="grow flex flex-col max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-10 w-full min-h-0">{children}</main>
+      <main className="grow flex flex-col max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 py-10 w-full min-h-0">{children}</main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
           France Transition Carrière &copy; 2026 • Clarté Stratégique Humaine
