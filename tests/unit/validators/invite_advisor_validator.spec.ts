@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { inviteAdvisorValidator } from '#validators/invite_advisor_validator'
+import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator'
 
 test.group('inviteAdvisorValidator', () => {
   test('accepts valid payload', async ({ assert }) => {

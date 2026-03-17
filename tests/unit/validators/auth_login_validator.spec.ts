@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { loginValidator } from '#validators/auth_login_validator'
+import { loginValidator } from '#validators/auth/auth_login_validator'
 
 test.group('loginValidator', () => {
   test('accepts valid payload', async ({ assert }) => {

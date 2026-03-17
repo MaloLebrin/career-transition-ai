@@ -1,9 +1,8 @@
-import React from 'react'
 import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import StatCard from '~/components/ui/StatCard'
-import { useAuth } from '~/hooks/useAuth'
 import { isSuperAdmin } from '~/helpers/roles'
+import { useAuth } from '~/hooks/useAuth'
 
 interface SuperAdminHomeProps {
   stats: {

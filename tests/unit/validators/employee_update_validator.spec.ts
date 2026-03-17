@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { updateEmployeeValidator } from '#validators/employee_update_validator'
+import { updateEmployeeValidator } from '#validators/employee/employee_update_validator'
 
 test.group('updateEmployeeValidator', () => {
   test('accepts empty object (all optional)', async ({ assert }) => {

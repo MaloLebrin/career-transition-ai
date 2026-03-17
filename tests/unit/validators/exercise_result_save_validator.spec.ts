@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { saveExerciseResultValidator } from '#validators/exercise_result_save_validator'
+import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
 import {
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,

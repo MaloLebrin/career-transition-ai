@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { updateOrganizationValidator } from '#validators/organization_update_validator'
+import { updateOrganizationValidator } from '#validators/organization/organization_update_validator'
 
 test.group('updateOrganizationValidator', () => {
   test('accepts valid optional payload', async ({ assert }) => {

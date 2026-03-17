@@ -3,6 +3,9 @@ import app from '@adonisjs/core/services/app'
 import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import testUtils from '@adonisjs/core/services/test_utils'
+import env from '#start/env'
+import { mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file
@@ -22,7 +25,20 @@ export const plugins: Config['plugins'] = [assert(), pluginAdonisJS(app)]
  * The teardown functions are executed after all the tests
  */
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
-  setup: [() => testUtils.db().migrate()],
+  setup: [
+    () => {
+      if (env.get('NODE_ENV') !== 'test') {
+        throw new Error(`Refusing to run tests with NODE_ENV=${env.get('NODE_ENV')}`)
+      }
+    },
+    async () => {
+      const sqlitePath = env.get('SQLITE_DB_PATH')
+      if (sqlitePath && sqlitePath !== ':memory:') {
+        await mkdir(dirname(sqlitePath), { recursive: true })
+      }
+    },
+    () => testUtils.db().migrate(),
+  ],
   teardown: [],
 }
 

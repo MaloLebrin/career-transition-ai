@@ -24,18 +24,24 @@ export default class extends BaseSchema {
       table.timestamp('updated_at', { useTz: true }).notNullable()
     })
 
-    this.schema.raw(`
-      ALTER TABLE "${this.tableName}"
-      ADD CONSTRAINT "${this.tableName}_associated_exercise_check"
-      CHECK (associated_exercise IS NULL OR associated_exercise IN (
-        ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')}))
-    `)
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(`
+        ALTER TABLE "${this.tableName}"
+        ADD CONSTRAINT "${this.tableName}_associated_exercise_check"
+        CHECK (associated_exercise IS NULL OR associated_exercise IN (
+          ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')}))
+      `)
+    }
   }
 
   async down() {
-    this.schema.raw(
-      `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_associated_exercise_check"`
-    )
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(
+        `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_associated_exercise_check"`
+      )
+    }
     this.schema.dropTable(this.tableName)
   }
 }

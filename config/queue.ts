@@ -14,9 +14,9 @@ export default defineConfig({
   adapters: {
     database: drivers.database({
       /**
-       * Uses the primary Lucid connection (PostgreSQL).
+       * Uses the primary Lucid connection.
        */
-      connectionName: 'postgres',
+      connectionName: env.get('NODE_ENV') === 'test' ? 'sqlite' : 'postgres',
     }),
     /**
      * Sync adapter: useful for local development or simple scripts

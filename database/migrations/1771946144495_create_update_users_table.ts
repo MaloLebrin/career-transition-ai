@@ -22,12 +22,15 @@ export default class extends BaseSchema {
       table.timestamp('deleted_at', { useTz: true }).nullable()
       table.unique(['organization_id', 'email'])
     })
-    // CHECK séparé pour pouvoir le modifier plus tard (ALTER ... DROP CONSTRAINT + ADD CONSTRAINT)
-    this.schema.raw(`
-      ALTER TABLE "${this.tableName}"
-      ADD CONSTRAINT "${this.tableName}_role_check"
-      CHECK (role IS NULL OR role IN (${userRolesValues.map((role) => `'${role}'`).join(',')}))
-    `)
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      // CHECK séparé pour pouvoir le modifier plus tard (ALTER ... DROP CONSTRAINT + ADD CONSTRAINT)
+      this.schema.raw(`
+        ALTER TABLE "${this.tableName}"
+        ADD CONSTRAINT "${this.tableName}_role_check"
+        CHECK (role IS NULL OR role IN (${userRolesValues.map((role) => `'${role}'`).join(',')}))
+      `)
+    }
   }
 
   async down() {

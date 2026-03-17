@@ -48,7 +48,9 @@ export default class Employee extends BaseModel {
   @column()
   declare status: EmployeeStatus
 
-  @column()
+  @column({
+    consume: (value) => Boolean(value),
+  })
   declare onboarded: boolean
 
   @column.dateTime()

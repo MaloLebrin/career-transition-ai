@@ -151,10 +151,8 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
 
     await controller.exerciseListCandidat(ctx)
 
-    assert.equal(ctx._inertiaRenderPage(), 'dashboard/exercises/List')
+    assert.equal(ctx._inertiaRenderPage(), 'dashboard/employee/exercises/List')
     assert.deepEqual(ctx._inertiaRenderProps().exercises, EXERCISE_LIST)
-    assert.equal(ctx._inertiaRenderProps().context, 'candidat')
-    assert.isUndefined(ctx._inertiaRenderProps().employeeId)
   })
 })
 

@@ -141,7 +141,7 @@ test.group('SuperAdminController.exerciseUsage', (group) => {
     await controller.exerciseUsage(ctx)
 
     const rendered = ctx.inertia.rendered
-    assert.equal(rendered.name, 'dashboard/ExercisesUsageAdmin')
+    assert.equal(rendered.name, 'dashboard/admin/exercises/Usage')
     const organizations = rendered.props.organizations as any[]
 
     const orgA = organizations.find((o) => o.name === 'Org A')

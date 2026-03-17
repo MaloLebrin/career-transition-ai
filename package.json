@@ -59,6 +59,7 @@
     "@types/react-datepicker": "^7.0.0",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
+    "better-sqlite3": "^12.8.0",
     "eslint": "^9.39.4",
     "hot-hook": "^0.4.0",
     "jsdom": "^25.0.1",
@@ -107,6 +108,11 @@
     "boundaries": [
       "./app/controllers/**/*.ts",
       "./app/middleware/*.ts"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
     ]
   },
   "prettier": "@adonisjs/prettier-config"

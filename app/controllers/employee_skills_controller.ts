@@ -1,6 +1,6 @@
 import { EmployeeSkillService } from '#services/employee_skill_service'
 import { EmployeesService } from '#services/employees_service'
-import { updateEmployeeSkillValidator } from '#validators/employee_skill/update_employee_skill_validator.js'
+import { updateEmployeeSkillValidator } from '#validators/employee_skill/update_employee_skill_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 

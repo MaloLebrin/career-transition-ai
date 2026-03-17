@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { createEmployeeValidator } from '#validators/employee_create_validator'
+import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
 
 test.group('createEmployeeValidator', () => {
   test('accepts valid payload with required fields only', async ({ assert }) => {

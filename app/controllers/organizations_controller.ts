@@ -1,7 +1,7 @@
 import Organization from '#models/organization'
 import { OrganizationsService } from '#services/organizations_service'
-import { updateOrganizationValidator } from '#validators/organization/organization_update_validator.js'
-import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator.js'
+import { updateOrganizationValidator } from '#validators/organization/organization_update_validator'
+import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 

@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { userProfileUpdateValidator } from '#validators/user_profile_update_validator'
+import { userProfileUpdateValidator } from '#validators/user/user_profile_update_validator'
 
 test.group('userProfileUpdateValidator', () => {
   test('accepts valid payload', async ({ assert }) => {

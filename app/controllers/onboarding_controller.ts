@@ -1,6 +1,6 @@
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
-import { onboardingSetPasswordValidator } from '#validators/auth/onboarding_set_password_validator.js'
+import { onboardingSetPasswordValidator } from '#validators/auth/onboarding_set_password_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'

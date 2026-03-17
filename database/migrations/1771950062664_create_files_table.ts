@@ -29,17 +29,23 @@ export default class extends BaseSchema {
       table.timestamp('deleted_at', { useTz: true }).nullable()
     })
 
-    this.schema.raw(`
-      ALTER TABLE "${this.tableName}"
-      ADD CONSTRAINT "${this.tableName}_type_check"
-      CHECK (type IS NULL OR type IN (${filesTypesValues.map((type) => `'${type}'`).join(',')}))
-    `)
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(`
+        ALTER TABLE "${this.tableName}"
+        ADD CONSTRAINT "${this.tableName}_type_check"
+        CHECK (type IS NULL OR type IN (${filesTypesValues.map((type) => `'${type}'`).join(',')}))
+      `)
+    }
   }
 
   async down() {
-    this.schema.raw(
-      `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_type_check"`
-    )
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(
+        `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_type_check"`
+      )
+    }
     this.schema.dropTable(this.tableName)
   }
 }

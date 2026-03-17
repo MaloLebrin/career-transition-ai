@@ -20,7 +20,9 @@ export default class SupportPlanStep extends BaseModel {
   @column.date()
   declare dueDate: DateTime
 
-  @column()
+  @column({
+    consume: (value) => Boolean(value),
+  })
   declare completed: boolean
 
   @column()

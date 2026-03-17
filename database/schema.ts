@@ -306,7 +306,7 @@ export class QueueScheduleSchema extends BaseModel {
   @column.dateTime()
   declare fromDate: DateTime | null
   @column({ isPrimary: true })
-  declare id: string
+  declare id: string | null
   @column.dateTime()
   declare lastRunAt: DateTime | null
   @column()

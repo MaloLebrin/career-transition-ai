@@ -6,8 +6,8 @@ import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercis
 import {
   fetchExerciseDraftValidator,
   saveExerciseDraftValidator,
-} from '#validators/exercise/exercise_draft_validator.js'
-import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator.js'
+} from '#validators/exercise/exercise_draft_validator'
+import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 

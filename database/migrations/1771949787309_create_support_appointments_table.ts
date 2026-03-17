@@ -31,17 +31,23 @@ export default class extends BaseSchema {
       table.timestamp('deleted_at', { useTz: true }).nullable()
     })
 
-    this.schema.raw(`
-      ALTER TABLE "${this.tableName}"
-      ADD CONSTRAINT "${this.tableName}_status_check"
-      CHECK (status IS NULL OR status IN (${appointmentStatusValues.map((status) => `'${status}'`).join(',')}))
-    `)
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(`
+        ALTER TABLE "${this.tableName}"
+        ADD CONSTRAINT "${this.tableName}_status_check"
+        CHECK (status IS NULL OR status IN (${appointmentStatusValues.map((status) => `'${status}'`).join(',')}))
+      `)
+    }
   }
 
   async down() {
-    this.schema.raw(
-      `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`
-    )
+    const isPostgres = process.env.NODE_ENV !== 'test'
+    if (isPostgres) {
+      this.schema.raw(
+        `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`
+      )
+    }
     this.schema.dropTable(this.tableName)
   }
 }
