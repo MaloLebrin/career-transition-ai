@@ -376,7 +376,7 @@ export class SkillSchema extends BaseModel {
 }
 
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = ['associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'id', 'notes', 'sortOrder', 'title', 'updatedAt'] as const
+  static $columns = ['associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'id', 'isLocked', 'notes', 'sortOrder', 'title', 'updatedAt'] as const
   $columns = SupportPlanStepSchema.$columns
   @column()
   declare associatedExercise: string | null
@@ -392,6 +392,8 @@ export class SupportPlanStepSchema extends BaseModel {
   declare employeeId: number
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isLocked: boolean
   @column()
   declare notes: string | null
   @column()

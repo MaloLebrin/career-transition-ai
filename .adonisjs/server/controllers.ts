@@ -17,4 +17,5 @@ export const controllers = {
   Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   Notes: () => import('#controllers/notes_controller'),
+  SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

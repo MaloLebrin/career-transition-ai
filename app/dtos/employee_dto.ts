@@ -55,6 +55,7 @@ export type SupportPlanStepDto = {
   notes?: string
   associatedExercise?: ExerciseResultDto['type']
   lastUpdated?: string
+  isLocked?: boolean
 }
 
 export type EmployeeDto = {

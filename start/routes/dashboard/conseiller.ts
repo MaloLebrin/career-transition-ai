@@ -7,6 +7,7 @@ const ExerciseResultsController = () => import('#controllers/exercise_results_co
 const NotesController = () => import('#controllers/notes_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
 const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
+const SupportPlanStepsController = () => import('#controllers/support_plan_steps_controller')
 
 // Dashboard conseiller (advisor, admin, super_admin)
 router
@@ -53,6 +54,16 @@ router
              * Step Detail (Feuille de Route)
              */
             router.get('/steps/:stepId', [EmployeesController, 'showStepDetail'])
+
+            /**
+             * Support Plan Steps Management
+             */
+            router.get('/steps', [SupportPlanStepsController, 'index'])
+            router.post('/steps', [SupportPlanStepsController, 'store'])
+            router.put('/steps/:stepId', [SupportPlanStepsController, 'update'])
+            router.delete('/steps/:stepId', [SupportPlanStepsController, 'destroy'])
+            router.post('/steps/:stepId/unlock', [SupportPlanStepsController, 'unlock'])
+            router.post('/steps/:stepId/lock', [SupportPlanStepsController, 'lock'])
 
             /**
              * Employee Notes

@@ -9,4 +9,5 @@ export interface SupportPlanStep {
   notes?: string
   associatedExercise?: ExerciseType
   lastUpdated?: string
+  isLocked?: boolean
 }

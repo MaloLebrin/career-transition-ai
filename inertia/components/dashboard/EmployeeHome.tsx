@@ -47,63 +47,96 @@ export default function EmployeeHome({
               Ma Feuille de Route
             </h3>
             <div className="space-y-10">
-              {employee.plan.map((step, idx) => (
-                <div key={step.id} className="relative flex items-start group">
-                  <div
-                    className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${step.completed
-                      ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
-                      : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
+              {employee.plan.map((step, idx) => {
+                const isLocked = step.isLocked && !step.completed
+                return (
+                  <div key={step.id} className="relative flex items-start group">
+                    <div
+                      className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+                        step.completed
+                          ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
+                          : isLocked
+                          ? 'bg-amber-100 border-2 border-amber-200 text-amber-600'
+                          : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
                       }`}
-                  >
-                    {step.completed ? '✓' : idx + 1}
-                  </div>
-                  <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
-                    <h4
-                      className={`font-bold text-xl ${step.completed ? 'text-brand-navy/40' : 'text-brand-navy'
-                        }`}
                     >
-                      {step.title}
-                    </h4>
-                    <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
-                    {step.associatedExercise && !step.completed && (
-                      <AppLink href={`/dashboard/candidat/exercises/${step.associatedExercise}`}>
-                        <Button
-                          className="mt-6"
-                          variant="secondary"
-                          size="md"
-                          icon={
-                            <svg
-                              className="w-4 h-4 stroke-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                              />
-                            </svg>
-                          }
+                      {step.completed ? (
+                        '✓'
+                      ) : isLocked ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      ) : (
+                        idx + 1
+                      )}
+                    </div>
+                    <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
+                      <div className="flex items-center gap-2">
+                        <h4
+                          className={`font-bold text-xl ${
+                            step.completed
+                              ? 'text-brand-navy/40'
+                              : isLocked
+                              ? 'text-brand-navy/60'
+                              : 'text-brand-navy'
+                          }`}
                         >
-                          Démarrer
-                        </Button>
-                      </AppLink>
-                    )}
-                    {step.completed && (
-                      <AppLink href={`/dashboard/candidat/steps/${step.id}`}>
-                        <Button
-                          className="mt-6"
-                          variant="outline"
-                          size="sm"
-                        >
-                          Voir le résultat →
-                        </Button>
-                      </AppLink>
-                    )}
+                          {step.title}
+                        </h4>
+                        {isLocked && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-100 text-amber-600">
+                            Verrouillée
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
+                      {isLocked ? (
+                        <div className="mt-6 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-3 rounded-xl">
+                          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          <span>Cette étape sera débloquée par votre conseiller</span>
+                        </div>
+                      ) : step.associatedExercise && !step.completed ? (
+                        <AppLink href={`/dashboard/candidat/exercises/${step.associatedExercise}`}>
+                          <Button
+                            className="mt-6"
+                            variant="secondary"
+                            size="md"
+                            icon={
+                              <svg
+                                className="w-4 h-4 stroke-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                            }
+                          >
+                            Démarrer
+                          </Button>
+                        </AppLink>
+                      ) : null}
+                      {step.completed && (
+                        <AppLink href={`/dashboard/candidat/steps/${step.id}`}>
+                          <Button
+                            className="mt-6"
+                            variant="outline"
+                            size="sm"
+                          >
+                            Voir le résultat →
+                          </Button>
+                        </AppLink>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             <div className="mt-8 pt-8 border-t border-brand-navy/5">
               <AppLink

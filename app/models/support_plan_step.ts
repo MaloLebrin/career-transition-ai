@@ -34,6 +34,11 @@ export default class SupportPlanStep extends BaseModel {
   @column()
   declare sortOrder: number | null
 
+  @column({
+    consume: (value) => Boolean(value),
+  })
+  declare isLocked: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

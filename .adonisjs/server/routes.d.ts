@@ -39,6 +39,12 @@ export type ScannedRoutes = {
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.unlock': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.lock': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -91,6 +97,7 @@ export type ScannedRoutes = {
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
@@ -119,6 +126,7 @@ export type ScannedRoutes = {
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
@@ -143,6 +151,9 @@ export type ScannedRoutes = {
     'experiences.store': { paramsTuple?: []; params?: {} }
     'educations.store': { paramsTuple?: []; params?: {} }
     'employees.store_from_dashboard': { paramsTuple?: []; params?: {} }
+    'support_plan_steps.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.unlock': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'support_plan_steps.lock': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.motivation.draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.motivation.result': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -173,12 +184,14 @@ export type ScannedRoutes = {
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
     'experiences.delete': { paramsTuple?: []; params?: {} }
     'educations.delete': { paramsTuple?: []; params?: {} }
     'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }

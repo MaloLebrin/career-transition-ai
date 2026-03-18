@@ -1,24 +1,53 @@
 import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
 import { useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import NotesSection from '~/components/dashboard/NotesSection'
+import StepEditorModal from '~/components/modals/StepEditorModal'
+import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
-import { useAuth } from '~/hooks/useAuth'
-import { useEmployee } from '~/hooks/use_employee'
-import type { Employee, SupportPlanStep } from '~/types'
+import ConfirmModal from '~/components/ui/ConfirmModal'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
+import { useAuth } from '~/hooks/useAuth'
+import type { Employee, SupportPlanStep } from '~/types'
 
 interface EmployeeDetailProps {
   employeeId: string
   employee: Employee
 }
 
-export default function DashboardEmployeeDetail({ employeeId, employee }: EmployeeDetailProps) {
+export default function DashboardEmployeeDetail({ employeeId, employee: selectedEmployee }: EmployeeDetailProps) {
   const { user } = useAuth()
-  const { employee: selectedEmployee } = useEmployee(employeeId, employee)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [isStepEditorOpen, setIsStepEditorOpen] = useState(false)
+  const [editingStep, setEditingStep] = useState<SupportPlanStep | undefined>(undefined)
+  const [deletingStepId, setDeletingStepId] = useState<number | null>(null)
+
+  const handleToggleLock = (step: SupportPlanStep) => {
+    const action = step.isLocked ? 'unlock' : 'lock'
+    router.post(`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}/${action}`, {}, {
+      preserveScroll: true,
+    })
+  }
+
+  const handleDeleteStep = () => {
+    if (deletingStepId) {
+      router.delete(`/dashboard/conseiller/employees/${employeeId}/steps/${deletingStepId}`, {
+        preserveScroll: true,
+        onSuccess: () => setDeletingStepId(null),
+      })
+    }
+  }
+
+  const openEditModal = (step: SupportPlanStep) => {
+    setEditingStep(step)
+    setIsStepEditorOpen(true)
+  }
+
+  const closeStepEditor = () => {
+    setIsStepEditorOpen(false)
+    setEditingStep(undefined)
+  }
 
   const normalizeExerciseType = (t: string | undefined): string =>
     (t ?? '').toUpperCase().replace(/-/g, '_')
@@ -140,63 +169,135 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 />
               </div>
               <Card className="p-10">
-                <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-8">
-                  Feuille de Route
-                </h3>
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest">
+                    Feuille de Route
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsStepEditorOpen(true)}
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                    }
+                  >
+                    Ajouter une étape
+                  </Button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {selectedEmployee.plan.map((step) => {
                     const result = getResultForStep(step)
-                    const content = (
-                      <div className="group cursor-pointer p-6 rounded-[32px] border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-xl transition-all flex flex-col justify-between">
-                        <div className="mb-4">
-                          <div
-                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                              step.completed
-                                ? 'bg-brand-sage/20 text-brand-sage'
-                                : 'bg-brand-navy/10 text-brand-navy/40'
+                    return (
+                      <div
+                        key={step.id}
+                        className="group p-6 rounded-[32px] border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-xl transition-all flex flex-col justify-between relative"
+                      >
+                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleToggleLock(step)
+                            }}
+                            className={`p-2 rounded-xl transition-colors ${
+                              step.isLocked
+                                ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+                                : 'bg-brand-sage/10 text-brand-sage hover:bg-brand-sage/20'
                             }`}
+                            title={step.isLocked ? 'Déverrouiller' : 'Verrouiller'}
                           >
-                            {step.completed ? 'Validée' : 'À faire'}
+                            {step.isLocked ? (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              openEditModal(step)
+                            }}
+                            className="p-2 rounded-xl bg-brand-navy/5 text-brand-navy/60 hover:bg-brand-navy/10 transition-colors"
+                            title="Modifier"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setDeletingStepId(step.id)
+                            }}
+                            className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                            title="Supprimer"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div
+                              className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                                step.completed
+                                  ? 'bg-brand-sage/20 text-brand-sage'
+                                  : 'bg-brand-navy/10 text-brand-navy/40'
+                              }`}
+                            >
+                              {step.completed ? 'Validée' : 'À faire'}
+                            </div>
+                            {step.isLocked && (
+                              <div className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-amber-100 text-amber-600 flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Verrouillée
+                              </div>
+                            )}
                           </div>
                           <h4 className="font-bold text-brand-navy text-lg group-hover:text-brand-sage mt-2">
                             {step.title}
                           </h4>
+                          {step.description && (
+                            <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.description}</p>
+                          )}
                         </div>
-                        {result && (
+                        {result ? (
+                          <AppLink
+                            href={`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`}
+                            className="pt-4 border-t border-brand-navy/5 block"
+                          >
+                            <span className="text-[9px] font-bold text-brand-sage uppercase tracking-widest hover:underline">
+                              Voir le résultat →
+                            </span>
+                          </AppLink>
+                        ) : step.associatedExercise ? (
+                          <AppLink
+                            href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
+                            className="pt-4 border-t border-brand-navy/5 block"
+                          >
+                            <span className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline">
+                              Démarrer l'exercice →
+                            </span>
+                          </AppLink>
+                        ) : (
                           <div className="pt-4 border-t border-brand-navy/5">
-                            <span className="text-[9px] font-bold text-brand-sage uppercase tracking-widest">
-                              Rapport Gemini →
+                            <span className="text-[10px] font-medium text-brand-navy/40 uppercase tracking-widest">
+                              Pas d'exercice associé
                             </span>
                           </div>
                         )}
-                        {step.associatedExercise && !result && (
-                          <div className="pt-4">
-                            <AppLink
-                              href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
-                              className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
-                            >
-                              Démarrer l’exercice →
-                            </AppLink>
-                          </div>
-                        )}
                       </div>
-                    )
-                    return step.associatedExercise && !result ? (
-                      <AppLink
-                        key={step.id}
-                        href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
-                        className="block"
-                      >
-                        {content}
-                      </AppLink>
-                    ) : (
-                      <AppLink
-                        key={step.id}
-                        href={`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`}
-                        className="block"
-                      >
-                        {content}
-                      </AppLink>
                     )
                   })}
                 </div>
@@ -288,6 +389,25 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
             </div>
           </div>
         </div>
+
+        {isStepEditorOpen && (
+          <StepEditorModal
+            employeeId={selectedEmployee.id}
+            step={editingStep}
+            onClose={closeStepEditor}
+          />
+        )}
+
+        <ConfirmModal
+          isOpen={deletingStepId !== null}
+          title="Supprimer l'étape"
+          description="Êtes-vous sûr de vouloir supprimer cette étape de la feuille de route ? Cette action est irréversible."
+          confirmLabel="Supprimer"
+          cancelLabel="Annuler"
+          onConfirm={handleDeleteStep}
+          onCancel={() => setDeletingStepId(null)}
+          variant="danger"
+        />
       </DashboardLayout>
     </>
   )

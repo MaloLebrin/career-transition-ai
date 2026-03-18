@@ -124,6 +124,7 @@ export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto =>
       ? exerciceTypeToFront(step.associatedExercise)
       : undefined,
     lastUpdated: step.updatedAt.toISO() || undefined,
+    isLocked: step.isLocked,
   }
 }
 
