@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { formatDate } from '../../../shared/helpers/date'
 import { MOTIVATIONS_LIST } from '../../constants'
 
 interface Props {
@@ -39,7 +40,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
           <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
             Date de passage
           </div>
-          <div className="text-lg font-black text-slate-900">{date}</div>
+          <div className="text-lg font-black text-slate-900">{formatDate(date, { month: 'short', year: 'numeric', day: 'numeric' })}</div>
         </div>
         <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
           <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
