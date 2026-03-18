@@ -1,4 +1,8 @@
-export * from './types/ExerciseType'
+export {
+  EXERCICE_RESULTS_TYPES,
+  ExerciceResultType,
+  ExerciceResultType as ExerciseType,
+} from '../shared/constants/exercises'
 export * from './types/Skill'
 export * from './types/PersonalityData'
 export * from './types/JobType'

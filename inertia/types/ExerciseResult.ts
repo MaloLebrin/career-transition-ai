@@ -1,8 +1,8 @@
-import { ExerciseType } from './ExerciseType'
+import { ExerciceResultType } from '../../shared/constants/exercises'
 
 export interface ExerciseResult {
   id: number
-  type: ExerciseType
+  type: ExerciceResultType
   date: string
   duration: number
   data: any
@@ -12,7 +12,7 @@ export interface ExerciseResult {
 
 export interface ExerciseDraft {
   employeeId: number
-  type: ExerciseType
+  type: ExerciceResultType
   lastUpdated: string
   data: any
 }
