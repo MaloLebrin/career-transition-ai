@@ -52,7 +52,7 @@ export default function TargetingExercise({
 
   if (!user) {
     return (
-      <DashboardLayout selectedEmployeeId={employeeId || null}>
+      <DashboardLayout selectedEmployeeId={employeeId || null} hideSidebar>
         <div className="flex justify-center items-center min-h-[200px]">
           <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
         </div>
@@ -63,7 +63,7 @@ export default function TargetingExercise({
   return (
     <>
       <Head title="Exercice Ciblage" />
-      <DashboardLayout selectedEmployeeId={employeeId || null}>
+      <DashboardLayout selectedEmployeeId={employeeId || null} hideSidebar>
         <div className="animate-fadeIn max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <AppLink href={backHref}>

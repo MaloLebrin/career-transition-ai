@@ -79,7 +79,7 @@ export default function CandidatExercise({
   return (
     <>
       <Head title={`Exercice ${type}`} />
-      <DashboardLayout>
+      <DashboardLayout hideSidebar>
         <div className="animate-fadeIn max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <AppLink href="/dashboard/candidat">

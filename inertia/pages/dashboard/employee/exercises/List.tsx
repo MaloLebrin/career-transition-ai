@@ -20,7 +20,7 @@ export default function CandidatExerciseList({ exercises = [] }: CandidatExercis
   if (!user) return null
 
   return (
-    <DashboardLayout>
+    <DashboardLayout hideSidebar>
       <Head title="Exercices" />
       <div className="space-y-8 animate-fadeIn">
         <div className="flex items-center gap-4">

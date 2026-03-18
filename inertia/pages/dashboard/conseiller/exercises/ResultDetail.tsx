@@ -44,7 +44,7 @@ export default function ExerciseResultDetail({
 
   if (!user) {
     return (
-      <DashboardLayout selectedEmployeeId={employeeId}>
+      <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>
         <div className="flex justify-center items-center min-h-[200px]">
           <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
         </div>
@@ -53,7 +53,7 @@ export default function ExerciseResultDetail({
   }
 
   return (
-    <DashboardLayout selectedEmployeeId={employeeId}>
+    <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>
       <Head title={`${exerciseTitle} - ${employeeName}`} />
       <div className="animate-fadeIn max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-10">

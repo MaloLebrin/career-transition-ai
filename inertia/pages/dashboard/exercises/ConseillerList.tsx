@@ -38,7 +38,7 @@ export default function ConseillerExerciseList({
   if (!user) return null
 
   return (
-    <DashboardLayout selectedEmployeeId={employeeId}>
+    <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>
       <Head title="Résultats des exercices" />
       <div className="space-y-8 animate-fadeIn">
         <div className="flex items-center gap-4">
