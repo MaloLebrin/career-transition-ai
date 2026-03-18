@@ -1,5 +1,6 @@
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
+import Skill from '#models/skill'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { USERS_ROLES } from '#shared/constants/user'
@@ -219,12 +220,24 @@ export default class EmployeesController {
       .preload('supportPlanSteps')
       .preload('appointments')
 
-    const employee = await employeeQuery.firstOrFail()
+    const [employee, availableSkills] = await Promise.all([
+      employeeQuery.firstOrFail(),
+      Skill.query()
+        .where('organizationId', user.organizationId)
+        .whereNull('deletedAt')
+        .orderBy('name', 'asc'),
+    ])
+
     const data = mapEmployee(employee)
 
     return (ctx.inertia as any).render('dashboard/employee/profile/Home', {
       employeeId: employee.id,
       employee: data,
+      availableSkills: availableSkills.map((s) => ({
+        id: s.id,
+        name: s.name,
+        category: s.category,
+      })),
     })
   }
 

@@ -8,12 +8,19 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import Card from '~/components/ui/Card'
 
+interface AvailableSkill {
+  id: number
+  name: string
+  category: string | null
+}
+
 interface EmployeeProfileProps {
   employeeId: string
   employee: EmployeeData
+  availableSkills?: AvailableSkill[]
 }
 
-export default function EmployeeProfile({ employeeId, employee }: EmployeeProfileProps) {
+export default function EmployeeProfile({ employeeId, employee, availableSkills = [] }: EmployeeProfileProps) {
   if (!employee) {
     return (
       <DashboardLayout selectedEmployeeId={employeeId}>
@@ -108,7 +115,7 @@ export default function EmployeeProfile({ employeeId, employee }: EmployeeProfil
         <ExperiencesCard employee={employee} />
 
         <EducationsCard employee={employee} />
-        <Skills employee={employee} />
+        <Skills employee={employee} availableSkills={availableSkills} />
       </div>
     </DashboardLayout>
   )

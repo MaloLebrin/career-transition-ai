@@ -1,16 +1,35 @@
-import { EmployeeData } from '~/types';
-import Card from '../../../ui/Card';
+import { PlusIcon } from 'lucide-react'
+import { useState } from 'react'
+import AddSkillModal from '~/components/dashboard/employee/profile/AddSkillModal'
+import Button from '~/components/ui/Button'
+import { EmployeeData } from '~/types'
+import Card from '../../../ui/Card'
+
+interface AvailableSkill {
+  id: number
+  name: string
+  category: string | null
+}
 
 interface SkillsProps {
   employee: EmployeeData
+  availableSkills?: AvailableSkill[]
 }
 
-export const Skills = ({ employee }: SkillsProps) => {
+export const Skills = ({ employee, availableSkills = [] }: SkillsProps) => {
+  const [isAddOpen, setIsAddOpen] = useState(false)
+
   return (
     <Card className="p-10 rounded-[40px]">
-      <h2 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.2em] mb-8">
-        Compétences
-      </h2>
+      <div className="flex justify-between items-start gap-6">
+        <h2 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.2em] mb-8">
+          Compétences
+        </h2>
+        <Button size="xs" onClick={() => setIsAddOpen(true)} disabled={isAddOpen}>
+          <PlusIcon className="w-4 h-4" />
+          Ajouter
+        </Button>
+      </div>
       {employee.skills.length === 0 ? (
         <p className="text-brand-navy/50 italic">Aucune compétence renseignée.</p>
       ) : (
@@ -29,6 +48,8 @@ export const Skills = ({ employee }: SkillsProps) => {
           ))}
         </div>
       )}
+
+      {isAddOpen && <AddSkillModal onClose={() => setIsAddOpen(false)} availableSkills={availableSkills} />}
     </Card>
   );
 };

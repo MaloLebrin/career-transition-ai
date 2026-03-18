@@ -86,6 +86,7 @@
     "@adonisjs/vite": "^5.1.0",
     "@boringnode/queue": "^0.5.0",
     "@google/genai": "^1.45.0",
+    "@headlessui/react": "^2.2.9",
     "@inertiajs/react": "^2.3.18",
     "@vinejs/vine": "^4.3.0",
     "archiver": "^7.0.1",
