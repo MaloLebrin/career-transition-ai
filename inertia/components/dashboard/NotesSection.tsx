@@ -1,5 +1,6 @@
+import { router } from '@inertiajs/react'
 import { MessageSquarePlus, StickyNote } from 'lucide-react'
-import { memo, useState, useCallback, useEffect } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import type { Note, NoteVisibility } from '~/types/Note'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -45,7 +46,12 @@ const NotesSection = memo(function NotesSection({
         ? `/dashboard/conseiller/employees/${employeeId}/notes`
         : '/dashboard/candidat/notes'
 
-      const response = await fetch(basePath)
+      const response = await fetch(basePath, {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      })
       if (response.ok) {
         const data = await response.json()
         let filteredNotes = data as Note[]
@@ -76,86 +82,60 @@ const NotesSection = memo(function NotesSection({
   }, [fetchNotes, initialNotes.length])
 
   const handleCreate = useCallback(
-    async (data: { content: string; visibility: NoteVisibility }) => {
+    (data: { content: string; visibility: NoteVisibility }) => {
       setIsLoading(true)
-      try {
-        const response = await fetch(`/dashboard/conseiller/employees/${employeeId}/notes`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
+      router.post(
+        `/dashboard/conseiller/employees/${employeeId}/notes`,
+        {
+          ...data,
+          appointmentId: context === 'appointment' ? appointmentId : undefined,
+          exerciseResultId: context === 'exercise' ? exerciseResultId : undefined,
+        },
+        {
+          preserveScroll: true,
+          onSuccess: () => {
+            setIsAddOpen(false)
+            fetchNotes()
           },
-          body: JSON.stringify({
-            ...data,
-            appointmentId: context === 'appointment' ? appointmentId : undefined,
-            exerciseResultId: context === 'exercise' ? exerciseResultId : undefined,
-          }),
-        })
-
-        if (response.ok) {
-          const newNote = await response.json()
-          setNotes((prev) => [newNote, ...prev])
-          setIsAddOpen(false)
+          onFinish: () => setIsLoading(false),
         }
-      } catch (error) {
-        console.error('Failed to create note:', error)
-      } finally {
-        setIsLoading(false)
-      }
+      )
     },
-    [employeeId, context, appointmentId, exerciseResultId]
+    [employeeId, context, appointmentId, exerciseResultId, fetchNotes]
   )
 
   const handleUpdate = useCallback(
-    async (data: { content: string; visibility: NoteVisibility }) => {
+    (data: { content: string; visibility: NoteVisibility }) => {
       if (!editingNote) return
       setIsLoading(true)
-      try {
-        const response = await fetch(`/dashboard/conseiller/notes/${editingNote.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
+      router.put(
+        `/dashboard/conseiller/notes/${editingNote.id}`,
+        data,
+        {
+          preserveScroll: true,
+          onSuccess: () => {
+            setEditingNote(null)
+            fetchNotes()
           },
-          body: JSON.stringify(data),
-        })
-
-        if (response.ok) {
-          const updatedNote = await response.json()
-          setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)))
-          setEditingNote(null)
+          onFinish: () => setIsLoading(false),
         }
-      } catch (error) {
-        console.error('Failed to update note:', error)
-      } finally {
-        setIsLoading(false)
-      }
+      )
     },
-    [editingNote]
+    [editingNote, fetchNotes]
   )
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!deletingNote) return
     setDeleteState('loading')
-    try {
-      const response = await fetch(`/dashboard/conseiller/notes/${deletingNote.id}`, {
-        method: 'DELETE',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      })
-
-      if (response.ok) {
+    router.delete(`/dashboard/conseiller/notes/${deletingNote.id}`, {
+      preserveScroll: true,
+      onSuccess: () => {
         setNotes((prev) => prev.filter((n) => n.id !== deletingNote.id))
         setDeletingNote(null)
         setDeleteState('idle')
-      } else {
-        setDeleteState('error')
-      }
-    } catch (error) {
-      console.error('Failed to delete note:', error)
-      setDeleteState('error')
-    }
+      },
+      onError: () => setDeleteState('error'),
+    })
   }, [deletingNote])
 
   return (
@@ -163,9 +143,9 @@ const NotesSection = memo(function NotesSection({
       <div className="flex justify-between items-start gap-4 mb-6">
         <div className="flex items-center gap-3">
           <StickyNote className="w-5 h-5 text-brand-sage" />
-          <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.15em]">
+          {title && <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.15em]">
             {title}
-          </h3>
+          </h3>}
         </div>
         {isAdvisor && !isAddOpen && !editingNote && (
           <Button size="xs" onClick={() => setIsAddOpen(true)}>
@@ -226,21 +206,7 @@ const NotesSection = memo(function NotesSection({
       ) : notes.length === 0 ? (
         <p className="text-center py-8 text-brand-navy/40 text-sm italic">Aucune note</p>
       ) : (
-        <div className="space-y-4">
-          {/* Légende pour l'advisor */}
-          {isAdvisor && notes.length > 0 && (
-            <div className="flex items-center gap-4 text-[10px] font-medium text-slate-400 px-1 mb-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
-                <span>Privée (vous seul)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-200" />
-                <span>Partagée (visible par l'accompagné)</span>
-              </div>
-            </div>
-          )}
-          
+        <div className="space-y-4">          
           {notes.map((note) => (
             <NoteCard
               key={note.id}

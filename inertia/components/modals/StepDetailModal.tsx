@@ -148,7 +148,6 @@ const StepDetailModal: React.FC<Props> = ({ step, result, employeeId, onClose, u
                   employeeId={employeeId}
                   context="exercise"
                   exerciseResultId={result.id}
-                  title="Notes sur cet exercice"
                   isAdvisor={userRole === 'advisor'}
                   useModal={false}
                 />

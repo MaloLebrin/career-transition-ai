@@ -100,7 +100,7 @@ export default class NotesController {
   /**
    * Create a new note (advisor only).
    */
-  public async store({ auth, params, request, response }: HttpContext) {
+  public async store({ auth, params, request, response, session }: HttpContext) {
     const user = auth.user!
     const employeeId = Number(params.id ?? params.employeeId)
 
@@ -142,7 +142,7 @@ export default class NotesController {
       }
     }
 
-    const note = await Note.create({
+    await Note.create({
       organizationId: user.organizationId,
       employeeId: employee.id,
       authorId: user.id,
@@ -152,26 +152,14 @@ export default class NotesController {
       exerciseResultId: payload.exerciseResultId ?? null,
     })
 
-    await note.load('author')
-
-    return response.created({
-      id: note.id,
-      content: note.content,
-      visibility: note.visibility,
-      appointmentId: note.appointmentId,
-      exerciseResultId: note.exerciseResultId,
-      authorId: note.authorId,
-      authorName: note.author?.name ?? 'Unknown',
-      createdAt: note.createdAt.toISO(),
-      updatedAt: note.updatedAt.toISO(),
-      canEdit: true,
-    })
+    session.flash('success', 'Note ajoutée')
+    return response.redirect().back()
   }
 
   /**
    * Update a note (author only).
    */
-  public async update({ auth, params, request, response }: HttpContext) {
+  public async update({ auth, params, request, response, session }: HttpContext) {
     const user = auth.user!
     const noteId = Number(params.id)
 
@@ -199,26 +187,15 @@ export default class NotesController {
     }
 
     await note.save()
-    await note.load('author')
 
-    return response.json({
-      id: note.id,
-      content: note.content,
-      visibility: note.visibility,
-      appointmentId: note.appointmentId,
-      exerciseResultId: note.exerciseResultId,
-      authorId: note.authorId,
-      authorName: note.author?.name ?? 'Unknown',
-      createdAt: note.createdAt.toISO(),
-      updatedAt: note.updatedAt.toISO(),
-      canEdit: true,
-    })
+    session.flash('success', 'Note mise à jour')
+    return response.redirect().back()
   }
 
   /**
    * Delete a note (soft delete, author only).
    */
-  public async destroy({ auth, params, response }: HttpContext) {
+  public async destroy({ auth, params, response, session }: HttpContext) {
     const user = auth.user!
     const noteId = Number(params.id)
 
@@ -239,6 +216,7 @@ export default class NotesController {
     note.deletedAt = DateTime.now()
     await note.save()
 
-    return response.noContent()
+    session.flash('success', 'Note supprimée')
+    return response.redirect().back()
   }
 }
