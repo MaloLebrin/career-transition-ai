@@ -233,6 +233,33 @@ export class FileSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class NoteSchema extends BaseModel {
+  static $columns = ['appointmentId', 'authorId', 'content', 'createdAt', 'deletedAt', 'employeeId', 'exerciseResultId', 'id', 'organizationId', 'updatedAt', 'visibility'] as const
+  $columns = NoteSchema.$columns
+  @column()
+  declare appointmentId: number | null
+  @column()
+  declare authorId: number
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare employeeId: number
+  @column()
+  declare exerciseResultId: number | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare organizationId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare visibility: string
+}
+
 export class OnboardingTokenSchema extends BaseModel {
   static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'usedAt', 'userId'] as const
   $columns = OnboardingTokenSchema.$columns
@@ -306,7 +333,7 @@ export class QueueScheduleSchema extends BaseModel {
   @column.dateTime()
   declare fromDate: DateTime | null
   @column({ isPrimary: true })
-  declare id: string | null
+  declare id: string
   @column.dateTime()
   declare lastRunAt: DateTime | null
   @column()

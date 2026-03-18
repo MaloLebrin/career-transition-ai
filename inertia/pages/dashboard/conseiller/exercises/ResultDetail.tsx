@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
 import AppLink from '~/components/ui/AppLink'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import NotesSection from '~/components/dashboard/NotesSection'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
@@ -126,6 +127,14 @@ export default function ExerciseResultDetail({
                     </div>
                   </div>
                 </div>
+
+                <NotesSection
+                  employeeId={Number(employeeId)}
+                  context="exercise"
+                  exerciseResultId={result.id}
+                  title="Notes sur cet exercice"
+                  isAdvisor={true}
+                />
               </div>
             </div>
           </div>

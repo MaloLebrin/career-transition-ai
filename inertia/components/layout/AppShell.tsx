@@ -632,10 +632,11 @@ const AppShell: React.FC = () => {
               </div>
             ) : null}
           </div>
-          {selectedStepForDetail && (
+          {selectedStepForDetail && selectedEmployee && (
             <StepDetailModal
               step={selectedStepForDetail}
               result={getResultForStep(selectedStepForDetail) || undefined}
+              employeeId={selectedEmployee.id}
               onClose={() => setSelectedStepForDetail(null)}
               userRole={userRole}
             />

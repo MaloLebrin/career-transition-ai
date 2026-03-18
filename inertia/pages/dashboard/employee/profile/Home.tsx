@@ -1,5 +1,6 @@
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { Head } from '@inertiajs/react'
+import NotesSection from '~/components/dashboard/NotesSection'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
@@ -116,6 +117,13 @@ export default function EmployeeProfile({ employeeId, employee, availableSkills 
 
         <EducationsCard employee={employee} />
         <Skills employee={employee} availableSkills={availableSkills} />
+
+        <NotesSection
+          employeeId={employee.id}
+          context="general"
+          title="Notes de mon conseiller"
+          isAdvisor={false}
+        />
       </div>
     </DashboardLayout>
   )

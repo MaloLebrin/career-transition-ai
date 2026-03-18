@@ -4,6 +4,7 @@ import router from '@adonisjs/core/services/router'
 const AuthController = () => import('#controllers/auth_controller')
 const EmployeesController = () => import('#controllers/employees_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const NotesController = () => import('#controllers/notes_controller')
 const OrganizationsController = () => import('#controllers/organizations_controller')
 const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
 
@@ -21,6 +22,12 @@ router
     router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {})
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/bulk-jobs', [BulkJobsController, 'index'])
+
+    /**
+     * Notes management (update/delete)
+     */
+    router.put('/notes/:id', [NotesController, 'update'])
+    router.delete('/notes/:id', [NotesController, 'destroy'])
 
     router.get('/exercises/:type', [
       ExerciseResultsController,
@@ -41,6 +48,12 @@ router
             router.put('/', [EmployeesController, 'updateFromDashboard'])
             router.get('/profile', [EmployeesController, 'showProfileDashboard'])
             router.get('/dossier', [EmployeesController, 'downloadDossier'])
+
+            /**
+             * Employee Notes
+             */
+            router.get('/notes', [NotesController, 'index'])
+            router.post('/notes', [NotesController, 'store'])
 
             /**
              * Employee Exercises

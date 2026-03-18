@@ -34,6 +34,7 @@ router
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
     router.post('/skills', [() => import('#controllers/employee_skills_controller'), 'store'])
     router.put('/skills', [() => import('#controllers/employee_skills_controller'), 'update'])
+    router.get('/notes', [() => import('#controllers/notes_controller'), 'indexForCandidat'])
   })
   .use([middleware.auth(), middleware.candidate()])
   .prefix('/dashboard/candidat')

@@ -1,5 +1,6 @@
 import React from 'react'
 import { ExerciseResult, SupportPlanStep } from '../../types'
+import NotesSection from '../dashboard/NotesSection'
 import ExerciseResultVisualization from '../exercises/ExerciseResultVisualization'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -8,6 +9,7 @@ import Card from '../ui/Card'
 interface Props {
   step: SupportPlanStep
   result?: ExerciseResult
+  employeeId?: number
   onClose: () => void
   userRole: 'advisor' | 'employee'
 }
@@ -23,7 +25,7 @@ function formatSessionDate(dateStr: string | undefined): string {
   })
 }
 
-const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) => {
+const StepDetailModal: React.FC<Props> = ({ step, result, employeeId, onClose, userRole }) => {
   const renderResult = () => {
     if (!result) {
       return (
@@ -141,17 +143,15 @@ const StepDetailModal: React.FC<Props> = ({ step, result, onClose, userRole }) =
                 </div>
               </div>
 
-              {userRole === 'advisor' && (
-                <div className="bg-orange-50/50 p-8 rounded-[48px] border border-orange-100 shadow-sm">
-                  <h3 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em] mb-8">
-                    Notes Accompagnateur
-                  </h3>
-                  <textarea 
-                    className="w-full bg-white/50 border border-orange-100 rounded-[32px] p-6 text-sm min-h-[200px] outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none italic font-bold text-orange-900 placeholder:text-orange-200 shadow-inner"
-                    placeholder="Saisissez vos observations pour aider le candidat..."
-                    defaultValue={step.notes || ''}
-                  />
-                </div>
+              {employeeId && result && (
+                <NotesSection
+                  employeeId={employeeId}
+                  context="exercise"
+                  exerciseResultId={result.id}
+                  title="Notes sur cet exercice"
+                  isAdvisor={userRole === 'advisor'}
+                  useModal={false}
+                />
               )}
             </div>
           </div>

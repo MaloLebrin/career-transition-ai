@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import AppLink from '~/components/ui/AppLink'
 import { useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import NotesSection from '~/components/dashboard/NotesSection'
 import StepDetailModal from '~/components/modals/StepDetailModal'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
@@ -277,6 +278,13 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   ))}
                 </div>
               </Card>
+
+              <NotesSection
+                employeeId={selectedEmployee.id}
+                context="general"
+                title="Notes de suivi"
+                isAdvisor={true}
+              />
             </div>
           </div>
         </div>
@@ -284,6 +292,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
           <StepDetailModal
             step={selectedStepForDetail}
             result={getResultForStep(selectedStepForDetail) || undefined}
+            employeeId={selectedEmployee.id}
             onClose={() => setSelectedStepForDetail(null)}
             userRole={userRole}
           />
