@@ -1,8 +1,8 @@
 import type { NoteVisibility } from '#shared/constants/note'
-import Appointment from '#models/appointment'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
+import SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
@@ -22,7 +22,7 @@ export default class Note extends BaseModel {
   declare authorId: number
 
   @column()
-  declare appointmentId: number | null
+  declare supportPlanStepId: number | null
 
   @column()
   declare exerciseResultId: number | null
@@ -51,8 +51,8 @@ export default class Note extends BaseModel {
   @belongsTo(() => User, { foreignKey: 'authorId' })
   declare author: BelongsTo<typeof User>
 
-  @belongsTo(() => Appointment)
-  declare appointment: BelongsTo<typeof Appointment>
+  @belongsTo(() => SupportPlanStep)
+  declare supportPlanStep: BelongsTo<typeof SupportPlanStep>
 
   @belongsTo(() => ExerciseResult)
   declare exerciseResult: BelongsTo<typeof ExerciseResult>

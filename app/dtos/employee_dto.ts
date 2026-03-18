@@ -46,16 +46,24 @@ export type ExerciseResultDto = {
   qualitativeAnalysis?: string
 }
 
+export type SupportPlanStepStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+
 export type SupportPlanStepDto = {
   id: number
-  title: string
-  description: string
-  dueDate: string
+  title?: string
+  description?: string
+  instructions?: string
+  dueDate?: string
+  scheduledAt?: string
+  endedAt?: string
+  status: SupportPlanStepStatus
+  locationOrLink?: string
   completed: boolean
   notes?: string
   associatedExercise?: ExerciseResultDto['type']
   lastUpdated?: string
   isLocked?: boolean
+  sortOrder?: number
 }
 
 export type EmployeeDto = {
@@ -74,6 +82,5 @@ export type EmployeeDto = {
   status: EmployeeStatus
   onboarded: boolean
   exercises: ExerciseResultDto[]
-  nextAppointment?: string
   plan: SupportPlanStepDto[]
 }

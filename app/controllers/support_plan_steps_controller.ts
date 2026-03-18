@@ -1,5 +1,6 @@
 import Employee from '#models/employee'
 import SupportPlanStep from '#models/support_plan_step'
+import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { USERS_ROLES } from '#shared/constants/user'
 import { createStepValidator } from '#validators/support_plan_step/create_step_validator'
 import { updateStepValidator } from '#validators/support_plan_step/update_step_validator'
@@ -32,7 +33,12 @@ export default class SupportPlanStepsController {
         id: step.id,
         title: step.title,
         description: step.description,
+        instructions: step.instructions,
         dueDate: step.dueDate?.toISODate(),
+        scheduledAt: step.scheduledAt?.toISO(),
+        endedAt: step.endedAt?.toISO(),
+        status: step.status,
+        locationOrLink: step.locationOrLink,
         completed: step.completed,
         notes: step.notes,
         associatedExercise: step.associatedExercise,
@@ -70,20 +76,25 @@ export default class SupportPlanStepsController {
       .max('sort_order as max')
       .first()
 
-    const nextSortOrder = payload.sortOrder ?? ((maxSortOrder?.$extras?.max ?? 0) + 1)
+    const nextSortOrder = payload.sortOrder ?? ((maxSortOrder?.$extras?.max ?? -1) + 1)
 
     await SupportPlanStep.create({
       employeeId,
-      title: payload.title,
+      advisorId: user.id,
+      title: payload.title ?? null,
       description: payload.description ?? null,
-      dueDate: DateTime.fromISO(payload.dueDate),
+      instructions: payload.instructions ?? null,
+      dueDate: payload.dueDate ? DateTime.fromISO(payload.dueDate) : null,
+      scheduledAt: payload.scheduledAt ? DateTime.fromISO(payload.scheduledAt) : null,
+      status: payload.status ?? APPOINTMENTS_STATUSES.SCHEDULED,
+      locationOrLink: payload.locationOrLink ?? null,
       associatedExercise: payload.associatedExercise ?? null,
       sortOrder: nextSortOrder,
       isLocked: payload.isLocked ?? true,
       completed: false,
     })
 
-    session.flash('success', 'Étape créée')
+    session.flash('success', 'RDV créé')
     return response.redirect().back()
   }
 
@@ -120,9 +131,14 @@ export default class SupportPlanStepsController {
 
     const payload = await request.validateUsing(updateStepValidator)
 
-    if (payload.title !== undefined) step.title = payload.title
+    if (payload.title !== undefined) step.title = payload.title ?? null
     if (payload.description !== undefined) step.description = payload.description ?? null
-    if (payload.dueDate !== undefined) step.dueDate = DateTime.fromISO(payload.dueDate)
+    if (payload.instructions !== undefined) step.instructions = payload.instructions ?? null
+    if (payload.dueDate !== undefined) step.dueDate = payload.dueDate ? DateTime.fromISO(payload.dueDate) : null
+    if (payload.scheduledAt !== undefined) step.scheduledAt = payload.scheduledAt ? DateTime.fromISO(payload.scheduledAt) : null
+    if (payload.endedAt !== undefined) step.endedAt = payload.endedAt ? DateTime.fromISO(payload.endedAt) : null
+    if (payload.status !== undefined) step.status = payload.status
+    if (payload.locationOrLink !== undefined) step.locationOrLink = payload.locationOrLink ?? null
     if (payload.associatedExercise !== undefined) step.associatedExercise = payload.associatedExercise ?? null
     if (payload.sortOrder !== undefined) step.sortOrder = payload.sortOrder
     if (payload.isLocked !== undefined) step.isLocked = payload.isLocked
@@ -131,7 +147,7 @@ export default class SupportPlanStepsController {
 
     await step.save()
 
-    session.flash('success', 'Étape mise à jour')
+    session.flash('success', 'RDV mis à jour')
     return response.redirect().back()
   }
 
@@ -168,7 +184,7 @@ export default class SupportPlanStepsController {
 
     await step.delete()
 
-    session.flash('success', 'Étape supprimée')
+    session.flash('success', 'RDV supprimé')
     return response.redirect().back()
   }
 
@@ -206,7 +222,7 @@ export default class SupportPlanStepsController {
     step.isLocked = false
     await step.save()
 
-    session.flash('success', 'Étape déverrouillée')
+    session.flash('success', 'RDV déverrouillé')
     return response.redirect().back()
   }
 
@@ -244,7 +260,7 @@ export default class SupportPlanStepsController {
     step.isLocked = true
     await step.save()
 
-    session.flash('success', 'Étape verrouillée')
+    session.flash('success', 'RDV verrouillé')
     return response.redirect().back()
   }
 }

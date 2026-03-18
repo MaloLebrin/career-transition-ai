@@ -72,7 +72,6 @@ export class ExerciseResultsService {
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
       .firstOrFail()
 
     return mapEmployee(loaded)

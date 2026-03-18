@@ -41,7 +41,6 @@ export default class EmployeeSeeder extends BaseSeeder {
           'Profil direction avec forte dimension commerciale et opérationnelle. Expérience création et gestion d’un centre de profits 1,5 M€+, management d’équipe, B2B international.',
         status: 'active',
         onboarded: true,
-        nextAppointment: null,
       }
     )
 
@@ -134,7 +133,6 @@ export default class EmployeeSeeder extends BaseSeeder {
           'Profil technique fort (React, Vue, Node) avec expérience management d’équipe (Portique club) et entrepreneuriat (MAIA MATER). Double compétence psychologie et dev.',
         status: 'active',
         onboarded: true,
-        nextAppointment: null,
       }
     )
 

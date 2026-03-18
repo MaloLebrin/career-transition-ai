@@ -81,7 +81,7 @@ export default function EmployeeHome({
                               : 'text-brand-navy'
                           }`}
                         >
-                          {step.title}
+                          RDV {(step.sortOrder ?? idx) + 1}
                         </h4>
                         {isLocked && (
                           <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-100 text-amber-600">
@@ -89,7 +89,20 @@ export default function EmployeeHome({
                           </span>
                         )}
                       </div>
-                      <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
+                      {step.scheduledAt && (
+                        <p className="text-brand-terracotta font-medium mt-1 text-sm">
+                          {new Date(step.scheduledAt).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      )}
+                      {step.instructions && (
+                        <p className="text-brand-navy/60 mt-2 text-sm">{step.instructions}</p>
+                      )}
                       {isLocked ? (
                         <div className="mt-6 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-3 rounded-xl">
                           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

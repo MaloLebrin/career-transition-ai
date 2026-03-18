@@ -5,7 +5,6 @@ import hash from '@adonisjs/core/services/hash'
 import { BaseModel, beforeSave, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import Appointment from './appointment.js'
 import Employee from './employee.js'
 import Organization from './organization.js'
 
@@ -67,7 +66,4 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasOne(() => Employee, { foreignKey: 'userId' })
   declare employeeProfile: HasOne<typeof Employee>
-
-  @hasMany(() => Appointment, { foreignKey: 'advisorId' })
-  declare appointments: HasMany<typeof Appointment>
 }

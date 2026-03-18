@@ -1,11 +1,9 @@
-import { DateTime } from 'luxon'
 import type Employee from '#models/employee'
 import type Skill from '#models/skill'
 import type Experience from '#models/experience'
 import type Education from '#models/education'
 import type SupportPlanStep from '#models/support_plan_step'
 import type ExerciseResult from '#models/exercise_result'
-import type Appointment from '#models/appointment'
 import type {
   EducationDto,
   EmployeeDto,
@@ -115,9 +113,14 @@ export const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => 
 export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
   return {
     id: step.id,
-    title: step.title,
-    description: step.description ?? '',
-    dueDate: step.dueDate ? step.dueDate.toISODate() || '' : '',
+    title: step.title ?? undefined,
+    description: step.description ?? undefined,
+    instructions: step.instructions ?? undefined,
+    dueDate: step.dueDate ? step.dueDate.toISODate() || undefined : undefined,
+    scheduledAt: step.scheduledAt ? step.scheduledAt.toISO() || undefined : undefined,
+    endedAt: step.endedAt ? step.endedAt.toISO() || undefined : undefined,
+    status: step.status,
+    locationOrLink: step.locationOrLink ?? undefined,
     completed: step.completed,
     notes: step.notes ?? undefined,
     associatedExercise: step.associatedExercise
@@ -125,23 +128,8 @@ export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto =>
       : undefined,
     lastUpdated: step.updatedAt.toISO() || undefined,
     isLocked: step.isLocked,
+    sortOrder: step.sortOrder ?? undefined,
   }
-}
-
-const getNextAppointmentDate = (
-  nextAppointment: DateTime | null,
-  appointments: Appointment[]
-): string | undefined => {
-  if (nextAppointment) {
-    return nextAppointment.toISO()!
-  }
-
-  const now = DateTime.now()
-  const upcoming = appointments
-    .filter((appt) => appt.scheduledAt && appt.scheduledAt > now)
-    .sort((a, b) => a.scheduledAt.toMillis() - b.scheduledAt.toMillis())[0]
-
-  return upcoming ? upcoming.scheduledAt.toISO()! : undefined
 }
 
 export const mapEmployee = (employee: Employee): EmployeeDto => {
@@ -150,10 +138,6 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
   const skills = (employee.skills || []).map(mapSkill)
   const exercises = (employee.exerciseResults || []).map(mapExerciseResult)
   const steps = (employee.supportPlanSteps || []).map(mapSupportPlanStep)
-  const nextAppointment = getNextAppointmentDate(
-    employee.nextAppointment,
-    employee.appointments || []
-  )
 
   return {
     id: employee.id,
@@ -171,7 +155,6 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
     status: employee.status as EmployeeDto['status'],
     onboarded: employee.onboarded,
     exercises,
-    nextAppointment,
     plan: steps,
   }
 }

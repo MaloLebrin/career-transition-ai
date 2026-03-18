@@ -32,7 +32,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employees = await query
 
@@ -65,7 +64,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -104,7 +102,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -164,7 +161,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -195,7 +191,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employees = await query
     const data = employees.map(mapEmployee)
@@ -220,7 +215,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const [employee, availableSkills] = await Promise.all([
       employeeQuery.firstOrFail(),
@@ -292,7 +286,6 @@ export default class EmployeesController {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
 
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)

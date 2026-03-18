@@ -7,37 +7,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
-export class AppointmentSchema extends BaseModel {
-  static $columns = ['advisorId', 'createdAt', 'deletedAt', 'employeeId', 'endedAt', 'id', 'locationOrLink', 'notes', 'organizationId', 'scheduledAt', 'status', 'type', 'updatedAt'] as const
-  $columns = AppointmentSchema.$columns
-  @column()
-  declare advisorId: number | null
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column.dateTime()
-  declare deletedAt: DateTime | null
-  @column()
-  declare employeeId: number
-  @column.dateTime()
-  declare endedAt: DateTime | null
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare locationOrLink: string | null
-  @column()
-  declare notes: string | null
-  @column()
-  declare organizationId: number
-  @column.dateTime()
-  declare scheduledAt: DateTime
-  @column()
-  declare status: string
-  @column()
-  declare type: string | null
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
-}
-
 export class BulkJobSchema extends BaseModel {
   static $columns = ['createdAt', 'errorMessage', 'finishedAt', 'id', 'meta', 'organizationId', 'queueJobId', 'scope', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
   $columns = BulkJobSchema.$columns
@@ -114,7 +83,7 @@ export class EmployeeSkillSchema extends BaseModel {
 }
 
 export class EmployeeSchema extends BaseModel {
-  static $columns = ['advisorId', 'advisorNotes', 'createdAt', 'currentRole', 'deletedAt', 'email', 'id', 'name', 'nextAppointment', 'onboarded', 'organizationId', 'status', 'summary', 'targetRole', 'updatedAt', 'userId'] as const
+  static $columns = ['advisorId', 'advisorNotes', 'createdAt', 'currentRole', 'deletedAt', 'email', 'id', 'name', 'onboarded', 'organizationId', 'status', 'summary', 'targetRole', 'updatedAt', 'userId'] as const
   $columns = EmployeeSchema.$columns
   @column()
   declare advisorId: number | null
@@ -132,8 +101,6 @@ export class EmployeeSchema extends BaseModel {
   declare id: number
   @column()
   declare name: string
-  @column.dateTime()
-  declare nextAppointment: DateTime | null
   @column()
   declare onboarded: boolean
   @column()
@@ -234,10 +201,8 @@ export class FileSchema extends BaseModel {
 }
 
 export class NoteSchema extends BaseModel {
-  static $columns = ['appointmentId', 'authorId', 'content', 'createdAt', 'deletedAt', 'employeeId', 'exerciseResultId', 'id', 'organizationId', 'updatedAt', 'visibility'] as const
+  static $columns = ['authorId', 'content', 'createdAt', 'deletedAt', 'employeeId', 'exerciseResultId', 'id', 'organizationId', 'supportPlanStepId', 'updatedAt', 'visibility'] as const
   $columns = NoteSchema.$columns
-  @column()
-  declare appointmentId: number | null
   @column()
   declare authorId: number
   @column()
@@ -254,6 +219,8 @@ export class NoteSchema extends BaseModel {
   declare id: number
   @column()
   declare organizationId: number
+  @column()
+  declare supportPlanStepId: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
@@ -376,8 +343,10 @@ export class SkillSchema extends BaseModel {
 }
 
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = ['associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'id', 'isLocked', 'notes', 'sortOrder', 'title', 'updatedAt'] as const
+  static $columns = ['advisorId', 'associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'endedAt', 'id', 'instructions', 'isLocked', 'locationOrLink', 'notes', 'scheduledAt', 'sortOrder', 'status', 'title', 'updatedAt'] as const
   $columns = SupportPlanStepSchema.$columns
+  @column()
+  declare advisorId: number | null
   @column()
   declare associatedExercise: string | null
   @column()
@@ -387,19 +356,29 @@ export class SupportPlanStepSchema extends BaseModel {
   @column()
   declare description: string | null
   @column.date()
-  declare dueDate: DateTime
+  declare dueDate: DateTime | null
   @column()
   declare employeeId: number
+  @column.dateTime()
+  declare endedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()
+  declare instructions: string | null
+  @column()
   declare isLocked: boolean
   @column()
+  declare locationOrLink: string | null
+  @column()
   declare notes: string | null
+  @column.dateTime()
+  declare scheduledAt: DateTime | null
   @column()
   declare sortOrder: number
   @column()
-  declare title: string
+  declare status: string
+  @column()
+  declare title: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

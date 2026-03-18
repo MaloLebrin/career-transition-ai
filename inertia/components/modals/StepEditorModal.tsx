@@ -9,16 +9,19 @@ import { EXERCISE_LIST } from '~/config/exercises'
 interface Props {
   employeeId: number | string
   step?: SupportPlanStep
+  stepNumber?: number
   onClose: () => void
 }
 
-const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
+const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClose }) => {
   const isEditing = !!step
 
   const { data, setData, post, put, processing, errors, reset } = useForm({
-    title: step?.title ?? '',
-    description: step?.description ?? '',
-    dueDate: step?.dueDate ?? new Date().toISOString().split('T')[0],
+    instructions: step?.instructions ?? '',
+    scheduledAt: step?.scheduledAt
+      ? new Date(step.scheduledAt).toISOString().slice(0, 16)
+      : '',
+    locationOrLink: step?.locationOrLink ?? '',
     associatedExercise: step?.associatedExercise?.toLowerCase() ?? '',
     isLocked: step?.isLocked ?? true,
   })
@@ -26,9 +29,11 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
   useEffect(() => {
     if (step) {
       setData({
-        title: step.title,
-        description: step.description ?? '',
-        dueDate: step.dueDate,
+        instructions: step.instructions ?? '',
+        scheduledAt: step.scheduledAt
+          ? new Date(step.scheduledAt).toISOString().slice(0, 16)
+          : '',
+        locationOrLink: step.locationOrLink ?? '',
         associatedExercise: step.associatedExercise?.toLowerCase() ?? '',
         isLocked: step.isLocked ?? true,
       })
@@ -41,6 +46,8 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
     const payload = {
       ...data,
       associatedExercise: data.associatedExercise || null,
+      scheduledAt: data.scheduledAt || null,
+      locationOrLink: data.locationOrLink || null,
     }
 
     if (isEditing && step) {
@@ -61,6 +68,10 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
       })
     }
   }
+
+  const displayNumber = isEditing && step?.sortOrder !== undefined
+    ? step.sortOrder + 1
+    : stepNumber ?? '?'
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
@@ -84,48 +95,46 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
 
         <div className="mb-8">
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            {isEditing ? 'Modifier l\'étape' : 'Ajouter une étape'}
+            {isEditing ? `Modifier RDV ${displayNumber}` : `Nouveau RDV ${displayNumber}`}
           </h2>
           <p className="text-slate-500 mt-2">
             {isEditing
-              ? 'Modifiez les informations de cette étape de la feuille de route.'
-              : 'Créez une nouvelle étape pour la feuille de route.'}
+              ? 'Modifiez les informations de ce rendez-vous.'
+              : 'Planifiez un nouveau rendez-vous pour la feuille de route.'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input
-            label="Titre de l'étape"
-            required
-            placeholder="Ex: Analyse de motivation"
-            value={data.title}
-            onChange={(e) => setData('title', e.target.value)}
-            error={errors.title}
+            type="datetime-local"
+            label="Date et heure du RDV"
+            value={data.scheduledAt}
+            onChange={(e) => setData('scheduledAt', e.target.value)}
+            error={errors.scheduledAt}
+          />
+
+          <Input
+            label="Lieu ou lien visio"
+            placeholder="Ex: Salle 3 ou https://meet.google.com/..."
+            value={data.locationOrLink}
+            onChange={(e) => setData('locationOrLink', e.target.value)}
+            error={errors.locationOrLink}
           />
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Description
+              Consigne pour l'accompagné
             </label>
             <textarea
               className="w-full border border-brand-navy/10 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-sage transition-all resize-none min-h-[100px]"
-              placeholder="Description de l'étape..."
-              value={data.description}
-              onChange={(e) => setData('description', e.target.value)}
+              placeholder="Instructions à destination du candidat avant ce RDV..."
+              value={data.instructions}
+              onChange={(e) => setData('instructions', e.target.value)}
             />
-            {errors.description && (
-              <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+            {errors.instructions && (
+              <p className="text-red-500 text-xs mt-1">{errors.instructions}</p>
             )}
           </div>
-
-          <Input
-            type="date"
-            label="Date prévue"
-            required
-            value={data.dueDate}
-            onChange={(e) => setData('dueDate', e.target.value)}
-            error={errors.dueDate}
-          />
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -157,7 +166,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, onClose }) => {
               className="w-5 h-5 rounded border-brand-navy/20 text-brand-sage focus:ring-brand-sage"
             />
             <label htmlFor="isLocked" className="text-sm font-medium text-slate-700">
-              Étape verrouillée (l'accompagné ne peut pas accéder à l'exercice)
+              RDV verrouillé (l'accompagné ne peut pas accéder à l'exercice)
             </label>
           </div>
 

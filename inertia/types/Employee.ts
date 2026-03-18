@@ -22,7 +22,6 @@ export interface Employee {
   status: EmployeeStatus
   onboarded: boolean
   exercises: ExerciseResult[]
-  nextAppointment?: string
   plan: SupportPlanStep[]
 }
 
@@ -57,10 +56,16 @@ export type EmployeeData = {
   }>
   plan: Array<{
     id: number
-    title: string
-    description: string | null
+    title?: string | null
+    description?: string | null
+    instructions?: string | null
+    scheduledAt?: string | null
+    status?: string
+    locationOrLink?: string | null
     completed: boolean
     associatedExercise: string | null
+    isLocked?: boolean
+    sortOrder?: number | null
   }>
   experiences: Array<{
     id: number

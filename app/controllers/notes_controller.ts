@@ -49,7 +49,7 @@ export default class NotesController {
         id: note.id,
         content: note.content,
         visibility: note.visibility,
-        appointmentId: note.appointmentId,
+        supportPlanStepId: note.supportPlanStepId,
         exerciseResultId: note.exerciseResultId,
         authorId: note.authorId,
         authorName: note.author?.name ?? 'Unknown',
@@ -87,7 +87,7 @@ export default class NotesController {
         id: note.id,
         content: note.content,
         visibility: note.visibility,
-        appointmentId: note.appointmentId,
+        supportPlanStepId: note.supportPlanStepId,
         exerciseResultId: note.exerciseResultId,
         authorName: note.author?.name ?? 'Unknown',
         createdAt: note.createdAt.toISO(),
@@ -120,14 +120,14 @@ export default class NotesController {
 
     const payload = await request.validateUsing(createNoteValidator)
 
-    if (payload.appointmentId) {
-      const appointmentExists = await employee
-        .related('appointments')
+    if (payload.supportPlanStepId) {
+      const stepExists = await employee
+        .related('supportPlanSteps')
         .query()
-        .where('id', payload.appointmentId)
+        .where('id', payload.supportPlanStepId)
         .first()
-      if (!appointmentExists) {
-        return response.badRequest({ message: 'Appointment not found' })
+      if (!stepExists) {
+        return response.badRequest({ message: 'Support plan step not found' })
       }
     }
 
@@ -148,7 +148,7 @@ export default class NotesController {
       authorId: user.id,
       content: payload.content,
       visibility: payload.visibility,
-      appointmentId: payload.appointmentId ?? null,
+      supportPlanStepId: payload.supportPlanStepId ?? null,
       exerciseResultId: payload.exerciseResultId ?? null,
     })
 

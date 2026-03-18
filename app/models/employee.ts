@@ -1,5 +1,4 @@
 import type { EmployeeStatus } from '#shared/constants/employee'
-import Appointment from '#models/appointment'
 import Education from '#models/education'
 import Experience from '#models/experience'
 import File from '#models/file'
@@ -54,9 +53,6 @@ export default class Employee extends BaseModel {
   })
   declare onboarded: boolean
 
-  @column.dateTime()
-  declare nextAppointment: DateTime | null
-
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -86,9 +82,6 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => SupportPlanStep)
   declare supportPlanSteps: HasMany<typeof SupportPlanStep>
-
-  @hasMany(() => Appointment)
-  declare appointments: HasMany<typeof Appointment>
 
   @hasMany(() => File)
   declare files: HasMany<typeof File>

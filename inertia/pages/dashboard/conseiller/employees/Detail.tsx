@@ -183,7 +183,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                       </svg>
                     }
                   >
-                    Ajouter une étape
+                    Ajouter un RDV
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -266,10 +266,21 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                             )}
                           </div>
                           <h4 className="font-bold text-brand-navy text-lg group-hover:text-brand-sage mt-2">
-                            {step.title}
+                            RDV {(step.sortOrder ?? 0) + 1}
                           </h4>
-                          {step.description && (
-                            <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.description}</p>
+                          {step.scheduledAt && (
+                            <p className="text-sm text-brand-terracotta font-medium mt-1">
+                              {new Date(step.scheduledAt).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          )}
+                          {step.instructions && (
+                            <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.instructions}</p>
                           )}
                         </div>
                         {result ? (
@@ -394,6 +405,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
           <StepEditorModal
             employeeId={selectedEmployee.id}
             step={editingStep}
+            stepNumber={editingStep ? undefined : (selectedEmployee.plan.length + 1)}
             onClose={closeStepEditor}
           />
         )}

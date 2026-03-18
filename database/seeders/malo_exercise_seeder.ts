@@ -2,6 +2,8 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
+import User from '#models/user'
+import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 
@@ -15,6 +17,11 @@ export default class MaloExercisesSeeder extends BaseSeeder {
       .where('email', 'm.lebrin@example.fr')
       .first()
     if (!malo) return
+
+    const advisor = await User.query()
+      .where('organizationId', org.id)
+      .where('role', 'advisor')
+      .first()
 
     const exerciseResults = [
       {
@@ -180,52 +187,70 @@ export default class MaloExercisesSeeder extends BaseSeeder {
 
     const planSteps = [
       {
-        title: 'La courbe de vie',
-        description: "Tracer l'évolution de votre satisfaction.",
-        dueDate: DateTime.fromISO('2024-05-10'),
+        instructions: "Préparez-vous à retracer l'évolution de votre satisfaction professionnelle.",
+        scheduledAt: DateTime.fromISO('2024-05-10T10:00:00'),
+        endedAt: DateTime.fromISO('2024-05-10T11:00:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'Salle 1 - FTC Paris',
         completed: true,
         associatedExercise: 'life_curve' as const,
         sortOrder: 0,
+        isLocked: false,
       },
       {
-        title: 'Cartographie des Compétences',
-        description: 'Détailler les acquis de votre poste actuel.',
-        dueDate: '2024-06-12',
+        instructions: 'Apportez votre CV et une liste de vos principales réalisations.',
+        scheduledAt: DateTime.fromISO('2024-05-15T14:00:00'),
+        endedAt: DateTime.fromISO('2024-05-15T15:30:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'https://meet.google.com/abc-defg-hij',
         completed: true,
-        associatedExercise: 'skill_mapping' as const,
+        associatedExercise: 'motivation' as const,
         sortOrder: 1,
+        isLocked: false,
       },
       {
-        title: 'Diagnostic DISC',
-        description: 'Comprendre votre style de communication.',
-        dueDate: DateTime.fromISO('2024-06-02'),
+        instructions: 'Nous allons analyser votre profil comportemental DISC.',
+        scheduledAt: DateTime.fromISO('2024-06-02T09:30:00'),
+        endedAt: DateTime.fromISO('2024-06-02T10:30:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'Salle 2 - FTC Paris',
         completed: true,
         associatedExercise: 'disc' as const,
         sortOrder: 2,
+        isLocked: false,
       },
       {
-        title: 'Analyse Motivations',
-        description: "Identifier vos leviers d'engagement.",
-        dueDate: DateTime.fromISO('2024-05-15'),
-        completed: true,
-        associatedExercise: 'motivation' as const,
-        sortOrder: 3,
-      },
-      {
-        title: 'Ciblage Organismes',
-        description: "Recherche d'organismes de formation.",
-        dueDate: DateTime.fromISO('2024-06-05'),
+        instructions: "Réfléchissez aux organismes de formation qui vous intéressent.",
+        scheduledAt: DateTime.fromISO('2024-06-05T11:00:00'),
+        endedAt: DateTime.fromISO('2024-06-05T12:00:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'https://meet.google.com/xyz-uvwx-rst',
         completed: true,
         associatedExercise: 'targeting' as const,
-        sortOrder: 4,
+        sortOrder: 3,
+        isLocked: false,
       },
       {
-        title: 'Cercle de Contrôle',
-        description: "Gérer son énergie face à l'incertitude.",
-        dueDate: DateTime.fromISO('2024-06-10'),
+        instructions: 'Nous travaillerons sur la gestion du stress et des incertitudes.',
+        scheduledAt: DateTime.fromISO('2024-06-10T15:00:00'),
+        endedAt: DateTime.fromISO('2024-06-10T16:00:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'Salle 1 - FTC Paris',
         completed: true,
         associatedExercise: 'circle_of_control' as const,
+        sortOrder: 4,
+        isLocked: false,
+      },
+      {
+        instructions: 'Séance finale : cartographie complète de vos compétences transférables.',
+        scheduledAt: DateTime.fromISO('2024-06-12T10:00:00'),
+        endedAt: DateTime.fromISO('2024-06-12T12:00:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'Salle 1 - FTC Paris',
+        completed: true,
+        associatedExercise: 'skill_mapping' as const,
         sortOrder: 5,
+        isLocked: false,
       },
     ]
 
@@ -233,17 +258,20 @@ export default class MaloExercisesSeeder extends BaseSeeder {
       await SupportPlanStep.updateOrCreate(
         {
           employeeId: malo.id,
-          title: step.title,
-          associatedExercise: step.associatedExercise,
+          sortOrder: step.sortOrder,
         },
         {
           employeeId: malo.id,
-          title: step.title,
-          description: step.description,
-          dueDate: step.dueDate as DateTime,
+          advisorId: advisor?.id ?? null,
+          instructions: step.instructions,
+          scheduledAt: step.scheduledAt,
+          endedAt: step.endedAt,
+          status: step.status,
+          locationOrLink: step.locationOrLink,
           completed: step.completed,
           associatedExercise: step.associatedExercise,
           sortOrder: step.sortOrder,
+          isLocked: step.isLocked,
         }
       )
     }

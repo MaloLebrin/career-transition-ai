@@ -7,7 +7,6 @@ import { sendOnboardingEmail } from '#services/onboarding_notify_service'
 import { EmployeeStatus } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/constants/user'
 import hash from '@adonisjs/core/services/hash'
-import { DateTime } from 'luxon'
 
 type CreateEmployeeInput = {
   organizationId: number
@@ -32,7 +31,6 @@ type UpdateEmployeeInput = {
   name?: string
   currentRole?: string
   onboarded?: boolean
-  nextAppointment?: string
 }
 
 function randomPassword(): string {
@@ -97,7 +95,6 @@ export class EmployeesService {
       summary: input.summary ?? null,
       advisorNotes: null,
       onboarded: false,
-      nextAppointment: null,
     })
 
     await employee.load('skills', (q) => q.pivotColumns(['level']))
@@ -105,7 +102,6 @@ export class EmployeesService {
     await employee.load('educations')
     await employee.load('exerciseResults')
     await employee.load('supportPlanSteps')
-    await employee.load('appointments')
 
     return mapEmployee(employee)
   }
@@ -123,7 +119,6 @@ export class EmployeesService {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps')
-      .preload('appointments')
       .first()
 
     if (!employee) {
@@ -142,9 +137,6 @@ export class EmployeesService {
       name: payload.name ?? employee.name,
       currentRole: payload.currentRole ?? employee.currentRole,
       onboarded: typeof payload.onboarded === 'boolean' ? payload.onboarded : employee.onboarded,
-      nextAppointment: payload.nextAppointment
-        ? DateTime.fromISO(payload.nextAppointment)
-        : employee.nextAppointment,
     })
 
     return employee

@@ -4,7 +4,7 @@ export interface Note {
   id: number
   content: string
   visibility: NoteVisibility
-  appointmentId: number | null
+  supportPlanStepId: number | null
   exerciseResultId: number | null
   authorId?: number
   authorName: string

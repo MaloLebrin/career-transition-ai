@@ -13,6 +13,5 @@ export function employeeUpdatePayload(employee: Partial<Employee>): Record<strin
   if (employee.advisorNotes !== undefined) payload.advisorNotes = employee.advisorNotes
   if (employee.status !== undefined) payload.status = employee.status
   if (employee.onboarded !== undefined) payload.onboarded = employee.onboarded
-  if (employee.nextAppointment !== undefined) payload.nextAppointment = employee.nextAppointment
   return payload
 }

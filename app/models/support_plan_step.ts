@@ -1,4 +1,6 @@
 import Employee from '#models/employee'
+import User from '#models/user'
+import type { AppointmentStatus } from '#shared/constants/appointment'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
@@ -12,13 +14,31 @@ export default class SupportPlanStep extends BaseModel {
   declare employeeId: number
 
   @column()
-  declare title: string
+  declare advisorId: number | null
+
+  @column()
+  declare title: string | null
 
   @column()
   declare description: string | null
 
+  @column()
+  declare instructions: string | null
+
   @column.date()
-  declare dueDate: DateTime
+  declare dueDate: DateTime | null
+
+  @column.dateTime()
+  declare scheduledAt: DateTime | null
+
+  @column.dateTime()
+  declare endedAt: DateTime | null
+
+  @column()
+  declare status: AppointmentStatus
+
+  @column()
+  declare locationOrLink: string | null
 
   @column({
     consume: (value) => Boolean(value),
@@ -47,4 +67,7 @@ export default class SupportPlanStep extends BaseModel {
 
   @belongsTo(() => Employee)
   declare employee: BelongsTo<typeof Employee>
+
+  @belongsTo(() => User, { foreignKey: 'advisorId' })
+  declare advisor: BelongsTo<typeof User>
 }

@@ -9,12 +9,12 @@ import NoteCard from '../ui/NoteCard'
 import NoteForm from '../ui/NoteForm'
 import NoteModal from '../ui/NoteModal'
 
-type NoteContext = 'general' | 'appointment' | 'exercise'
+type NoteContext = 'general' | 'step' | 'exercise'
 
 interface NotesSectionProps {
   employeeId: number
   context?: NoteContext
-  appointmentId?: number
+  supportPlanStepId?: number
   exerciseResultId?: number
   title?: string
   isAdvisor?: boolean
@@ -25,7 +25,7 @@ interface NotesSectionProps {
 const NotesSection = memo(function NotesSection({
   employeeId,
   context = 'general',
-  appointmentId,
+  supportPlanStepId,
   exerciseResultId,
   title = 'Notes',
   isAdvisor = false,
@@ -56,13 +56,13 @@ const NotesSection = memo(function NotesSection({
         const data = await response.json()
         let filteredNotes = data as Note[]
 
-        if (context === 'appointment' && appointmentId) {
-          filteredNotes = filteredNotes.filter((n) => n.appointmentId === appointmentId)
+        if (context === 'step' && supportPlanStepId) {
+          filteredNotes = filteredNotes.filter((n) => n.supportPlanStepId === supportPlanStepId)
         } else if (context === 'exercise' && exerciseResultId) {
           filteredNotes = filteredNotes.filter((n) => n.exerciseResultId === exerciseResultId)
         } else if (context === 'general') {
           filteredNotes = filteredNotes.filter(
-            (n) => !n.appointmentId && !n.exerciseResultId
+            (n) => !n.supportPlanStepId && !n.exerciseResultId
           )
         }
 
@@ -73,7 +73,7 @@ const NotesSection = memo(function NotesSection({
     } finally {
       setIsLoading(false)
     }
-  }, [employeeId, isAdvisor, context, appointmentId, exerciseResultId])
+  }, [employeeId, isAdvisor, context, supportPlanStepId, exerciseResultId])
 
   useEffect(() => {
     if (initialNotes.length === 0) {
@@ -88,7 +88,7 @@ const NotesSection = memo(function NotesSection({
         `/dashboard/conseiller/employees/${employeeId}/notes`,
         {
           ...data,
-          appointmentId: context === 'appointment' ? appointmentId : undefined,
+          supportPlanStepId: context === 'step' ? supportPlanStepId : undefined,
           exerciseResultId: context === 'exercise' ? exerciseResultId : undefined,
         },
         {
@@ -101,7 +101,7 @@ const NotesSection = memo(function NotesSection({
         }
       )
     },
-    [employeeId, context, appointmentId, exerciseResultId, fetchNotes]
+    [employeeId, context, supportPlanStepId, exerciseResultId, fetchNotes]
   )
 
   const handleUpdate = useCallback(
