@@ -22,7 +22,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
       ? new Date(step.scheduledAt).toISOString().slice(0, 16)
       : '',
     locationOrLink: step?.locationOrLink ?? '',
-    associatedExercise: step?.associatedExercise?.toLowerCase() ?? '',
+    associatedExercises: (step?.associatedExercises ?? []).map((e) => e.toLowerCase()),
     isLocked: step?.isLocked ?? true,
   })
 
@@ -34,18 +34,27 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
           ? new Date(step.scheduledAt).toISOString().slice(0, 16)
           : '',
         locationOrLink: step.locationOrLink ?? '',
-        associatedExercise: step.associatedExercise?.toLowerCase() ?? '',
+        associatedExercises: (step.associatedExercises ?? []).map((e) => e.toLowerCase()),
         isLocked: step.isLocked ?? true,
       })
     }
   }, [step])
+
+  const handleExerciseToggle = (slug: string) => {
+    const current = data.associatedExercises
+    if (current.includes(slug)) {
+      setData('associatedExercises', current.filter((e) => e !== slug))
+    } else {
+      setData('associatedExercises', [...current, slug])
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
     const payload = {
       ...data,
-      associatedExercise: data.associatedExercise || null,
+      associatedExercises: data.associatedExercises.length > 0 ? data.associatedExercises : [],
       scheduledAt: data.scheduledAt || null,
       locationOrLink: data.locationOrLink || null,
     }
@@ -75,7 +84,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
-      <Card className="w-full max-w-lg relative animate-slideUp">
+      <Card className="w-full max-w-lg relative animate-slideUp max-h-[90vh] overflow-y-auto">
         <Button
           onClick={onClose}
           variant="ghost"
@@ -137,23 +146,33 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Exercice associé
+            <label className="block text-sm font-medium text-slate-700 mb-3">
+              Exercices associés
             </label>
-            <select
-              className="w-full border border-brand-navy/10 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-sage transition-all bg-white"
-              value={data.associatedExercise}
-              onChange={(e) => setData('associatedExercise', e.target.value)}
-            >
-              <option value="">Aucun exercice</option>
+            <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
               {EXERCISE_LIST.map((exercise) => (
-                <option key={exercise.slug} value={exercise.slug}>
-                  {exercise.title}
-                </option>
+                <label
+                  key={exercise.slug}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    data.associatedExercises.includes(exercise.slug)
+                      ? 'border-brand-sage bg-brand-sage/5'
+                      : 'border-brand-navy/10 hover:border-brand-navy/20'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={data.associatedExercises.includes(exercise.slug)}
+                    onChange={() => handleExerciseToggle(exercise.slug)}
+                    className="w-4 h-4 rounded border-brand-navy/20 text-brand-sage focus:ring-brand-sage"
+                  />
+                  <span className="text-sm font-medium text-slate-700">{exercise.title}</span>
+                </label>
               ))}
-            </select>
-            {errors.associatedExercise && (
-              <p className="text-red-500 text-xs mt-1">{errors.associatedExercise}</p>
+            </div>
+            {data.associatedExercises.length > 0 && (
+              <p className="text-xs text-brand-sage mt-2">
+                {data.associatedExercises.length} exercice{data.associatedExercises.length > 1 ? 's' : ''} sélectionné{data.associatedExercises.length > 1 ? 's' : ''}
+              </p>
             )}
           </div>
 
@@ -166,7 +185,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
               className="w-5 h-5 rounded border-brand-navy/20 text-brand-sage focus:ring-brand-sage"
             />
             <label htmlFor="isLocked" className="text-sm font-medium text-slate-700">
-              RDV verrouillé (l'accompagné ne peut pas accéder à l'exercice)
+              RDV verrouillé (l'accompagné ne peut pas accéder aux exercices)
             </label>
           </div>
 

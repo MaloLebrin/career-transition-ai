@@ -2,6 +2,7 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import User from '#models/user'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
@@ -193,7 +194,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'Salle 1 - FTC Paris',
         completed: true,
-        associatedExercise: 'life_curve' as const,
+        exercises: ['life_curve'] as const,
         sortOrder: 0,
         isLocked: false,
       },
@@ -204,7 +205,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'https://meet.google.com/abc-defg-hij',
         completed: true,
-        associatedExercise: 'motivation' as const,
+        exercises: ['motivation'] as const,
         sortOrder: 1,
         isLocked: false,
       },
@@ -215,7 +216,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'Salle 2 - FTC Paris',
         completed: true,
-        associatedExercise: 'disc' as const,
+        exercises: ['disc'] as const,
         sortOrder: 2,
         isLocked: false,
       },
@@ -226,7 +227,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'https://meet.google.com/xyz-uvwx-rst',
         completed: true,
-        associatedExercise: 'targeting' as const,
+        exercises: ['targeting'] as const,
         sortOrder: 3,
         isLocked: false,
       },
@@ -237,7 +238,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'Salle 1 - FTC Paris',
         completed: true,
-        associatedExercise: 'circle_of_control' as const,
+        exercises: ['circle_of_control'] as const,
         sortOrder: 4,
         isLocked: false,
       },
@@ -248,32 +249,43 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         status: APPOINTMENTS_STATUSES.COMPLETED,
         locationOrLink: 'Salle 1 - FTC Paris',
         completed: true,
-        associatedExercise: 'skill_mapping' as const,
+        exercises: ['skill_mapping'] as const,
         sortOrder: 5,
         isLocked: false,
       },
     ]
 
     for (const step of planSteps) {
-      await SupportPlanStep.updateOrCreate(
+      const { exercises, ...stepData } = step
+
+      const createdStep = await SupportPlanStep.updateOrCreate(
         {
           employeeId: malo.id,
-          sortOrder: step.sortOrder,
+          sortOrder: stepData.sortOrder,
         },
         {
           employeeId: malo.id,
           advisorId: advisor?.id ?? null,
-          instructions: step.instructions,
-          scheduledAt: step.scheduledAt,
-          endedAt: step.endedAt,
-          status: step.status,
-          locationOrLink: step.locationOrLink,
-          completed: step.completed,
-          associatedExercise: step.associatedExercise,
-          sortOrder: step.sortOrder,
-          isLocked: step.isLocked,
+          instructions: stepData.instructions,
+          scheduledAt: stepData.scheduledAt,
+          endedAt: stepData.endedAt,
+          status: stepData.status,
+          locationOrLink: stepData.locationOrLink,
+          completed: stepData.completed,
+          sortOrder: stepData.sortOrder,
+          isLocked: stepData.isLocked,
         }
       )
+
+      await SupportPlanStepExercise.query().where('supportPlanStepId', createdStep.id).delete()
+
+      for (let i = 0; i < exercises.length; i++) {
+        await SupportPlanStepExercise.create({
+          supportPlanStepId: createdStep.id,
+          exerciseType: exercises[i],
+          sortOrder: i,
+        })
+      }
     }
   }
 }

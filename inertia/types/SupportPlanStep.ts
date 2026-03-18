@@ -14,7 +14,7 @@ export interface SupportPlanStep {
   locationOrLink?: string
   completed: boolean
   notes?: string
-  associatedExercise?: ExerciseType
+  associatedExercises?: ExerciseType[]
   lastUpdated?: string
   isLocked?: boolean
   sortOrder?: number

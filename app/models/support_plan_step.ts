@@ -1,10 +1,10 @@
 import Employee from '#models/employee'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import User from '#models/user'
 import type { AppointmentStatus } from '#shared/constants/appointment'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import { ExerciceResultType } from './exercise_result.js'
 
 export default class SupportPlanStep extends BaseModel {
   @column({ isPrimary: true })
@@ -49,9 +49,6 @@ export default class SupportPlanStep extends BaseModel {
   declare notes: string | null
 
   @column()
-  declare associatedExercise: ExerciceResultType | null
-
-  @column()
   declare sortOrder: number | null
 
   @column({
@@ -70,4 +67,7 @@ export default class SupportPlanStep extends BaseModel {
 
   @belongsTo(() => User, { foreignKey: 'advisorId' })
   declare advisor: BelongsTo<typeof User>
+
+  @hasMany(() => SupportPlanStepExercise)
+  declare exercises: HasMany<typeof SupportPlanStepExercise>
 }

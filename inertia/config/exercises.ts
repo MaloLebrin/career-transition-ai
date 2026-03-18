@@ -1,4 +1,4 @@
-import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '../../shared/constants/exercises.js'
+import { EXERCISE_LIST } from '../../shared/constants/exercises.js'
 import { ExerciseType } from '../types'
 
 export type { ExerciseListEntry } from '../../shared/constants/exercises.js'
@@ -16,14 +16,14 @@ export { EXERCISE_LIST }
  *   3. Mettre à jour, si besoin, la config `EXERCISES_WITH_INERTIA_DRAFT`.
  */
 export const EXERCISE_SLUGS: Partial<Record<ExerciseType, string>> = {
-  [ExerciseType.MOTIVATION]: EXERCICE_RESULTS_TYPES.MOTIVATION,
-  [ExerciseType.VALUES]: EXERCICE_RESULTS_TYPES.VALUES,
-  [ExerciseType.PERSONALITY]: EXERCICE_RESULTS_TYPES.PERSONALITY,
-  [ExerciseType.LIFE_CURVE]: EXERCICE_RESULTS_TYPES.LIFE_CURVE,
-  [ExerciseType.TARGETING]: EXERCICE_RESULTS_TYPES.TARGETING,
-  [ExerciseType.DISC]: EXERCICE_RESULTS_TYPES.DISC,
-  [ExerciseType.SKILL_MAPPING]: EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
-  [ExerciseType.CIRCLE_OF_CONTROL]: EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
+  [ExerciseType.MOTIVATION]: ExerciseType.MOTIVATION,
+  [ExerciseType.VALUES]: ExerciseType.VALUES,
+  [ExerciseType.PERSONALITY]: ExerciseType.PERSONALITY,
+  [ExerciseType.LIFE_CURVE]: ExerciseType.LIFE_CURVE,
+  [ExerciseType.TARGETING]: ExerciseType.TARGETING,
+  [ExerciseType.DISC]: ExerciseType.DISC,
+  [ExerciseType.SKILL_MAPPING]: ExerciseType.SKILL_MAPPING,
+  [ExerciseType.CIRCLE_OF_CONTROL]: ExerciseType.CIRCLE_OF_CONTROL,
 }
 
 /**

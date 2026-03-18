@@ -110,30 +110,33 @@ export default function EmployeeHome({
                           </svg>
                           <span>Cette étape sera débloquée par votre conseiller</span>
                         </div>
-                      ) : step.associatedExercise && !step.completed ? (
-                        <AppLink href={`/dashboard/candidat/exercises/${step.associatedExercise}`}>
-                          <Button
-                            className="mt-6"
-                            variant="secondary"
-                            size="md"
-                            icon={
-                              <svg
-                                className="w-4 h-4 stroke-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                      ) : step.associatedExercises && step.associatedExercises.length > 0 && !step.completed ? (
+                        <div className="mt-6 flex flex-wrap gap-2">
+                          {step.associatedExercises.map((exerciseType) => (
+                            <AppLink key={exerciseType} href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                icon={
+                                  <svg
+                                    className="w-4 h-4 stroke-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                                    />
+                                  </svg>
+                                }
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
-                            }
-                          >
-                            Démarrer
-                          </Button>
-                        </AppLink>
+                                {exerciseType.replace(/_/g, ' ')}
+                              </Button>
+                            </AppLink>
+                          ))}
+                        </div>
                       ) : null}
                       {step.completed && (
                         <AppLink href={`/dashboard/candidat/steps/${step.id}`}>

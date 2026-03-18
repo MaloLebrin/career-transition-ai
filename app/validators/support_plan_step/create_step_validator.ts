@@ -11,7 +11,9 @@ export const createStepValidator = vine.compile(
     scheduledAt: vine.string().nullable().optional(),
     status: vine.enum(appointmentStatusValues).optional(),
     locationOrLink: vine.string().maxLength(512).nullable().optional(),
-    associatedExercise: vine.enum(exerciceResultTypesValues).nullable().optional(),
+    associatedExercises: vine
+      .array(vine.enum(exerciceResultTypesValues))
+      .optional(),
     sortOrder: vine.number().optional(),
     isLocked: vine.boolean().optional(),
   })

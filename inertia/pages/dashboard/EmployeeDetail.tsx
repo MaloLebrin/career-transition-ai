@@ -22,12 +22,16 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
   const normalizeExerciseType = (t: string | undefined): string =>
     (t ?? '').toUpperCase().replace(/-/g, '_')
 
-  const getResultForStep = (step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercise) return null
-    const stepType = normalizeExerciseType(step.associatedExercise)
-    return selectedEmployee.exercises.find(
-      (res) => normalizeExerciseType(res.type) === stepType
-    ) ?? null
+  const getResultsForStep = (step: SupportPlanStep) => {
+    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
+    const stepTypes = step.associatedExercises.map(normalizeExerciseType)
+    return selectedEmployee.exercises.filter(
+      (res) => stepTypes.includes(normalizeExerciseType(res.type))
+    )
+  }
+
+  const hasAnyResultForStep = (step: SupportPlanStep): boolean => {
+    return getResultsForStep(step).length > 0
   }
 
   const handleDownloadPDF = async () => {
@@ -144,57 +148,43 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {selectedEmployee.plan.map((step) => {
-                    const result = getResultForStep(step)
-                    const content = (
-                      <div className="group cursor-pointer p-6 rounded-[32px] border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-xl transition-all flex flex-col justify-between">
-                        <div className="mb-4">
-                          <div
-                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                              step.completed
-                                ? 'bg-brand-sage/20 text-brand-sage'
-                                : 'bg-brand-navy/10 text-brand-navy/40'
-                            }`}
-                          >
-                            {step.completed ? 'Validée' : 'À faire'}
-                          </div>
-                          <h4 className="font-bold text-brand-navy text-lg group-hover:text-brand-sage mt-2">
-                            {step.title}
-                          </h4>
-                        </div>
-                        {result && (
-                          <div className="pt-4 border-t border-brand-navy/5">
-                            <span className="text-[9px] font-bold text-brand-sage uppercase tracking-widest">
-                              Rapport Gemini →
-                            </span>
-                          </div>
-                        )}
-                        {step.associatedExercise && !result && (
-                          <div className="pt-4">
-                            <AppLink
-                              href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
-                              className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
-                            >
-                              Démarrer l’exercice →
-                            </AppLink>
-                          </div>
-                        )}
-                      </div>
-                    )
-                    return step.associatedExercise && !result ? (
-                      <AppLink
-                        key={step.id}
-                        href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
-                        className="block"
-                      >
-                        {content}
-                      </AppLink>
-                    ) : (
+                    const hasResults = hasAnyResultForStep(step)
+                    const exerciseCount = step.associatedExercises?.length ?? 0
+                    return (
                       <AppLink
                         key={step.id}
                         href={`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`}
                         className="block"
                       >
-                        {content}
+                        <div className="group cursor-pointer p-6 rounded-[32px] border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-xl transition-all flex flex-col justify-between">
+                          <div className="mb-4">
+                            <div
+                              className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                                step.completed
+                                  ? 'bg-brand-sage/20 text-brand-sage'
+                                  : 'bg-brand-navy/10 text-brand-navy/40'
+                              }`}
+                            >
+                              {step.completed ? 'Validée' : 'À faire'}
+                            </div>
+                            <h4 className="font-bold text-brand-navy text-lg group-hover:text-brand-sage mt-2">
+                              {step.title}
+                            </h4>
+                          </div>
+                          {hasResults ? (
+                            <div className="pt-4 border-t border-brand-navy/5">
+                              <span className="text-[9px] font-bold text-brand-sage uppercase tracking-widest">
+                                Voir les résultats →
+                              </span>
+                            </div>
+                          ) : exerciseCount > 0 ? (
+                            <div className="pt-4 border-t border-brand-navy/5">
+                              <span className="text-[10px] font-bold text-brand-sage uppercase tracking-widest">
+                                {exerciseCount} exercice{exerciseCount > 1 ? 's' : ''} →
+                              </span>
+                            </div>
+                          ) : null}
+                        </div>
                       </AppLink>
                     )
                   })}

@@ -1,5 +1,6 @@
 import Employee from '#models/employee'
 import SupportPlanStep from '#models/support_plan_step'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { USERS_ROLES } from '#shared/constants/user'
 import { createStepValidator } from '#validators/support_plan_step/create_step_validator'
@@ -26,6 +27,7 @@ export default class SupportPlanStepsController {
 
     const steps = await SupportPlanStep.query()
       .where('employeeId', employeeId)
+      .preload('exercises')
       .orderBy('sortOrder', 'asc')
 
     return response.json(
@@ -41,7 +43,7 @@ export default class SupportPlanStepsController {
         locationOrLink: step.locationOrLink,
         completed: step.completed,
         notes: step.notes,
-        associatedExercise: step.associatedExercise,
+        associatedExercises: step.exercises.map((e) => e.exerciseType),
         sortOrder: step.sortOrder,
         isLocked: step.isLocked,
       }))
@@ -78,7 +80,7 @@ export default class SupportPlanStepsController {
 
     const nextSortOrder = payload.sortOrder ?? ((maxSortOrder?.$extras?.max ?? -1) + 1)
 
-    await SupportPlanStep.create({
+    const step = await SupportPlanStep.create({
       employeeId,
       advisorId: user.id,
       title: payload.title ?? null,
@@ -88,11 +90,20 @@ export default class SupportPlanStepsController {
       scheduledAt: payload.scheduledAt ? DateTime.fromISO(payload.scheduledAt) : null,
       status: payload.status ?? APPOINTMENTS_STATUSES.SCHEDULED,
       locationOrLink: payload.locationOrLink ?? null,
-      associatedExercise: payload.associatedExercise ?? null,
       sortOrder: nextSortOrder,
       isLocked: payload.isLocked ?? true,
       completed: false,
     })
+
+    if (payload.associatedExercises && payload.associatedExercises.length > 0) {
+      await SupportPlanStepExercise.createMany(
+        payload.associatedExercises.map((exerciseType, index) => ({
+          supportPlanStepId: step.id,
+          exerciseType,
+          sortOrder: index,
+        }))
+      )
+    }
 
     session.flash('success', 'RDV créé')
     return response.redirect().back()
@@ -134,18 +145,34 @@ export default class SupportPlanStepsController {
     if (payload.title !== undefined) step.title = payload.title ?? null
     if (payload.description !== undefined) step.description = payload.description ?? null
     if (payload.instructions !== undefined) step.instructions = payload.instructions ?? null
-    if (payload.dueDate !== undefined) step.dueDate = payload.dueDate ? DateTime.fromISO(payload.dueDate) : null
-    if (payload.scheduledAt !== undefined) step.scheduledAt = payload.scheduledAt ? DateTime.fromISO(payload.scheduledAt) : null
-    if (payload.endedAt !== undefined) step.endedAt = payload.endedAt ? DateTime.fromISO(payload.endedAt) : null
+    if (payload.dueDate !== undefined)
+      step.dueDate = payload.dueDate ? DateTime.fromISO(payload.dueDate) : null
+    if (payload.scheduledAt !== undefined)
+      step.scheduledAt = payload.scheduledAt ? DateTime.fromISO(payload.scheduledAt) : null
+    if (payload.endedAt !== undefined)
+      step.endedAt = payload.endedAt ? DateTime.fromISO(payload.endedAt) : null
     if (payload.status !== undefined) step.status = payload.status
     if (payload.locationOrLink !== undefined) step.locationOrLink = payload.locationOrLink ?? null
-    if (payload.associatedExercise !== undefined) step.associatedExercise = payload.associatedExercise ?? null
     if (payload.sortOrder !== undefined) step.sortOrder = payload.sortOrder
     if (payload.isLocked !== undefined) step.isLocked = payload.isLocked
     if (payload.completed !== undefined) step.completed = payload.completed
     if (payload.notes !== undefined) step.notes = payload.notes ?? null
 
     await step.save()
+
+    if (payload.associatedExercises !== undefined) {
+      await SupportPlanStepExercise.query().where('supportPlanStepId', step.id).delete()
+
+      if (payload.associatedExercises.length > 0) {
+        await SupportPlanStepExercise.createMany(
+          payload.associatedExercises.map((exerciseType, index) => ({
+            supportPlanStepId: step.id,
+            exerciseType,
+            sortOrder: index,
+          }))
+        )
+      }
+    }
 
     session.flash('success', 'RDV mis à jour')
     return response.redirect().back()

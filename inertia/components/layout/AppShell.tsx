@@ -80,9 +80,9 @@ const AppShell: React.FC = () => {
     }
   }
 
-  const getResultForStep = (step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercise) return null
-    return selectedEmployee.exercises.find((res) => res.type === step.associatedExercise)
+  const getResultsForStep = (step: SupportPlanStep) => {
+    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
+    return selectedEmployee.exercises.filter((res) => step.associatedExercises?.includes(res.type))
   }
 
   useEffect(() => {
@@ -696,32 +696,36 @@ const AppShell: React.FC = () => {
                           {step.title}
                         </h4>
                         <p className="text-brand-navy/60 mt-2 text-sm">{step.description}</p>
-                        {step.associatedExercise && !step.completed && (
-                          <Button
-                            onClick={() => {
-                              setCurrentTool(step.associatedExercise!)
-                              setActiveView('exercise')
-                            }}
-                            className="mt-6"
-                            variant="secondary"
-                            size="md"
-                            icon={
-                              <svg
-                                className="w-4 h-4 stroke-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
-                            }
-                          >
-                            Démarrer
-                          </Button>
+                        {step.associatedExercises && step.associatedExercises.length > 0 && !step.completed && (
+                          <div className="mt-6 flex flex-wrap gap-2">
+                            {step.associatedExercises.map((exerciseType) => (
+                              <Button
+                                key={exerciseType}
+                                onClick={() => {
+                                  setCurrentTool(exerciseType)
+                                  setActiveView('exercise')
+                                }}
+                                variant="secondary"
+                                size="sm"
+                                icon={
+                                    <svg
+                                      className="w-4 h-4 stroke-2"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                                      />
+                                    </svg>
+                                  }
+                                >
+                                  {exerciseType.replace(/_/g, ' ')}
+                                </Button>
+                              ))}
+                            </div>
                         )}
                       </div>
                     </div>

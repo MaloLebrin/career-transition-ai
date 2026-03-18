@@ -342,13 +342,28 @@ export class SkillSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class SupportPlanStepExerciseSchema extends BaseModel {
+  static $columns = ['createdAt', 'exerciseType', 'id', 'sortOrder', 'supportPlanStepId', 'updatedAt'] as const
+  $columns = SupportPlanStepExerciseSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare exerciseType: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare sortOrder: number | null
+  @column()
+  declare supportPlanStepId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = ['advisorId', 'associatedExercise', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'endedAt', 'id', 'instructions', 'isLocked', 'locationOrLink', 'notes', 'scheduledAt', 'sortOrder', 'status', 'title', 'updatedAt'] as const
+  static $columns = ['advisorId', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'endedAt', 'id', 'instructions', 'isLocked', 'locationOrLink', 'notes', 'scheduledAt', 'sortOrder', 'status', 'title', 'updatedAt'] as const
   $columns = SupportPlanStepSchema.$columns
   @column()
   declare advisorId: number | null
-  @column()
-  declare associatedExercise: string | null
   @column()
   declare completed: boolean
   @column.dateTime({ autoCreate: true })

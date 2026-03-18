@@ -31,7 +31,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employees = await query
 
@@ -63,7 +63,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -101,7 +101,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -160,7 +160,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employee = await employeeQuery.firstOrFail()
 
@@ -190,7 +190,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employees = await query
     const data = employees.map(mapEmployee)
@@ -214,7 +214,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const [employee, availableSkills] = await Promise.all([
       employeeQuery.firstOrFail(),
@@ -285,7 +285,7 @@ export default class EmployeesController {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employee = await employeeQuery.firstOrFail()
     const data = mapEmployee(employee)
@@ -316,18 +316,20 @@ export default class EmployeesController {
     const step = await SupportPlanStep.query()
       .where('id', stepId)
       .where('employeeId', employeeId)
+      .preload('exercises')
       .firstOrFail()
 
-    let result = null
-    if (step.associatedExercise) {
-      const exerciseResult = await ExerciseResult.query()
-        .where('employeeId', employeeId)
-        .where('type', step.associatedExercise)
-        .orderBy('createdAt', 'desc')
-        .first()
+    const exerciseTypes = step.exercises.map((e) => e.exerciseType)
+    const results: ReturnType<typeof mapExerciseResult>[] = []
 
-      if (exerciseResult) {
-        result = mapExerciseResult(exerciseResult)
+    if (exerciseTypes.length > 0) {
+      const exerciseResults = await ExerciseResult.query()
+        .where('employeeId', employeeId)
+        .whereIn('type', exerciseTypes)
+        .orderBy('createdAt', 'desc')
+
+      for (const exerciseResult of exerciseResults) {
+        results.push(mapExerciseResult(exerciseResult))
       }
     }
 
@@ -335,7 +337,7 @@ export default class EmployeesController {
       employeeId: String(employee.id),
       employeeName: employee.name,
       step: mapSupportPlanStep(step),
-      result,
+      results,
     })
   }
 
@@ -358,24 +360,26 @@ export default class EmployeesController {
     const step = await SupportPlanStep.query()
       .where('id', stepId)
       .where('employeeId', employee.id)
+      .preload('exercises')
       .firstOrFail()
 
-    let result = null
-    if (step.associatedExercise) {
-      const exerciseResult = await ExerciseResult.query()
-        .where('employeeId', employee.id)
-        .where('type', step.associatedExercise)
-        .orderBy('createdAt', 'desc')
-        .first()
+    const exerciseTypes = step.exercises.map((e) => e.exerciseType)
+    const results: ReturnType<typeof mapExerciseResult>[] = []
 
-      if (exerciseResult) {
-        result = mapExerciseResult(exerciseResult)
+    if (exerciseTypes.length > 0) {
+      const exerciseResults = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .whereIn('type', exerciseTypes)
+        .orderBy('createdAt', 'desc')
+
+      for (const exerciseResult of exerciseResults) {
+        results.push(mapExerciseResult(exerciseResult))
       }
     }
 
     return (ctx.inertia as any).render('dashboard/candidat/StepDetail', {
       step: mapSupportPlanStep(step),
-      result,
+      results,
     })
   }
 }

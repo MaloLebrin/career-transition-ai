@@ -7,13 +7,31 @@ interface Props {
   onCancel: () => void
 }
 
+const AVAILABLE_EXERCISES = [
+  { value: ExerciseType.LIFE_CURVE, label: 'La courbe de vie' },
+  { value: ExerciseType.MOTIVATION, label: 'Questionnaire Motivation' },
+  { value: ExerciseType.VALUES, label: 'Recherche de Valeurs' },
+  { value: ExerciseType.PERSONALITY, label: 'Questionnaire Personnalité' },
+  { value: ExerciseType.DISC, label: 'Diagnostic DISC' },
+  { value: ExerciseType.TARGETING, label: 'Ciblage Entreprises' },
+]
+
 const PlanStepEditor: React.FC<Props> = ({ onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     dueDate: new Date().toISOString().split('T')[0],
-    associatedExercise: '' as ExerciseType | '',
+    associatedExercises: [] as ExerciseType[],
   })
+
+  const handleExerciseToggle = (exercise: ExerciseType) => {
+    setFormData((prev) => ({
+      ...prev,
+      associatedExercises: prev.associatedExercises.includes(exercise)
+        ? prev.associatedExercises.filter((e) => e !== exercise)
+        : [...prev.associatedExercises, exercise],
+    }))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,7 +39,7 @@ const PlanStepEditor: React.FC<Props> = ({ onSave, onCancel }) => {
       title: formData.title,
       description: formData.description,
       dueDate: formData.dueDate,
-      associatedExercise: formData.associatedExercise || undefined,
+      associatedExercises: formData.associatedExercises.length > 0 ? formData.associatedExercises : undefined,
     })
   }
 
@@ -67,26 +85,24 @@ const PlanStepEditor: React.FC<Props> = ({ onSave, onCancel }) => {
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-            Outil Associé
+            Outils Associés
           </label>
-          <select
-            className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-            value={formData.associatedExercise}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                associatedExercise: e.target.value as ExerciseType,
-              }))
-            }
-          >
-            <option value="">Aucun</option>
-            <option value={ExerciseType.LIFE_CURVE}>La courbe de vie</option>
-            <option value={ExerciseType.MOTIVATION}>Questionnaire Motivation</option>
-            <option value={ExerciseType.VALUES}>Recherche de Valeurs</option>
-            <option value={ExerciseType.PERSONALITY}>Questionnaire Personnalité</option>
-            <option value={ExerciseType.DISC}>Diagnostic DISC</option>
-            <option value={ExerciseType.TARGETING}>Ciblage Entreprises</option>
-          </select>
+          <div className="space-y-2 max-h-[150px] overflow-y-auto">
+            {AVAILABLE_EXERCISES.map((exercise) => (
+              <label
+                key={exercise.value}
+                className="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-100 p-1 rounded"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.associatedExercises.includes(exercise.value)}
+                  onChange={() => handleExerciseToggle(exercise.value)}
+                  className="rounded border-slate-300"
+                />
+                <span>{exercise.label}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 

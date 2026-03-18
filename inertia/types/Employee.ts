@@ -63,7 +63,7 @@ export type EmployeeData = {
     status?: string
     locationOrLink?: string | null
     completed: boolean
-    associatedExercise: string | null
+    associatedExercises?: string[] | null
     isLocked?: boolean
     sortOrder?: number | null
   }>

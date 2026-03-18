@@ -118,7 +118,7 @@ export class EmployeesService {
       .preload('experiences')
       .preload('educations')
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
       .first()
 
     if (!employee) {

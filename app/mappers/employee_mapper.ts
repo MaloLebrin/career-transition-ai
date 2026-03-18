@@ -111,6 +111,7 @@ export const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => 
 }
 
 export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
+  const exercises = step.exercises || []
   return {
     id: step.id,
     title: step.title ?? undefined,
@@ -123,8 +124,8 @@ export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto =>
     locationOrLink: step.locationOrLink ?? undefined,
     completed: step.completed,
     notes: step.notes ?? undefined,
-    associatedExercise: step.associatedExercise
-      ? exerciceTypeToFront(step.associatedExercise)
+    associatedExercises: exercises.length > 0
+      ? exercises.map((e) => exerciceTypeToFront(e.exerciseType))
       : undefined,
     lastUpdated: step.updatedAt.toISO() || undefined,
     isLocked: step.isLocked,

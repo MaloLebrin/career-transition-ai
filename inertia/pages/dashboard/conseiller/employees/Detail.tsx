@@ -52,12 +52,16 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
   const normalizeExerciseType = (t: string | undefined): string =>
     (t ?? '').toUpperCase().replace(/-/g, '_')
 
-  const getResultForStep = (step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercise) return null
-    const stepType = normalizeExerciseType(step.associatedExercise)
-    return selectedEmployee.exercises.find(
-      (res) => normalizeExerciseType(res.type) === stepType
-    ) ?? null
+  const getResultsForStep = (step: SupportPlanStep) => {
+    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
+    const stepTypes = step.associatedExercises.map(normalizeExerciseType)
+    return selectedEmployee.exercises.filter(
+      (res) => stepTypes.includes(normalizeExerciseType(res.type))
+    )
+  }
+
+  const hasAnyResultForStep = (step: SupportPlanStep): boolean => {
+    return getResultsForStep(step).length > 0
   }
 
   const handleDownloadPDF = async () => {
@@ -188,7 +192,8 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {selectedEmployee.plan.map((step) => {
-                    const result = getResultForStep(step)
+                    const hasResults = hasAnyResultForStep(step)
+                    const exerciseCount = step.associatedExercises?.length ?? 0
                     return (
                       <div
                         key={step.id}
@@ -283,24 +288,32 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                             <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.instructions}</p>
                           )}
                         </div>
-                        {result ? (
+                        {hasResults ? (
                           <AppLink
                             href={`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`}
                             className="pt-4 border-t border-brand-navy/5 block"
                           >
                             <span className="text-[9px] font-bold text-brand-sage uppercase tracking-widest hover:underline">
-                              Voir le résultat →
+                              Voir les résultats →
                             </span>
                           </AppLink>
-                        ) : step.associatedExercise ? (
-                          <AppLink
-                            href={`/dashboard/conseiller/employees/${employeeId}/exercises/${step.associatedExercise}`}
-                            className="pt-4 border-t border-brand-navy/5 block"
-                          >
-                            <span className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline">
-                              Démarrer l'exercice →
+                        ) : exerciseCount > 0 ? (
+                          <div className="pt-4 border-t border-brand-navy/5">
+                            <span className="text-[10px] font-bold text-brand-navy/60 uppercase tracking-widest mb-2 block">
+                              {exerciseCount} exercice{exerciseCount > 1 ? 's' : ''} associé{exerciseCount > 1 ? 's' : ''}
                             </span>
-                          </AppLink>
+                            <div className="flex flex-wrap gap-2">
+                              {step.associatedExercises?.map((exerciseType) => (
+                                <AppLink
+                                  key={exerciseType}
+                                  href={`/dashboard/conseiller/employees/${employeeId}/exercises/${exerciseType.toLowerCase()}`}
+                                  className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
+                                >
+                                  {exerciseType.replace(/_/g, ' ')}
+                                </AppLink>
+                              ))}
+                            </div>
+                          </div>
                         ) : (
                           <div className="pt-4 border-t border-brand-navy/5">
                             <span className="text-[10px] font-medium text-brand-navy/40 uppercase tracking-widest">

@@ -120,7 +120,7 @@ export function useExercises(
           qualitativeAnalysis: analysis,
           plan: employee.plan
             .map((step) =>
-              step.associatedExercise === type
+              step.associatedExercises?.includes(type)
                 ? { ...step, completed: true, lastUpdated: now }
                 : step
             )

@@ -60,7 +60,7 @@ export type SupportPlanStepDto = {
   locationOrLink?: string
   completed: boolean
   notes?: string
-  associatedExercise?: ExerciseResultDto['type']
+  associatedExercises?: ExerciseResultDto['type'][]
   lastUpdated?: string
   isLocked?: boolean
   sortOrder?: number
