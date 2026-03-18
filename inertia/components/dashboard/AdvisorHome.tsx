@@ -32,15 +32,15 @@ export default function AdvisorHome() {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard label="Total suivis" value={employees.length} color="navy" />
+        <StatCard label="Total suivis" value={employees?.length ?? 0} color="navy" />
         <StatCard
           label="En attente"
-          value={employees.filter((e) => !e.onboarded).length}
+          value={employees?.filter((e) => !e.onboarded).length ?? 0}
           color="terracotta"
         />
         <StatCard
           label="Étapes validées"
-          value={employees.reduce((acc, e) => acc + e.exercises.length, 0)}
+          value={employees?.reduce((acc, e) => acc + (e.exercises?.length ?? 0), 0) ?? 0}
           color="sage"
         />
       </div>
@@ -51,11 +51,13 @@ export default function AdvisorHome() {
             Dernières Activités
           </h3>
           <div className="space-y-4">
-            {employees
+            {(employees ?? [])
               .flatMap((e) =>
-                e.exercises.map((ex) => ({ ...ex, employeeName: e.name, employeeId: e.id }))
+                (e.exercises ?? [])
+                  .filter((ex) => ex.date !== null)
+                  .map((ex) => ({ ...ex, employeeName: e.name, employeeId: e.id }))
               )
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime())
               .slice(0, 5)
               .map((activity, idx) => (
                 <div
@@ -73,12 +75,12 @@ export default function AdvisorHome() {
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold text-brand-sage uppercase tracking-widest">
-                      {new Date(activity.date).toLocaleDateString('fr-FR')}
+                      {new Date(activity.date!).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                 </div>
               ))}
-            {employees.reduce((acc, e) => acc + e.exercises.length, 0) === 0 && (
+            {(employees ?? []).reduce((acc, e) => acc + (e.exercises ?? []).filter((ex) => ex.date !== null).length, 0) === 0 && (
               <p className="text-center py-8 text-brand-navy/40 text-xs font-medium italic">
                 Aucune activité récente
               </p>
@@ -91,7 +93,7 @@ export default function AdvisorHome() {
             Prochains Rendez-vous
           </h3>
           <div className="space-y-4">
-            {employees
+            {(employees ?? [])
               .filter((e) => e.nextAppointment)
               .sort(
                 (a, b) =>
@@ -137,7 +139,7 @@ export default function AdvisorHome() {
                   </div>
                 </div>
               ))}
-            {employees.filter((e) => e.nextAppointment).length === 0 && (
+            {(employees ?? []).filter((e) => e.nextAppointment).length === 0 && (
               <p className="text-center py-8 text-brand-navy/40 text-xs font-medium italic">
                 Aucun rendez-vous planifié
               </p>

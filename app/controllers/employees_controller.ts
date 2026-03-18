@@ -223,7 +223,9 @@ export default class EmployeesController {
     const [employee, availableSkills] = await Promise.all([
       employeeQuery.firstOrFail(),
       Skill.query()
-        .where('organizationId', user.organizationId)
+        .where((query) => {
+          query.where('organizationId', user.organizationId).orWhereNull('organizationId')
+        })
         .whereNull('deletedAt')
         .orderBy('name', 'asc'),
     ])
