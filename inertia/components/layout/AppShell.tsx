@@ -20,7 +20,6 @@ import SkillMappingTool from '../exercises/SkillMappingTool'
 import TargetingTool from '../exercises/TargetingTool'
 import ValuesTool from '../exercises/ValuesTool'
 import AddEmployeeModal from '../modals/AddEmployeeModal'
-import StepDetailModal from '../modals/StepDetailModal'
 import OnboardingFlow from '../onboarding/OnboardingFlow'
 import ProfilePage from '../profile/ProfilePage'
 import OrganizationSettings from '../settings/OrganizationSettings'
@@ -45,7 +44,6 @@ const AppShell: React.FC = () => {
   const [currentTool, setCurrentTool] = useState<ExerciseType | null>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
 
   const { employees, filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm)
 
@@ -569,7 +567,7 @@ const AppShell: React.FC = () => {
                           return (
                             <div
                               key={step.id}
-                              onClick={() => setSelectedStepForDetail(step)}
+                              onClick={() => router.visit(`/dashboard/conseiller/employees/${selectedEmployee.id}/steps/${step.id}`)}
                               className="group cursor-pointer p-6 rounded-[32px] border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-xl transition-all flex flex-col justify-between"
                             >
                               <div className="mb-4">
@@ -632,15 +630,6 @@ const AppShell: React.FC = () => {
               </div>
             ) : null}
           </div>
-          {selectedStepForDetail && selectedEmployee && (
-            <StepDetailModal
-              step={selectedStepForDetail}
-              result={getResultForStep(selectedStepForDetail) || undefined}
-              employeeId={selectedEmployee.id}
-              onClose={() => setSelectedStepForDetail(null)}
-              userRole={userRole}
-            />
-          )}
           {isAddModalOpen && <AddEmployeeModal onClose={() => setIsAddModalOpen(false)} />}
         </div>
       ) : selectedEmployee && !selectedEmployee.onboarded ? (

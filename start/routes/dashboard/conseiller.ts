@@ -50,6 +50,11 @@ router
             router.get('/dossier', [EmployeesController, 'downloadDossier'])
 
             /**
+             * Step Detail (Feuille de Route)
+             */
+            router.get('/steps/:stepId', [EmployeesController, 'showStepDetail'])
+
+            /**
              * Employee Notes
              */
             router.get('/notes', [NotesController, 'index'])

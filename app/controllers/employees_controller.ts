@@ -1,5 +1,7 @@
-import { mapEmployee } from '#mappers/employee_mapper'
+import { mapEmployee, mapSupportPlanStep, mapExerciseResult } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
+import SupportPlanStep from '#models/support_plan_step'
+import ExerciseResult from '#models/exercise_result'
 import Skill from '#models/skill'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
@@ -298,6 +300,89 @@ export default class EmployeesController {
     return (ctx.inertia as any).render('dashboard/conseiller/employees/Detail', {
       employeeId: String(employee.id),
       employee: data,
+    })
+  }
+
+  /**
+   * Inertia page: step detail for advisor dashboard (feuille de route).
+   */
+  public async showStepDetail(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const employeeId = Number(ctx.params.id)
+    const stepId = Number(ctx.params.stepId)
+
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
+
+    const step = await SupportPlanStep.query()
+      .where('id', stepId)
+      .where('employeeId', employeeId)
+      .firstOrFail()
+
+    let result = null
+    if (step.associatedExercise) {
+      const exerciseResult = await ExerciseResult.query()
+        .where('employeeId', employeeId)
+        .where('type', step.associatedExercise)
+        .orderBy('createdAt', 'desc')
+        .first()
+
+      if (exerciseResult) {
+        result = mapExerciseResult(exerciseResult)
+      }
+    }
+
+    return (ctx.inertia as any).render('dashboard/conseiller/employees/StepDetail', {
+      employeeId: String(employee.id),
+      employeeName: employee.name,
+      step: mapSupportPlanStep(step),
+      result,
+    })
+  }
+
+  /**
+   * Inertia page: step detail for candidat dashboard (ma feuille de route).
+   */
+  public async showStepDetailCandidat(ctx: HttpContext) {
+    const user = ctx.auth.user
+    if (!user) {
+      return ctx.response.unauthorized()
+    }
+
+    const stepId = Number(ctx.params.stepId)
+
+    const employee = await Employee.query()
+      .where('userId', user.id)
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
+
+    const step = await SupportPlanStep.query()
+      .where('id', stepId)
+      .where('employeeId', employee.id)
+      .firstOrFail()
+
+    let result = null
+    if (step.associatedExercise) {
+      const exerciseResult = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .where('type', step.associatedExercise)
+        .orderBy('createdAt', 'desc')
+        .first()
+
+      if (exerciseResult) {
+        result = mapExerciseResult(exerciseResult)
+      }
+    }
+
+    return (ctx.inertia as any).render('dashboard/candidat/StepDetail', {
+      step: mapSupportPlanStep(step),
+      result,
     })
   }
 }

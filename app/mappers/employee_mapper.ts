@@ -100,7 +100,7 @@ export const exerciceTypeToFront = (type: ExerciseModelType): ExerciseResultDto[
   }
 }
 
-const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => {
+export const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => {
   return {
     id: result.id,
     type: exerciceTypeToFront(result.type),
@@ -112,7 +112,7 @@ const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => {
   }
 }
 
-const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
+export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto => {
   return {
     id: step.id,
     title: step.title,

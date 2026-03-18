@@ -16,6 +16,7 @@ router
         router
           .get('/profile', [EmployeesController, 'showProfileDashboard'])
           .as('dashboardEmployeeProfile')
+        router.get('/steps/:stepId', [EmployeesController, 'showStepDetailCandidat'])
         router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
         router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
         router.post('/exercises/:type/draft', [

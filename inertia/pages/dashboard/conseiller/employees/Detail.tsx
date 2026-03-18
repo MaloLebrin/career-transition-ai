@@ -3,7 +3,6 @@ import AppLink from '~/components/ui/AppLink'
 import { useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import NotesSection from '~/components/dashboard/NotesSection'
-import StepDetailModal from '~/components/modals/StepDetailModal'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import { useAuth } from '~/hooks/useAuth'
@@ -19,7 +18,6 @@ interface EmployeeDetailProps {
 export default function DashboardEmployeeDetail({ employeeId, employee }: EmployeeDetailProps) {
   const { user } = useAuth()
   const { employee: selectedEmployee } = useEmployee(employeeId, employee)
-  const [selectedStepForDetail, setSelectedStepForDetail] = useState<SupportPlanStep | null>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
   const normalizeExerciseType = (t: string | undefined): string =>
@@ -59,8 +57,6 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
       </>
     )
   }
-
-  const userRole = user.role || 'advisor'
 
   return (
     <>
@@ -194,9 +190,13 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                         {content}
                       </AppLink>
                     ) : (
-                      <div key={step.id} onClick={() => setSelectedStepForDetail(step)}>
+                      <AppLink
+                        key={step.id}
+                        href={`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`}
+                        className="block"
+                      >
                         {content}
-                      </div>
+                      </AppLink>
                     )
                   })}
                 </div>
@@ -288,15 +288,6 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
             </div>
           </div>
         </div>
-        {selectedStepForDetail && (
-          <StepDetailModal
-            step={selectedStepForDetail}
-            result={getResultForStep(selectedStepForDetail) || undefined}
-            employeeId={selectedEmployee.id}
-            onClose={() => setSelectedStepForDetail(null)}
-            userRole={userRole}
-          />
-        )}
       </DashboardLayout>
     </>
   )

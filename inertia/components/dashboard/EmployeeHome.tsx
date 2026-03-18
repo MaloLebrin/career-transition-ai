@@ -90,6 +90,17 @@ export default function EmployeeHome({
                         </Button>
                       </AppLink>
                     )}
+                    {step.completed && (
+                      <AppLink href={`/dashboard/candidat/steps/${step.id}`}>
+                        <Button
+                          className="mt-6"
+                          variant="outline"
+                          size="sm"
+                        >
+                          Voir le résultat →
+                        </Button>
+                      </AppLink>
+                    )}
                   </div>
                 </div>
               ))}

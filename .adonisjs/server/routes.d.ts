@@ -14,6 +14,7 @@ export type ScannedRoutes = {
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
+    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
@@ -37,6 +38,7 @@ export type ScannedRoutes = {
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -78,6 +80,7 @@ export type ScannedRoutes = {
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
+    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
@@ -87,6 +90,7 @@ export type ScannedRoutes = {
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
@@ -104,6 +108,7 @@ export type ScannedRoutes = {
     'auth.me': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
+    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
     'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
     'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
@@ -113,6 +118,7 @@ export type ScannedRoutes = {
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
