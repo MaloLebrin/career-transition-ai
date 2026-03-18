@@ -60,7 +60,7 @@ const NoteModal = memo(function NoteModal({
             type="button"
             onClick={handleClose}
             disabled={isLoading}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
           </button>
@@ -79,7 +79,7 @@ const NoteModal = memo(function NoteModal({
                 type="button"
                 onClick={() => setVisibility('private')}
                 disabled={isLoading}
-                className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
                   !isShared
                     ? 'bg-slate-800 border-slate-800 text-white shadow-xl scale-[1.02]'
                     : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
@@ -108,7 +108,7 @@ const NoteModal = memo(function NoteModal({
                 type="button"
                 onClick={() => setVisibility('shared')}
                 disabled={isLoading}
-                className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
                   isShared
                     ? 'bg-rose-200 border-rose-200 text-rose-800 shadow-xl scale-[1.02]'
                     : 'bg-white border-slate-200 text-slate-500 hover:border-rose-100 hover:bg-rose-50'

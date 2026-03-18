@@ -302,7 +302,7 @@ const AppShell: React.FC = () => {
                             setActiveNav('employees')
                             setActiveView('detail')
                           }}
-                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
+                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group cursor-pointer disabled:cursor-not-allowed ${
                             Number(selectedEmployeeId) === emp.id && activeNav === 'employees'
                               ? 'bg-brand-sage/10 text-brand-sage'
                               : 'text-brand-navy/60 hover:bg-brand-ivory'

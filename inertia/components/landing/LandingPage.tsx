@@ -95,7 +95,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               <button
                 type="button"
                 onClick={() => scrollToSection('methodology')}
-                className="w-full sm:w-auto px-10 py-6 text-brand-navy font-bold hover:bg-brand-navy/5 rounded-2xl transition-colors"
+                className="w-full sm:w-auto px-10 py-6 text-brand-navy font-bold hover:bg-brand-navy/5 rounded-2xl transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
                 Découvrir la méthode
               </button>
@@ -461,7 +461,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <button
                     type="button"
                     onClick={() => scrollToSection('methodology')}
-                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     Méthodologie
                   </button>
@@ -470,7 +470,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <button
                     type="button"
                     onClick={() => scrollToSection('ai-engine')}
-                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     Intelligence Artificielle
                   </button>
@@ -479,7 +479,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <button
                     type="button"
                     onClick={onEnterApp}
-                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     Accès Expert
                   </button>

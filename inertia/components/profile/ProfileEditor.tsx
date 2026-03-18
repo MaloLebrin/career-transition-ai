@@ -102,7 +102,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
       <div className="bg-white w-full max-w-5xl rounded-[48px] shadow-2xl p-10 relative animate-slideUp max-h-[95vh] overflow-y-auto custom-scrollbar">
         <button
           onClick={onClose}
-          className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors z-10"
+          className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors z-10 cursor-pointer disabled:cursor-not-allowed"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -125,7 +125,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isExtracting ? 'bg-indigo-50 text-indigo-400' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200'}`}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed ${isExtracting ? 'bg-indigo-50 text-indigo-400' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200'}`}
           >
             {isExtracting ? (
               <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
@@ -202,7 +202,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                         skills: [...formData.skills, { name: s, level: 3 }],
                       })
                   }}
-                  className="text-indigo-600 font-black text-lg"
+                  className="text-indigo-600 font-black text-lg cursor-pointer disabled:cursor-not-allowed"
                 >
                   +
                 </button>
@@ -221,7 +221,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                           skills: formData.skills.filter((_, idx) => idx !== i),
                         })
                       }
-                      className="ml-2 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
+                      className="ml-2 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all cursor-pointer disabled:cursor-not-allowed"
                     >
                       ×
                     </button>
@@ -239,7 +239,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                 </h3>
                 <button
                   onClick={() => addItem('experiences')}
-                  className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all"
+                  className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   + Ajouter
                 </button>
@@ -252,7 +252,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                   >
                     <button
                       onClick={() => removeItem('experiences', exp.id)}
-                      className="absolute top-6 right-6 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      className="absolute top-6 right-6 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer disabled:cursor-not-allowed"
                     >
                       <svg
                         className="w-5 h-5"
@@ -355,7 +355,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                 </h3>
                 <button
                   onClick={() => addItem('educations')}
-                  className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all"
+                  className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   + Ajouter
                 </button>
@@ -368,7 +368,7 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
                   >
                     <button
                       onClick={() => removeItem('educations', edu.id)}
-                      className="absolute top-6 right-6 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      className="absolute top-6 right-6 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer disabled:cursor-not-allowed"
                     >
                       <svg
                         className="w-5 h-5"
@@ -437,13 +437,13 @@ const ProfileEditor: React.FC<Props> = ({ employee, onSave, onClose }) => {
         <div className="mt-12 flex flex-col md:flex-row gap-4 border-t border-slate-100 pt-10">
           <button
             onClick={() => onSave({ ...employee, ...formData })}
-            className="grow bg-indigo-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-2xl shadow-indigo-100 transition-all active:scale-95"
+            className="grow bg-indigo-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-2xl shadow-indigo-100 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed"
           >
             Mettre à jour mon profil
           </button>
           <button
             onClick={onClose}
-            className="px-12 py-5 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:text-slate-600"
+            className="px-12 py-5 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:text-slate-600 cursor-pointer disabled:cursor-not-allowed"
           >
             Quitter sans sauvegarder
           </button>

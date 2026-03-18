@@ -162,7 +162,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
             >
               <button
                 onClick={() => removeTarget(target.id)}
-                className="absolute top-8 right-8 text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                className="absolute top-8 right-8 text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 cursor-pointer disabled:cursor-not-allowed"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

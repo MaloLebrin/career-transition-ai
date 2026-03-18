@@ -99,7 +99,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                   <button
                     key={val.id}
                     onClick={() => handleRankValue(val.label)}
-                    className="p-4 text-left rounded-2xl border border-brand-navy/5 bg-white hover:bg-brand-sage/5 hover:border-brand-sage hover:shadow-xl transition-all group"
+                    className="p-4 text-left rounded-2xl border border-brand-navy/5 bg-white hover:bg-brand-sage/5 hover:border-brand-sage hover:shadow-xl transition-all group cursor-pointer disabled:cursor-not-allowed"
                   >
                     <div className="font-bold text-brand-navy group-hover:text-brand-sage">
                       {val.label}
@@ -126,7 +126,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                     <span className="font-bold text-brand-navy grow">{label}</span>
                     <button
                       onClick={() => handleRemoveValue(label)}
-                      className="text-brand-navy/20 hover:text-rose-500 transition-colors"
+                      className="text-brand-navy/20 hover:text-rose-500 transition-colors cursor-pointer disabled:cursor-not-allowed"
                     >
                       <svg
                         className="w-5 h-5"

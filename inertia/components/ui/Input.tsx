@@ -254,7 +254,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             onClick={handleClear}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
             aria-label="Vider le champ"
           >
             <X className="w-4 h-4" aria-hidden />
@@ -264,7 +264,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             onClick={handleTogglePassword}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
             aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
           >
             {showPassword ? (

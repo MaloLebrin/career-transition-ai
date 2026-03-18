@@ -527,7 +527,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
                         <button
                           key={lvl}
                           onClick={() => updateSkillLevel(skill.name, lvl)}
-                          className={`h-2 grow rounded-full transition-all ${lvl <= skill.level ? 'bg-brand-sage' : 'bg-brand-navy/10'}`}
+                          className={`h-2 grow rounded-full transition-all cursor-pointer disabled:cursor-not-allowed ${lvl <= skill.level ? 'bg-brand-sage' : 'bg-brand-navy/10'}`}
                         />
                       ))}
                     </div>
@@ -586,7 +586,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
                     <button
                       key={lvl}
                       onClick={() => setNewSkill({ ...newSkill, level: lvl })}
-                      className={`h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${newSkill.level === lvl ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20' : 'bg-brand-ivory text-brand-navy/40 hover:bg-brand-sage/10'}`}
+                      className={`h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all cursor-pointer disabled:cursor-not-allowed ${newSkill.level === lvl ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20' : 'bg-brand-ivory text-brand-navy/40 hover:bg-brand-sage/10'}`}
                     >
                       {lvl}
                     </button>
@@ -623,7 +623,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
 const TabButton = ({ active, onClick, label }: any) => (
   <button
     onClick={onClick}
-    className={`flex-shrink-0 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+    className={`flex-shrink-0 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed ${active ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
   >
     {label}
   </button>

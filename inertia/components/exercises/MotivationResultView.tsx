@@ -107,7 +107,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
           </h5>
           <button
             onClick={() => setShowMatrix(!showMatrix)}
-            className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+            className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline cursor-pointer disabled:cursor-not-allowed"
           >
             {showMatrix ? 'Replier la matrice' : 'Déplier la matrice'}
           </button>

@@ -122,7 +122,7 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
                   key={r.id}
                   type="button"
                   onClick={() => setData('role', r.id)}
-                  className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group ${
+                  className={`p-4 rounded-2xl border-2 text-left transition-all flex items-center justify-between group cursor-pointer disabled:cursor-not-allowed ${
                     data.role === r.id
                       ? 'border-orange-500 bg-orange-50'
                       : 'border-slate-100 bg-slate-50 hover:border-slate-200'

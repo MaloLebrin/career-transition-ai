@@ -44,8 +44,8 @@ export default function FlashBanner() {
           onClick={() => setDismissed(true)}
           className={
             isSuccess
-              ? 'text-brand-sage/70 hover:text-brand-sage p-1 rounded-lg transition-colors'
-              : 'text-rose-500/70 hover:text-rose-600 p-1 rounded-lg transition-colors'
+              ? 'text-brand-sage/70 hover:text-brand-sage p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
+              : 'text-rose-500/70 hover:text-rose-600 p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
           }
           aria-label="Fermer"
         >

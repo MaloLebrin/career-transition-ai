@@ -58,7 +58,7 @@ export const ExperienceItem = ({ experience, isEditing, setIsEditing }: Experien
               onClick={() => {
                 setIsEditing(true)
               }}
-              className="opacity-0 group-hover:opacity-100 absolute top-0 right-10 p-2 text-brand-navy/20 hover:text-brand-sage transition-all cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 absolute top-0 right-10 p-2 text-brand-navy/20 hover:text-brand-sage transition-all cursor-pointer disabled:cursor-not-allowed"
               title="Modifier"
             >
               <Pencil className="w-4 h-4" />
@@ -68,7 +68,7 @@ export const ExperienceItem = ({ experience, isEditing, setIsEditing }: Experien
               onClick={() => {
                 setIsDeleteOpen(true)
               }}
-              className="opacity-0 group-hover:opacity-100 absolute top-0 right-0 p-2 text-brand-navy/20 hover:text-rose-500 transition-all cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 absolute top-0 right-0 p-2 text-brand-navy/20 hover:text-rose-500 transition-all cursor-pointer disabled:cursor-not-allowed"
               title="Supprimer"
             >
               <Trash className="w-4 h-4" />

@@ -48,7 +48,7 @@ const NoteForm = memo(function NoteForm({
             type="button"
             onClick={() => setVisibility('private')}
             disabled={isLoading}
-            className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+            className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
               !isShared
                 ? 'bg-slate-800 border-slate-800 text-white shadow-lg scale-[1.02]'
                 : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
@@ -75,7 +75,7 @@ const NoteForm = memo(function NoteForm({
             type="button"
             onClick={() => setVisibility('shared')}
             disabled={isLoading}
-            className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+            className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
               isShared
                 ? 'bg-rose-200 border-rose-200 text-rose-800 shadow-lg scale-[1.02]'
                 : 'bg-white border-slate-200 text-slate-500 hover:border-rose-100 hover:bg-rose-50'

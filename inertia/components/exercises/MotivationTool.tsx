@@ -197,7 +197,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <button
               onClick={() => handleDecision(currentI)}
-              className="group p-10 bg-white border border-brand-navy/5 hover:border-brand-sage hover:bg-brand-sage/5 rounded-[40px] text-2xl font-bold text-brand-navy transition-all hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-xl"
+              className="group p-10 bg-white border border-brand-navy/5 hover:border-brand-sage hover:bg-brand-sage/5 rounded-[40px] text-2xl font-bold text-brand-navy transition-all hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-xl cursor-pointer disabled:cursor-not-allowed"
             >
               <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 Option A
@@ -206,7 +206,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
             </button>
             <button
               onClick={() => handleDecision(currentJ)}
-              className="group p-10 bg-white border border-brand-navy/5 hover:border-brand-sage hover:bg-brand-sage/5 rounded-[40px] text-2xl font-bold text-brand-navy transition-all hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-xl"
+              className="group p-10 bg-white border border-brand-navy/5 hover:border-brand-sage hover:bg-brand-sage/5 rounded-[40px] text-2xl font-bold text-brand-navy transition-all hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-xl cursor-pointer disabled:cursor-not-allowed"
             >
               <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 Option B

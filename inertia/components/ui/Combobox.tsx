@@ -159,13 +159,13 @@ export default function Combobox<T extends ComboboxOption>({
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
                   aria-label="Effacer la sélection"
                 >
                   <X className="w-4 h-4" aria-hidden />
                 </button>
               )}
-              <ComboboxButton className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50">
+              <ComboboxButton className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed">
                 <ChevronDown className="w-4 h-4" aria-hidden />
               </ComboboxButton>
             </div>
@@ -209,7 +209,7 @@ export default function Combobox<T extends ComboboxOption>({
                   <button
                     type="button"
                     onClick={() => onCreate(query.trim())}
-                    className="w-full cursor-pointer select-none px-4 py-3 text-sm text-brand-navy hover:bg-brand-sage/10 transition-colors text-left border-t border-slate-100"
+                    className="w-full cursor-pointer disabled:cursor-not-allowed select-none px-4 py-3 text-sm text-brand-navy hover:bg-brand-sage/10 transition-colors text-left border-t border-slate-100"
                   >
                     <span className="font-medium">Créer « {query.trim()} »</span>
                   </button>

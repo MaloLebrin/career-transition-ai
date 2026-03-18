@@ -86,7 +86,7 @@ const NoteCard = memo(function NoteCard({
               <button
                 type="button"
                 onClick={() => onEdit(note)}
-                className={`p-1.5 rounded-lg transition-colors ${
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed ${
                   isShared
                     ? 'text-rose-500 hover:text-rose-700 hover:bg-rose-100'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200'
@@ -100,7 +100,7 @@ const NoteCard = memo(function NoteCard({
               <button
                 type="button"
                 onClick={() => onDelete(note)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer disabled:cursor-not-allowed"
                 title="Supprimer"
               >
                 <Trash2 className="w-4 h-4" />

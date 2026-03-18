@@ -73,7 +73,7 @@ const NavButton = memo(function NavButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${
         active
           ? 'bg-brand-sage/10 text-brand-sage font-bold'
           : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'

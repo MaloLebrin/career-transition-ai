@@ -124,7 +124,7 @@ const SkillMappingTool: React.FC<Props> = ({
                 <button
                   key={exp.id}
                   onClick={() => setSelectedExpId(exp.id === selectedExpId ? '' : exp.id)}
-                  className={`px-6 py-3 rounded-2xl border-2 transition-all text-xs font-bold ${selectedExpId === exp.id ? 'border-violet-600 bg-violet-50 text-violet-700' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'}`}
+                  className={`px-6 py-3 rounded-2xl border-2 transition-all text-xs font-bold cursor-pointer disabled:cursor-not-allowed ${selectedExpId === exp.id ? 'border-violet-600 bg-violet-50 text-violet-700' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'}`}
                 >
                   {exp.title} @ {exp.company}
                 </button>
@@ -257,7 +257,7 @@ const SkillMappingTool: React.FC<Props> = ({
                   <td className="p-6 align-middle text-right">
                     <button
                       onClick={() => removeRow(row.id)}
-                      className="p-3 text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                      className="p-3 text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer disabled:cursor-not-allowed"
                     >
                       <svg
                         className="w-5 h-5"

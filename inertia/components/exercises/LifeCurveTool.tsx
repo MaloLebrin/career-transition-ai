@@ -182,7 +182,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
                       </div>
                       <button
                         onClick={() => removePoint(i)}
-                        className="text-slate-300 hover:text-red-500"
+                        className="text-slate-300 hover:text-red-500 cursor-pointer disabled:cursor-not-allowed"
                       >
                         <svg
                           className="w-4 h-4"

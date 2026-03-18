@@ -25,7 +25,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
         <button
           type="button"
           onClick={onLogoClick}
-          className="flex items-center space-x-3 cursor-pointer group border-none bg-transparent p-0"
+          className="flex items-center space-x-3 cursor-pointer disabled:cursor-not-allowed group border-none bg-transparent p-0"
         >
           <Logo size="md" />
         </button>
@@ -34,14 +34,14 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
           <button
             type="button"
             onClick={onMethodologyClick}
-            className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
           >
             Méthodologie
           </button>
           <button
             type="button"
             onClick={onAiClick}
-            className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
           >
             Intelligence Artificielle
           </button>
@@ -54,7 +54,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
             <button
               type="button"
               onClick={onLogoClick}
-              className="cursor-pointer text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
+              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
             >
               Retour à l'accueil
             </button>
