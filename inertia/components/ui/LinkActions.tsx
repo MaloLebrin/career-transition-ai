@@ -1,6 +1,6 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import Button from '~/components/ui/Button'
 import { isUrl } from '#shared/helpers/url'
+import { memo, useCallback, useMemo, useState } from 'react'
+import Button from '~/components/ui/Button'
 
 export interface LinkActionsProps {
   value: string
