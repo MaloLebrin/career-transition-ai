@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { formatSessionDate } from '../../../shared/helpers/date'
 
 describe('shared/helpers/date', () => {
@@ -14,4 +14,3 @@ describe('shared/helpers/date', () => {
     expect(formatSessionDate('2026-03-18T10:00:00.000Z')).toContain('2026')
   })
 })
-

@@ -14,8 +14,8 @@ describe('LinkActions', () => {
 
   test('renders copy and open buttons when value is a URL', () => {
     render(<LinkActions value="https://example.com/meet" />)
-    expect(screen.getByRole('button', { name: /Copier/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Ouvrir/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Copier le lien/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Ouvrir le lien dans un nouvel onglet/i })).toBeInTheDocument()
   })
 
   test('copies to clipboard when clicking copy', async () => {
@@ -23,7 +23,7 @@ describe('LinkActions', () => {
     Object.assign(navigator, { clipboard: { writeText } })
 
     render(<LinkActions value="https://example.com/meet" />)
-    fireEvent.click(screen.getByRole('button', { name: /Copier/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Copier le lien/i }))
 
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith('https://example.com/meet')
@@ -33,7 +33,7 @@ describe('LinkActions', () => {
   test('opens a new tab when clicking open', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
     render(<LinkActions value="https://example.com/meet" />)
-    fireEvent.click(screen.getByRole('button', { name: /Ouvrir/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Ouvrir le lien dans un nouvel onglet/i }))
     expect(openSpy).toHaveBeenCalledWith('https://example.com/meet', '_blank', 'noopener,noreferrer')
   })
 })

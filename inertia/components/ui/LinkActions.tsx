@@ -1,12 +1,11 @@
 import { isUrl } from '#shared/helpers/url'
 import { memo, useCallback, useMemo, useState } from 'react'
+import { Copy, ExternalLink, Check } from 'lucide-react'
 import Button from '~/components/ui/Button'
 
 export interface LinkActionsProps {
   value: string
   className?: string
-  copyLabel?: string
-  openLabel?: string
 }
 
 async function copyToClipboard(text: string): Promise<boolean> {
@@ -38,8 +37,6 @@ async function copyToClipboard(text: string): Promise<boolean> {
 const LinkActions = memo(function LinkActions({
   value,
   className = '',
-  copyLabel = 'Copier',
-  openLabel = 'Ouvrir',
 }: LinkActionsProps) {
   const url = useMemo(() => value.trim(), [value])
   const isLink = useMemo(() => Boolean(url) && isUrl(url), [url])
@@ -68,8 +65,9 @@ const LinkActions = memo(function LinkActions({
         size="sm"
         onClick={handleCopy}
         aria-label="Copier le lien"
+        title="Copier le lien"
       >
-        {copied ? 'Copié' : copyLabel}
+        {copied ? <Check className="w-4 h-4" aria-hidden /> : <Copy className="w-4 h-4" aria-hidden />}
       </Button>
       <Button
         type="button"
@@ -77,8 +75,9 @@ const LinkActions = memo(function LinkActions({
         size="sm"
         onClick={handleOpen}
         aria-label="Ouvrir le lien dans un nouvel onglet"
+        title="Ouvrir dans un nouvel onglet"
       >
-        {openLabel}
+        <ExternalLink className="w-4 h-4" aria-hidden />
       </Button>
     </div>
   )
