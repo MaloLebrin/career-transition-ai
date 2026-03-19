@@ -51,6 +51,7 @@ export default function StepDetail({ step, results }: StepDetailProps) {
             )}
           </>
         }
+        exerciseLinksEnabled
       />
     </DashboardLayout>
   )

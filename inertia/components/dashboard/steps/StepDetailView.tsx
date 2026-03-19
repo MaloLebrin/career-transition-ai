@@ -2,6 +2,7 @@ import React, { memo } from 'react'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
 import Badge from '~/components/ui/Badge'
 import Breadcrumb from '~/components/ui/Breadcrumb'
+import AppLink from '~/components/ui/AppLink'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
 import { formatDateTimeFR, formatSessionDate } from '#shared/helpers/date'
 import { getExerciseTitle } from '#shared/helpers/exercises'
@@ -23,6 +24,11 @@ export interface StepDetailViewProps {
   afterSidebarCard?: React.ReactNode
   /** Optional content rendered below results column */
   belowResults?: React.ReactNode
+  /**
+   * When true (candidate view), render associated exercises as links to fill the exercise
+   * (and disable them when the step is locked).
+   */
+  exerciseLinksEnabled?: boolean
 }
 
 const StepDetailView = memo(function StepDetailView({
@@ -36,6 +42,7 @@ const StepDetailView = memo(function StepDetailView({
   sidebarExtras,
   afterSidebarCard,
   belowResults,
+  exerciseLinksEnabled = false,
 }: StepDetailViewProps) {
   const renderResults = () => {
     if (!results || results.length === 0) {
@@ -153,9 +160,27 @@ const StepDetailView = memo(function StepDetailView({
                     {step.associatedExercises.map((exerciseType) => (
                       <span
                         key={exerciseType}
-                        className="text-xs font-bold text-brand-sage bg-brand-sage/10 px-3 py-1 rounded-full"
+                        className="text-xs font-bold bg-brand-sage/10 px-3 py-1 rounded-full"
                       >
-                        {getExerciseTitle(exerciseType)}
+                        {exerciseLinksEnabled && !step.isLocked && !step.completed ? (
+                          <AppLink
+                            href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}
+                            className="text-brand-sage"
+                          >
+                            {getExerciseTitle(exerciseType)}
+                          </AppLink>
+                        ) : (
+                          <span
+                            className={
+                              step.isLocked
+                                ? 'text-slate-400 cursor-not-allowed'
+                                : 'text-brand-sage'
+                            }
+                            aria-disabled={step.isLocked}
+                          >
+                            {getExerciseTitle(exerciseType)}
+                          </span>
+                        )}
                       </span>
                     ))}
                   </div>

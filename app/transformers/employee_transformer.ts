@@ -1,5 +1,6 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import Employee from '#models/employee'
+import { exerciceTypeToFront } from '#mappers/employee_mapper'
 
 export default class EmployeeTransformer extends BaseTransformer<Employee> {
   toObject() {
@@ -22,7 +23,19 @@ export default class EmployeeTransformer extends BaseTransformer<Employee> {
         }
       }),
       exercises: this.resource.exerciseResults?.map((e) => e.serialize()),
-      plan: this.resource.supportPlanSteps?.map((p) => p.serialize()),
+      plan: this.resource.supportPlanSteps?.map((p) => {
+        const step = p.serialize()
+        const exercises = (p.exercises ?? []) as Array<{ exerciseType: any }>
+
+        // The frontend expects `associatedExercises` (mapped types), not the raw `exercises` relation.
+        if (exercises.length > 0) {
+          step.associatedExercises = exercises.map((e) => exerciceTypeToFront(e.exerciseType))
+        } else {
+          step.associatedExercises = undefined
+        }
+
+        return step
+      }),
       experiences: this.resource.experiences?.map((e) => e.serialize()),
       educations: this.resource.educations?.map((e) => e.serialize()),
     }

@@ -71,7 +71,7 @@ export default function EmployeeHome({
                         idx + 1
                       )}
                     </div>
-                    <div className="ml-8 grow pb-10 border-l-2 border-brand-navy/5 -ml-5 pl-5 last:border-transparent">
+                    <div className="ml-3 grow pb-10 border-l-2 border-brand-navy/5 pl-5 last:border-transparent">
                       <div className="flex items-center gap-2">
                         <h4
                           className={`font-bold text-xl ${
@@ -98,41 +98,80 @@ export default function EmployeeHome({
                       {step.instructions && (
                         <p className="text-brand-navy/60 mt-2 text-sm">{step.instructions}</p>
                       )}
-                      {isLocked ? (
+
+                      {isLocked && (
                         <div className="mt-6 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-3 rounded-xl">
                           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
                           <span>Cette étape sera débloquée par votre conseiller</span>
                         </div>
-                      ) : step.associatedExercises && step.associatedExercises.length > 0 && !step.completed ? (
-                        <div className="mt-6 flex flex-wrap gap-2">
-                          {step.associatedExercises.map((exerciseType) => (
-                            <AppLink key={exerciseType} href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                icon={
-                                  <svg
-                                    className="w-4 h-4 stroke-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                      )}
+
+                      {step.associatedExercises &&
+                        step.associatedExercises.length > 0 &&
+                        !step.completed && (
+                          <div className="mt-6 flex flex-wrap gap-2">
+                            {step.associatedExercises.map((exerciseType) => {
+                              const exerciseLabel = exerciseType.replace(/_/g, ' ')
+
+                              if (isLocked) {
+                                return (
+                                  <Button
+                                    key={exerciseType}
+                                    variant="secondary"
+                                    size="sm"
+                                    disabled
+                                    icon={
+                                      <svg
+                                        className="w-4 h-4 stroke-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                        />
+                                      </svg>
+                                    }
                                   >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                                    />
-                                  </svg>
-                                }
-                              >
-                                {exerciseType.replace(/_/g, ' ')}
-                              </Button>
-                            </AppLink>
-                          ))}
-                        </div>
-                      ) : null}
+                                    {exerciseLabel}
+                                  </Button>
+                                )
+                              }
+
+                              return (
+                                <AppLink
+                                  key={exerciseType}
+                                  href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}
+                                >
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    icon={
+                                      <svg
+                                        className="w-4 h-4 stroke-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                                        />
+                                      </svg>
+                                    }
+                                  >
+                                    {exerciseLabel}
+                                  </Button>
+                                </AppLink>
+                              )
+                            })}
+                          </div>
+                        )}
                       {step.completed && (
                         <AppLink href={`/dashboard/candidat/steps/${step.id}`}>
                           <Button

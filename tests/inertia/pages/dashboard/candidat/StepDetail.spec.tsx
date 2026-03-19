@@ -30,6 +30,14 @@ vi.mock('../../../../../inertia/components/ui/Badge', () => ({
   default: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 
+vi.mock('../../../../../inertia/components/ui/AppLink', () => ({
+  default: ({ href, children, ...rest }: any) => (
+    <a href={href} data-testid="app-link" {...rest}>
+      {children}
+    </a>
+  ),
+}))
+
 vi.mock('../../../../../inertia/components/exercises/ExerciseResultVisualization', () => ({
   default: () => <div data-testid="result-vis" />,
 }))
@@ -54,11 +62,11 @@ describe('Dashboard candidat StepDetail page', () => {
     ;(inertia.router.visit as any).mockClear()
   })
 
-  test('redirects to login and shows spinner when unauthenticated', async () => {
+  test('renders layout even when unauthenticated', async () => {
     setAuthUser(null)
     render(<StepDetail step={stepBase as any} results={[]} />)
     const inertia = await import('@inertiajs/react')
-    expect(inertia.router.visit).toHaveBeenCalledWith('/auth/login')
+    expect(inertia.router.visit).not.toHaveBeenCalled()
     expect(screen.getByTestId('layout')).toBeInTheDocument()
   })
 
@@ -67,6 +75,25 @@ describe('Dashboard candidat StepDetail page', () => {
     render(<StepDetail step={stepBase as any} results={[]} />)
     expect(screen.getByText('Lieu / Lien')).toBeInTheDocument()
     expect(screen.getByText('Bureau Paris')).toBeInTheDocument()
+  })
+
+  test('renders associated exercises as links when step is unlocked', () => {
+    setAuthUser({ id: 1, role: 'employee' })
+    render(
+      <StepDetail
+        step={
+          {
+            ...stepBase,
+            isLocked: false,
+            associatedExercises: ['motivation'],
+          } as any
+        }
+        results={[]}
+      />
+    )
+
+    const link = screen.getByRole('link', { name: /Analyse Motivations/i })
+    expect(link).toHaveAttribute('href', '/dashboard/candidat/exercises/motivation')
   })
 })
 
