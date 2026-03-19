@@ -85,7 +85,7 @@ export default function CandidatExercise({
       <>
         <Head title={`Exercice ${type}`} />
         <DashboardLayout hideSidebar>
-          <div className="animate-fadeIn max-w-7xl mx-auto">
+          <div className="animate-fadeIn w-full">
             <div className="flex justify-between items-center mb-10">
               <AppLink href="/dashboard/candidat">
                 <Button variant="ghost" size="sm">
@@ -131,7 +131,7 @@ export default function CandidatExercise({
     <>
       <Head title={`Exercice ${type}`} />
       <DashboardLayout hideSidebar>
-        <div className="animate-fadeIn max-w-7xl mx-auto">
+        <div className="animate-fadeIn w-full">
           <div className="flex justify-between items-center mb-10">
             <AppLink href="/dashboard/candidat">
               <Button variant="ghost" size="sm">

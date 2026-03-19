@@ -99,7 +99,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
   const sortedData = [...points].sort((a, b) => a.year - b.year)
 
   return (
-    <Card className="p-10 max-w-5xl mx-auto animate-fadeIn">
+    <Card className="p-10 w-full animate-fadeIn">
       {step === 1 ? (
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto mb-8">
