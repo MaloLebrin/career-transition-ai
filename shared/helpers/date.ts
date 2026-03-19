@@ -21,3 +21,17 @@ export function formatSessionDate(dateStr: string | undefined): string {
     year: 'numeric',
   })
 }
+
+export function formatDateTimeFR(dateStr: string | undefined): string {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Paris',
+  })
+}

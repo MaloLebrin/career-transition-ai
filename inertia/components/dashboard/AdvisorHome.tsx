@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useEmployees } from '../../hooks/use_employees'
+import { formatDateTimeFR } from '#shared/helpers/date'
 import AddEmployeeModal from '../modals/AddEmployeeModal'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -134,12 +135,7 @@ export default function AdvisorHome() {
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-bold text-brand-terracotta uppercase tracking-widest">
-                        {new Date(step.scheduledAt!).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {formatDateTimeFR(step.scheduledAt!)}
                       </p>
                     </div>
                   </div>

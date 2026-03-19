@@ -10,6 +10,7 @@ import { useEmployee } from '../../hooks/use_employee'
 import { useEmployees } from '../../hooks/use_employees'
 import { useExercises } from '../../hooks/useExercises'
 import { ExerciseType, SupportPlanStep } from '../../types'
+import { formatDateTimeFR } from '#shared/helpers/date'
 import DesignSystem from '../design-system/DesignSystem'
 import CircleOfControlTool from '../exercises/CircleOfControlTool'
 import DISCTool from '../exercises/DISCTool'
@@ -466,12 +467,7 @@ const AppShell: React.FC = () => {
                               </div>
                               <div className="text-right">
                                 <p className="text-[10px] font-bold text-brand-terracotta uppercase tracking-widest">
-                                  {new Date(step.scheduledAt!).toLocaleDateString('fr-FR', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
+                                  {formatDateTimeFR(step.scheduledAt!)}
                                 </p>
                               </div>
                             </div>

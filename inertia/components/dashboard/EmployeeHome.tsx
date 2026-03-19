@@ -1,4 +1,5 @@
 import { EmployeeData } from '../../types/Employee'
+import { formatDateTimeFR } from '#shared/helpers/date'
 import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -91,13 +92,7 @@ export default function EmployeeHome({
                       </div>
                       {step.scheduledAt && (
                         <p className="text-brand-terracotta font-medium mt-1 text-sm">
-                          {new Date(step.scheduledAt).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatDateTimeFR(step.scheduledAt)}
                         </p>
                       )}
                       {step.instructions && (

@@ -10,6 +10,7 @@ import ConfirmModal from '~/components/ui/ConfirmModal'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
 import { useAuth } from '~/hooks/useAuth'
 import type { Employee, SupportPlanStep } from '~/types'
+import { formatDateTimeFR } from '#shared/helpers/date'
 
 interface EmployeeDetailProps {
   employeeId: string
@@ -273,17 +274,15 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                           <h4 className="font-bold text-brand-navy text-lg group-hover:text-brand-sage mt-2">
                             RDV {(step.sortOrder ?? 0) + 1}
                           </h4>
-                          {step.scheduledAt && (
-                            <p className="text-sm text-brand-terracotta font-medium mt-1">
-                              {new Date(step.scheduledAt).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          )}
+                          {step.scheduledAt &&
+                            (() => {
+                              const stableFormattedScheduledAt = formatDateTimeFR(step.scheduledAt)
+                              return (
+                                <p className="text-sm text-brand-terracotta font-medium mt-1">
+                                  {stableFormattedScheduledAt}
+                                </p>
+                              )
+                            })()}
                           {step.instructions && (
                             <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.instructions}</p>
                           )}

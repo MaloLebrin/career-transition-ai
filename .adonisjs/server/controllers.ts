@@ -12,10 +12,10 @@ export const controllers = {
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
+  Notes: () => import('#controllers/notes_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
   Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
-  Notes: () => import('#controllers/notes_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

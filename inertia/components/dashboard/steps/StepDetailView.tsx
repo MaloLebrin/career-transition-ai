@@ -3,7 +3,7 @@ import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVi
 import Badge from '~/components/ui/Badge'
 import Breadcrumb from '~/components/ui/Breadcrumb'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
-import { formatSessionDate } from '#shared/helpers/date'
+import { formatDateTimeFR, formatSessionDate } from '#shared/helpers/date'
 import { getExerciseTitle } from '#shared/helpers/exercises'
 
 export interface StepDetailViewProps {
@@ -88,13 +88,7 @@ const StepDetailView = memo(function StepDetailView({
 
         {step.scheduledAt && (
           <p className="text-brand-terracotta mt-2 text-lg font-medium">
-            {new Date(step.scheduledAt).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatDateTimeFR(step.scheduledAt)}
           </p>
         )}
         {step.instructions && (

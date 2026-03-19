@@ -18,9 +18,11 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/jobs/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/jobs/Index.tsx'))['default']>
     'dashboard/admin/organizations/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/organizations/Index.tsx'))['default']>
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
+    'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
     'dashboard/CandidatProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatProfile.tsx'))['default']>
     'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
     'dashboard/conseiller/employees/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/List.tsx'))['default']>
+    'dashboard/conseiller/employees/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/StepDetail.tsx'))['default']>
     'dashboard/conseiller/exercises/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/Home.tsx'))['default']>
     'dashboard/conseiller/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/List.tsx'))['default']>
     'dashboard/conseiller/exercises/ResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/ResultDetail.tsx'))['default']>
@@ -65,7 +67,5 @@ declare module '@adonisjs/inertia/types' {
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
-    'dashboard/conseiller/employees/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/StepDetail.tsx'))['default']>
-    'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
   }
 }

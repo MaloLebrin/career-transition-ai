@@ -85,7 +85,7 @@ const DateTimePicker = memo(function DateTimePicker({
       const iso = buildIsoValue(selected, internalTime)
       onChange(iso)
     },
-    [internalTime, onChange]
+    [internalTime, onChange, value]
   )
 
   const handleTimeChange = useCallback(
