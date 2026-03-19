@@ -145,7 +145,9 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
   test('renders dashboard/exercises/List with exercises and context candidat', async ({
     assert,
   }) => {
-    const service = {} as unknown as ExerciseResultsService
+    const service = {
+      getUnlockedExerciseSlugsForEmployee: async () => [EXERCICE_RESULTS_TYPES.MOTIVATION],
+    } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx()
 
@@ -153,6 +155,9 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
 
     assert.equal(ctx._inertiaRenderPage(), 'dashboard/employee/exercises/List')
     assert.deepEqual(ctx._inertiaRenderProps().exercises, EXERCISE_LIST)
+    assert.deepEqual(ctx._inertiaRenderProps().unlockedExerciseSlugs, [
+      EXERCICE_RESULTS_TYPES.MOTIVATION,
+    ])
   })
 })
 

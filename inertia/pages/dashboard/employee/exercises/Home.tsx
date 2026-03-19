@@ -21,6 +21,8 @@ import { EXERCISE_SLUGS } from '~/config/exercises'
 interface CandidatExerciseProps {
   type: string
   initialDraftsByType?: Record<string, ExerciseDraft | null>
+  accessGranted?: boolean
+  blockedMessage?: string
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -37,6 +39,8 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
 export default function CandidatExercise({
   type,
   initialDraftsByType,
+  accessGranted = true,
+  blockedMessage,
 }: CandidatExerciseProps) {
   const { user } = useAuth()
   const targetId = user?.id || '1'
@@ -74,7 +78,54 @@ export default function CandidatExercise({
     if (!user) router.visit('/auth/login')
   }, [user])
 
-  if (!user || !exerciseType) return null
+  if (!user) return null
+
+  if (accessGranted === false) {
+    return (
+      <>
+        <Head title={`Exercice ${type}`} />
+        <DashboardLayout hideSidebar>
+          <div className="animate-fadeIn max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-10">
+              <AppLink href="/dashboard/candidat">
+                <Button variant="ghost" size="sm">
+                  ← Retour
+                </Button>
+              </AppLink>
+            </div>
+
+            <div className="mt-6 bg-amber-50 border border-amber-100 text-amber-800 px-4 py-4 rounded-xl">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <h2 className="text-sm font-bold">Accès verrouillé</h2>
+                  <p className="text-sm text-amber-700 mt-1">
+                    {blockedMessage ??
+                      'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DashboardLayout>
+      </>
+    )
+  }
+
+  if (!exerciseType) return null
 
   return (
     <>
@@ -97,7 +148,7 @@ export default function CandidatExercise({
             )}
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...

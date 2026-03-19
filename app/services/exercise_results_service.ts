@@ -1,5 +1,6 @@
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import Employee from '#models/employee'
 import { mapEmployee } from '#mappers/employee_mapper'
 import type { EmployeeDto } from '#dtos/employee_dto'
@@ -24,6 +25,41 @@ type SaveDraftInput = {
 }
 
 export class ExerciseResultsService {
+  /**
+   * Candidate access rules:
+   * An exercise is accessible if there exists at least one support plan step
+   * linked to that exercise type for the employee, and that step is NOT locked.
+   */
+  public async getUnlockedExerciseSlugsForEmployee(
+    employeeId: number
+  ): Promise<Array<ExerciseResult['type']>> {
+    const rows = await SupportPlanStepExercise.query()
+      .whereHas('supportPlanStep', (query) => {
+        query.where('employeeId', employeeId).where('isLocked', false)
+      })
+      .select('exerciseType')
+
+    const unique = new Set<ExerciseResult['type']>()
+    for (const row of rows) {
+      unique.add(row.exerciseType)
+    }
+    return Array.from(unique)
+  }
+
+  public async canAccessExerciseForEmployee(
+    employeeId: number,
+    exerciseType: ExerciseResult['type']
+  ): Promise<boolean> {
+    const unlocked = await SupportPlanStepExercise.query()
+      .where('exerciseType', exerciseType)
+      .whereHas('supportPlanStep', (query) => {
+        query.where('employeeId', employeeId).where('isLocked', false)
+      })
+      .first()
+
+    return Boolean(unlocked)
+  }
+
   public async saveResult(input: SaveResultInput): Promise<EmployeeDto> {
     const employee = await Employee.findOrFail(input.employeeId)
 
@@ -55,14 +91,18 @@ export class ExerciseResultsService {
       })
     }
 
-    // Update support plan steps completion flags
-    for (const planItem of input.plan) {
-      const step = await SupportPlanStep.find(planItem.id)
-      if (step) {
-        step.completed = planItem.completed
-        step.updatedAt = DateTime.fromISO(planItem.lastUpdated ?? DateTime.now().toISO()!)
-        await step.save()
-      }
+    // Secure completion flags:
+    // - never trust `input.plan` coming from the client (it can be forged)
+    // - mark as completed only the unlocked support plan steps that are associated
+    //   with the exercise type we just saved.
+    const stepsToComplete = await SupportPlanStep.query()
+      .where('employeeId', input.employeeId)
+      .where('isLocked', false)
+      .whereHas('exercises', (q) => q.where('exerciseType', input.type))
+
+    for (const step of stepsToComplete) {
+      step.completed = true
+      await step.save()
     }
 
     const loaded = await Employee.query()

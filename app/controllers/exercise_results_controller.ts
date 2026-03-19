@@ -1,6 +1,5 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
-import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
@@ -141,8 +140,15 @@ export default class ExerciseResultsController {
     if (!auth.user) {
       return response.unauthorized()
     }
+
+    const employee = await this.employeesService.getEmployeeForUser(auth.user)
+    const unlockedExerciseSlugs = await this.service.getUnlockedExerciseSlugsForEmployee(
+      employee.id
+    )
+
     return (inertia as any).render('dashboard/employee/exercises/List', {
       exercises: EXERCISE_LIST,
+      unlockedExerciseSlugs,
     })
   }
 
@@ -370,20 +376,10 @@ export default class ExerciseResultsController {
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const typeParam = String(params.type).toLowerCase()
 
-    const lockedStepExercise = await SupportPlanStepExercise.query()
-      .where('exerciseType', typeParam)
-      .whereHas('supportPlanStep', (query) => {
-        query
-          .where('employeeId', employee.id)
-          .where('isLocked', true)
-          .where('completed', false)
-      })
-      .first()
-
-    if (lockedStepExercise) {
-      session.flash('error', 'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.')
-      return response.redirect().toPath('/dashboard/candidat')
-    }
+    const accessGranted = await this.service.canAccessExerciseForEmployee(
+      employee.id,
+      typeParam as any
+    )
 
     const draftTypes = [
       EXERCICE_RESULTS_TYPES.MOTIVATION,
@@ -397,6 +393,21 @@ export default class ExerciseResultsController {
     ] as const
 
     const initialDraftsByType: Record<string, any> = {}
+
+    if (!accessGranted) {
+      session.flash(
+        'error',
+        'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'
+      )
+      return (inertia as any).render('dashboard/employee/exercises/Home', {
+        type: params.type,
+        initialDraftsByType: {},
+        accessGranted: false,
+        blockedMessage:
+          'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.',
+      })
+    }
+
     for (const exerciseType of draftTypes) {
       if (typeParam !== exerciseType) continue
       const draft = await ExerciseResult.query()
@@ -416,12 +427,11 @@ export default class ExerciseResultsController {
       break
     }
 
-    const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
-    const props =
-      pageName === 'dashboard/employee/exercises/Home'
-        ? { type: params.type, initialDraftsByType }
-        : { initialDraftsByType }
-    return (inertia as any).render(pageName, props)
+    return (inertia as any).render('dashboard/employee/exercises/Home', {
+      type: params.type,
+      initialDraftsByType,
+      accessGranted: true,
+    })
   }
 
   /**
@@ -434,20 +444,14 @@ export default class ExerciseResultsController {
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const payload = await request.validateUsing(saveExerciseDraftValidator)
+    const accessGranted = await this.service.canAccessExerciseForEmployee(
+      employee.id,
+      payload.type as any
+    )
 
-    const lockedStepExercise = await SupportPlanStepExercise.query()
-      .where('exerciseType', payload.type)
-      .whereHas('supportPlanStep', (query) => {
-        query
-          .where('employeeId', employee.id)
-          .where('isLocked', true)
-          .where('completed', false)
-      })
-      .first()
-
-    if (lockedStepExercise) {
+    if (!accessGranted) {
       session.flash('error', 'Cette étape est verrouillée.')
-      return response.redirect().toPath('/dashboard/candidat')
+      return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 
     await this.service.saveDraft({
@@ -469,20 +473,14 @@ export default class ExerciseResultsController {
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const payload = await request.validateUsing(saveExerciseResultValidator)
+    const accessGranted = await this.service.canAccessExerciseForEmployee(
+      employee.id,
+      payload.type as any
+    )
 
-    const lockedStepExercise = await SupportPlanStepExercise.query()
-      .where('exerciseType', payload.type)
-      .whereHas('supportPlanStep', (query) => {
-        query
-          .where('employeeId', employee.id)
-          .where('isLocked', true)
-          .where('completed', false)
-      })
-      .first()
-
-    if (lockedStepExercise) {
+    if (!accessGranted) {
       session.flash('error', 'Cette étape est verrouillée.')
-      return response.redirect().toPath('/dashboard/candidat')
+      return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 
     await this.service.saveResult({
