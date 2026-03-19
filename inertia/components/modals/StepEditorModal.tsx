@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Card from '../ui/Card'
+import DateTimePicker from '../ui/DateTimePicker'
 import { SupportPlanStep } from '~/types'
 import { EXERCISE_LIST } from '~/config/exercises'
 
@@ -15,12 +16,9 @@ interface Props {
 
 const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClose }) => {
   const isEditing = !!step
-
   const { data, setData, post, put, processing, errors, reset } = useForm({
     instructions: step?.instructions ?? '',
-    scheduledAt: step?.scheduledAt
-      ? new Date(step.scheduledAt).toISOString().slice(0, 16)
-      : '',
+    scheduledAt: step?.scheduledAt ?? '',
     locationOrLink: step?.locationOrLink ?? '',
     associatedExercises: (step?.associatedExercises ?? []).map((e) => e.toLowerCase()),
     isLocked: step?.isLocked ?? true,
@@ -30,9 +28,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
     if (step) {
       setData({
         instructions: step.instructions ?? '',
-        scheduledAt: step.scheduledAt
-          ? new Date(step.scheduledAt).toISOString().slice(0, 16)
-          : '',
+        scheduledAt: step.scheduledAt ?? '',
         locationOrLink: step.locationOrLink ?? '',
         associatedExercises: (step.associatedExercises ?? []).map((e) => e.toLowerCase()),
         isLocked: step.isLocked ?? true,
@@ -58,32 +54,25 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
       scheduledAt: data.scheduledAt || null,
       locationOrLink: data.locationOrLink || null,
     }
+    const submitOptions = {
+      data: payload,
+      onSuccess: () => {
+        reset()
+        onClose()
+      },
+    } as any
 
     if (isEditing && step) {
-      put(`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`, {
-        data: payload,
-        onSuccess: () => {
-          reset()
-          onClose()
-        },
-      })
+      put(`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}`, submitOptions)
     } else {
-      post(`/dashboard/conseiller/employees/${employeeId}/steps`, {
-        data: payload,
-        onSuccess: () => {
-          reset()
-          onClose()
-        },
-      })
+      post(`/dashboard/conseiller/employees/${employeeId}/steps`, submitOptions)
     }
   }
 
-  const displayNumber = isEditing && step?.sortOrder !== undefined
-    ? step.sortOrder + 1
-    : stepNumber ?? '?'
+  const displayNumber = isEditing && step?.sortOrder !== undefined ? step.sortOrder + 1 : stepNumber ?? '?'
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn">
       <Card className="w-full max-w-lg relative animate-slideUp max-h-[90vh] overflow-y-auto">
         <Button
           onClick={onClose}
@@ -114,12 +103,14 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <Input
-            type="datetime-local"
+          <DateTimePicker
             label="Date et heure du RDV"
             value={data.scheduledAt}
-            onChange={(e) => setData('scheduledAt', e.target.value)}
+            onChange={(next) => setData('scheduledAt', next)}
             error={errors.scheduledAt}
+            hint="Choisissez la date puis l'heure du RDV."
+            required
+            minuteStep={15}
           />
 
           <Input

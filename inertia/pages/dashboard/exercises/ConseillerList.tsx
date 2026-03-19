@@ -29,7 +29,7 @@ export default function ConseillerExerciseList({
   employeeId,
 }: ConseillerExerciseListProps) {
   const { user } = useAuth()
-  const basePath = `/dashboard/conseiller/employees/${employeeId}/exercise-results`
+  const basePath = `/dashboard/conseiller/employees/${employeeId}/exercises/results`
 
   useEffect(() => {
     if (!user) router.visit('/auth/login')

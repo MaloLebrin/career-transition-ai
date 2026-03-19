@@ -362,7 +362,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                             return (
                               <AppLink
                                 key={res.id}
-                                href={`/dashboard/conseiller/employees/${employeeId}/exercise-results/${slug}`}
+                                href={`/dashboard/conseiller/employees/${employeeId}/exercises/results/${slug}`}
                                 className="block p-4 rounded-2xl border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-md transition-all"
                               >
                                 <h4 className="font-bold text-brand-navy">{title}</h4>

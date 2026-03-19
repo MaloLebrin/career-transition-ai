@@ -62,7 +62,7 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
     const motivationLink = screen.getByRole('link', { name: /Analyse Motivations/i })
     expect(motivationLink).toHaveAttribute(
       'href',
-      '/dashboard/conseiller/employees/42/exercise-results/motivation'
+      '/dashboard/conseiller/employees/42/exercises/results/motivation'
     )
   })
 
