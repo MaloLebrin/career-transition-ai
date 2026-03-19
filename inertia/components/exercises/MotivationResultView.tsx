@@ -57,7 +57,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
       </div>
 
       {/* Extreme Factors Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         <div className="bg-emerald-50/50 p-8 rounded-[40px] border border-emerald-100">
           <h5 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6 flex items-center">
             <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
