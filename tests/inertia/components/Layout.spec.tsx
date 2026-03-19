@@ -71,7 +71,7 @@ describe('Layout', () => {
     expect(onLogout).not.toHaveBeenCalled()
   })
 
-  test('clicking Se déconnecter in modal calls onLogout', async () => {
+  test('clicking Se déconnecter in modal closes it and calls onLogout', async () => {
     const onLogout = vi.fn()
     render(
       <Layout {...defaultProps} onLogout={onLogout}>
@@ -82,10 +82,14 @@ describe('Layout', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Quitter/i }))
     })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Se déconnecter/i }))
     })
 
+    // La modale doit se fermer avant ou pendant l'appel logout.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(onLogout).toHaveBeenCalledTimes(1)
   })
 })

@@ -18,7 +18,10 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const handleLogoutConfirm = () => {
-    void Promise.resolve(onLogout()).then(() => setShowLogoutModal(false))
+    // Ferme la modale avant d'appeler l'API pour éviter des états transitoires
+    // (et potentiels problèmes d'hydratation) pendant la navigation logout.
+    setShowLogoutModal(false)
+    void Promise.resolve(onLogout()).catch(() => {})
   }
 
   return (
