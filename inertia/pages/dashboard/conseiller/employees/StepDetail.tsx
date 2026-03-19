@@ -1,13 +1,15 @@
-import { useEffect } from 'react'
+import { isUrl } from '#shared/helpers/url'
 import { Head, router } from '@inertiajs/react'
+import { useEffect } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import NotesSection from '~/components/dashboard/NotesSection'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
 import Badge from '~/components/ui/Badge'
 import Breadcrumb from '~/components/ui/Breadcrumb'
+import LinkActions from '~/components/ui/LinkActions'
+import { EXERCISE_LIST } from '~/config/exercises'
 import { useAuth } from '~/hooks/useAuth'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
-import { EXERCISE_LIST } from '~/config/exercises'
 
 interface StepDetailProps {
   employeeId: string
@@ -163,8 +165,11 @@ export default function StepDetail({
                     <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                       Lieu / Lien
                     </div>
-                    <div className="text-base font-medium text-slate-900">
-                      {step.locationOrLink}
+                    <div className="space-y-2">
+                      <div className="text-base font-medium text-slate-900 wrap-break-word">
+                        {step.locationOrLink}
+                      </div>
+                      {isUrl(step.locationOrLink) && <LinkActions value={step.locationOrLink} />}
                     </div>
                   </div>
                 )}
