@@ -26,7 +26,9 @@ export default function RegisterPage({ csrfToken, onBackToLanding, onGoToLogin, 
     const data = { email, password, name, organizationName, role: 'advisor' as const }
     const nextErrors = validateRegister(data)
     setErrors(nextErrors)
-    if (hasErrors(nextErrors)) return
+    if (hasErrors(nextErrors)) {
+      return
+    }
 
     setIsLoading(true)
     router.post(
