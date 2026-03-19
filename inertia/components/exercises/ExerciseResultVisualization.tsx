@@ -1,14 +1,12 @@
 import { EXERCICE_RESULTS_TYPES } from '../../../shared/constants/exercises'
 import { ExerciseResult } from '../../types'
-import MotivationResultView from './MotivationResultView'
-import {
-  CircleOfControlResultView,
-  DefaultResultView,
-  DiscResultView,
-  LifeCurveResultView,
-  SkillMappingResultView,
-  TargetingResultView,
-} from './results'
+import MotivationResultView from './motivation/MotivationResultView'
+import CircleOfControlResultView from './circle_of_control/CircleOfControlResultView'
+import DefaultResultView from './common/DefaultResultView'
+import DiscResultView from './disc/DiscResultView'
+import LifeCurveResultView from './life_curve/LifeCurveResultView'
+import SkillMappingResultView from './skill_mapping/SkillMappingResultView'
+import TargetingResultView from './targeting/TargetingResultView'
 
 interface Props {
   result: ExerciseResult

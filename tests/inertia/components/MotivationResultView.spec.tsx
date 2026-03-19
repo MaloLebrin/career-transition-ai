@@ -18,7 +18,7 @@ describe('MotivationResultView', () => {
       render(<MotivationResultView data={data} {...defaultProps} />)
     ).not.toThrow()
     expect(screen.getByText('Date de passage')).toBeInTheDocument()
-    expect(screen.getByText('2024-05-10')).toBeInTheDocument()
+    expect(screen.getByText('10 mai 2024')).toBeInTheDocument()
   })
 
   test('renders without crashing when data.matrix has incomplete rows', () => {
@@ -56,7 +56,7 @@ describe('MotivationResultView', () => {
       matrix: [],
     }
     render(<MotivationResultView data={data} {...defaultProps} />)
-    expect(screen.getByText('2024-05-10')).toBeInTheDocument()
+    expect(screen.getByText('10 mai 2024')).toBeInTheDocument()
     expect(screen.getByText('7min 30s')).toBeInTheDocument()
   })
 })

@@ -9,4 +9,3 @@ export function getExerciseTitle(type: string): string {
   const exercise = EXERCISE_LIST.find((e) => e.slug === normalized)
   return exercise?.title ?? type
 }
-

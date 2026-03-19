@@ -3,7 +3,7 @@
  */
 export function formatDate(
   dateStr: string | undefined,
-  options?: { month: 'short' | 'long'; year: 'numeric' }
+  options?: { day?: 'numeric'; month: 'short' | 'long'; year: 'numeric' }
 ): string {
   if (!dateStr) return '—'
   const d = new Date(dateStr)
