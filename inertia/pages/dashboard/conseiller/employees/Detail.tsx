@@ -303,15 +303,17 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                             </span>
                             <div className="flex flex-wrap gap-2">
                               {step.associatedExercises?.map((exerciseType) => (
-                                <AppLink
+                                <span
                                   key={exerciseType}
-                                  href={`/dashboard/conseiller/employees/${employeeId}/exercises/${exerciseType.toLowerCase()}`}
-                                  className="text-[10px] font-bold text-brand-sage uppercase tracking-widest hover:underline"
+                                  className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest"
                                 >
                                   {exerciseType.replace(/_/g, ' ')}
-                                </AppLink>
+                                </span>
                               ))}
                             </div>
+                            <p className="mt-3 text-[10px] text-brand-navy/50 uppercase tracking-widest">
+                              Les experts consultent uniquement les résultats des exercices.
+                            </p>
                           </div>
                         ) : (
                           <div className="pt-4 border-t border-brand-navy/5">

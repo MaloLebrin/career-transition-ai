@@ -3,7 +3,9 @@ import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import { test } from '@japa/runner'
 
-const fakeEmployeesService = { getEmployeeForUser: async () => ({ id: 1 }) } as any
+const fakeEmployeesService = {
+  getEmployeeForUser: async () => ({ id: 1, exerciseResults: [] }),
+} as any
 
 function makeCtx(overrides: any = {}) {
   const flashes: Record<string, any> = {}
@@ -157,6 +159,51 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
     assert.deepEqual(ctx._inertiaRenderProps().exercises, EXERCISE_LIST)
     assert.deepEqual(ctx._inertiaRenderProps().unlockedExerciseSlugs, [
       EXERCICE_RESULTS_TYPES.MOTIVATION,
+    ])
+    assert.deepEqual(ctx._inertiaRenderProps().completedExerciseSlugs, [])
+  })
+
+  test('returns completedExerciseSlugs from latest status by type', async ({ assert }) => {
+    const service = {
+      getUnlockedExerciseSlugsForEmployee: async () => [
+        EXERCICE_RESULTS_TYPES.MOTIVATION,
+        EXERCICE_RESULTS_TYPES.VALUES,
+      ],
+    } as unknown as ExerciseResultsService
+    const employeeService = {
+      getEmployeeForUser: async () => ({
+        id: 1,
+        exerciseResults: [
+          // Old completed entry (should be ignored because newer draft exists).
+          {
+            type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+            status: 'completed',
+            date: { toISO: () => '2026-01-01T10:00:00.000Z' },
+            updatedAt: { toISO: () => '2026-01-01T10:00:00.000Z' },
+          },
+          {
+            type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+            status: 'draft',
+            date: null,
+            updatedAt: { toISO: () => '2026-02-01T10:00:00.000Z' },
+          },
+          {
+            type: EXERCICE_RESULTS_TYPES.VALUES,
+            status: 'completed',
+            date: { toISO: () => '2026-03-01T10:00:00.000Z' },
+            updatedAt: { toISO: () => '2026-03-01T10:00:00.000Z' },
+          },
+        ],
+      }),
+    } as any
+
+    const controller = new ExerciseResultsController(service, employeeService)
+    const ctx = makeCtx()
+
+    await controller.exerciseListCandidat(ctx)
+
+    assert.deepEqual(ctx._inertiaRenderProps().completedExerciseSlugs, [
+      EXERCICE_RESULTS_TYPES.VALUES,
     ])
   })
 })

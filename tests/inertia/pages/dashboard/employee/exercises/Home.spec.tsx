@@ -5,6 +5,7 @@ import ExerciseHome from '../../../../../../inertia/pages/dashboard/employee/exe
 import type { Employee } from '../../../../../../inertia/types'
 
 const { useEmployeeSpy } = vi.hoisted(() => ({ useEmployeeSpy: vi.fn() }))
+const { lifeCurveToolSpy } = vi.hoisted(() => ({ lifeCurveToolSpy: vi.fn() }))
 
 vi.mock('../../../../../../inertia/hooks/use_employee', () => ({
   useEmployee: (id: unknown, initial?: Employee | null) => useEmployeeSpy(id, initial),
@@ -26,8 +27,8 @@ vi.mock('../../../../../../inertia/hooks/useAuth', () => ({
   }),
 }))
 
-vi.mock('../../../../../../inertia/hooks/useExercises', () => ({
-  useExercises: () => ({
+vi.mock('../../../../../../inertia/hooks/use_candidate_exercises', () => ({
+  useCandidateExercises: () => ({
     isAnalyzing: false,
     isSavingDraft: false,
     saveResult: vi.fn(),
@@ -61,7 +62,10 @@ vi.mock('../../../../../../inertia/components/exercises/PersonalityTool', () => 
   default: () => <div data-testid="tool-personality" />,
 }))
 vi.mock('../../../../../../inertia/components/exercises/LifeCurveTool', () => ({
-  default: () => <div data-testid="tool-life-curve" />,
+  default: (props: any) => {
+    lifeCurveToolSpy(props)
+    return <div data-testid="tool-life-curve" />
+  },
 }))
 vi.mock('../../../../../../inertia/components/exercises/TargetingTool', () => ({
   default: () => <div data-testid="tool-targeting" />,
@@ -123,6 +127,36 @@ describe('Dashboard candidat - Exercise Home', () => {
     expect(screen.getByText('Verrouillé par l\'expert')).toBeInTheDocument()
 
     expect(screen.queryByTestId('tool-motivation')).not.toBeInTheDocument()
+  })
+
+  test('passes completed result fallback as initial draft for candidate tool hydration', async () => {
+    const employee = minimalEmployee()
+    const completedPayload = {
+      employeeId: 99,
+      type: 'life_curve',
+      lastUpdated: '2026-03-01T10:00:00.000Z',
+      data: {
+        points: [{ year: 2024, satisfaction: 8, label: 'Test' }],
+        reflection: { form: 'up', mostlySatisfied: 'yes' },
+        step: 2,
+      },
+    }
+
+    render(
+      <ExerciseHome
+        type="life_curve"
+        employee={employee}
+        initialDraftsByType={{ life_curve: completedPayload as any }}
+        accessGranted
+      />
+    )
+
+    const lastCall = lifeCurveToolSpy.mock.calls.at(-1)
+    expect(lastCall).toBeDefined()
+
+    const props = lastCall?.[0]
+    const resolvedInitial = await props.initialDraftPromise
+    expect(resolvedInitial).toEqual(completedPayload)
   })
 })
 

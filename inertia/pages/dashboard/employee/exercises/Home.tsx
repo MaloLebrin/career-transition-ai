@@ -13,7 +13,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/use_exercises'
+import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
 import { ExerciseType, type Employee, type ExerciseDraft } from '~/types'
 
 interface CandidatExerciseProps {
@@ -51,7 +51,7 @@ export default function CandidatExercise({
     return slug ? draftsByType[slug] ?? null : null
   }
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises(
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useCandidateExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()

@@ -6,7 +6,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/use_exercises'
+import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
 import { ExerciseType, type ExerciseDraft } from '~/types'
 
 interface ValuesExerciseProps {
@@ -30,7 +30,7 @@ export default function ValuesExercise({
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
   const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises(
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()

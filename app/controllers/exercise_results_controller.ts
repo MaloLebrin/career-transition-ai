@@ -2,8 +2,8 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
-import EmployeeTransformer from '#transformers/employee_transformer'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
+import EmployeeTransformer from '#transformers/employee_transformer'
 import {
   fetchExerciseDraftValidator,
   saveExerciseDraftValidator,
@@ -29,26 +29,7 @@ export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
     private employeesService: EmployeesService
-  ) {}
-
-  public async store({ params, request, response }: HttpContext) {
-    const employeeId = Number(params.id)
-    const payload = await request.validateUsing(saveExerciseResultValidator)
-
-    const dto = await this.service.saveResult({
-      employeeId,
-      type: payload.type,
-      status: payload.status,
-      date: payload.date,
-      duration: payload.duration,
-      data: payload.data,
-      quantitativeScore: payload.quantitativeScore,
-      qualitativeAnalysis: payload.qualitativeAnalysis,
-      plan: payload.plan,
-    })
-
-    return response.json(dto)
-  }
+  ) { }
 
   public async saveDraft({ request, response }: HttpContext) {
     const payload = await request.validateUsing(saveExerciseDraftValidator)
@@ -147,17 +128,28 @@ export default class ExerciseResultsController {
       employee.id
     )
 
-    const completedExerciseSlugs = new Set<string>()
+    const latestStatusByType = new Map<string, { status: string; date: string }>()
     for (const r of employee.exerciseResults || []) {
-      if (r.status === 'completed') {
-        completedExerciseSlugs.add(String(r.type))
+      const type = String(r.type)
+      const date = r.date ? r.date.toISO()! : (r.updatedAt?.toISO() ?? '')
+      const current = latestStatusByType.get(type)
+
+      if (!current || date > current.date) {
+        latestStatusByType.set(type, { status: String(r.status), date })
+      }
+    }
+
+    const completedExerciseSlugs: string[] = []
+    for (const [type, latest] of latestStatusByType.entries()) {
+      if (latest.status === 'completed') {
+        completedExerciseSlugs.push(type)
       }
     }
 
     return (inertia as any).render('dashboard/employee/exercises/List', {
       exercises: EXERCISE_LIST,
       unlockedExerciseSlugs,
-      completedExerciseSlugs: Array.from(completedExerciseSlugs),
+      completedExerciseSlugs,
     })
   }
 
@@ -241,14 +233,14 @@ export default class ExerciseResultsController {
     const exerciseTitle = EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
     const resultPayload = latest
       ? {
-          id: latest.id,
-          type: typeParam,
-          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
-          duration: latest.duration ?? 0,
-          data: latest.data ?? {},
-          quantitativeScore: latest.quantitativeScore ?? 0,
-          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
-        }
+        id: latest.id,
+        type: typeParam,
+        date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+        duration: latest.duration ?? 0,
+        data: latest.data ?? {},
+        quantitativeScore: latest.quantitativeScore ?? 0,
+        qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+      }
       : null
     return (inertia as any).render('dashboard/conseiller/exercises/ResultDetail', {
       employeeId: String(employee.id),
@@ -310,11 +302,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employeeRecord.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employeeRecord.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -324,11 +316,11 @@ export default class ExerciseResultsController {
     const props =
       pageName === 'dashboard/conseiller/exercises/Home'
         ? {
-            type: params.type,
-            employeeId: String(employeeRecord.id),
-            employee: employeePayload,
-            initialDraftsByType,
-          }
+          type: params.type,
+          employeeId: String(employeeRecord.id),
+          employee: employeePayload,
+          initialDraftsByType,
+        }
         : { employeeId: String(employeeRecord.id), initialDraftsByType }
     return (inertia as any).render(pageName, props)
   }
@@ -368,11 +360,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-            employeeId: employee.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
+          employeeId: employee.id,
+          type: exerciseType,
+          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+          data: draft.data,
+        }
         : null
       break
     }
@@ -528,7 +520,7 @@ export default class ExerciseResultsController {
       return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 
-    await this.service.saveResult({
+    const res = await this.service.saveResult({
       employeeId: employee.id,
       type: payload.type,
       status: payload.status,
@@ -539,6 +531,13 @@ export default class ExerciseResultsController {
       qualitativeAnalysis: payload.qualitativeAnalysis,
       plan: payload.plan,
     })
+
+    console.log(
+      {
+        res,
+      },
+      'storeFromDashboardCandidat controller exercise_results_controller.ts'
+    )
 
     const typeLabelMap: Record<string, string> = {
       [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'Motivation',

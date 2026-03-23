@@ -7,7 +7,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { useAuth } from '~/hooks/useAuth'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/use_exercises'
+import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
 import { ExerciseType } from '~/types'
 
 interface TargetingExerciseProps {
@@ -27,7 +27,7 @@ export default function TargetingExercise({
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
   const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
 
-  const { isAnalyzing, saveResult } = useExercises(
+  const { isAnalyzing, saveResult } = useAdvisorExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()

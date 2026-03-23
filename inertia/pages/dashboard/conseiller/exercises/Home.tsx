@@ -15,7 +15,7 @@ import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useAuth } from '~/hooks/useAuth'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/use_exercises'
+import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
 import { ExerciseType, type Employee, type ExerciseDraft } from '~/types'
 
 interface ConseillerExerciseProps {
@@ -54,7 +54,7 @@ export default function ConseillerExercise({
   const backHref = `/dashboard/conseiller/employees/${employeeId}`
   const exercisesBasePath = `${backHref}/exercises`
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises(
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()

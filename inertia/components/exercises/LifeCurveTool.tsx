@@ -108,11 +108,6 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
 
   const handleSave = () => {
     const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
-    console.log('[LifeCurveTool] handleSave', {
-      duration,
-      pointsCount: sortedData.length,
-      reflectionFields: Object.keys(reflection).length,
-    })
     onSave({ points: sortedData, reflection }, duration)
   }
 

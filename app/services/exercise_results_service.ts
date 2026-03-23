@@ -1,9 +1,9 @@
+import type { EmployeeDto } from '#dtos/employee_dto'
+import { mapEmployee } from '#mappers/employee_mapper'
+import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
-import Employee from '#models/employee'
-import { mapEmployee } from '#mappers/employee_mapper'
-import type { EmployeeDto } from '#dtos/employee_dto'
 import { DateTime } from 'luxon'
 
 type SaveResultInput = {
@@ -67,6 +67,14 @@ export class ExerciseResultsService {
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
       .first()
+
+    console.log(
+      {
+        existing,
+        input,
+      },
+      'saveResult service exercise_results_service.ts'
+    )
 
     if (existing) {
       existing.merge({

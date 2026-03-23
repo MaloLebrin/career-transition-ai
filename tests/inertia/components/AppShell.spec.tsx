@@ -11,7 +11,7 @@ vi.mock('../../../inertia/hooks/useAuth', () => ({
   }),
 }))
 
-vi.mock('../../../inertia/hooks/useEmployees', () => ({
+vi.mock('../../../inertia/hooks/use_employees', () => ({
   useEmployees: () => ({
     employees: [{ id: 1, name: 'Jean', email: 'jean@example.com' }],
     filteredEmployees: [{ id: 1, name: 'Jean', email: 'jean@example.com' }],
@@ -19,7 +19,7 @@ vi.mock('../../../inertia/hooks/useEmployees', () => ({
   }),
 }))
 
-vi.mock('../../../inertia/hooks/useEmployee', () => ({
+vi.mock('../../../inertia/hooks/use_employee', () => ({
   useEmployee: () => ({
     employee: {
       id: 1,
@@ -35,8 +35,8 @@ vi.mock('../../../inertia/hooks/useEmployee', () => ({
   }),
 }))
 
-vi.mock('../../../inertia/hooks/useExercises', () => ({
-  useExercises: () => ({
+vi.mock('../../../inertia/hooks/use_advisor_exercises', () => ({
+  useAdvisorExercises: () => ({
     isAnalyzing: false,
     isSavingDraft: false,
     saveResult: vi.fn(),

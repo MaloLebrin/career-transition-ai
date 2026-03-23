@@ -9,7 +9,7 @@ import { employeeUpdatePayload } from '../../helpers/employee_payload'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
 import { useEmployees } from '../../hooks/use_employees'
-import { useExercises } from '../../hooks/use_exercises'
+import { useAdvisorExercises } from '../../hooks/use_advisor_exercises'
 import { ExerciseType, SupportPlanStep } from '../../types'
 import DesignSystem from '../design-system/DesignSystem'
 import CircleOfControlTool from '../exercises/CircleOfControlTool'
@@ -52,7 +52,7 @@ const AppShell: React.FC = () => {
   const targetId = userRole === 'employee' ? String(user?.id ?? 1) : selectedEmployeeId
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useExercises(
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft, loadDraft } = useAdvisorExercises(
     selectedEmployee,
     async () => {
       await refreshEmployee()
@@ -103,7 +103,7 @@ const AppShell: React.FC = () => {
         onSave={(updated) => {
           router.put(
             `/dashboard/employees/${selectedEmployee.id}`,
-            employeeUpdatePayload(updated),
+            employeeUpdatePayload(updated) as any,
             {
               onSuccess: () => setActiveView('detail'),
             }
@@ -299,7 +299,7 @@ const AppShell: React.FC = () => {
                         <button
                           key={emp.id}
                           onClick={() => {
-                            setSelectedEmployeeId(emp.id)
+                            setSelectedEmployeeId(String(emp.id))
                             setActiveNav('employees')
                             setActiveView('detail')
                           }}
@@ -637,7 +637,7 @@ const AppShell: React.FC = () => {
         <OnboardingFlow
           employee={selectedEmployee}
           onComplete={(updated) => {
-            router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated), {
+            router.put(`/dashboard/employees/${targetId}`, employeeUpdatePayload(updated) as any, {
               onSuccess: () => router.reload(),
             })
           }}
