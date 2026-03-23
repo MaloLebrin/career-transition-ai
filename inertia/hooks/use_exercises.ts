@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react'
 import { useCallback, useState } from 'react'
 import { EXERCISES_WITH_INERTIA_DRAFT, EXERCISE_SLUGS } from '../config/exercises'
 import { analyzeExerciseResult } from '../services/geminiService'
-import { Employee, ExerciseDraft, ExerciseResult, ExerciseType } from '../types'
+import { Employee, ExerciseDraft, ExerciseType } from '../types'
 
 export function useExercises(
   employee: Employee | null,
@@ -76,6 +76,8 @@ export function useExercises(
       }
       const slug = EXERCISE_SLUGS[type]
       if (slug && EXERCISES_WITH_INERTIA_DRAFT.has(type)) {
+        const endpoint = `${basePath}/${slug}/draft`
+        console.log('[useExercises] saveDraft posting', { endpoint, type })
         await router.post(`${basePath}/${slug}/draft`, draft as any, {
           preserveScroll: true,
           preserveState: true,
@@ -95,11 +97,36 @@ export function useExercises(
     quantScore: number,
     duration: number
   ) => {
-    if (!employee) return
+    if (!employee) {
+      console.error('[useExercises] saveResult aborted: employee is null', { type })
+      return
+    }
 
     setIsAnalyzing(true)
     try {
-      const analysis = await analyzeExerciseResult(type, data)
+      const slug = EXERCISE_SLUGS[type]
+      const endpoint = slug ? `${basePath}/${slug}/result` : null
+      console.log('[useExercises] saveResult start', {
+        type,
+        duration,
+        endpoint,
+        hasPlan: !!employee.plan,
+        planLength: employee.plan?.length ?? 0,
+      })
+
+      // Gemini peut échouer (400, timeout, etc.). On ne doit pas bloquer l'enregistrement.
+      let analysis = 'Analyse indisponible.'
+      try {
+        analysis = await analyzeExerciseResult(type, data)
+      } catch (analysisErr) {
+        console.error('[useExercises] Gemini analysis failed:', analysisErr)
+      }
+
+      console.log('[useExercises] saveResult analysis ready', {
+        type,
+        analysisPreview: String(analysis).slice(0, 60),
+      })
+
       const now = new Date().toLocaleString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
@@ -108,9 +135,13 @@ export function useExercises(
         minute: '2-digit',
       })
 
-      const slug = EXERCISE_SLUGS[type]
-      if (slug) {
-        await router.post(`${basePath}/${slug}/result`, {
+      if (endpoint) {
+        if (!employee.plan) {
+          throw new Error('[useExercises] saveResult: employee.plan is missing')
+        }
+
+        console.log('[useExercises] saveResult posting', { endpoint, type })
+        await router.post(endpoint, {
           type,
           status: 'completed',
           date: new Date().toISOString().split('T')[0],
@@ -131,7 +162,13 @@ export function useExercises(
             })),
         })
       }
-      onComplete()
+      console.log('[useExercises] saveResult POST resolved, calling onComplete()')
+      try {
+        await onComplete()
+        console.log('[useExercises] onComplete resolved')
+      } catch (onCompleteErr) {
+        console.error('[useExercises] onComplete failed:', onCompleteErr)
+      }
     } catch (err) {
       console.error('Exercise save error:', err)
     } finally {
