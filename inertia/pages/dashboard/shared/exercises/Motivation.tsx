@@ -1,15 +1,15 @@
+import { Head, router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import Button from '~/components/ui/Button'
 import MotivationTool from '~/components/exercises/MotivationTool'
-import { ExerciseType, type ExerciseDraft } from '~/types'
+import AppLink from '~/components/ui/AppLink'
+import Button from '~/components/ui/Button'
+import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useAuth } from '~/hooks/useAuth'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/useExercises'
-import { EXERCISE_SLUGS } from '~/config/exercises'
+import { useExercises } from '~/hooks/use_exercises'
+import { ExerciseType, type ExerciseDraft } from '~/types'
 
 interface MotivationExerciseProps {
   employeeId?: string
@@ -88,7 +88,7 @@ export default function MotivationExercise({
             )}
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...

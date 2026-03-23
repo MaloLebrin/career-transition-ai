@@ -1,7 +1,14 @@
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 import ExerciseHome from '../../../../../../inertia/pages/dashboard/employee/exercises/Home'
+import type { Employee } from '../../../../../../inertia/types'
+
+const { useEmployeeSpy } = vi.hoisted(() => ({ useEmployeeSpy: vi.fn() }))
+
+vi.mock('../../../../../../inertia/hooks/use_employee', () => ({
+  useEmployee: (id: unknown, initial?: Employee | null) => useEmployeeSpy(id, initial),
+}))
 
 vi.mock('@inertiajs/react', () => ({
   Head: () => null,
@@ -16,13 +23,6 @@ vi.mock('@inertiajs/react', () => ({
 vi.mock('../../../../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'employee' },
-  }),
-}))
-
-vi.mock('../../../../../../inertia/hooks/use_employee', () => ({
-  useEmployee: () => ({
-    employee: null,
-    refreshEmployee: vi.fn(),
   }),
 }))
 
@@ -76,7 +76,39 @@ vi.mock('../../../../../../inertia/components/exercises/CircleOfControlTool', ()
   default: () => <div data-testid="tool-circle-of-control" />,
 }))
 
+const minimalEmployee = (): Employee =>
+  ({
+    id: 99,
+    organizationId: 1,
+    name: 'Test',
+    email: 't@test.com',
+    currentRole: 'Dev',
+    skills: [],
+    experiences: [],
+    educations: [],
+    status: 'active',
+    onboarded: true,
+    exercises: [],
+    plan: [],
+  }) as Employee
+
 describe('Dashboard candidat - Exercise Home', () => {
+  beforeEach(() => {
+    useEmployeeSpy.mockImplementation((_id, initial) => ({
+      employee: initial ?? null,
+      refreshEmployee: vi.fn(),
+    }))
+  })
+
+  test('passes Inertia employee to useEmployee so saveResult can run', () => {
+    const employee = minimalEmployee()
+    render(
+      <ExerciseHome type="life_curve" employee={employee} initialDraftsByType={{}} accessGranted />
+    )
+
+    expect(useEmployeeSpy).toHaveBeenCalledWith(expect.anything(), employee)
+  })
+
   test('shows inline message and does not render tools when accessGranted=false', () => {
     render(
       <ExerciseHome

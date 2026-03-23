@@ -2,15 +2,15 @@
  * @deprecated Navigation is now handled by Inertia routes and dashboard/* pages.
  * Use DashboardLayout + dashboard/Home, dashboard/EmployeeDetail, etc. instead.
  */
+import { formatDateTimeFR } from '#shared/helpers/date'
 import { router } from '@inertiajs/react'
 import React, { useEffect, useState } from 'react'
 import { employeeUpdatePayload } from '../../helpers/employee_payload'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
 import { useEmployees } from '../../hooks/use_employees'
-import { useExercises } from '../../hooks/useExercises'
+import { useExercises } from '../../hooks/use_exercises'
 import { ExerciseType, SupportPlanStep } from '../../types'
-import { formatDateTimeFR } from '#shared/helpers/date'
 import DesignSystem from '../design-system/DesignSystem'
 import CircleOfControlTool from '../exercises/CircleOfControlTool'
 import DISCTool from '../exercises/DISCTool'
@@ -144,7 +144,7 @@ const AppShell: React.FC = () => {
             )}
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10"></div>
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...
@@ -564,7 +564,7 @@ const AppShell: React.FC = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {selectedEmployee.plan.map((step) => {
-                          const result = getResultForStep(step)
+                          const result = getResultsForStep(step)
                           return (
                             <div
                               key={step.id}

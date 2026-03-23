@@ -52,6 +52,8 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     coherence: '',
   })
   const startTimeRef = useRef<number>(Date.now())
+  const onSaveDraftRef = useRef(onSaveDraft)
+  const lastAutoSavePayloadRef = useRef<string | null>(null)
 
   // Load draft on mount
   useEffect(() => {
@@ -75,10 +77,21 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     }
   }, [initialDraftPromise])
 
-  // Auto-save draft
+  // Auto-save draft (uniquement pendant l'étape 1)
   useEffect(() => {
-    onSaveDraft({ points, reflection, step })
-  }, [points, reflection, step, onSaveDraft])
+    onSaveDraftRef.current = onSaveDraft
+  }, [onSaveDraft])
+
+  useEffect(() => {
+    if (step !== 1) return
+
+    const payload = { points, reflection, step }
+    const serialized = JSON.stringify(payload)
+    if (serialized === lastAutoSavePayloadRef.current) return
+    lastAutoSavePayloadRef.current = serialized
+
+    onSaveDraftRef.current(payload)
+  }, [points, reflection, step])
 
   const handleAddPoint = () => {
     if (!newPoint.label) return
@@ -91,12 +104,17 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     setPoints(points.filter((_, i) => i !== idx))
   }
 
+  const sortedData = [...points].sort((a, b) => a.year - b.year)
+
   const handleSave = () => {
     const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    console.log('[LifeCurveTool] handleSave', {
+      duration,
+      pointsCount: sortedData.length,
+      reflectionFields: Object.keys(reflection).length,
+    })
     onSave({ points: sortedData, reflection }, duration)
   }
-
-  const sortedData = [...points].sort((a, b) => a.year - b.year)
 
   return (
     <Card className="p-10 w-full animate-fadeIn">

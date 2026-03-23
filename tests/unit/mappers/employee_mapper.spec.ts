@@ -1,5 +1,4 @@
 import { exerciceTypeToFront, mapEmployee } from '#mappers/employee_mapper'
-import Appointment from '#models/appointment'
 import Education from '#models/education'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
@@ -7,8 +6,8 @@ import Experience from '#models/experience'
 import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
-import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 test.group('Employee mapper', (group) => {

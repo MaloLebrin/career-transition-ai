@@ -1,22 +1,22 @@
+import { Head, router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '../../components/ui/AppLink'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import Button from '../../components/ui/Button'
-import MotivationTool from '../../components/exercises/MotivationTool'
-import ValuesTool from '../../components/exercises/ValuesTool'
-import PersonalityTool from '../../components/exercises/PersonalityTool'
-import LifeCurveTool from '../../components/exercises/LifeCurveTool'
-import TargetingTool from '../../components/exercises/TargetingTool'
-import DISCTool from '../../components/exercises/DISCTool'
-import SkillMappingTool from '../../components/exercises/SkillMappingTool'
 import CircleOfControlTool from '../../components/exercises/CircleOfControlTool'
-import { ExerciseType, type ExerciseDraft } from '../../types'
+import DISCTool from '../../components/exercises/DISCTool'
+import LifeCurveTool from '../../components/exercises/LifeCurveTool'
+import MotivationTool from '../../components/exercises/MotivationTool'
+import PersonalityTool from '../../components/exercises/PersonalityTool'
+import SkillMappingTool from '../../components/exercises/SkillMappingTool'
+import TargetingTool from '../../components/exercises/TargetingTool'
+import ValuesTool from '../../components/exercises/ValuesTool'
+import AppLink from '../../components/ui/AppLink'
+import Button from '../../components/ui/Button'
+import { EXERCISE_SLUGS } from '../../config/exercises'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
-import { useExercises } from '../../hooks/useExercises'
-import { EXERCISE_SLUGS } from '../../config/exercises'
+import { useExercises } from '../../hooks/use_exercises'
+import { ExerciseType, type ExerciseDraft } from '../../types'
 
 interface ConseillerExerciseProps {
   type: string
@@ -101,7 +101,7 @@ export default function ConseillerExercise({
             )}
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...

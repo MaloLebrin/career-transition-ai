@@ -1,28 +1,22 @@
-import { useEffect } from 'react'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
+import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import AppLink from '~/components/ui/AppLink'
 import Card from '~/components/ui/Card'
-import { useAuth } from '~/hooks/useAuth'
 import type { ExerciseListEntry } from '~/config/exercises'
 
 interface CandidatExerciseListProps {
   exercises: ExerciseListEntry[]
   unlockedExerciseSlugs?: string[]
+  completedExerciseSlugs?: string[]
 }
 
 export default function CandidatExerciseList({
   exercises = [],
   unlockedExerciseSlugs = [],
+  completedExerciseSlugs = [],
 }: CandidatExerciseListProps) {
-  const { user } = useAuth()
   const unlockedSet = new Set(unlockedExerciseSlugs)
-
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) return null
+  const completedSet = new Set(completedExerciseSlugs)
 
   return (
     <DashboardLayout hideSidebar>
@@ -60,6 +54,11 @@ export default function CandidatExerciseList({
                 <Card className="p-6 h-full hover:border-brand-sage/30 transition-colors cursor-pointer">
                   <h3 className="text-lg font-semibold text-brand-navy mb-2">{ex.title}</h3>
                   <p className="text-brand-navy/70 text-sm">{ex.description}</p>
+                  {completedSet.has(ex.slug) && (
+                    <span className="mt-4 block text-[9px] font-bold uppercase tracking-wide rounded-full bg-sage-100 text-sage-700 px-2 py-0.5">
+                      Complété
+                    </span>
+                  )}
                 </Card>
               </AppLink>
             )

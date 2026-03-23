@@ -2,6 +2,7 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
+import EmployeeTransformer from '#transformers/employee_transformer'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import {
   fetchExerciseDraftValidator,
@@ -28,7 +29,7 @@ export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
     private employeesService: EmployeesService
-  ) { }
+  ) {}
 
   public async store({ params, request, response }: HttpContext) {
     const employeeId = Number(params.id)
@@ -146,9 +147,17 @@ export default class ExerciseResultsController {
       employee.id
     )
 
+    const completedExerciseSlugs = new Set<string>()
+    for (const r of employee.exerciseResults || []) {
+      if (r.status === 'completed') {
+        completedExerciseSlugs.add(String(r.type))
+      }
+    }
+
     return (inertia as any).render('dashboard/employee/exercises/List', {
       exercises: EXERCISE_LIST,
       unlockedExerciseSlugs,
+      completedExerciseSlugs: Array.from(completedExerciseSlugs),
     })
   }
 
@@ -232,14 +241,14 @@ export default class ExerciseResultsController {
     const exerciseTitle = EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
     const resultPayload = latest
       ? {
-        id: latest.id,
-        type: typeParam,
-        date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
-        duration: latest.duration ?? 0,
-        data: latest.data ?? {},
-        quantitativeScore: latest.quantitativeScore ?? 0,
-        qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
-      }
+          id: latest.id,
+          type: typeParam,
+          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+          duration: latest.duration ?? 0,
+          data: latest.data ?? {},
+          quantitativeScore: latest.quantitativeScore ?? 0,
+          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+        }
       : null
     return (inertia as any).render('dashboard/conseiller/exercises/ResultDetail', {
       employeeId: String(employee.id),
@@ -266,7 +275,11 @@ export default class ExerciseResultsController {
       employee = await Employee.query()
         .where('id', employeeId)
         .where('organizationId', auth.user.organizationId)
+        .preload('skills', (q) => q.pivotColumns(['level']))
         .preload('exerciseResults')
+        .preload('supportPlanSteps', (q) => q.preload('exercises'))
+        .preload('experiences')
+        .preload('educations')
         .firstOrFail()
     } catch {
       session.flash('error', 'Candidat introuvable.')
@@ -297,19 +310,25 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employeeRecord.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employeeRecord.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }
 
     const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/conseiller/exercises/Home'
+    const employeePayload = EmployeeTransformer.transform(employeeRecord)
     const props =
       pageName === 'dashboard/conseiller/exercises/Home'
-        ? { type: params.type, employeeId: String(employeeRecord.id), initialDraftsByType }
+        ? {
+            type: params.type,
+            employeeId: String(employeeRecord.id),
+            employee: employeePayload,
+            initialDraftsByType,
+          }
         : { employeeId: String(employeeRecord.id), initialDraftsByType }
     return (inertia as any).render(pageName, props)
   }
@@ -349,18 +368,19 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }
     const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
+    const employeePayload = EmployeeTransformer.transform(employee)
     const props =
       pageName === 'dashboard/employee/exercises/Home'
-        ? { type: params.type, initialDraftsByType }
+        ? { type: params.type, employee: employeePayload, initialDraftsByType }
         : { initialDraftsByType }
     return (inertia as any).render(pageName, props)
   }
@@ -401,6 +421,7 @@ export default class ExerciseResultsController {
       )
       return (inertia as any).render('dashboard/employee/exercises/Home', {
         type: params.type,
+        employee: EmployeeTransformer.transform(employee),
         initialDraftsByType: {},
         accessGranted: false,
         blockedMessage:
@@ -410,25 +431,49 @@ export default class ExerciseResultsController {
 
     for (const exerciseType of draftTypes) {
       if (typeParam !== exerciseType) continue
+
       const draft = await ExerciseResult.query()
         .where('employeeId', employee.id)
         .andWhere('type', exerciseType)
         .andWhere('status', 'draft')
         .orderBy('updatedAt', 'desc')
         .first()
-      initialDraftsByType[exerciseType] = draft
-        ? {
+
+      // If there's no draft but there is a completed result, prefill the exercise.
+      const completed = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .andWhere('type', exerciseType)
+        .andWhere('status', 'completed')
+        .orderBy('date', 'desc')
+        .orderBy('updatedAt', 'desc')
+        .first()
+
+      if (draft) {
+        initialDraftsByType[exerciseType] = {
           employeeId: employee.id,
           type: exerciseType,
           lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
           data: draft.data,
         }
-        : null
+      } else if (completed) {
+        initialDraftsByType[exerciseType] = {
+          employeeId: employee.id,
+          type: exerciseType,
+          lastUpdated: completed.updatedAt.toISO() || new Date().toISOString(),
+          // The tools expect `step` inside their draft data.
+          // When a result is completed, we want to land on step 2.
+          data: { ...(completed.data ?? {}), step: 2 },
+        }
+      } else {
+        initialDraftsByType[exerciseType] = null
+      }
+
       break
     }
 
     return (inertia as any).render('dashboard/employee/exercises/Home', {
       type: params.type,
+      employee: EmployeeTransformer.transform(employee),
       initialDraftsByType,
       accessGranted: true,
     })

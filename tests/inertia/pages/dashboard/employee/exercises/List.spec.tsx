@@ -71,5 +71,18 @@ describe('Dashboard candidat - Exercise list', () => {
 
     expect(screen.getByText('Verrouillé')).toBeInTheDocument()
   })
+
+  test('shows a "Complété" badge for completed exercises', () => {
+    render(
+      <ExerciseList
+        exercises={mockExercises}
+        unlockedExerciseSlugs={['motivation', 'values']}
+        completedExerciseSlugs={['motivation']}
+      />
+    )
+
+    expect(screen.getByRole('link', { name: /Analyse Motivations/i })).toBeInTheDocument()
+    expect(screen.getByText('Complété')).toBeInTheDocument()
+  })
 })
 

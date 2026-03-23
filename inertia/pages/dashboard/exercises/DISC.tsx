@@ -1,15 +1,14 @@
-import React, { useEffect } from 'react'
-import 'react-datepicker/dist/react-datepicker.css'
 import { Head, router } from '@inertiajs/react'
-import AppLink from '../../../components/ui/AppLink'
+import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import Button from '../../../components/ui/Button'
 import DISCTool from '../../../components/exercises/DISCTool'
-import { ExerciseType, type ExerciseDraft } from '../../../types'
+import AppLink from '../../../components/ui/AppLink'
+import Button from '../../../components/ui/Button'
+import { EXERCISE_SLUGS } from '../../../config/exercises'
 import { useAuth } from '../../../hooks/useAuth'
 import { useEmployee } from '../../../hooks/use_employee'
-import { useExercises } from '../../../hooks/useExercises'
-import { EXERCISE_SLUGS } from '../../../config/exercises'
+import { useExercises } from '../../../hooks/use_exercises'
+import { ExerciseType, type ExerciseDraft } from '../../../types'
 
 interface DISCExerciseProps {
   employeeId?: string
@@ -53,20 +52,6 @@ export default function DISCExercise({
     }
   )
 
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) {
-    return (
-      <DashboardLayout selectedEmployeeId={employeeId || null} hideSidebar>
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
   return (
     <>
       <Head title="Exercice DISC" />
@@ -88,7 +73,7 @@ export default function DISCExercise({
             )}
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...

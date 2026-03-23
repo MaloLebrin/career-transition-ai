@@ -546,7 +546,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
 
       {/* Modale d'ajout de compétence */}
       {isSkillModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-navy/60 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-brand-navy/60 backdrop-blur-sm animate-fadeIn">
           <Card className="w-full max-w-lg p-10 animate-slideUp relative">
             <Button
               onClick={() => setIsSkillModalOpen(false)}

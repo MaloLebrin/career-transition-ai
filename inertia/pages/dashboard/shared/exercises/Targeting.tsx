@@ -1,14 +1,14 @@
+import { Head, router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import Button from '~/components/ui/Button'
 import TargetingTool from '~/components/exercises/TargetingTool'
-import { ExerciseType } from '~/types'
+import AppLink from '~/components/ui/AppLink'
+import Button from '~/components/ui/Button'
 import { useAuth } from '~/hooks/useAuth'
 import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/useExercises'
+import { useExercises } from '~/hooks/use_exercises'
+import { ExerciseType } from '~/types'
 
 interface TargetingExerciseProps {
   employeeId?: string
@@ -73,7 +73,7 @@ export default function TargetingExercise({
             </AppLink>
           </div>
           {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center">
+            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
               <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
               <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
                 IA en action...

@@ -1,25 +1,25 @@
-import { useEffect } from 'react'
-import 'react-datepicker/dist/react-datepicker.css'
 import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
+import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import Button from '~/components/ui/Button'
-import MotivationTool from '~/components/exercises/MotivationTool'
-import ValuesTool from '~/components/exercises/ValuesTool'
-import PersonalityTool from '~/components/exercises/PersonalityTool'
-import LifeCurveTool from '~/components/exercises/LifeCurveTool'
-import TargetingTool from '~/components/exercises/TargetingTool'
-import DISCTool from '~/components/exercises/DISCTool'
-import SkillMappingTool from '~/components/exercises/SkillMappingTool'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
-import { ExerciseType, type ExerciseDraft } from '~/types'
-import { useAuth } from '~/hooks/useAuth'
-import { useEmployee } from '~/hooks/use_employee'
-import { useExercises } from '~/hooks/useExercises'
+import DISCTool from '~/components/exercises/DISCTool'
+import LifeCurveTool from '~/components/exercises/LifeCurveTool'
+import MotivationTool from '~/components/exercises/MotivationTool'
+import PersonalityTool from '~/components/exercises/PersonalityTool'
+import SkillMappingTool from '~/components/exercises/SkillMappingTool'
+import TargetingTool from '~/components/exercises/TargetingTool'
+import ValuesTool from '~/components/exercises/ValuesTool'
+import AppLink from '~/components/ui/AppLink'
+import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
+import { useEmployee } from '~/hooks/use_employee'
+import { useExercises } from '~/hooks/use_exercises'
+import { ExerciseType, type Employee, type ExerciseDraft } from '~/types'
 
 interface CandidatExerciseProps {
   type: string
+  /** Employé courant (props Inertia) — requis pour enregistrer brouillon / résultat (useEmployee ne fetch plus en client). */
+  employee?: Employee | null
   initialDraftsByType?: Record<string, ExerciseDraft | null>
   accessGranted?: boolean
   blockedMessage?: string
@@ -38,13 +38,12 @@ const EXERCISE_TYPES: Record<string, ExerciseType> = {
 
 export default function CandidatExercise({
   type,
+  employee: employeeFromPage,
   initialDraftsByType,
   accessGranted = true,
   blockedMessage,
 }: CandidatExerciseProps) {
-  const { user } = useAuth()
-  const targetId = user?.id || '1'
-  const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
+  const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeFromPage?.id ?? null, employeeFromPage ?? null)
 
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
@@ -73,12 +72,6 @@ export default function CandidatExercise({
 
   const exerciseType =
     EXERCISE_TYPES[type.toUpperCase()] ?? null
-
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) return null
 
   if (accessGranted === false) {
     return (
