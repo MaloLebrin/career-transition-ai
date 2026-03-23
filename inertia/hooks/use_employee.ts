@@ -3,6 +3,7 @@ import type { Employee } from '../types'
 
 /**
  * @deprecated
+ * Because we are using Inertia, we don't need to fetch the employee from the API.
  */
 export function useEmployee(id: string | number | null, initial?: Employee | null) {
   const [employee, setEmployee] = useState<Employee | null>(initial ?? null)
@@ -19,7 +20,8 @@ export function useEmployee(id: string | number | null, initial?: Employee | nul
   }, [id])
 
   useEffect(() => {
-    if (initial) {
+    if (initial !== undefined && initial !== null) {
+      setEmployee(initial)
       return
     }
     load()
