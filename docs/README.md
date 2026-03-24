@@ -70,6 +70,24 @@ En production, lancer le worker via un process manager (PM2, systemd, conteneur 
 
 - Exemple (PM2) : un process `web` (serveur HTTP) + un process `queue-worker` (`node ace queue:work --queue=analytics`).
 
+### Analyse IA des exercices (job async, queue `ai`)
+
+Quand un exercice est enregistré en statut **terminé**, un job **`AnalyzeExerciseQualitativeJob`** met à jour `exercise_results.qualitative_analysis`. Le fournisseur est choisi par **`AI_PROVIDER`** :
+
+- `gemini` + `GEMINI_API_KEY`
+- `openai` + `OPENAI_API_KEY` (optionnel : `OPENAI_MODEL`, défaut `gpt-4o-mini`)
+- `none` : message placeholder sans appel réseau (utile en test / sans clé)
+
+Worker dédié :
+
+```bash
+node ace queue:work --queue=ai
+```
+
+Avec `QUEUE_DRIVER=sync`, le job s’exécute dans le processus courant (pas de worker séparé).
+
+Les assistants **ciblage / CV / cartographie** dans le navigateur utilisent toujours `VITE_GEMINI_API_KEY` via `inertia/services/geminiService.ts` (hors scope du job).
+
 ### Scheduler (tâches planifiées)
 
 Le fichier `start/scheduler.ts` est préchargé et sert à définir les jobs récurrents :
