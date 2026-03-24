@@ -4,6 +4,23 @@ import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
+/** Slug used in exerciseProgressByType keys (e.g. life_curve). */
+function exerciseSlugFromPlanToken(exerciseType: string): string {
+  return String(exerciseType).toLowerCase()
+}
+
+export function stepCompletionFromProgress(
+  step: EmployeeData['plan'][number],
+  exerciseProgressByType: Record<string, number>
+): boolean {
+  if (step.completed) return true
+  const associated = step.associatedExercises
+  if (!associated?.length) return false
+  return associated.every(
+    (ex) => (exerciseProgressByType[exerciseSlugFromPlanToken(ex)] ?? 0) >= 100
+  )
+}
+
 export default function EmployeeHome({
   employee,
   completedExercises,
@@ -78,19 +95,20 @@ export default function EmployeeHome({
             </div>
             <div className="space-y-10">
               {employee.plan.map((step, idx) => {
+                const stepDone = stepCompletionFromProgress(step, exerciseProgressByType)
                 const isLocked = step.isLocked && !step.completed
                 return (
                   <div key={step.id} className="relative flex items-start group">
                     <div
                       className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
-                        step.completed
+                        stepDone
                           ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
                           : isLocked
                           ? 'bg-amber-100 border-2 border-amber-200 text-amber-600'
                           : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'
                       }`}
                     >
-                      {step.completed ? (
+                      {stepDone ? (
                         '✓'
                       ) : isLocked ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +122,7 @@ export default function EmployeeHome({
                       <div className="flex items-center gap-2">
                         <h4
                           className={`font-bold text-xl ${
-                            step.completed
+                            stepDone
                               ? 'text-brand-navy/40'
                               : isLocked
                               ? 'text-brand-navy/60'
@@ -139,10 +157,13 @@ export default function EmployeeHome({
 
                       {step.associatedExercises &&
                         step.associatedExercises.length > 0 &&
-                        !step.completed && (
+                        !stepDone && (
                           <div className="mt-6 flex flex-wrap gap-2">
                             {step.associatedExercises.map((exerciseType) => {
                               const exerciseLabel = exerciseType.replace(/_/g, ' ')
+                              const slug = exerciseSlugFromPlanToken(exerciseType)
+                              const pct = exerciseProgressByType?.[slug] ?? 0
+                              const exerciseComplete = pct >= 100
 
                               if (isLocked) {
                                 return (
@@ -174,31 +195,37 @@ export default function EmployeeHome({
                               return (
                                 <AppLink
                                   key={exerciseType}
-                                  href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}
+                                  href={`/dashboard/candidat/exercises/${slug}`}
                                 >
                                   <div className="flex items-center gap-2">
                                     <Button
                                       variant="secondary"
                                       size="sm"
                                       icon={
-                                        <svg
-                                          className="w-4 h-4 stroke-2"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                                          />
-                                        </svg>
+                                        exerciseComplete ? (
+                                          <span className="text-brand-sage font-black" aria-hidden>
+                                            ✓
+                                          </span>
+                                        ) : (
+                                          <svg
+                                            className="w-4 h-4 stroke-2"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                                            />
+                                          </svg>
+                                        )
                                       }
                                     >
                                       {exerciseLabel}
                                     </Button>
                                     <span className="text-[10px] font-bold text-brand-sage uppercase tracking-wider">
-                                      {exerciseProgressByType?.[exerciseType.toLowerCase()] ?? 0}%
+                                      {exerciseComplete ? 'Complété' : `${pct}%`}
                                     </span>
                                   </div>
                                 </AppLink>
@@ -206,7 +233,7 @@ export default function EmployeeHome({
                             })}
                           </div>
                         )}
-                      {step.completed && (
+                      {stepDone && (
                         <AppLink href={`/dashboard/candidat/steps/${step.id}`}>
                           <Button
                             className="mt-6"
