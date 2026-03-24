@@ -1,6 +1,7 @@
 # Documentation
 
 - **[Workflow d'onboarding candidat](ONBOARDING.md)** — Invitation par email, création du mot de passe via lien unique, accès au dashboard.
+- **[Jobs d’analyse IA (exercices)](AI_JOBS.md)** — Déclencher `AnalyzeExerciseQualitativeJob`, worker queue `ai`, variables `AI_PROVIDER`.
 - **Queues AdonisJS (PostgreSQL)** — Traitement de tâches asynchrones avec `@adonisjs/queue` et backend database.
 
 ---
@@ -87,6 +88,8 @@ node ace queue:work --queue=ai
 Avec `QUEUE_DRIVER=sync`, le job s’exécute dans le processus courant (pas de worker séparé).
 
 Les assistants **ciblage / CV / cartographie** dans le navigateur utilisent toujours `VITE_GEMINI_API_KEY` via `inertia/services/geminiService.ts` (hors scope du job).
+
+Pour le détail du **dispatch manuel**, du payload et des prérequis, voir **[AI_JOBS.md](AI_JOBS.md)**.
 
 ### Scheduler (tâches planifiées)
 
