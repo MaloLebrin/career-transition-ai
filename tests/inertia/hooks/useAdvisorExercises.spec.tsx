@@ -8,12 +8,6 @@ vi.mock('@inertiajs/react', () => ({
   router: { post: (...args: unknown[]) => mockRouterPost(...args) },
 }))
 
-vi.mock('../../../inertia/services/geminiService', () => ({
-  analyzeExerciseResult: vi.fn(),
-}))
-
-const { analyzeExerciseResult } = await import('../../../inertia/services/geminiService')
-
 const mockEmployee = {
   id: 1,
   organizationId: 10,
@@ -42,7 +36,6 @@ describe('useAdvisorExercises', () => {
   const onComplete = vi.fn()
 
   beforeEach(() => {
-    vi.mocked(analyzeExerciseResult).mockResolvedValue('Analysis text')
     mockRouterPost.mockClear().mockResolvedValue(undefined)
     onComplete.mockReset()
   })
@@ -83,7 +76,6 @@ describe('useAdvisorExercises', () => {
       await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 10, 60)
     })
 
-    expect(analyzeExerciseResult).toHaveBeenCalledWith(ExerciseType.DISC, { data: 'x' })
     expect(mockRouterPost).toHaveBeenCalledWith(
       '/dashboard/conseiller/employees/1/exercises/disc/result',
       expect.objectContaining({ type: ExerciseType.DISC, status: 'completed' })
