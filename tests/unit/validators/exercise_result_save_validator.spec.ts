@@ -34,4 +34,20 @@ test.group('saveExerciseResultValidator', () => {
 
     await assert.rejects(() => saveExerciseResultValidator.validate(data))
   })
+
+  test('accepts duration zero (fast finalize)', async ({ assert }) => {
+    const data = {
+      type: exerciceResultTypesValues[0],
+      status: exerciceResultStatusValuesValues[1],
+      date: '2025-01-05',
+      duration: 0,
+      data: { foo: 'bar' },
+      quantitativeScore: 10,
+      qualitativeAnalysis: '',
+      plan: [],
+    }
+
+    const result = await saveExerciseResultValidator.validate(data)
+    assert.equal(result.duration, 0)
+  })
 })
