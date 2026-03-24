@@ -119,6 +119,11 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
       ctx._renderedProps().exerciseCompletionPercent,
       Math.round((1 / EXERCISE_LIST.length) * 100)
     )
+    assert.isDefined(ctx._renderedProps().exerciseProgressByType)
+    assert.isAtLeast(ctx._renderedProps().exerciseProgressByType.motivation ?? 0, 0)
+    assert.isAtMost(ctx._renderedProps().exerciseProgressByType.motivation ?? 0, 100)
+    assert.isAtLeast(ctx._renderedProps().exerciseProgressByType.values ?? 0, 0)
+    assert.isAtMost(ctx._renderedProps().exerciseProgressByType.values ?? 0, 100)
   })
 
   test('returns 0% when no exercise is completed', async ({ assert }) => {
@@ -130,6 +135,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
 
     assert.equal(ctx._renderedProps().completedExercises, 0)
     assert.equal(ctx._renderedProps().exerciseCompletionPercent, 0)
+    assert.equal(ctx._renderedProps().exerciseProgressByType.motivation, 0)
   })
 
   test('returns 100% when all exercises are completed', async ({ assert }) => {
@@ -155,6 +161,8 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
 
     assert.equal(ctx._renderedProps().completedExercises, EXERCISE_LIST.length)
     assert.equal(ctx._renderedProps().exerciseCompletionPercent, 100)
+    assert.isAtLeast(ctx._renderedProps().exerciseProgressByType.life_curve ?? 0, 0)
+    assert.isAtMost(ctx._renderedProps().exerciseProgressByType.life_curve ?? 0, 100)
   })
 })
 

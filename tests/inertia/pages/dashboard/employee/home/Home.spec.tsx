@@ -49,6 +49,7 @@ describe('Dashboard candidat - Home', () => {
         completedExercises={2}
         totalExercises={8}
         exerciseCompletionPercent={25}
+        exerciseProgressByType={{ motivation: 40, values: 100 }}
       />
     )
 
@@ -58,6 +59,7 @@ describe('Dashboard candidat - Home', () => {
         completedExercises: 2,
         totalExercises: 8,
         exerciseCompletionPercent: 25,
+        exerciseProgressByType: { motivation: 40, values: 100 },
       })
     )
   })

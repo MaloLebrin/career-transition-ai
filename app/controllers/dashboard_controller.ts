@@ -1,4 +1,5 @@
 import Employee from '#models/employee'
+import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { USERS_ROLES } from '#shared/constants/user'
 import EmployeeTransformer from '#transformers/employee_transformer'
@@ -70,12 +71,14 @@ export default class DashboardController {
     const totalExercises = EXERCISE_LIST.length
     const exerciseCompletionPercent =
       totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
+    const exerciseProgressByType = getExerciseProgressByType(employee.exerciseResults as any)
 
     return (inertia as any).render('dashboard/employee/home/Home', {
       employee: EmployeeTransformer.transform(employee),
       completedExercises,
       totalExercises,
       exerciseCompletionPercent,
+      exerciseProgressByType,
     })
   }
 

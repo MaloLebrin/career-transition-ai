@@ -9,11 +9,13 @@ export default function EmployeeHome({
   completedExercises,
   totalExercises,
   exerciseCompletionPercent,
+  exerciseProgressByType,
 }: {
   employee: EmployeeData
   completedExercises: number
   totalExercises: number
   exerciseCompletionPercent: number
+  exerciseProgressByType: Record<string, number>
 }) {
   if (!employee) {
     return (
@@ -174,26 +176,31 @@ export default function EmployeeHome({
                                   key={exerciseType}
                                   href={`/dashboard/candidat/exercises/${exerciseType.toLowerCase()}`}
                                 >
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    icon={
-                                      <svg
-                                        className="w-4 h-4 stroke-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="M13 10V3L4 14h7v7l9-11h-7z"
-                                        />
-                                      </svg>
-                                    }
-                                  >
-                                    {exerciseLabel}
-                                  </Button>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      icon={
+                                        <svg
+                                          className="w-4 h-4 stroke-2"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                                          />
+                                        </svg>
+                                      }
+                                    >
+                                      {exerciseLabel}
+                                    </Button>
+                                    <span className="text-[10px] font-bold text-brand-sage uppercase tracking-wider">
+                                      {exerciseProgressByType?.[exerciseType.toLowerCase()] ?? 0}%
+                                    </span>
+                                  </div>
                                 </AppLink>
                               )
                             })}

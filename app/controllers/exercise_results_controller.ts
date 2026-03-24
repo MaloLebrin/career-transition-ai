@@ -4,6 +4,7 @@ import Note from '#models/note'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
+import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import EmployeeTransformer from '#transformers/employee_transformer'
 import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
@@ -399,6 +400,7 @@ export default class ExerciseResultsController {
     ] as const
 
     const initialDraftsByType: Record<string, any> = {}
+    let exerciseProgressPercent = 0
 
     if (!accessGranted) {
       session.flash(
@@ -441,6 +443,7 @@ export default class ExerciseResultsController {
           lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
           data: draft.data,
         }
+        exerciseProgressPercent = getExerciseProgress(exerciseType, draft.data ?? {}, draft.status)
       } else if (completed) {
         initialDraftsByType[exerciseType] = {
           employeeId: employee.id,
@@ -450,8 +453,14 @@ export default class ExerciseResultsController {
           // When a result is completed, we want to land on step 2.
           data: { ...(completed.data ?? {}), step: 2 },
         }
+        exerciseProgressPercent = getExerciseProgress(
+          exerciseType,
+          completed.data ?? {},
+          completed.status
+        )
       } else {
         initialDraftsByType[exerciseType] = null
+        exerciseProgressPercent = 0
       }
 
       break
@@ -462,6 +471,7 @@ export default class ExerciseResultsController {
       employee: EmployeeTransformer.transform(employee),
       initialDraftsByType,
       accessGranted: true,
+      exerciseProgressPercent,
     })
   }
 

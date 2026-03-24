@@ -158,5 +158,20 @@ describe('Dashboard candidat - Exercise Home', () => {
     const resolvedInitial = await props.initialDraftPromise
     expect(resolvedInitial).toEqual(completedPayload)
   })
+
+  test('shows exercise progress percentage in header', () => {
+    const employee = minimalEmployee()
+    const { getByText } = render(
+      <ExerciseHome
+        type="motivation"
+        employee={employee}
+        initialDraftsByType={{}}
+        accessGranted
+        exerciseProgressPercent={62}
+      />
+    )
+
+    expect(getByText(/Progression: 62%/i)).toBeInTheDocument()
+  })
 })
 

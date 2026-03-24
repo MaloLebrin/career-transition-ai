@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import ExerciseProgressBadge from '~/components/exercises/ExerciseProgressBadge'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
 import DISCTool from '~/components/exercises/DISCTool'
 import LifeCurveTool from '~/components/exercises/LifeCurveTool'
@@ -23,6 +24,7 @@ interface CandidatExerciseProps {
   initialDraftsByType?: Record<string, ExerciseDraft | null>
   accessGranted?: boolean
   blockedMessage?: string
+  exerciseProgressPercent?: number
 }
 
 const EXERCISE_TYPES: Record<string, ExerciseType> = {
@@ -42,6 +44,7 @@ export default function CandidatExercise({
   initialDraftsByType,
   accessGranted = true,
   blockedMessage,
+  exerciseProgressPercent = 0,
 }: CandidatExerciseProps) {
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeFromPage?.id ?? null, employeeFromPage ?? null)
 
@@ -131,14 +134,17 @@ export default function CandidatExercise({
                 ← Retour
               </Button>
             </AppLink>
-            {isSavingDraft && (
-              <div className="flex items-center space-x-2 text-slate-400">
-                <div className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
-                <span className="text-[10px] font-black uppercase tracking-widest italic">
-                  Sauvegarde auto...
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              <ExerciseProgressBadge value={exerciseProgressPercent} />
+              {isSavingDraft && (
+                <div className="flex items-center space-x-2 text-slate-400">
+                  <div className="w-3 h-3 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] font-black uppercase tracking-widest italic">
+                    Sauvegarde auto...
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           {isAnalyzing && (
             <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">

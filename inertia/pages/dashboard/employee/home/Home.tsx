@@ -8,11 +8,13 @@ export default function CandidatHome({
   completedExercises,
   totalExercises,
   exerciseCompletionPercent,
+  exerciseProgressByType,
 }: {
   employee: EmployeeData
   completedExercises: number
   totalExercises: number
   exerciseCompletionPercent: number
+  exerciseProgressByType: Record<string, number>
 }) {
   return (
     <>
@@ -23,6 +25,7 @@ export default function CandidatHome({
           completedExercises={completedExercises}
           totalExercises={totalExercises}
           exerciseCompletionPercent={exerciseCompletionPercent}
+          exerciseProgressByType={exerciseProgressByType}
         />
       </DashboardLayout>
     </>
