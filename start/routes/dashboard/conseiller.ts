@@ -58,7 +58,6 @@ router
             /**
              * Support Plan Steps Management
              */
-            router.get('/steps', [SupportPlanStepsController, 'index'])
             router.post('/steps', [SupportPlanStepsController, 'store'])
             router.put('/steps/:stepId', [SupportPlanStepsController, 'update'])
             router.delete('/steps/:stepId', [SupportPlanStepsController, 'destroy'])
@@ -68,7 +67,6 @@ router
             /**
              * Employee Notes
              */
-            router.get('/notes', [NotesController, 'index'])
             router.post('/notes', [NotesController, 'store'])
 
             /**

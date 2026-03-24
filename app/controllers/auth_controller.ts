@@ -12,15 +12,7 @@ export default class AuthController {
   constructor(
     private authService: AuthService,
     private employeesService: EmployeesService
-  ) { }
-
-  public async me({ auth, response }: HttpContext) {
-    if (!auth.user) {
-      return response.unauthorized()
-    }
-    const dto = this.authService.toSession(auth.user)
-    return response.json(dto)
-  }
+  ) {}
 
   public async login({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)

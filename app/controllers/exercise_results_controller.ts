@@ -1,13 +1,11 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
+import Note from '#models/note'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import EmployeeTransformer from '#transformers/employee_transformer'
-import {
-  fetchExerciseDraftValidator,
-  saveExerciseDraftValidator,
-} from '#validators/exercise/exercise_draft_validator'
+import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -29,34 +27,10 @@ export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
     private employeesService: EmployeesService
-  ) { }
-
-  public async saveDraft({ request, response }: HttpContext) {
-    const payload = await request.validateUsing(saveExerciseDraftValidator)
-
-    await this.service.saveDraft({
-      employeeId: Number(payload.employeeId),
-      type: payload.type,
-      data: payload.data,
-    })
-
-    return response.noContent()
-  }
-
-  public async fetchDraft({ request, response }: HttpContext) {
-    const payload = await request.validateUsing(fetchExerciseDraftValidator)
-
-    const draft = await this.service.fetchDraft({
-      employeeId: Number(payload.employeeId),
-      type: payload.type,
-      data: {},
-    })
-
-    return response.json(draft)
-  }
+  ) {}
 
   /**
-   * Inertia form: save MOTIVATION draft then redirect back.
+   * Inertia form: save draft then redirect back.
    */
   public async saveDraftFromDashboard({ auth, params, request, response }: HttpContext) {
     if (!auth.user) {
@@ -233,21 +207,41 @@ export default class ExerciseResultsController {
     const exerciseTitle = EXERCISE_LIST.find((e) => e.slug === typeParam)?.title ?? typeParam
     const resultPayload = latest
       ? {
-        id: latest.id,
-        type: typeParam,
-        date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
-        duration: latest.duration ?? 0,
-        data: latest.data ?? {},
-        quantitativeScore: latest.quantitativeScore ?? 0,
-        qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
-      }
+          id: latest.id,
+          type: typeParam,
+          date: latest.date ? latest.date.toISO()! : latest.updatedAt.toISO()!,
+          duration: latest.duration ?? 0,
+          data: latest.data ?? {},
+          quantitativeScore: latest.quantitativeScore ?? 0,
+          qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+        }
       : null
+    const notes = latest
+      ? await Note.query()
+          .where('employeeId', employee.id)
+          .where('exerciseResultId', latest.id)
+          .whereNull('deletedAt')
+          .preload('author')
+          .orderBy('createdAt', 'desc')
+      : []
     return (inertia as any).render('dashboard/conseiller/exercises/ResultDetail', {
       employeeId: String(employee.id),
       employeeName: employee.name,
       result: resultPayload,
       exerciseType: typeParam,
       exerciseTitle,
+      notes: notes.map((note) => ({
+        id: note.id,
+        content: note.content,
+        visibility: note.visibility,
+        supportPlanStepId: note.supportPlanStepId,
+        exerciseResultId: note.exerciseResultId,
+        authorId: note.authorId,
+        authorName: note.author?.name ?? 'Unknown',
+        createdAt: note.createdAt.toISO(),
+        updatedAt: note.updatedAt.toISO(),
+        canEdit: note.authorId === auth.user!.id,
+      })),
     })
   }
 
@@ -302,11 +296,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employeeRecord.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employeeRecord.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }
@@ -316,11 +310,11 @@ export default class ExerciseResultsController {
     const props =
       pageName === 'dashboard/conseiller/exercises/Home'
         ? {
-          type: params.type,
-          employeeId: String(employeeRecord.id),
-          employee: employeePayload,
-          initialDraftsByType,
-        }
+            type: params.type,
+            employeeId: String(employeeRecord.id),
+            employee: employeePayload,
+            initialDraftsByType,
+          }
         : { employeeId: String(employeeRecord.id), initialDraftsByType }
     return (inertia as any).render(pageName, props)
   }
@@ -360,11 +354,11 @@ export default class ExerciseResultsController {
         .first()
       initialDraftsByType[exerciseType] = draft
         ? {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
+            employeeId: employee.id,
+            type: exerciseType,
+            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
+            data: draft.data,
+          }
         : null
       break
     }

@@ -5,6 +5,7 @@ import NotesSection from '~/components/dashboard/NotesSection'
 import LinkActions from '~/components/ui/LinkActions'
 import { useAuth } from '~/hooks/useAuth'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
+import type { Note } from '~/types/Note'
 import StepDetailView from '~/components/dashboard/steps/StepDetailView'
 import { isUrl } from '#shared/helpers/url'
 
@@ -13,6 +14,7 @@ interface StepDetailProps {
   employeeName: string
   step: SupportPlanStep
   results: ExerciseResult[]
+  notes?: Note[]
 }
 
 export default function StepDetail({
@@ -20,6 +22,7 @@ export default function StepDetail({
   employeeName,
   step,
   results,
+  notes = [],
 }: StepDetailProps) {
   const { user } = useAuth()
 
@@ -73,6 +76,7 @@ export default function StepDetail({
               exerciseResultId={results[0].id}
               title="Notes sur cet exercice"
               isAdvisor={true}
+              initialNotes={notes}
             />
           ) : null
         }

@@ -9,15 +9,21 @@ import Card from '~/components/ui/Card'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
 import { useAuth } from '~/hooks/useAuth'
+import type { Note } from '~/types/Note'
 import type { Employee, SupportPlanStep } from '~/types'
 import { formatDateTimeFR } from '#shared/helpers/date'
 
 interface EmployeeDetailProps {
   employeeId: string
   employee: Employee
+  notes?: Note[]
 }
 
-export default function DashboardEmployeeDetail({ employeeId, employee: selectedEmployee }: EmployeeDetailProps) {
+export default function DashboardEmployeeDetail({
+  employeeId,
+  employee: selectedEmployee,
+  notes = [],
+}: EmployeeDetailProps) {
   const { user } = useAuth()
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isStepEditorOpen, setIsStepEditorOpen] = useState(false)
@@ -410,6 +416,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee: selected
                 context="general"
                 title="Notes de suivi"
                 isAdvisor={true}
+                initialNotes={notes}
               />
             </div>
           </div>

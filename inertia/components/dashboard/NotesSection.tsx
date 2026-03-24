@@ -39,47 +39,9 @@ const NotesSection = memo(function NotesSection({
   const [deletingNote, setDeletingNote] = useState<Note | null>(null)
   const [deleteState, setDeleteState] = useState<'idle' | 'loading' | 'error'>('idle')
 
-  const fetchNotes = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const basePath = isAdvisor
-        ? `/dashboard/conseiller/employees/${employeeId}/notes`
-        : '/dashboard/candidat/notes'
-
-      const response = await fetch(basePath, {
-        headers: {
-          Accept: 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        let filteredNotes = data as Note[]
-
-        if (context === 'step' && supportPlanStepId) {
-          filteredNotes = filteredNotes.filter((n) => n.supportPlanStepId === supportPlanStepId)
-        } else if (context === 'exercise' && exerciseResultId) {
-          filteredNotes = filteredNotes.filter((n) => n.exerciseResultId === exerciseResultId)
-        } else if (context === 'general') {
-          filteredNotes = filteredNotes.filter(
-            (n) => !n.supportPlanStepId && !n.exerciseResultId
-          )
-        }
-
-        setNotes(filteredNotes)
-      }
-    } catch (error) {
-      console.error('Failed to fetch notes:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [employeeId, isAdvisor, context, supportPlanStepId, exerciseResultId])
-
   useEffect(() => {
-    if (initialNotes.length === 0) {
-      fetchNotes()
-    }
-  }, [fetchNotes, initialNotes.length])
+    setNotes(initialNotes)
+  }, [initialNotes])
 
   const handleCreate = useCallback(
     (data: { content: string; visibility: NoteVisibility }) => {
@@ -95,13 +57,13 @@ const NotesSection = memo(function NotesSection({
           preserveScroll: true,
           onSuccess: () => {
             setIsAddOpen(false)
-            fetchNotes()
+            router.reload({ preserveScroll: true })
           },
           onFinish: () => setIsLoading(false),
         }
       )
     },
-    [employeeId, context, supportPlanStepId, exerciseResultId, fetchNotes]
+    [employeeId, context, supportPlanStepId, exerciseResultId]
   )
 
   const handleUpdate = useCallback(
@@ -115,13 +77,13 @@ const NotesSection = memo(function NotesSection({
           preserveScroll: true,
           onSuccess: () => {
             setEditingNote(null)
-            fetchNotes()
+            router.reload({ preserveScroll: true })
           },
           onFinish: () => setIsLoading(false),
         }
       )
     },
-    [editingNote, fetchNotes]
+    [editingNote]
   )
 
   const handleDelete = useCallback(() => {

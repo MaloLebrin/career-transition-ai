@@ -4,6 +4,7 @@ import NotesSection from '~/components/dashboard/NotesSection'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
+import type { Note } from '~/types/Note'
 import { EmployeeData } from '~/types'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
@@ -19,9 +20,15 @@ interface EmployeeProfileProps {
   employeeId: string
   employee: EmployeeData
   availableSkills?: AvailableSkill[]
+  notes?: Note[]
 }
 
-export default function EmployeeProfile({ employeeId, employee, availableSkills = [] }: EmployeeProfileProps) {
+export default function EmployeeProfile({
+  employeeId,
+  employee,
+  availableSkills = [],
+  notes = [],
+}: EmployeeProfileProps) {
   if (!employee) {
     return (
       <DashboardLayout selectedEmployeeId={employeeId}>
@@ -123,6 +130,7 @@ export default function EmployeeProfile({ employeeId, employee, availableSkills 
           context="general"
           title="Notes de mon conseiller"
           isAdvisor={false}
+          initialNotes={notes}
         />
       </div>
     </DashboardLayout>

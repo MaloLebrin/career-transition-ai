@@ -2,6 +2,7 @@ import { mapEmployee, mapSupportPlanStep, mapExerciseResult } from '#mappers/emp
 import Employee from '#models/employee'
 import SupportPlanStep from '#models/support_plan_step'
 import ExerciseResult from '#models/exercise_result'
+import Note from '#models/note'
 import Skill from '#models/skill'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
@@ -13,105 +14,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EmployeesController {
-  constructor(private employeesService: EmployeesService) { }
-
-  /**
-   * JSON API: list employees visible to current user.
-   */
-  public async index({ auth, response }: HttpContext) {
-    const user = auth.user
-    const organizationId = user?.organizationId ?? null
-    // Admin sees all org employees; advisor sees only their advised employees
-    const advisorId = user?.role === USERS_ROLES.ADVISOR ? user.id : null
-
-    const query = Employee.query()
-      .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))
-      .if(advisorId !== null, (q) => q.where('advisorId', advisorId!))
-      .preload('skills', (q) => q.pivotColumns(['level']))
-      .preload('experiences')
-      .preload('educations')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-
-    const employees = await query
-
-    const data = employees.map(mapEmployee)
-
-    return response.json(data)
-  }
-
-  /**
-   * JSON API: show single employee.
-   * When the current user is an employee and the requested id is their user id,
-   * returns the employee record linked to that user (by userId), not by employee id.
-   */
-  public async show({ params, auth, response }: HttpContext) {
-    const user = auth.user
-    const organizationId = user?.organizationId ?? null
-    const requestedId = Number(params.id)
-
-    const isSelfRequest = user?.role === USERS_ROLES.EMPLOYEE && user.id === requestedId
-
-    const employeeQuery = Employee.query()
-      .if(
-        isSelfRequest,
-        (q) => q.where('userId', requestedId),
-        (q) => q.where('id', requestedId)
-      )
-      .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))
-      .preload('skills', (q) => q.pivotColumns(['level']))
-      .preload('experiences')
-      .preload('educations')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-
-    const employee = await employeeQuery.firstOrFail()
-
-    const data = mapEmployee(employee) // TODO: remove this mapper
-
-    return response.json(data)
-  }
-
-  public async store({ auth, request, response }: HttpContext) {
-    const user = auth.user
-    if (!user) {
-      return response.unauthorized()
-    }
-
-    const payload = await request.validateUsing(createEmployeeValidator)
-
-    const dto = await this.employeesService.create({
-      organizationId: user.organizationId,
-      advisorId: user.id,
-      ...payload,
-    })
-
-    return response.json(dto)
-  }
-
-  public async update({ params, request, auth, response }: HttpContext) {
-    const organizationId = auth.user?.organizationId ?? null
-
-    const payload = await request.validateUsing(updateEmployeeValidator)
-
-    const employeeQuery = Employee.query()
-      .where('id', Number(params.id))
-      .if(organizationId !== null, (q) => q.where('organizationId', organizationId!))
-      .preload('skills', (q) => q.pivotColumns(['level']))
-      .preload('experiences')
-      .preload('educations')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-
-    const employee = await employeeQuery.firstOrFail()
-
-    this.employeesService.applyUpdate(employee, payload)
-    await employee.save()
-
-    const data = mapEmployee(employee)
-
-    return response.json(data)
-  }
+  constructor(private employeesService: EmployeesService) {}
 
   /**
    * Inertia form: create employee (and user + onboarding link) then redirect with flash.
@@ -225,12 +128,30 @@ export default class EmployeesController {
         .whereNull('deletedAt')
         .orderBy('name', 'asc'),
     ])
+    const sharedNotes = await Note.query()
+      .where('employeeId', employee.id)
+      .where('visibility', 'shared')
+      .whereNull('deletedAt')
+      .preload('author')
+      .orderBy('createdAt', 'desc')
 
     const data = mapEmployee(employee)
 
     return (ctx.inertia as any).render('dashboard/employee/profile/Home', {
       employeeId: employee.id,
       employee: data,
+      notes: sharedNotes.map((note) => ({
+        id: note.id,
+        content: note.content,
+        visibility: note.visibility,
+        supportPlanStepId: note.supportPlanStepId,
+        exerciseResultId: note.exerciseResultId,
+        authorId: note.authorId,
+        authorName: note.author?.name ?? 'Unknown',
+        createdAt: note.createdAt.toISO(),
+        updatedAt: note.updatedAt.toISO(),
+        canEdit: false,
+      })),
       availableSkills: availableSkills.map((s) => ({
         id: s.id,
         name: s.name,
@@ -288,11 +209,28 @@ export default class EmployeesController {
       .preload('supportPlanSteps', (q) => q.preload('exercises'))
 
     const employee = await employeeQuery.firstOrFail()
+    const notes = await Note.query()
+      .where('employeeId', employee.id)
+      .whereNull('deletedAt')
+      .preload('author')
+      .orderBy('createdAt', 'desc')
     const data = mapEmployee(employee)
 
     return (ctx.inertia as any).render('dashboard/conseiller/employees/Detail', {
       employeeId: String(employee.id),
       employee: data,
+      notes: notes.map((note) => ({
+        id: note.id,
+        content: note.content,
+        visibility: note.visibility,
+        supportPlanStepId: note.supportPlanStepId,
+        exerciseResultId: note.exerciseResultId,
+        authorId: note.authorId,
+        authorName: note.author?.name ?? 'Unknown',
+        createdAt: note.createdAt.toISO(),
+        updatedAt: note.updatedAt.toISO(),
+        canEdit: note.authorId === user.id,
+      })),
     })
   }
 
@@ -332,12 +270,33 @@ export default class EmployeesController {
         results.push(mapExerciseResult(exerciseResult))
       }
     }
+    const exerciseResultId = results[0]?.id
+    const notes = exerciseResultId
+      ? await Note.query()
+          .where('employeeId', employeeId)
+          .where('exerciseResultId', exerciseResultId)
+          .whereNull('deletedAt')
+          .preload('author')
+          .orderBy('createdAt', 'desc')
+      : []
 
     return (ctx.inertia as any).render('dashboard/conseiller/employees/StepDetail', {
       employeeId: String(employee.id),
       employeeName: employee.name,
       step: mapSupportPlanStep(step),
       results,
+      notes: notes.map((note) => ({
+        id: note.id,
+        content: note.content,
+        visibility: note.visibility,
+        supportPlanStepId: note.supportPlanStepId,
+        exerciseResultId: note.exerciseResultId,
+        authorId: note.authorId,
+        authorName: note.author?.name ?? 'Unknown',
+        createdAt: note.createdAt.toISO(),
+        updatedAt: note.updatedAt.toISO(),
+        canEdit: note.authorId === user.id,
+      })),
     })
   }
 

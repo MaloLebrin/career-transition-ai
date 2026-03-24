@@ -10,47 +10,6 @@ import { DateTime } from 'luxon'
 
 export default class SupportPlanStepsController {
   /**
-   * List steps for an employee.
-   */
-  public async index({ auth, params, response }: HttpContext) {
-    const user = auth.user!
-    const employeeId = Number(params.id)
-
-    const employee = await Employee.query()
-      .where('id', employeeId)
-      .where('organizationId', user.organizationId)
-      .first()
-
-    if (!employee) {
-      return response.notFound({ message: 'Employee not found' })
-    }
-
-    const steps = await SupportPlanStep.query()
-      .where('employeeId', employeeId)
-      .preload('exercises')
-      .orderBy('sortOrder', 'asc')
-
-    return response.json(
-      steps.map((step) => ({
-        id: step.id,
-        title: step.title,
-        description: step.description,
-        instructions: step.instructions,
-        dueDate: step.dueDate?.toISODate(),
-        scheduledAt: step.scheduledAt?.toISO(),
-        endedAt: step.endedAt?.toISO(),
-        status: step.status,
-        locationOrLink: step.locationOrLink,
-        completed: step.completed,
-        notes: step.notes,
-        associatedExercises: step.exercises.map((e) => e.exerciseType),
-        sortOrder: step.sortOrder,
-        isLocked: step.isLocked,
-      }))
-    )
-  }
-
-  /**
    * Create a new step (advisor only).
    */
   public async store({ auth, params, request, response, session }: HttpContext) {
@@ -78,7 +37,7 @@ export default class SupportPlanStepsController {
       .max('sort_order as max')
       .first()
 
-    const nextSortOrder = payload.sortOrder ?? ((maxSortOrder?.$extras?.max ?? -1) + 1)
+    const nextSortOrder = payload.sortOrder ?? (maxSortOrder?.$extras?.max ?? -1) + 1
 
     const step = await SupportPlanStep.create({
       employeeId,

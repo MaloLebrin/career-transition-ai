@@ -7,6 +7,7 @@ import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
 import { useAuth } from '~/hooks/useAuth'
+import type { Note } from '~/types/Note'
 import type { ExerciseResult } from '~/types'
 
 interface ExerciseResultDetailProps {
@@ -15,6 +16,7 @@ interface ExerciseResultDetailProps {
   result: (Omit<ExerciseResult, 'type'> & { type: string }) | null
   exerciseType: string
   exerciseTitle: string
+  notes?: Note[]
 }
 
 function formatSessionDate(dateStr: string | undefined): string {
@@ -34,6 +36,7 @@ export default function ExerciseResultDetail({
   result,
   exerciseType,
   exerciseTitle,
+  notes = [],
 }: ExerciseResultDetailProps) {
   const { user } = useAuth()
   const backHref = `/dashboard/conseiller/employees/${employeeId}/exercises`
@@ -134,6 +137,7 @@ export default function ExerciseResultDetail({
                   exerciseResultId={result.id}
                   title="Notes sur cet exercice"
                   isAdvisor={true}
+                  initialNotes={notes}
                 />
               </div>
             </div>
