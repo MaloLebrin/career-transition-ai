@@ -57,7 +57,7 @@ export function useAdvisorExercises(
     setIsSavingDraft(true)
     try {
       const draft: ExerciseDraft = {
-        employeeId: employee.id,
+        employeeId: String(employee.id),
         type,
         lastUpdated: new Date().toISOString(),
         data,

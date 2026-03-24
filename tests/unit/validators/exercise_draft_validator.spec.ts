@@ -26,4 +26,16 @@ test.group('exercise draft validators', () => {
 
     await assert.rejects(() => fetchExerciseDraftValidator.validate(data))
   })
+
+  test('saveExerciseDraftValidator rejects numeric employeeId (Inertia JSON sends numbers)', async ({
+    assert,
+  }) => {
+    const data: any = {
+      employeeId: 1,
+      type: exerciceResultTypesValues[0],
+      data: {},
+    }
+
+    await assert.rejects(() => saveExerciseDraftValidator.validate(data))
+  })
 })

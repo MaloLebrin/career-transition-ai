@@ -11,7 +11,8 @@ export interface ExerciseResult {
 }
 
 export interface ExerciseDraft {
-  employeeId: number
+  /** API validator expects a string; server-loaded drafts may still use a numeric id in JSON. */
+  employeeId: string | number
   type: ExerciceResultType
   lastUpdated: string
   data: any

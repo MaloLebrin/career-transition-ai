@@ -524,7 +524,7 @@ export default class ExerciseResultsController {
       return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 
-    const res = await this.service.saveResult({
+    await this.service.saveResult({
       employeeId: employee.id,
       type: payload.type,
       status: payload.status,
@@ -535,13 +535,6 @@ export default class ExerciseResultsController {
       qualitativeAnalysis: payload.qualitativeAnalysis,
       plan: payload.plan,
     })
-
-    console.log(
-      {
-        res,
-      },
-      'storeFromDashboardCandidat controller exercise_results_controller.ts'
-    )
 
     const typeLabelMap: Record<string, string> = {
       [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'Motivation',
