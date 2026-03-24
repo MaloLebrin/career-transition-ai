@@ -1,12 +1,7 @@
 import { router } from '@inertiajs/react'
 import { useCallback, useState } from 'react'
-import {
-  buildCompletedPlanPayload,
-  buildExerciseEndpoint,
-  resolveExerciseAnalysis,
-} from '#shared/helpers/exercise_hooks'
+import { buildCompletedPlanPayload, buildExerciseEndpoint } from '#shared/helpers/exercise_hooks'
 import { EXERCISES_WITH_INERTIA_DRAFT, EXERCISE_SLUGS } from '../config/exercises'
-import { analyzeExerciseResult } from '../services/geminiService'
 import { Employee, ExerciseDraft, ExerciseType } from '../types'
 
 type UseExercisesOptions = {
@@ -83,7 +78,6 @@ export function useAdvisorExercises(
     try {
       const slug = EXERCISE_SLUGS[type]
       const endpoint = slug ? buildExerciseEndpoint(basePath, slug, 'result') : null
-      const analysis = await resolveExerciseAnalysis(type, data, analyzeExerciseResult)
       const now = new Date().toLocaleString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
@@ -100,7 +94,7 @@ export function useAdvisorExercises(
           duration,
           data,
           quantitativeScore: quantScore,
-          qualitativeAnalysis: analysis,
+          qualitativeAnalysis: '',
           plan: buildCompletedPlanPayload(employee.plan ?? [], type, now),
         })
       }

@@ -36,6 +36,7 @@ interface Props {
 }
 
 const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
+  const [draftHydrated, setDraftHydrated] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
   const [points, setPoints] = useState<Point[]>([])
   const [newPoint, setNewPoint] = useState<Point>({
@@ -55,10 +56,18 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
   const onSaveDraftRef = useRef(onSaveDraft)
   const lastAutoSavePayloadRef = useRef<string | null>(null)
 
-  // Load draft on mount
+  // Load draft on mount; defer autosave until resolved to avoid empty-state overwrites (Strict Mode / slow promise).
   useEffect(() => {
-    if (initialDraftPromise) {
-      initialDraftPromise.then((draft) => {
+    let cancelled = false
+    if (!initialDraftPromise) {
+      setDraftHydrated(true)
+      return () => {
+        cancelled = true
+      }
+    }
+    initialDraftPromise
+      .then((draft) => {
+        if (cancelled) return
         if (draft && draft.data) {
           setPoints(draft.data.points || [])
           setReflection(
@@ -74,6 +83,11 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
           setStep(draft.data.step || 1)
         }
       })
+      .finally(() => {
+        if (!cancelled) setDraftHydrated(true)
+      })
+    return () => {
+      cancelled = true
     }
   }, [initialDraftPromise])
 
@@ -83,7 +97,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
   }, [onSaveDraft])
 
   useEffect(() => {
-    if (step !== 1) return
+    if (step !== 1 || !draftHydrated) return
 
     const payload = { points, reflection, step }
     const serialized = JSON.stringify(payload)
@@ -91,7 +105,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     lastAutoSavePayloadRef.current = serialized
 
     onSaveDraftRef.current(payload)
-  }, [points, reflection, step])
+  }, [points, reflection, step, draftHydrated])
 
   const handleAddPoint = () => {
     if (!newPoint.label) return

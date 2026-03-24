@@ -68,14 +68,6 @@ export class ExerciseResultsService {
       .andWhere('type', input.type)
       .first()
 
-    console.log(
-      {
-        existing,
-        input,
-      },
-      'saveResult service exercise_results_service.ts'
-    )
-
     if (existing) {
       existing.merge({
         status: input.status,
@@ -137,6 +129,10 @@ export class ExerciseResultsService {
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
       .first()
+
+    if (existing?.status === 'completed') {
+      return
+    }
 
     if (existing) {
       existing.merge({

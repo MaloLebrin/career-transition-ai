@@ -11,6 +11,7 @@ export function buildExerciseEndpoint(basePath: string, slug: string, kind: Exer
   return `${basePath}/${slug}/${kind}`
 }
 
+/** Optional IA hook: use from UI when analysis is explicitly requested, not on exercise save. */
 export async function resolveExerciseAnalysis(
   type: string,
   data: unknown,

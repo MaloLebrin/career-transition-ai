@@ -2,7 +2,9 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import { ExerciseResultsService } from '#services/exercise_results_service'
+import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
@@ -30,18 +32,29 @@ test.group('ExerciseResultsService', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     const step = await SupportPlanStep.create({
       employeeId: employee.id,
+      advisorId: null,
       title: 'Étape exercice',
       description: 'Faire un exercice',
+      instructions: null,
       dueDate: DateTime.fromISO('2025-01-10'),
+      scheduledAt: null,
+      endedAt: null,
+      status: APPOINTMENTS_STATUSES.SCHEDULED,
+      locationOrLink: null,
       completed: false,
       notes: null,
-      associatedExercise: EXERCICE_RESULTS_TYPES.MOTIVATION,
       sortOrder: 1,
+      isLocked: false,
+    })
+
+    await SupportPlanStepExercise.create({
+      supportPlanStepId: step.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      sortOrder: 0,
     })
 
     const dto = await service.saveResult({
@@ -90,7 +103,6 @@ test.group('ExerciseResultsService', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     await service.saveDraft({
@@ -124,6 +136,58 @@ test.group('ExerciseResultsService', (group) => {
     assert.deepEqual(stored!.data, { foo: 'baz' })
   })
 
+  test('saveDraft does not downgrade a completed result', async ({ assert }) => {
+    const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'No Downgrade Org',
+      slug: `no-downgrade-org-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: null,
+      userId: null,
+      name: 'No Downgrade Candidate',
+      email: 'no-downgrade@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+    })
+
+    const completedData = { points: [{ year: 2020, satisfaction: 8, label: 'A' }] }
+
+    await ExerciseResult.create({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.LIFE_CURVE,
+      status: exerciceResultStatusValues.COMPLETED,
+      date: DateTime.fromISO('2026-03-01'),
+      duration: 60,
+      data: completedData,
+      quantitativeScore: 10,
+      qualitativeAnalysis: 'Analyse',
+    })
+
+    await service.saveDraft({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.LIFE_CURVE,
+      data: { points: [] },
+    })
+
+    const stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.LIFE_CURVE)
+      .first()
+
+    assert.isNotNull(stored)
+    assert.equal(stored!.status, exerciceResultStatusValues.COMPLETED)
+    assert.deepEqual(stored!.data, completedData)
+    assert.equal(stored!.qualitativeAnalysis, 'Analyse')
+  })
+
   test('fetchDraft returns null when no draft and dto when exists', async ({ assert }) => {
     const service = new ExerciseResultsService()
     const org = await Organization.create({
@@ -144,7 +208,6 @@ test.group('ExerciseResultsService', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     let draft = await service.fetchDraft({
