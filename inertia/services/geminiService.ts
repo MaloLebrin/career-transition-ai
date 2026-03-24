@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from '@google/genai'
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY })
 
 export async function suggestSkillMapping(jobTitle: string) {
-  const model = 'gemini-3-flash-preview'
+  const model = 'gemini-2.0-flash'
   const prompt = `En tant qu'expert en bilan de compétences et VAE, suggère une structure de compétences pour le poste de "${jobTitle}".
   Propose 3 missions principales. Pour chaque mission, liste 2 activités concrètes typiques de ce métier.
   Reste très professionnel et précis.
@@ -19,7 +19,7 @@ export async function suggestSkillMapping(jobTitle: string) {
       contents: { parts: [{ text: prompt }] },
       config: { responseMimeType: 'application/json' },
     })
-    return JSON.parse(response.text)
+    return JSON.parse(response.text || '[]')
   } catch (error) {
     console.error('Gemini Suggestion error:', error)
     return []
@@ -27,7 +27,7 @@ export async function suggestSkillMapping(jobTitle: string) {
 }
 
 export async function extractSkillMappingFromText(text: string) {
-  const model = 'gemini-3-flash-preview'
+  const model = 'gemini-2.0-flash'
   const prompt = `Analyse le récit d'expérience suivant : "${text}".
   Extrais les missions principales et les activités liées mentionnées. 
   Si tu identifies des résultats chiffrés ou des outils spécifiques, place-les dans la colonne 'proof'.
@@ -40,7 +40,7 @@ export async function extractSkillMappingFromText(text: string) {
       contents: { parts: [{ text: prompt }] },
       config: { responseMimeType: 'application/json' },
     })
-    return JSON.parse(response.text)
+    return JSON.parse(response.text || '{"mapping":[]}')
   } catch (error) {
     console.error('Gemini Narrative error:', error)
     return { mapping: [] }
@@ -48,7 +48,7 @@ export async function extractSkillMappingFromText(text: string) {
 }
 
 export async function challengeProof(activity: string, proof: string) {
-  const model = 'gemini-3-flash-preview'
+  const model = 'gemini-2.0-flash'
   const prompt = `Un candidat décrit son activité : "${activity}". Sa preuve actuelle est : "${proof}".
   Pose une SEULE question très courte (max 15 mots) et stimulante pour l'aider à quantifier ou illustrer son succès (ex: volume, budget, impact, outil). 
   La question doit être directe et inciter à donner un chiffre ou un fait précis.`
@@ -64,9 +64,9 @@ export async function challengeProof(activity: string, proof: string) {
   }
 }
 
-export async function analyzeExerciseResult(type: string, data: any): Promise<string> {
-  const model = 'gemini-3-flash-preview'
-  let prompt = `Analyse professionnelle pour un accompagnement carrière : ${type}. Données : ${JSON.stringify(data)}.
+export async function analyzeExerciseResult(type: string, data: unknown): Promise<string> {
+  const model = 'gemini-2.0-flash'
+  const prompt = `Analyse professionnelle pour un accompagnement carrière : ${type}. Données : ${JSON.stringify(data)}.
   Produis une analyse courte (max 4 phrases), encourageante, vitaminée, avec un conseil concret basé sur les données reçues. 
   Sois expert et bienveillant.`
 
@@ -83,7 +83,7 @@ export async function analyzeExerciseResult(type: string, data: any): Promise<st
 }
 
 export async function extractCVData(base64File: string, mimeType: string) {
-  const model = 'gemini-3-flash-preview'
+  const model = 'gemini-2.0-flash'
   const prompt = `Analyse ce CV et extrais les informations suivantes de manière structurée. 
   Réponds exclusivement en JSON.`
 
@@ -92,7 +92,12 @@ export async function extractCVData(base64File: string, mimeType: string) {
       model,
       contents: {
         parts: [
-          { inlineData: { data: base64File.split(',')[1], mimeType: mimeType } },
+          {
+            inlineData: {
+              data: base64File.includes(',') ? base64File.split(',')[1] : base64File,
+              mimeType,
+            },
+          },
           { text: prompt },
         ],
       },
@@ -187,7 +192,7 @@ export async function extractCVData(base64File: string, mimeType: string) {
 }
 
 export async function suggestTargets(profile: { skills: string[]; targetRole: string }) {
-  const model = 'gemini-3-flash-preview'
+  const model = 'gemini-2.0-flash'
   const prompt = `Basé sur ces compétences: ${profile.skills.join(', ')} et ce poste cible: ${profile.targetRole}, 
   suggère 5 entreprises françaises (réelles) et 3 types de secteurs porteurs pour ce profil.
   Réponds en JSON avec les clés 'companies' (array de strings) et 'sectors' (array de strings).`
@@ -198,7 +203,7 @@ export async function suggestTargets(profile: { skills: string[]; targetRole: st
       contents: { parts: [{ text: prompt }] },
       config: { responseMimeType: 'application/json' },
     })
-    return JSON.parse(response.text)
+    return JSON.parse(response.text || '{"companies":[],"sectors":[]}')
   } catch (error) {
     return { companies: [], sectors: [] }
   }
