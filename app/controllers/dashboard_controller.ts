@@ -1,4 +1,5 @@
 import Employee from '#models/employee'
+import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { USERS_ROLES } from '#shared/constants/user'
 import EmployeeTransformer from '#transformers/employee_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -48,8 +49,33 @@ export default class DashboardController {
       return response.unauthorized()
     }
 
+    const latestStatusByType = new Map<string, { status: string; date: string }>()
+    for (const result of employee.exerciseResults || []) {
+      const type = String(result.type)
+      const date = result.date ? result.date.toISO()! : (result.updatedAt?.toISO() ?? '')
+      const current = latestStatusByType.get(type)
+
+      if (!current || date > current.date) {
+        latestStatusByType.set(type, { status: String(result.status), date })
+      }
+    }
+
+    let completedExercises = 0
+    for (const latest of latestStatusByType.values()) {
+      if (latest.status === 'completed') {
+        completedExercises += 1
+      }
+    }
+
+    const totalExercises = EXERCISE_LIST.length
+    const exerciseCompletionPercent =
+      totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
+
     return (inertia as any).render('dashboard/employee/home/Home', {
       employee: EmployeeTransformer.transform(employee),
+      completedExercises,
+      totalExercises,
+      exerciseCompletionPercent,
     })
   }
 

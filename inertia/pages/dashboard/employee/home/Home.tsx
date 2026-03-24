@@ -5,12 +5,25 @@ import { EmployeeData } from '~/types/Employee'
 
 export default function CandidatHome({
   employee,
-}: { employee: EmployeeData }) {
+  completedExercises,
+  totalExercises,
+  exerciseCompletionPercent,
+}: {
+  employee: EmployeeData
+  completedExercises: number
+  totalExercises: number
+  exerciseCompletionPercent: number
+}) {
   return (
     <>
       <Head title="Tableau de bord - Candidat" />
       <DashboardLayout>
-        <EmployeeHome employee={employee} />
+        <EmployeeHome
+          employee={employee}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          exerciseCompletionPercent={exerciseCompletionPercent}
+        />
       </DashboardLayout>
     </>
   )

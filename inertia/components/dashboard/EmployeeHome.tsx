@@ -6,8 +6,14 @@ import Card from '../ui/Card'
 
 export default function EmployeeHome({
   employee,
+  completedExercises,
+  totalExercises,
+  exerciseCompletionPercent,
 }: {
   employee: EmployeeData
+  completedExercises: number
+  totalExercises: number
+  exerciseCompletionPercent: number
 }) {
   if (!employee) {
     return (
@@ -44,9 +50,30 @@ export default function EmployeeHome({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
           <Card className="p-10">
-            <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.2em] mb-8">
-              Ma Feuille de Route
-            </h3>
+            <div className="mb-8 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
+                  Ma Feuille de Route
+                </h3>
+                <span className="text-xs font-bold text-brand-sage uppercase tracking-[0.15em]">
+                  Progression exercices: {exerciseCompletionPercent}% ({completedExercises}/
+                  {totalExercises})
+                </span>
+              </div>
+              <div
+                className="h-2 w-full rounded-full bg-brand-navy/10 overflow-hidden"
+                aria-label="Progression des exercices"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={exerciseCompletionPercent}
+              >
+                <div
+                  className="h-full rounded-full bg-brand-sage transition-all"
+                  style={{ width: `${exerciseCompletionPercent}%` }}
+                />
+              </div>
+            </div>
             <div className="space-y-10">
               {employee.plan.map((step, idx) => {
                 const isLocked = step.isLocked && !step.completed
