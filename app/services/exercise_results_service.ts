@@ -1,9 +1,11 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
+import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
+import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { DateTime } from 'luxon'
 
 type SaveResultInput = {
@@ -68,6 +70,7 @@ export class ExerciseResultsService {
       .andWhere('type', input.type)
       .first()
 
+    let resultRow: ExerciseResult
     if (existing) {
       existing.merge({
         status: input.status,
@@ -78,8 +81,9 @@ export class ExerciseResultsService {
         qualitativeAnalysis: input.qualitativeAnalysis ?? existing.qualitativeAnalysis,
       })
       await existing.save()
+      resultRow = existing
     } else {
-      await ExerciseResult.create({
+      resultRow = await ExerciseResult.create({
         employeeId: employee.id,
         type: input.type,
         status: input.status,
@@ -89,6 +93,12 @@ export class ExerciseResultsService {
         quantitativeScore: input.quantitativeScore ?? null,
         qualitativeAnalysis: input.qualitativeAnalysis ?? null,
       })
+    }
+
+    if (input.status === exerciceResultStatusValues.COMPLETED) {
+      await AnalyzeExerciseQualitativeJob.dispatch({
+        exerciseResultId: resultRow.id,
+      }).toQueue('ai')
     }
 
     // Secure completion flags:

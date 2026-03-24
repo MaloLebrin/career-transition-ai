@@ -43,4 +43,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   QUEUE_DRIVER: Env.schema.enum(['redis', 'database', 'sync'] as const),
+
+  /*
+  |----------------------------------------------------------
+  | IA serveur (jobs d’analyse — Gemini, OpenAI ou none)
+  |----------------------------------------------------------
+  */
+  AI_PROVIDER: Env.schema.enum.optional(['gemini', 'openai', 'none'] as const),
+  GEMINI_API_KEY: Env.schema.string.optional(),
+  OPENAI_API_KEY: Env.schema.string.optional(),
+  OPENAI_MODEL: Env.schema.string.optional(),
 })

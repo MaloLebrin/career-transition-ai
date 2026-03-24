@@ -236,4 +236,73 @@ test.group('ExerciseResultsService', (group) => {
     assert.deepEqual(draft!.data, { foo: 'bar' })
     assert.isString(draft!.lastUpdated)
   })
+
+  test('saveResult completed runs qualitative analysis job (QUEUE_DRIVER=sync)', async ({
+    assert,
+  }) => {
+    const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'AI Hook Org',
+      slug: `ai-hook-org-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: null,
+      userId: null,
+      name: 'AI Candidate',
+      email: 'ai-candidate@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+    })
+
+    const step = await SupportPlanStep.create({
+      employeeId: employee.id,
+      advisorId: null,
+      title: 'Étape',
+      description: '',
+      instructions: null,
+      dueDate: DateTime.fromISO('2025-01-10'),
+      scheduledAt: null,
+      endedAt: null,
+      status: APPOINTMENTS_STATUSES.SCHEDULED,
+      locationOrLink: null,
+      completed: false,
+      notes: null,
+      sortOrder: 1,
+      isLocked: false,
+    })
+
+    await SupportPlanStepExercise.create({
+      supportPlanStepId: step.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.DISC,
+      sortOrder: 0,
+    })
+
+    await service.saveResult({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      date: '2025-01-05',
+      duration: 20,
+      data: { answers: [] },
+      quantitativeScore: 8,
+      qualitativeAnalysis: '',
+      plan: [{ id: step.id, completed: true }],
+    })
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.DISC)
+      .first()
+
+    assert.isNotNull(row)
+    assert.isString(row!.qualitativeAnalysis)
+    assert.isAbove(row!.qualitativeAnalysis!.length, 5)
+  })
 })
