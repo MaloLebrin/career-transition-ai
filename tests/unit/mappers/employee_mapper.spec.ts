@@ -6,6 +6,9 @@ import Experience from '#models/experience'
 import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
+import SupportPlanStepExercise from '#models/support_plan_step_exercise'
+import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
+import { EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
@@ -38,7 +41,6 @@ test.group('Employee mapper', (group) => {
       advisorNotes: 'Notes',
       status: 'active',
       onboarded: true,
-      nextAppointment: DateTime.fromISO('2025-01-10T10:00:00'),
     })
 
     await Experience.create({
@@ -85,27 +87,27 @@ test.group('Employee mapper', (group) => {
       qualitativeAnalysis: 'Analyse',
     })
 
-    await SupportPlanStep.create({
-      employeeId: employee.id,
-      title: 'Étape 1',
-      description: 'Description',
-      dueDate: DateTime.fromISO('2025-01-15'),
-      completed: false,
-      notes: 'Note',
-      associatedExercise: 'motivation',
-      sortOrder: 1,
-    })
-
-    await Appointment.create({
-      organizationId: orgId,
+    const step = await SupportPlanStep.create({
       employeeId: employee.id,
       advisorId: null,
-      scheduledAt: DateTime.fromISO('2025-01-20T09:00:00'),
+      title: 'Étape 1',
+      description: 'Description',
+      instructions: null,
+      dueDate: DateTime.fromISO('2025-01-15'),
+      scheduledAt: null,
       endedAt: null,
-      type: 'coaching',
-      status: 'scheduled',
-      notes: null,
+      status: APPOINTMENTS_STATUSES.SCHEDULED,
       locationOrLink: null,
+      completed: false,
+      notes: 'Note',
+      sortOrder: 1,
+      isLocked: false,
+    })
+
+    await SupportPlanStepExercise.create({
+      supportPlanStepId: step.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      sortOrder: 0,
     })
 
     const loaded = await Employee.query()
@@ -114,8 +116,7 @@ test.group('Employee mapper', (group) => {
       .preload('educations')
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('exerciseResults')
-      .preload('supportPlanSteps')
-      .preload('appointments')
+      .preload('supportPlanSteps', (q) => q.preload('exercises'))
       .firstOrFail()
 
     const dto = mapEmployee(loaded)
@@ -145,8 +146,6 @@ test.group('Employee mapper', (group) => {
     assert.equal(dto.exercises[0].quantitativeScore, 10)
 
     assert.lengthOf(dto.plan, 1)
-    assert.equal(dto.plan[0].associatedExercise, 'MOTIVATION')
-
-    assert.isDefined(dto.nextAppointment)
+    assert.deepEqual(dto.plan[0].associatedExercises, ['MOTIVATION'])
   })
 })

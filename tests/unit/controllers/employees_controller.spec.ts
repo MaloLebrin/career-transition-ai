@@ -38,7 +38,6 @@ class FakeEmployeesService {
       exercises: [],
       plan: [],
       advisorNotes: undefined,
-      nextAppointment: undefined,
     }
   }
 
@@ -204,7 +203,6 @@ test.group('EmployeesController.downloadDossier', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     const service = new FakeEmployeesService()
@@ -238,7 +236,6 @@ test.group('EmployeesController.downloadDossier', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     const service = new FakeEmployeesService()
@@ -296,7 +293,6 @@ test.group('EmployeesController.updateFromDashboard', (group) => {
       advisorNotes: 'Old notes',
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     const service = new EmployeesService()

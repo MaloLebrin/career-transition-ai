@@ -18,7 +18,6 @@ export const EmployeeFactory = factory
         | 'completed'
         | 'on-hold',
       onboarded: faker.datatype.boolean(),
-      nextAppointment: null,
     }
   })
   .build()

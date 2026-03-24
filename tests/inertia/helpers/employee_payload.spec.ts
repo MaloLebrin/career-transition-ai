@@ -15,7 +15,6 @@ describe('employeeUpdatePayload', () => {
       advisorNotes: 'Notes',
       status: 'active',
       onboarded: true,
-      nextAppointment: '2025-06-01',
     })
     expect(result).toEqual({
       name: 'Jean Dupont',
@@ -25,7 +24,6 @@ describe('employeeUpdatePayload', () => {
       advisorNotes: 'Notes',
       status: 'active',
       onboarded: true,
-      nextAppointment: '2025-06-01',
     })
   })
 

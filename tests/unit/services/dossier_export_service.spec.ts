@@ -35,7 +35,6 @@ test.group('dossier_export_service', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
     await employee.load((loader) =>
       loader.load('experiences').load('educations').load('skills').load('exerciseResults')
@@ -77,7 +76,6 @@ test.group('dossier_export_service', (group) => {
       advisorNotes: null,
       status: 'active',
       onboarded: false,
-      nextAppointment: null,
     })
 
     await ExerciseResult.create({

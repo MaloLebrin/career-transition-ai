@@ -1,6 +1,5 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { DateTime } from 'luxon'
 import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
@@ -57,7 +56,6 @@ test.group('EmployeesService', (group) => {
       advisorNotes: 'Old notes',
       status: 'active',
       onboarded: false,
-      nextAppointment: DateTime.fromISO('2025-01-10T10:00:00'),
     })
 
     service.applyUpdate(employee, {
