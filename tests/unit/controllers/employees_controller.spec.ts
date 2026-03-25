@@ -5,6 +5,9 @@ import type { EmployeeDto } from '#dtos/employee_dto'
 import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
+import User from '#models/user'
+import OnboardingToken from '#models/onboarding_token'
+import hash from '@adonisjs/core/services/hash'
 
 type CreateInput = {
   organizationId: number
@@ -87,6 +90,10 @@ function makeResponse() {
       this.redirectUrl = url
       return this
     },
+    back() {
+      this.redirectUrl = '__back__'
+      return this
+    },
   }
 }
 
@@ -143,6 +150,125 @@ test.group('EmployeesController.storeFromDashboard', () => {
     assert.include(session.flashes[0][1], 'Candidat ajouté')
     assert.include(session.flashes[0][1], 'email')
     assert.equal(response.redirectUrl, '/dashboard/conseiller/employees')
+  })
+})
+
+test.group('EmployeesController.resendOnboardingLink', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('returns 401 when user is not authenticated', async ({ assert }) => {
+    const controller = new EmployeesController(new EmployeesService() as any)
+    const response = makeResponse()
+
+    // @ts-expect-error minimal context
+    await controller.resendOnboardingLink({
+      params: { id: '1' },
+      auth: { user: null },
+      request: {} as any,
+      response: response as any,
+      session: makeSession() as any,
+    })
+
+    assert.isTrue(response.unauthorizedCalled)
+  })
+
+  test('creates token and redirects back for not-onboarded employee', async ({ assert }) => {
+    const org = await Organization.create({
+      name: 'Org Resend',
+      slug: `org-resend-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const advisor = await User.create({
+      organizationId: org.id,
+      email: `advisor-${Date.now()}@example.com`,
+      name: 'Advisor',
+      password: await hash.make('secret123'),
+      role: 'advisor',
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: advisor.id,
+      userId: null,
+      name: 'Candidate',
+      email: `candidate-${Date.now()}@example.com`,
+      currentRole: 'Dev',
+      targetRole: null,
+      summary: null,
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+    })
+
+    const controller = new EmployeesController(new EmployeesService())
+    const response = makeResponse()
+    const session = makeSession()
+
+    // @ts-expect-error minimal context
+    await controller.resendOnboardingLink({
+      params: { id: String(employee.id) },
+      auth: { user: advisor },
+      request: { protocol: () => 'http', hostname: () => 'localhost' },
+      response: response as any,
+      session: session as any,
+    } as any)
+
+    assert.equal(response.redirectUrl, '__back__')
+    // controller uses redirect().back() which our fake doesn't implement; accept no crash + flash.
+    assert.deepEqual(session.flashes, [['success', 'Lien d’onboarding renvoyé.']])
+
+    const updated = await Employee.findOrFail(employee.id)
+    assert.isNotNull(updated.userId)
+
+    const token = await OnboardingToken.query().where('userId', updated.userId!).orderBy('id', 'desc').first()
+    assert.isNotNull(token)
+    assert.isNull(token!.usedAt)
+  })
+
+  test('rejects resend when employee is already onboarded', async ({ assert }) => {
+    const org = await Organization.create({
+      name: 'Org Resend2',
+      slug: `org-resend2-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const advisor = await User.create({
+      organizationId: org.id,
+      email: `advisor2-${Date.now()}@example.com`,
+      name: 'Advisor',
+      password: await hash.make('secret123'),
+      role: 'advisor',
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: advisor.id,
+      userId: null,
+      name: 'Candidate',
+      email: `candidate2-${Date.now()}@example.com`,
+      currentRole: 'Dev',
+      targetRole: null,
+      summary: null,
+      advisorNotes: null,
+      status: 'active',
+      onboarded: true,
+    })
+
+    const controller = new EmployeesController(new EmployeesService())
+    const response = makeResponse()
+    const session = makeSession()
+
+    // @ts-expect-error minimal context
+    await controller.resendOnboardingLink({
+      params: { id: String(employee.id) },
+      auth: { user: advisor },
+      request: { protocol: () => 'http', hostname: () => 'localhost' },
+      response: response as any,
+      session: session as any,
+    } as any)
+
+    assert.deepEqual(session.flashes, [['error', 'Ce candidat a déjà terminé son onboarding.']])
   })
 })
 

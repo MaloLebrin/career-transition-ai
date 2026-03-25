@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import OnboardingFlow from '~/components/onboarding/OnboardingFlow'
-import { employeeUpdatePayload } from '~/helpers/employee_payload'
+import { candidatProfileUpdatePayload } from '~/helpers/candidat_profile_payload'
 import { EmployeeData } from '~/types/Employee'
 
 export default function CandidatOnboarding({
@@ -15,9 +15,9 @@ export default function CandidatOnboarding({
           employee={employee as any}
           onComplete={(updated) => {
             router.put(
-              '/dashboard/candidat/profile',
+              '/dashboard/candidat/onboarding',
               {
-                ...employeeUpdatePayload(updated as any),
+                ...candidatProfileUpdatePayload(updated as any),
                 onboarded: true,
               },
               {

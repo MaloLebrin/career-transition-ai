@@ -1,5 +1,5 @@
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
-import { Head } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
 import NotesSection from '~/components/dashboard/NotesSection'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
@@ -29,6 +29,12 @@ export default function EmployeeProfile({
   availableSkills = [],
   notes = [],
 }: EmployeeProfileProps) {
+  const { url } = usePage()
+  const backHref =
+    typeof url === 'string' && url.startsWith('/dashboard/conseiller/employees/')
+      ? `/dashboard/conseiller/employees/${employeeId}`
+      : '/dashboard/candidat'
+
   if (!employee) {
     return (
       <DashboardLayout selectedEmployeeId={employeeId}>
@@ -43,7 +49,10 @@ export default function EmployeeProfile({
     <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`Profil - ${employee.name}`} />
       <div className="animate-fadeIn mx-auto space-y-10">
-        <AppLink href="/dashboard/candidat" className="inline-flex items-center gap-2 text-brand-navy/70 hover:text-brand-navy text-sm font-medium transition-colors">
+        <AppLink
+          href={backHref}
+          className="inline-flex items-center gap-2 text-brand-navy/70 hover:text-brand-navy text-sm font-medium transition-colors"
+        >
           <span>←</span>
           <span>Retour à la fiche candidat</span>
         </AppLink>

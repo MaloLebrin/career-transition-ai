@@ -1,5 +1,5 @@
 import { AuthService } from '#services/auth_service'
-import { EmployeesService } from '#services/employees_service'
+import { CandidatProfileService } from '#services/candidat_profile_service'
 import { loginValidator } from '#validators/auth/auth_login_validator'
 import { registerValidator } from '#validators/auth/auth_register_validator'
 import { candidatProfileUpdateValidator } from '#validators/profile/candidat_profile_update_validator'
@@ -11,7 +11,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class AuthController {
   constructor(
     private authService: AuthService,
-    private employeesService: EmployeesService
+    private candidatProfileService: CandidatProfileService
   ) {}
 
   public async login({ request, auth, response }: HttpContext) {
@@ -107,22 +107,11 @@ export default class AuthController {
     if (!auth.user) {
       return response.unauthorized()
     }
+
     const payload = await request.validateUsing(candidatProfileUpdateValidator)
-    if (payload.name !== undefined || payload.email !== undefined) {
-      await this.authService.updateProfile(auth.user, {
-        name: payload.name ?? auth.user.name,
-        email: payload.email ?? auth.user.email,
-      })
-    }
-    const employee = await this.employeesService.getEmployeeForUser(auth.user)
-    this.employeesService.applyUpdate(employee, {
-      name: payload.name ?? employee.name,
-      currentRole: payload.currentRole ?? employee.currentRole,
-      targetRole: payload.targetRole ?? employee.targetRole ?? undefined,
-      summary: payload.summary ?? employee.summary ?? undefined,
-      onboarded: payload.onboarded ?? employee.onboarded,
-    })
-    await employee.save()
+
+    await this.candidatProfileService.updateForUser(auth.user, payload as any)
+
     session.flash('success', 'Profil mis à jour.')
     return response.redirect('/dashboard/candidat')
   }

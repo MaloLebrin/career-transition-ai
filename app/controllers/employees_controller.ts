@@ -17,6 +17,32 @@ export default class EmployeesController {
   constructor(private employeesService: EmployeesService) {}
 
   /**
+   * Inertia form: resend onboarding link for an existing employee.
+   * POST /dashboard/conseiller/employees/:id/onboarding/resend
+   */
+  public async resendOnboardingLink({ params, auth, request, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
+
+    const employee = await Employee.query()
+      .where('id', Number(params.id))
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
+
+    try {
+      await this.employeesService.resendOnboardingLink(employee, baseUrl)
+    } catch (err: any) {
+      session.flash('error', err?.message ?? "Impossible de renvoyer le lien d'onboarding.")
+      return response.redirect().back()
+    }
+
+    session.flash('success', 'Lien d’onboarding renvoyé.')
+    return response.redirect().back()
+  }
+
+  /**
    * Inertia form: create employee (and user + onboarding link) then redirect with flash.
    */
   public async storeFromDashboard({ auth, request, response, session }: HttpContext) {

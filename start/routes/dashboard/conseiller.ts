@@ -49,6 +49,7 @@ router
             router.put('/', [EmployeesController, 'updateFromDashboard'])
             router.get('/profile', [EmployeesController, 'showProfileDashboard'])
             router.get('/dossier', [EmployeesController, 'downloadDossier'])
+            router.post('/onboarding/resend', [EmployeesController, 'resendOnboardingLink'])
 
             /**
              * Step Detail (Feuille de Route)

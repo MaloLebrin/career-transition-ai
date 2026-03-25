@@ -38,6 +38,53 @@ function randomPassword(): string {
 }
 
 export class EmployeesService {
+  /**
+   * (Re)sends the onboarding link for an existing employee.
+   * - Ensures there is a linked User (creates one if missing)
+   * - Creates a fresh onboarding token
+   * - Sends/logs the onboarding email
+   */
+  public async resendOnboardingLink(employee: Employee, baseUrl: string): Promise<void> {
+    if (employee.onboarded) {
+      throw new Error('Ce candidat a déjà terminé son onboarding.')
+    }
+
+    let user: User | null = null
+
+    if (employee.userId) {
+      user = await User.query()
+        .where('id', employee.userId)
+        .where('organizationId', employee.organizationId)
+        .first()
+    }
+
+    if (!user) {
+      user = await User.query()
+        .where('organizationId', employee.organizationId)
+        .where('email', employee.email)
+        .first()
+    }
+
+    if (!user) {
+      const temporaryPassword = await hash.make(randomPassword())
+      user = await User.create({
+        organizationId: employee.organizationId,
+        email: employee.email,
+        name: employee.name,
+        password: temporaryPassword,
+        role: USERS_ROLES.EMPLOYEE,
+      })
+    }
+
+    if (!employee.userId) {
+      employee.userId = user.id
+      await employee.save()
+    }
+
+    const token = await OnboardingToken.createForUser(user.id)
+    await sendOnboardingEmail(user, token, baseUrl)
+  }
+
   public async create(
     input: CreateEmployeeInput,
     options?: CreateEmployeeOptions

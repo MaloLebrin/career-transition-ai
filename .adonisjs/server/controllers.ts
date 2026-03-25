@@ -6,6 +6,7 @@
 export const controllers = {
   Auth: () => import('#controllers/auth_controller'),
   BulkJobs: () => import('#controllers/bulk_jobs_controller'),
+  CandidatOnboarding: () => import('#controllers/candidat_onboarding_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),
   EmployeeSkills: () => import('#controllers/employee_skills_controller'),

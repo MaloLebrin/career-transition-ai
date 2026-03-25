@@ -4,6 +4,8 @@ import { Employee, Skill } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
+import ProfilePage from '../profile/ProfilePage'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 
 interface Props {
   employee: Employee
@@ -21,10 +23,10 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
     organizationId: employee.organizationId,
     name: employee.name,
     email: employee.email,
-    currentRole: '',
-    targetRole: '',
+    currentRole: employee.currentRole ?? '',
+    targetRole: employee.targetRole ?? '',
     skills: [] as Skill[],
-    summary: '',
+    summary: employee.summary ?? '',
     experiences: [],
     educations: [],
   })
@@ -58,13 +60,12 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
     reader.readAsDataURL(file)
   }
 
-  const handleFinalize = () => {
+  const handleFinalize = (updated: Employee) => {
     onComplete({
-      ...employee,
-      ...formData,
+      ...updated,
       onboarded: true,
-      status: 'active',
-    })
+      status: EMPLOYEES_STATUS.ACTIVE,
+    } as any)
   }
 
   return (
@@ -165,66 +166,11 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
           )}
 
           {step === 3 && (
-            <div className="space-y-10 animate-slideUp max-h-[70vh] overflow-y-auto custom-scrollbar pr-4">
-              <div className="text-center">
-                <h3 className="text-3xl font-bold text-brand-navy">Vérification du Profil</h3>
-                <p className="text-brand-navy/60 mt-2">
-                  L'IA a organisé votre parcours. Vérifiez que tout est correct.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input
-                  label="Nom complet"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-                <Input label="Email" value={formData.email} readOnly />
-                <Input
-                  label="Poste actuel"
-                  value={formData.currentRole}
-                  onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
-                />
-                <Input
-                  label="Cible pro"
-                  value={formData.targetRole}
-                  onChange={(e) => setFormData({ ...formData, targetRole: e.target.value })}
-                />
-              </div>
-
-              {formData.experiences.length > 0 && (
-                <section className="space-y-4">
-                  <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-1">
-                    Expériences détectées
-                  </h4>
-                  <div className="space-y-3">
-                    {formData.experiences.map((exp) => (
-                      <div
-                        key={exp.id}
-                        className="p-4 bg-white rounded-2xl border border-brand-navy/5 flex justify-between items-center"
-                      >
-                        <div>
-                          <div className="font-bold text-brand-navy">
-                            {exp.title}{' '}
-                            <span className="text-[9px] font-bold uppercase text-brand-sage ml-2">
-                              {exp.type}
-                            </span>
-                          </div>
-                          <div className="text-xs text-brand-navy/40">
-                            {exp.company} • {exp.startDate}{' '}
-                            {exp.isCurrent ? '- Présent' : exp.endDate ? `- ${exp.endDate}` : ''}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <Button onClick={handleFinalize} className="w-full" size="lg">
-                Confirmer et accéder à mon espace
-              </Button>
-            </div>
+            <ProfilePage
+              employee={{ ...employee, ...formData } as any}
+              onSave={(updated) => handleFinalize(updated)}
+              onBack={() => setStep(2)}
+            />
           )}
         </div>
       </Card>

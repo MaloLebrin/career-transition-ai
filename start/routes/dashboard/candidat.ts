@@ -5,6 +5,7 @@ const EmployeesController = () => import('#controllers/employees_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const CandidatOnboardingController = () => import('#controllers/candidat_onboarding_controller')
 
 // Dashboard candidat (employee only)
 router
@@ -32,6 +33,7 @@ router
 
     // Routes not requiring onboarding
     router.get('/onboarding', [DashboardController, 'candidatOnboarding'])
+    router.put('/onboarding', [CandidatOnboardingController, 'complete'])
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
     router.post('/skills', [() => import('#controllers/employee_skills_controller'), 'store'])
     router.put('/skills', [() => import('#controllers/employee_skills_controller'), 'update'])

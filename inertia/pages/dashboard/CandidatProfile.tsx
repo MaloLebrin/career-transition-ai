@@ -4,7 +4,7 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import ProfilePage from '../../components/profile/ProfilePage'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
-import { employeeUpdatePayload } from '../../helpers/employee_payload'
+import { candidatProfileUpdatePayload } from '../../helpers/candidat_profile_payload'
 
 export default function CandidatProfile() {
   const { user } = useAuth()
@@ -33,7 +33,7 @@ export default function CandidatProfile() {
         <ProfilePage
           employee={selectedEmployee}
           onSave={(updated) => {
-            router.put('/dashboard/candidat/profile', employeeUpdatePayload(updated) as any, {
+            router.put('/dashboard/candidat/profile', candidatProfileUpdatePayload(updated) as any, {
               onSuccess: () => router.visit('/dashboard/candidat'),
             })
           }}
