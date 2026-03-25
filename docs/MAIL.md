@@ -23,7 +23,7 @@ Ce projet utilise une couche d’abstraction pour l’envoi d’emails, afin de 
 
 ### `MAIL_PROVIDER`
 
-- Valeurs supportées actuellement : `console`
+- Valeurs supportées actuellement : `console`, `resend`
 - Défaut : `console` (si la variable n’est pas définie)
 
 Exemple :
@@ -31,6 +31,26 @@ Exemple :
 ```bash
 MAIL_PROVIDER=console
 ```
+
+### `RESEND_API_KEY` (si `MAIL_PROVIDER=resend`)
+
+Clé API Resend.
+
+```bash
+MAIL_PROVIDER=resend
+RESEND_API_KEY=xxxx
+```
+
+### `MAIL_FROM_EMAIL` / `MAIL_FROM_NAME`
+
+Adresse expéditeur utilisée pour les emails transactionnels.
+
+```bash
+MAIL_FROM_EMAIL="no-reply@ton-domaine.fr"
+MAIL_FROM_NAME="Career Transition AI"
+```
+
+Mode **test-first** (sans domaine vérifié) : si `MAIL_FROM_EMAIL` est absent et que `NODE_ENV != production`, l’app utilise un expéditeur de test (`onboarding@resend.dev`). En production, `MAIL_FROM_EMAIL` est requis.
 
 ---
 
@@ -45,6 +65,7 @@ import { MailService } from '#services/mail/mail_service'
 
 const mail = new MailService()
 await mail.send({
+  from: { email: 'no-reply@ton-domaine.fr', name: 'Career Transition AI' },
   to: { email: 'user@example.com', name: 'User' },
   subject: 'Sujet',
   text: 'Contenu texte',
@@ -72,6 +93,19 @@ await mail.send({
 4. Ajouter/adapter les tests (mocks, non-régression)
 
 Objectif : le code métier (onboarding, notifications, etc.) ne dépend jamais d’un SDK provider.
+
+---
+
+## Provider Resend
+
+- **Provider** : `app/services/mail/providers/resend_mail_provider.ts`
+- **SDK** : `resend`
+- **Env** : `MAIL_PROVIDER=resend`, `RESEND_API_KEY`, `MAIL_FROM_EMAIL` (+ optionnel `MAIL_FROM_NAME`)
+
+### Notes d’implémentation
+
+- `tags: string[]` est mappé vers les tags Resend sous la forme `{ name: 'tag', value: <tag> }`.
+- `metadata` est envoyé via un header `X-Mail-Metadata` (JSON stringify) pour du tracing simple.
 
 ---
 

@@ -1,20 +1,25 @@
 import { ConsoleMailProvider } from '#services/mail/providers/console_mail_provider'
+import { ResendMailProvider } from '#services/mail/providers/resend_mail_provider'
 import type { MailMessage, MailProvider } from '#services/mail/types'
 import { inject } from '@adonisjs/core'
 
-export type MailProviderName = 'console'
+export type MailProviderName = 'console' | 'resend'
 
 function resolveProviderName(): MailProviderName {
   const raw = String(process.env.MAIL_PROVIDER ?? 'console')
     .trim()
     .toLowerCase()
   if (raw === 'console') return 'console'
+  if (raw === 'resend') return 'resend'
   return 'console'
 }
 
 function createProvider(name: MailProviderName): MailProvider {
   switch (name) {
     case 'console':
+      return new ConsoleMailProvider()
+    case 'resend':
+      return new ResendMailProvider()
     default:
       return new ConsoleMailProvider()
   }

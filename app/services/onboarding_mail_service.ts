@@ -1,7 +1,28 @@
 import type OnboardingToken from '#models/onboarding_token'
 import type User from '#models/user'
 import { MailService } from '#services/mail/mail_service'
+import type { MailAddress } from '#services/mail/types'
 import { inject } from '@adonisjs/core'
+
+function resolveFromAddress(): MailAddress {
+  const email = String(process.env.MAIL_FROM_EMAIL ?? '').trim()
+  const name = String(process.env.MAIL_FROM_NAME ?? '').trim()
+
+  if (email) {
+    return { email, name: name || undefined }
+  }
+
+  // test-first / local dev: allow running without domain verification
+  if (
+    String(process.env.NODE_ENV ?? '')
+      .trim()
+      .toLowerCase() !== 'production'
+  ) {
+    return { email: 'onboarding@resend.dev', name: 'Onboarding' }
+  }
+
+  throw new Error('MAIL_FROM_EMAIL is required in production to send emails.')
+}
 
 @inject()
 export class OnboardingMailService {
@@ -19,6 +40,7 @@ export class OnboardingMailService {
     const link = `${baseUrl}/onboarding/${token.token}`
 
     await this.mail.send({
+      from: resolveFromAddress(),
       to: { email: user.email, name: user.name },
       subject: 'Créez votre mot de passe',
       text: [
@@ -34,4 +56,3 @@ export class OnboardingMailService {
     })
   }
 }
-

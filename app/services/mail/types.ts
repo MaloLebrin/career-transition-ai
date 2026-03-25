@@ -4,6 +4,7 @@ export type MailAddress = {
 }
 
 export type MailMessage = {
+  from: MailAddress
   to: MailAddress | MailAddress[]
   subject: string
   text?: string
