@@ -7,7 +7,7 @@ import Organization from '#models/organization'
 test.group('EmployeesService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   test('create creates an employee and returns EmployeeDto', async ({ assert }) => {
-    const service = new EmployeesService()
+    const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
     const org = await Organization.create({
       name: 'Employees Org',
       slug: `employees-org-${Date.now()}`,
@@ -37,7 +37,7 @@ test.group('EmployeesService', (group) => {
   })
 
   test('applyUpdate merges fields correctly', async ({ assert }) => {
-    const service = new EmployeesService()
+    const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
     const org = await Organization.create({
       name: 'ApplyUpdate Org',
       slug: `apply-update-org-${Date.now()}`,

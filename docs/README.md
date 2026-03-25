@@ -1,6 +1,7 @@
 # Documentation
 
 - **[Workflow d'onboarding candidat](ONBOARDING.md)** — Invitation par email, création du mot de passe via lien unique, accès au dashboard.
+- **[Emails (abstraction provider-agnostic)](MAIL.md)** — Envoi d’emails via `MailService`, provider configurable (`MAIL_PROVIDER`), guide pour ajouter un provider.
 - **[Jobs d’analyse IA (exercices)](AI_JOBS.md)** — Déclencher `AnalyzeExerciseQualitativeJob`, worker queue `ai`, variables `AI_PROVIDER`.
 - **Queues AdonisJS (PostgreSQL)** — Traitement de tâches asynchrones avec `@adonisjs/queue` et backend database.
 

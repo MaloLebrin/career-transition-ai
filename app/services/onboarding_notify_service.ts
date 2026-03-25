@@ -1,17 +1,19 @@
-import type User from '#models/user'
 import type OnboardingToken from '#models/onboarding_token'
+import type User from '#models/user'
+import { MailService } from '#services/mail/mail_service'
+import { OnboardingMailService } from '#services/onboarding_mail_service'
 
 /**
  * Sends the onboarding email with the set-password link.
- * Default implementation logs the link (e.g. in dev). Replace with @adonisjs/mail for production.
+ * Legacy wrapper kept for backward compatibility.
+ * Prefer using `OnboardingMailService` via DI.
  */
 export async function sendOnboardingEmail(
   user: User,
   token: OnboardingToken,
   baseUrl: string
 ): Promise<void> {
-  const link = `${baseUrl}/onboarding/${token.token}`
-
-  console.info('[Onboarding] Invitation link for %s: %s', user.email, link)
-  // TODO: use Mail.send(new OnboardingMail(user, link))
+  const mail = new MailService()
+  const service = new OnboardingMailService(mail)
+  await service.sendSetPasswordLink({ user, token, baseUrl })
 }

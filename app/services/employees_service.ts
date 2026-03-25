@@ -3,9 +3,10 @@ import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
-import { sendOnboardingEmail } from '#services/onboarding_notify_service'
+import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { EmployeeStatus } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/constants/user'
+import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 
 type CreateEmployeeInput = {
@@ -37,7 +38,10 @@ function randomPassword(): string {
   return Math.random().toString(36).slice(-16) + Date.now().toString(36)
 }
 
+@inject()
 export class EmployeesService {
+  constructor(private onboardingMailService: OnboardingMailService) {}
+
   /**
    * (Re)sends the onboarding link for an existing employee.
    * - Ensures there is a linked User (creates one if missing)
@@ -82,7 +86,7 @@ export class EmployeesService {
     }
 
     const token = await OnboardingToken.createForUser(user.id)
-    await sendOnboardingEmail(user, token, baseUrl)
+    await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl })
   }
 
   public async create(
@@ -114,7 +118,11 @@ export class EmployeesService {
         // Utilisateur existant mais pas encore totalement onboardé : on recrée un token et on renvoie le lien.
         userId = existingUser.id
         const token = await OnboardingToken.createForUser(existingUser.id)
-        await sendOnboardingEmail(existingUser, token, options.baseUrl)
+        await this.onboardingMailService.sendSetPasswordLink({
+          user: existingUser,
+          token,
+          baseUrl: options.baseUrl,
+        })
       } else {
         // Aucun utilisateur encore existant : on crée le compte et le token.
         const temporaryPassword = await hash.make(randomPassword())
@@ -127,7 +135,7 @@ export class EmployeesService {
         })
         userId = user.id
         const token = await OnboardingToken.createForUser(user.id)
-        await sendOnboardingEmail(user, token, options.baseUrl)
+        await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl: options.baseUrl })
       }
     }
 

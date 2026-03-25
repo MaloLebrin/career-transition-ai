@@ -184,7 +184,12 @@ test.group('AuthController.updateProfileCandidat', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('returns 401 when user is not authenticated', async ({ assert }) => {
-    const controller = new AuthController(new AuthService() as any, new CandidatProfileService(new EmployeesService() as any) as any)
+    const controller = new AuthController(
+      new AuthService() as any,
+      new CandidatProfileService(
+        new EmployeesService({ sendSetPasswordLink: async () => {} } as any) as any
+      ) as any
+    )
     const response = makeResponse()
     const session = makeSession()
 
@@ -253,7 +258,7 @@ test.group('AuthController.updateProfileCandidat', (group) => {
       sortOrder: null,
     })
 
-    const employeesService = new EmployeesService()
+    const employeesService = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
     const controller = new AuthController(
       new AuthService() as any,
       new CandidatProfileService(employeesService) as any

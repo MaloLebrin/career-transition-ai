@@ -157,7 +157,9 @@ test.group('EmployeesController.resendOnboardingLink', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('returns 401 when user is not authenticated', async ({ assert }) => {
-    const controller = new EmployeesController(new EmployeesService() as any)
+    const controller = new EmployeesController(
+      new EmployeesService({ sendSetPasswordLink: async () => {} } as any) as any
+    )
     const response = makeResponse()
 
     // @ts-expect-error minimal context
@@ -201,7 +203,9 @@ test.group('EmployeesController.resendOnboardingLink', (group) => {
       onboarded: false,
     })
 
-    const controller = new EmployeesController(new EmployeesService())
+    const controller = new EmployeesController(
+      new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+    )
     const response = makeResponse()
     const session = makeSession()
 
@@ -255,7 +259,9 @@ test.group('EmployeesController.resendOnboardingLink', (group) => {
       onboarded: true,
     })
 
-    const controller = new EmployeesController(new EmployeesService())
+    const controller = new EmployeesController(
+      new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+    )
     const response = makeResponse()
     const session = makeSession()
 
@@ -421,7 +427,7 @@ test.group('EmployeesController.updateFromDashboard', (group) => {
       onboarded: false,
     })
 
-    const service = new EmployeesService()
+    const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
     const controller = new EmployeesController(service)
     const session = makeSession()
     const response = makeResponse()
