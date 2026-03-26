@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import CandidatOnboardingController from '#controllers/candidat_onboarding_controller'
+import CandidatOnboardingController from '#domains/onboarding/http/candidat_onboarding_controller'
 
 function makeSession() {
   const flashes: Array<[string, string]> = []

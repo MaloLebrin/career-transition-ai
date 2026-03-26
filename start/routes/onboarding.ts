@@ -1,5 +1,5 @@
 import router from '@adonisjs/core/services/router'
-const OnboardingController = () => import('#controllers/onboarding_controller')
+const OnboardingController = () => import('#domains/onboarding/http/onboarding_controller')
 
 // Onboarding (guest): set password via email link
 router

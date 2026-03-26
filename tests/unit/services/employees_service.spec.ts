@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import { EmployeesService } from '#services/employees_service'
+import { EmployeesService } from '#domains/employees/services/employees_service'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 

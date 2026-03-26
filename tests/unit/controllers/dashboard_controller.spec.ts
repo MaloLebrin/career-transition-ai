@@ -1,4 +1,4 @@
-import DashboardController from '#controllers/dashboard_controller'
+import DashboardController from '#domains/dashboard/http/dashboard_controller'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'

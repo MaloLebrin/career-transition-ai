@@ -1,5 +1,5 @@
-import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
-import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
+import { NullAiTextProvider } from '#integrations/ai/null_ai_text_provider'
+import { resolveAiTextCompletionProvider } from '#integrations/ai/resolve_ai_text_provider'
 import { test } from '@japa/runner'
 
 test.group('resolveAiTextCompletionProvider', () => {

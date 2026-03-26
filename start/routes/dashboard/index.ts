@@ -1,6 +1,6 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
-const DashboardController = () => import('#controllers/dashboard_controller')
+const DashboardController = () => import('#domains/dashboard/http/dashboard_controller')
 
 // Dashboard entry: redirect to role-specific area
 router

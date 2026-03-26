@@ -3,7 +3,7 @@ import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import Organization from '#models/organization'
 import hash from '@adonisjs/core/services/hash'
-import { sendOnboardingEmail } from '#services/onboarding_notify_service'
+import { sendOnboardingEmail } from '#domains/onboarding/services/onboarding_notify_service'
 
 test.group('sendOnboardingEmail', () => {
   test('sends via MailService (console provider by default)', async ({ assert }) => {

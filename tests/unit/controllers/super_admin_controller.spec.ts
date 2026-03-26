@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
-import SuperAdminController from '#controllers/super_admin_controller'
+import SuperAdminController from '#domains/admin/http/super_admin_controller'
 import Organization from '#models/organization'
 import User from '#models/user'
 import ExerciseResult from '#models/exercise_result'

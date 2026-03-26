@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import OrganizationsController from '#controllers/organizations_controller'
+import OrganizationsController from '#domains/organizations/http/organizations_controller'
 import type { OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 

@@ -1,5 +1,5 @@
-import ExerciseResultsController from '#controllers/exercise_results_controller'
-import { ExerciseResultsService } from '#services/exercise_results_service'
+import ExerciseResultsController from '#domains/exercises/http/exercise_results_controller'
+import { ExerciseResultsService } from '#domains/exercises/services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import { test } from '@japa/runner'
 

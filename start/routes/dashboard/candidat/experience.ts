@@ -1,7 +1,7 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
-const ExperienceController = () => import('#controllers/experiences_controller')
+const ExperienceController = () => import('#domains/profile/http/experiences_controller')
 
 router
   .group(() => {

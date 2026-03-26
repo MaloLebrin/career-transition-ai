@@ -1,4 +1,4 @@
-import { exerciceTypeToFront, mapEmployee } from '#mappers/employee_mapper'
+import { exerciceTypeToFront, mapEmployee } from '#domains/employees/mappers/employee_mapper'
 import Education from '#models/education'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'

@@ -1,6 +1,6 @@
 import { BaseTransformer } from '@adonisjs/core/transformers'
 import Employee from '#models/employee'
-import { exerciceTypeToFront } from '#mappers/employee_mapper'
+import { exerciceTypeToFront } from '#domains/employees/mappers/employee_mapper'
 
 export default class EmployeeTransformer extends BaseTransformer<Employee> {
   toObject() {

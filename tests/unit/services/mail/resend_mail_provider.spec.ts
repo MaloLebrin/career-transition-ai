@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { ResendMailProvider } from '#services/mail/providers/resend_mail_provider'
+import { ResendMailProvider } from '#integrations/mail/providers/resend_mail_provider'
 
 test.group('ResendMailProvider', () => {
   test('maps MailMessage to Resend payload', async ({ assert }) => {
