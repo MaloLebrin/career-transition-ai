@@ -1,6 +1,6 @@
 import ExerciseResult from '#models/exercise_result'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
-import { resolveAiTextCompletionProvider } from '#integrations/ai/resolve_ai_text_provider'
+import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'

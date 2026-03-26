@@ -1,6 +1,6 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
-const SuperAdminController = () => import('#domains/admin/http/super_admin_controller')
+const SuperAdminController = () => import('#controllers/super_admin_controller')
 
 // Super admin only dashboard routes
 router

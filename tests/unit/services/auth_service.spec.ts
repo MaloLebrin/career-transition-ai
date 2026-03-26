@@ -1,6 +1,6 @@
 import Organization from '#models/organization'
 import User from '#models/user'
-import { AuthService } from '#domains/auth/services/auth_service'
+import { AuthService } from '#services/auth_service'
 import { USERS_ROLES } from '#shared/constants/user'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'

@@ -1,7 +1,7 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
-import { buildDossierArchive, dossierZipFilename } from '#domains/dossier/services/dossier_export_service'
+import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'

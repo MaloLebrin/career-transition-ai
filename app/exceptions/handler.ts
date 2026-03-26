@@ -1,6 +1,6 @@
 import DomainException from '#exceptions/domain_exception'
-import EmailAlreadyUsedException from '#domains/auth/exceptions/email_already_used_exception'
-import InvalidCredentialsException from '#domains/auth/exceptions/invalid_credentials_exception'
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import app from '@adonisjs/core/services/app'
 import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'

@@ -1,13 +1,13 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
-const AuthController = () => import('#domains/auth/http/auth_controller')
-const EmployeesController = () => import('#domains/employees/http/employees_controller')
-const ExerciseResultsController = () => import('#domains/exercises/http/exercise_results_controller')
-const NotesController = () => import('#domains/notes/http/notes_controller')
-const OrganizationsController = () => import('#domains/organizations/http/organizations_controller')
-const BulkJobsController = () => import('#domains/bulk_jobs/http/bulk_jobs_controller')
-const SupportPlanStepsController = () => import('#domains/support_plan/http/support_plan_steps_controller')
+const AuthController = () => import('#controllers/auth_controller')
+const EmployeesController = () => import('#controllers/employees_controller')
+const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const NotesController = () => import('#controllers/notes_controller')
+const OrganizationsController = () => import('#controllers/organizations_controller')
+const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
+const SupportPlanStepsController = () => import('#controllers/support_plan_steps_controller')
 
 // Dashboard conseiller (advisor, admin, super_admin)
 router

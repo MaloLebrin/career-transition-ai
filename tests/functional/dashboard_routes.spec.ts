@@ -1,7 +1,7 @@
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { AuthService } from '#domains/auth/services/auth_service'
+import { AuthService } from '#services/auth_service'
 import { USERS_ROLES } from '#shared/constants/user'
 import env from '#start/env'
 import app from '@adonisjs/core/services/app'

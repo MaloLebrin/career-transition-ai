@@ -1,11 +1,11 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
-const EmployeesController = () => import('#domains/employees/http/employees_controller')
-const DashboardController = () => import('#domains/dashboard/http/dashboard_controller')
-const AuthController = () => import('#domains/auth/http/auth_controller')
-const ExerciseResultsController = () => import('#domains/exercises/http/exercise_results_controller')
-const CandidatOnboardingController = () => import('#domains/onboarding/http/candidat_onboarding_controller')
+const EmployeesController = () => import('#controllers/employees_controller')
+const DashboardController = () => import('#controllers/dashboard_controller')
+const AuthController = () => import('#controllers/auth_controller')
+const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const CandidatOnboardingController = () => import('#controllers/candidat_onboarding_controller')
 
 // Dashboard candidat (employee only)
 router
@@ -35,8 +35,8 @@ router
     router.get('/onboarding', [DashboardController, 'candidatOnboarding'])
     router.put('/onboarding', [CandidatOnboardingController, 'complete'])
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
-    router.post('/skills', [() => import('#domains/skills/http/employee_skills_controller'), 'store'])
-    router.put('/skills', [() => import('#domains/skills/http/employee_skills_controller'), 'update'])
+    router.post('/skills', [() => import('#controllers/employee_skills_controller'), 'store'])
+    router.put('/skills', [() => import('#controllers/employee_skills_controller'), 'update'])
   })
   .use([middleware.auth(), middleware.candidate()])
   .prefix('/dashboard/candidat')
