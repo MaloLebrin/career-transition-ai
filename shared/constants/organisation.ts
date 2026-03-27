@@ -1,0 +1,2 @@
+export const MAX_LICENSES_CANDIDATES = 50
+export const MAX_LICENSES_ADVISORS = 2
