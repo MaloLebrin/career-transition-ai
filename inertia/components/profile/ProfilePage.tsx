@@ -210,8 +210,8 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
         {/* Tab Content */}
         <div className="grid grid-cols-1 gap-8">
           {activeTab === 'info' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-slideUp">
-              <div className="lg:col-span-4 space-y-6">
+            <div className="grid grid-cols-1 gap-8 animate-slideUp">
+              <div className="space-y-6">
                 <Card className="p-8">
                   <div className="w-20 h-20 bg-brand-sage/10 rounded-3xl flex items-center justify-center text-brand-sage font-bold text-2xl mx-auto mb-6">
                     {formData.name[0]}
@@ -235,7 +235,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
                   </div>
                 </Card>
               </div>
-              <div className="lg:col-span-8 space-y-6">
+              <div className="space-y-6">
                 <Card className="p-8">
                   <h3 className="text-sm font-bold text-brand-navy/20 uppercase tracking-widest mb-4">
                     À propos de moi

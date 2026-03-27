@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai'
+import { Mistral } from '@mistralai/mistralai'
 
 type FrontAiProvider = 'mistral' | 'gemini' | 'none'
 
@@ -29,28 +30,41 @@ async function mistralJson<T>(prompt: string): Promise<T | null> {
   const apiKey = getMistralApiKey()
   if (!apiKey) return null
 
-  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'mistral-small-latest',
-      temperature: 0.4,
-      response_format: { type: 'json_object' },
-      messages: [{ role: 'user', content: prompt }],
-    }),
+  const client = new Mistral({ apiKey })
+  const response = await client.chat.complete({
+    model: 'mistral-small-latest',
+    temperature: 0.4,
+    responseFormat: { type: 'json_object' },
+    messages: [{ role: 'user', content: prompt }],
   })
 
-  const json = await response.json()
-  if (!response.ok) {
-    throw new Error(json?.message || `Mistral HTTP ${response.status}`)
-  }
-
-  const content = json?.choices?.[0]?.message?.content
+  const content = response.choices?.[0]?.message?.content
   if (typeof content !== 'string' || !content.trim()) return null
   return JSON.parse(content) as T
+}
+
+async function mistralOcrMarkdown(base64: string, mimeType: string): Promise<string | null> {
+  const apiKey = getMistralApiKey()
+  if (!apiKey) return null
+
+  const client = new Mistral({ apiKey })
+  const documentUrl = `data:${mimeType};base64,${base64}`
+  const response = await client.ocr.process({
+    model: 'mistral-ocr-latest',
+    document: {
+      type: 'document_url',
+      documentUrl,
+    },
+  } as any)
+
+  const pages = Array.isArray((response as any)?.pages) ? (response as any).pages : []
+  const markdown = pages
+    .map((p: any) => (typeof p?.markdown === 'string' ? p.markdown : ''))
+    .filter(Boolean)
+    .join('\n\n')
+    .trim()
+
+  return markdown || null
 }
 
 async function mistralText(prompt: string): Promise<string | null> {
@@ -214,7 +228,14 @@ Produis une analyse courte (max 4 phrases), encourageante, vitaminée, avec un c
 
 export async function extractCVData(base64File: string, mimeType: string) {
   if (resolveFrontProvider() === 'mistral') {
-    const prompt = `Analyse ce CV encodé en base64 (mimeType: ${mimeType}) et extrais les informations structurées.
+    const normalizedBase64 = base64File.includes(',') ? base64File.split(',')[1] : base64File
+    try {
+      const markdown = await mistralOcrMarkdown(normalizedBase64, mimeType)
+      if (!markdown) return null
+
+      const prompt = `Tu analyses un CV déjà OCRisé en markdown.
+Extrais les informations suivantes de manière fidèle (pas d'invention).
+Si une information est absente, renvoie une chaîne vide ou un tableau vide.
 Réponds exclusivement en JSON avec ce schéma:
 {
   "name":"string",
@@ -226,8 +247,9 @@ Réponds exclusivement en JSON avec ce schéma:
   "experiences":[{"id":"string","title":"string","company":"string","type":"CDI","startDate":"","endDate":"","isCurrent":false,"description":""}],
   "educations":[{"id":"string","degree":"string","school":"string","startDate":"","endDate":"","isCurrent":false,"description":""}]
 }
-CV base64 (tronqué possible): ${base64File.slice(0, 40000)}`
-    try {
+CV markdown OCR:
+${markdown.slice(0, 120000)}`
+
       const data = await mistralJson<any>(prompt)
       if (!data) return null
       data.experiences = (data.experiences || []).map((exp: any) => ({
@@ -395,4 +417,3 @@ Réponds en JSON avec {"companies":["..."],"sectors":["..."]}.`
     return { companies: [], sectors: [] }
   }
 }
-

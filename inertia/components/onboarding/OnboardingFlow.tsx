@@ -126,7 +126,8 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  className="hidden"
+                  disabled={isExtracting}
+                  className="hidden disabled:opacity-80 disabled:cursor-not-allowed"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleFileUpload}
                 />
