@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import OnboardingFlow from '../../../../inertia/components/onboarding/OnboardingFlow'
 
@@ -86,6 +86,42 @@ describe('OnboardingFlow', () => {
     expect(onComplete).toHaveBeenCalledTimes(1)
     const arg = onComplete.mock.calls[0][0]
     expect(arg.onboarded).toBe(true)
+  })
+
+  test('shows selected file name when CV is uploaded', async () => {
+    const user = userEvent.setup()
+    const onComplete = vi.fn()
+
+    const { container } = render(
+      <OnboardingFlow
+        employee={{
+          id: 1,
+          organizationId: 10,
+          advisorId: 2,
+          name: 'Marie Martin',
+          email: 'marie@example.com',
+          currentRole: 'Développeuse',
+          targetRole: 'Lead Tech',
+          skills: [],
+          summary: '',
+          experiences: [],
+          educations: [],
+          status: 'onboarding' as any,
+          onboarded: false,
+          exercises: [],
+          plan: [],
+        }}
+        onComplete={onComplete}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /Compléter mon Profil/i }))
+
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File(['pdf-content'], 'cv-test.pdf', { type: 'application/pdf' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+
+    expect(screen.getByText(/cv-test\.pdf/i)).toBeInTheDocument()
   })
 })
 

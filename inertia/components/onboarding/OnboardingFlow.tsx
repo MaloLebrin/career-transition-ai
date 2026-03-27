@@ -1,11 +1,10 @@
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import React, { useRef, useState } from 'react'
 import { extractCVData } from '../../services/ai_service'
 import { Employee, Skill } from '../../types'
+import ProfilePage from '../profile/ProfilePage'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
-import Input from '../ui/Input'
-import ProfilePage from '../profile/ProfilePage'
-import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 
 interface Props {
   employee: Employee
@@ -15,6 +14,7 @@ interface Props {
 const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [isExtracting, setIsExtracting] = useState(false)
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
   // Added missing organizationId to match Omit<Employee, ...> type requirements
   const [formData, setFormData] = useState<
@@ -36,12 +36,12 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setSelectedFileName(file.name)
     setIsExtracting(true)
     const reader = new FileReader()
     reader.onload = async () => {
       const base64 = reader.result as string
       const extracted = await extractCVData(base64, file.type)
-
       if (extracted) {
         setFormData((prev) => ({
           ...prev,
@@ -136,6 +136,9 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
                     <p className="text-brand-sage font-bold uppercase text-[10px] tracking-widest">
                       Extraction IA en cours...
                     </p>
+                    {selectedFileName && (
+                      <p className="text-brand-navy/60 text-sm">Fichier: {selectedFileName}</p>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -155,6 +158,11 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
                     </div>
                     <p className="text-lg font-bold text-brand-navy">Déposez votre CV ici</p>
                     <p className="text-brand-navy/40 text-sm">PDF, JPEG ou PNG (Max 5Mo)</p>
+                    {selectedFileName && (
+                      <p className="text-brand-sage text-sm font-semibold">
+                        Fichier sélectionné: {selectedFileName}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
