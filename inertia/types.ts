@@ -1,5 +1,13 @@
 export { EXERCICE_RESULTS_TYPES } from '../shared/constants/exercises'
 export type { ExerciceResultType } from '../shared/constants/exercises'
+export * from './types/Education'
+export * from './types/ExerciseResult'
+export * from './types/Experience'
+export * from './types/JobType'
+export * from './types/Organization'
+export * from './types/PersonalityData'
+export * from './types/Skill'
+export * from './types/SupportPlanStep'
 
 export const ExerciseType = {
   MOTIVATION: 'motivation',
@@ -15,14 +23,6 @@ export const ExerciseType = {
 } as const
 
 export type ExerciseType = (typeof ExerciseType)[keyof typeof ExerciseType]
-export * from './types/Skill'
-export * from './types/PersonalityData'
-export * from './types/JobType'
-export * from './types/Experience'
-export * from './types/Education'
-export * from './types/ExerciseResult'
-export * from './types/SupportPlanStep'
-export * from './types/Employee'
 
 export type AdvisorRole = 'admin' | 'expert' | 'consultant'
 
