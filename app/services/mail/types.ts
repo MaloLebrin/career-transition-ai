@@ -16,4 +16,3 @@ export type MailMessage = {
 export interface MailProvider {
   send(message: MailMessage): Promise<void>
 }
-

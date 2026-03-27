@@ -107,6 +107,34 @@ Objectif : le code métier (onboarding, notifications, etc.) ne dépend jamais d
 - `tags: string[]` est mappé vers les tags Resend sous la forme `{ name: 'tag', value: <tag> }`.
 - `metadata` est envoyé via un header `X-Mail-Metadata` (JSON stringify) pour du tracing simple.
 
+### Test emails en développement (Resend)
+
+Pour tester sans impacter la réputation du domaine, le provider supporte un mode de routage vers les adresses de test Resend:
+
+- `MAIL_RESEND_TEST_MODE=true` active le mode test (uniquement hors production).
+- `MAIL_RESEND_TEST_EVENT=delivered|bounced|complained|suppressed` choisit le scénario.
+- `MAIL_RESEND_TEST_TO=<adresse>` permet de forcer une adresse de test exacte (prioritaire).
+- `MAIL_RESEND_TEST_FROM=<adresse>` permet de forcer l’expéditeur de test (sinon `onboarding@resend.dev`).
+
+Exemple:
+
+```bash
+MAIL_PROVIDER=resend
+MAIL_RESEND_TEST_MODE=true
+MAIL_RESEND_TEST_EVENT=delivered
+# ou MAIL_RESEND_TEST_TO=delivered+onboarding@resend.dev
+```
+
+Comportement:
+
+- En mode test, le destinataire réel est remplacé par une adresse `@resend.dev`.
+- En mode test, l’expéditeur est aussi remplacé par une adresse de test `@resend.dev` pour éviter les erreurs de domaine non vérifié.
+- Le provider génère un label à partir de `metadata.kind` quand possible (ex: `delivered+onboarding@resend.dev`).
+- Le scénario `suppressed` utilise `suppressed@resend.dev` (sans label).
+- Par défaut, hors production (`development`/`test`), le mode test est activé si `MAIL_RESEND_TEST_MODE` n’est pas défini.
+
+Référence Resend: [Send Test Emails](https://resend.com/docs/dashboard/emails/send-test-emails)
+
 ---
 
 ## Tests

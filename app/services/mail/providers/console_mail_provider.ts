@@ -11,4 +11,3 @@ export class ConsoleMailProvider implements MailProvider {
     }
   }
 }
-
