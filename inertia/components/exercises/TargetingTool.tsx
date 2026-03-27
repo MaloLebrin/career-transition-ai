@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { suggestTargets } from '../../services/geminiService'
+import { suggestTargets } from '../../services/ai_service'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
@@ -104,7 +104,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
       {suggestions && (
         <div className="mb-12 p-8 bg-violet-50 rounded-[32px] border border-violet-100 animate-slideUp">
           <h4 className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-4">
-            Suggestions de Gemini
+            Suggestions de l'IA
           </h4>
           <div className="flex flex-wrap gap-2">
             {suggestions.companies.map((c, i) => (

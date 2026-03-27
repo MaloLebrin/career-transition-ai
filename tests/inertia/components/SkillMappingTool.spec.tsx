@@ -2,7 +2,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen, act, waitFor, fireEvent } from '@testing-library/react'
 import SkillMappingTool from '../../../inertia/components/exercises/SkillMappingTool'
 
-vi.mock('../../../inertia/services/geminiService', () => ({
+vi.mock('../../../inertia/services/ai_service', () => ({
   extractSkillMappingFromText: vi.fn(async () => ({
     mapping: [
       { mission: 'Mission A', activity: 'Activité A', proof: 'Preuve A' },

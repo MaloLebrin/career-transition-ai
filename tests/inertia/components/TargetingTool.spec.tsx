@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import TargetingTool from '../../../inertia/components/exercises/TargetingTool'
 
-vi.mock('../../../inertia/services/geminiService', () => ({
+vi.mock('../../../inertia/services/ai_service', () => ({
   suggestTargets: vi.fn().mockResolvedValue({
     companies: ['AFPA', "L'Oréal"],
     sectors: ['Formation professionnelle'],

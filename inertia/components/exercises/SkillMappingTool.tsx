@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { extractSkillMappingFromText } from '../../services/geminiService'
+import { extractSkillMappingFromText } from '../../services/ai_service'
 import { ExerciseDraft, Experience } from '../../types'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'

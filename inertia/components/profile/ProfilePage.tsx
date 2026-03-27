@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { extractCVData } from '../../services/geminiService'
+import { extractCVData } from '../../services/ai_service'
 import { Employee, JobType, Skill } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { extractCVData } from '../../services/geminiService'
+import { extractCVData } from '../../services/ai_service'
 import { Employee, JobType } from '../../types'
 import DatePicker from '../ui/DatePicker'
 

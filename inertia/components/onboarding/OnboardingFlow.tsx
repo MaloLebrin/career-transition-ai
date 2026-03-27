@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { extractCVData } from '../../services/geminiService'
+import { extractCVData } from '../../services/ai_service'
 import { Employee, Skill } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -134,7 +134,7 @@ const OnboardingFlow: React.FC<Props> = ({ employee, onComplete }) => {
                   <div className="space-y-4">
                     <div className="w-16 h-16 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mx-auto"></div>
                     <p className="text-brand-sage font-bold uppercase text-[10px] tracking-widest">
-                      Extraction Gemini en cours...
+                      Extraction IA en cours...
                     </p>
                   </div>
                 ) : (
