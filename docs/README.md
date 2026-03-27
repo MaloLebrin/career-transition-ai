@@ -76,6 +76,7 @@ En production, lancer le worker via un process manager (PM2, systemd, conteneur 
 
 Quand un exercice est enregistré en statut **terminé**, un job **`AnalyzeExerciseQualitativeJob`** met à jour `exercise_results.qualitative_analysis`. Le fournisseur est choisi par **`AI_PROVIDER`** :
 
+- `mistral` + `MISTRAL_API_KEY` (optionnel : `MISTRAL_MODEL`, défaut `mistral-small-latest`)
 - `gemini` + `GEMINI_API_KEY`
 - `openai` + `OPENAI_API_KEY` (optionnel : `OPENAI_MODEL`, défaut `gpt-4o-mini`)
 - `none` : message placeholder sans appel réseau (utile en test / sans clé)
@@ -88,7 +89,7 @@ node ace queue:work --queue=ai
 
 Avec `QUEUE_DRIVER=sync`, le job s’exécute dans le processus courant (pas de worker séparé).
 
-Les assistants **ciblage / CV / cartographie** dans le navigateur utilisent toujours `VITE_GEMINI_API_KEY` via `inertia/services/geminiService.ts` (hors scope du job).
+Les assistants **ciblage / CV / cartographie** dans le navigateur passent par `inertia/services/ai_service.ts` et utilisent `VITE_AI_PROVIDER` (`mistral`/`gemini`) avec la clé front correspondante (`VITE_MISTRAL_API_KEY` ou `VITE_GEMINI_API_KEY`) (hors scope du job).
 
 Pour le détail du **dispatch manuel**, du payload et des prérequis, voir **[AI_JOBS.md](AI_JOBS.md)**.
 

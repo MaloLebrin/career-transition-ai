@@ -56,6 +56,9 @@ importers:
       '@inertiajs/react':
         specifier: ^2.3.18
         version: 2.3.18(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@mistralai/mistralai':
+        specifier: ^2.1.2
+        version: 2.1.2
       '@vinejs/vine':
         specifier: ^4.3.0
         version: 4.3.0
@@ -1131,6 +1134,9 @@ packages:
   '@lukeed/ms@2.0.2':
     resolution: {integrity: sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==}
     engines: {node: '>=8'}
+
+  '@mistralai/mistralai@2.1.2':
+    resolution: {integrity: sha512-0NlXBNdTMmi4z0oSUWa8KseBHlli+/FkaUTaAyLYTJzkKh3mYM/D3DnJzRil8VD6QC7W3IteARjd3LnxAZGPUw==}
 
   '@noble/hashes@2.0.1':
     resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
@@ -4686,6 +4692,14 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
+  zod-to-json-schema@3.25.2:
+    resolution: {integrity: sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA==}
+    peerDependencies:
+      zod: ^3.25.28 || ^4
+
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@adobe/css-tools@4.4.4': {}
@@ -5577,6 +5591,15 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@lukeed/ms@2.0.2': {}
+
+  '@mistralai/mistralai@2.1.2':
+    dependencies:
+      ws: 8.19.0
+      zod: 4.3.6
+      zod-to-json-schema: 3.25.2(zod@4.3.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@noble/hashes@2.0.1': {}
 
@@ -9053,3 +9076,9 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
+
+  zod-to-json-schema@3.25.2(zod@4.3.6):
+    dependencies:
+      zod: 4.3.6
+
+  zod@4.3.6: {}

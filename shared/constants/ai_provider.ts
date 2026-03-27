@@ -1,5 +1,6 @@
 /** Fournisseur utilisé par les jobs d’analyse texte côté serveur (`AI_PROVIDER` dans `.env`). */
 export const AI_PROVIDER_MODES = {
+  MISTRAL: 'mistral',
   GEMINI: 'gemini',
   OPENAI: 'openai',
   NONE: 'none',

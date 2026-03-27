@@ -77,6 +77,7 @@ Le job utilise [`resolveAiTextCompletionProvider()`](../app/services/ai/resolve_
 
 | `AI_PROVIDER` | Prérequis | Comportement |
 |---------------|-----------|--------------|
+| `mistral` | `MISTRAL_API_KEY` | API Chat Completions Mistral (`MISTRAL_MODEL` optionnel, défaut `mistral-small-latest`) |
 | `gemini` | `GEMINI_API_KEY` | Appel Google GenAI |
 | `openai` | `OPENAI_API_KEY` | API Chat Completions (`OPENAI_MODEL` optionnel, défaut `gpt-4o-mini`) |
 | `none` ou absent | — | Texte de substitution, **sans** appel réseau |
@@ -87,7 +88,7 @@ En cas d’exception (clé invalide, réseau, etc.), le job enregistre un messag
 
 ## 5. Ce qui n’est **pas** ce job
 
-Les écrans **ciblage**, **import CV**, **cartographie** côté navigateur utilisent [`inertia/services/geminiService.ts`](../inertia/services/geminiService.ts) et `VITE_GEMINI_API_KEY` : ce sont des appels **client**, pas `AnalyzeExerciseQualitativeJob`.
+Les écrans **ciblage**, **import CV**, **cartographie** côté navigateur utilisent [`inertia/services/ai_service.ts`](../inertia/services/ai_service.ts), avec `VITE_AI_PROVIDER` (ex: `mistral`) et la clé associée (`VITE_MISTRAL_API_KEY` ou `VITE_GEMINI_API_KEY`) : ce sont des appels **client**, pas `AnalyzeExerciseQualitativeJob`.
 
 ---
 
