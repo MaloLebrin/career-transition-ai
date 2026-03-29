@@ -1,10 +1,5 @@
-import { describe, test, expect } from 'vitest'
-import {
-  isAdmin,
-  isAdvisorOrAdmin,
-  isSuperAdmin,
-  isOrganizationAdmin,
-} from '../../../inertia/helpers/roles'
+import { isAdmin, isAdvisorOrAdmin, isOrganizationAdmin, isSuperAdmin } from '#shared/helpers/roles'
+import { describe, expect, test } from 'vitest'
 
 describe('role helpers (inertia)', () => {
   test('isSuperAdmin only for super_admin', () => {

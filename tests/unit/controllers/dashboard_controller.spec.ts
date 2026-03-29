@@ -3,10 +3,10 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { EXERCISE_LIST, EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
-import { USERS_ROLES } from '#shared/constants/user'
-import testUtils from '@adonisjs/core/services/test_utils'
+import { EXERCISE_LIST } from '#shared/constants/exercises'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import hash from '@adonisjs/core/services/hash'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
@@ -165,4 +165,3 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
     assert.isAtMost(ctx._renderedProps().exerciseProgressByType.life_curve ?? 0, 100)
   })
 })
-

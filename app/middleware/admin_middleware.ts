@@ -1,4 +1,4 @@
-import { isAdmin } from '#helpers/roles'
+import { isAdmin } from '#shared/helpers/roles'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 

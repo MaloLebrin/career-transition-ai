@@ -1,5 +1,5 @@
-import type { UserRole } from '#shared/constants/user'
-import { USERS_ROLES } from '#shared/constants/user'
+import type { UserRole } from '#shared/types/advisor/roles'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 
 /**
  * User has admin or super_admin role (organization admin).
@@ -13,4 +13,12 @@ export function isAdmin(role: UserRole | undefined | null): boolean {
  */
 export function isAdvisorOrAdmin(role: UserRole | undefined | null): boolean {
   return role === USERS_ROLES.ADVISOR || isAdmin(role)
+}
+
+export function isSuperAdmin(role: UserRole): boolean {
+  return role === USERS_ROLES.SUPER_ADMIN
+}
+
+export function isOrganizationAdmin(role: UserRole): boolean {
+  return role === USERS_ROLES.ADMIN
 }

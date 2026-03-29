@@ -1,3 +1,4 @@
+import { isSuperAdmin } from '#shared/helpers/roles'
 import { USERS_ROLES, userRolesValues, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useMemo, useState } from 'react'
@@ -5,7 +6,6 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
 import { useAuth } from '~/hooks/useAuth'
-import { isSuperAdmin } from '../../../../../app/helpers/roles'
 
 interface UserItem {
   id: number

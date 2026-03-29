@@ -1,7 +1,7 @@
 import Organization from '#models/organization'
 import User from '#models/user'
 import { AuthService } from '#services/auth_service'
-import { USERS_ROLES } from '#shared/constants/user'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'

@@ -1,3 +1,4 @@
+import { isSuperAdmin } from '#shared/helpers/roles'
 import { Head, router } from '@inertiajs/react'
 import React, { useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -5,7 +6,6 @@ import Badge from '~/components/ui/Badge'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
 import { useAuth } from '~/hooks/useAuth'
-import { isSuperAdmin } from '../../../../../app/helpers/roles'
 
 type TotalsByType = Record<string, number>
 

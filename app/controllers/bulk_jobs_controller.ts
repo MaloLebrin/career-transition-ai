@@ -2,10 +2,11 @@ import BulkJob from '#models/bulk_job'
 import {
   BULK_JOB_STATUSES,
   BULK_JOB_TYPES,
+  BulkJobScope,
   type BulkJobStatus,
   type BulkJobType,
 } from '#shared/constants/bulk_job'
-import { USERS_ROLES } from '#shared/constants/user'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { HttpContext } from '@adonisjs/core/http'
 
 type BulkJobDto = {

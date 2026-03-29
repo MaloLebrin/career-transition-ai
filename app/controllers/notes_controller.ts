@@ -1,6 +1,6 @@
 import Employee from '#models/employee'
 import Note from '#models/note'
-import { USERS_ROLES } from '#shared/constants/user'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createNoteValidator } from '#validators/note/create_note_validator'
 import { updateNoteValidator } from '#validators/note/update_note_validator'
 import type { HttpContext } from '@adonisjs/core/http'
