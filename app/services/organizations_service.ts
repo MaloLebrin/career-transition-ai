@@ -1,30 +1,11 @@
-import hash from '@adonisjs/core/services/hash'
 import type { AdvisorDto, AdvisorRoleDto, OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/constants/user'
+import { userToAdvisorDto } from '#shared/helpers/advisor/mappers.js'
+import { mapOrganization } from '#shared/helpers/organization/mappers.js'
+import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
-
-function mapOrganization(org: Organization): OrganizationDto {
-  return {
-    id: org.id,
-    name: org.name,
-    slug: org.slug,
-    logoUrl: org.logoUrl ?? undefined,
-    createdAt: org.createdAt.toISO() ?? '',
-  }
-}
-
-function userToAdvisorDto(user: User): AdvisorDto {
-  const role: AdvisorRoleDto = user.role === 'admin' ? 'admin' : 'expert'
-  return {
-    id: user.id,
-    organizationId: user.organizationId,
-    email: user.email,
-    name: user.name,
-    role,
-  }
-}
 
 type UpdateOrganizationInput = {
   name?: string

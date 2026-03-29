@@ -21,12 +21,12 @@ export type ScannedRoutes = {
     'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
-    'experiences.store': { paramsTuple?: []; params?: {} }
-    'experiences.update': { paramsTuple?: []; params?: {} }
-    'experiences.delete': { paramsTuple?: []; params?: {} }
     'educations.store': { paramsTuple?: []; params?: {} }
     'educations.update': { paramsTuple?: []; params?: {} }
     'educations.delete': { paramsTuple?: []; params?: {} }
+    'experiences.store': { paramsTuple?: []; params?: {} }
+    'experiences.update': { paramsTuple?: []; params?: {} }
+    'experiences.delete': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'bulk_jobs.index': { paramsTuple?: []; params?: {} }
     'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -141,8 +141,8 @@ export type ScannedRoutes = {
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
-    'experiences.store': { paramsTuple?: []; params?: {} }
     'educations.store': { paramsTuple?: []; params?: {} }
+    'experiences.store': { paramsTuple?: []; params?: {} }
     'employees.store_from_dashboard': { paramsTuple?: []; params?: {} }
     'employees.resend_onboarding_link': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -174,8 +174,8 @@ export type ScannedRoutes = {
   PUT: {
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
-    'experiences.update': { paramsTuple?: []; params?: {} }
     'educations.update': { paramsTuple?: []; params?: {} }
+    'experiences.update': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -183,8 +183,8 @@ export type ScannedRoutes = {
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
   }
   DELETE: {
-    'experiences.delete': { paramsTuple?: []; params?: {} }
     'educations.delete': { paramsTuple?: []; params?: {} }
+    'experiences.delete': { paramsTuple?: []; params?: {} }
     'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

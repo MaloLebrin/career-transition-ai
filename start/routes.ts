@@ -9,8 +9,8 @@
 
 import './routes/auth.js'
 import './routes/dashboard/candidat.js'
-import './routes/dashboard/candidat/experience.js'
 import './routes/dashboard/candidat/education.js'
+import './routes/dashboard/candidat/experience.js'
 import './routes/dashboard/conseiller.js'
 import './routes/dashboard/index.js'
 import './routes/dashboard/super_admin.js'
