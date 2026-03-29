@@ -1,6 +1,6 @@
 import ExerciseResult from '#models/exercise_result'
-import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
+import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
@@ -25,7 +25,9 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
     const { exerciseResultId } = this.payload
     const result = await ExerciseResult.find(exerciseResultId)
     if (!result) {
-      logger.warn('AnalyzeExerciseQualitativeJob: exercise_result introuvable', { exerciseResultId })
+      logger.warn('AnalyzeExerciseQualitativeJob: exercise_result introuvable', {
+        exerciseResultId,
+      })
       return
     }
 

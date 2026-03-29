@@ -1,12 +1,23 @@
 import { AdvisorDto } from '#dtos/organization_dto'
+import OnboardingToken from '#models/onboarding_token.js'
+import Organization from '#models/organization.js'
 import User from '#models/user'
 import { userToAdvisorDto } from '#shared/helpers/advisor/mappers.js'
 import type { InviteAdvisorInput } from '#shared/types/advisor/invite_advisor'
+import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
+import { OnboardingMailService } from './onboarding_mail_service.js'
 
+@inject()
 export class AdvisorService {
-  public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
+  constructor(private onboardingMailService: OnboardingMailService) { }
+
+  public async inviteAdvisor(input: InviteAdvisorInput, baseUrl: string): Promise<AdvisorDto> {
+    if (!baseUrl) {
+      throw new Error('baseUrl is required')
+    }
+
     const existing = await User.query()
       .where('organizationId', input.organizationId)
       .whereRaw('LOWER(email) = ?', [input.email.toLowerCase()])
@@ -24,6 +35,16 @@ export class AdvisorService {
       name: input.name,
       password: await hash.make(tempPassword),
       role: backendRole,
+    })
+
+    const token = await OnboardingToken.createForUser(user.id)
+    const organization = await Organization.findOrFail(input.organizationId)
+
+    await this.onboardingMailService.sendInviteAdvisorLink({
+      user,
+      organization,
+      token,
+      baseUrl,
     })
     return userToAdvisorDto(user)
   }

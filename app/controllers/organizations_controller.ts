@@ -33,13 +33,17 @@ export default class OrganizationsController {
     if (!auth.user) return response.unauthorized()
     const orgId = auth.user.organizationId
     const payload = await request.validateUsing(inviteAdvisorValidator)
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
     try {
-      await this.advisorService.inviteAdvisor({
-        organizationId: orgId,
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-      })
+      await this.advisorService.inviteAdvisor(
+        {
+          organizationId: orgId,
+          name: payload.name,
+          email: payload.email,
+          role: payload.role,
+        },
+        baseUrl
+      )
       session.flash('success', 'Collaborateur invité.')
       return response.redirect('/dashboard/conseiller/settings')
     } catch (err: any) {
