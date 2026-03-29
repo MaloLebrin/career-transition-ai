@@ -1,23 +1,14 @@
-import type { AdvisorDto, AdvisorRoleDto, OrganizationDto } from '#dtos/organization_dto'
+import type { AdvisorDto, OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/constants/user'
 import { userToAdvisorDto } from '#shared/helpers/advisor/mappers.js'
 import { mapOrganization } from '#shared/helpers/organization/mappers.js'
-import hash from '@adonisjs/core/services/hash'
-import { randomBytes } from 'node:crypto'
 
 type UpdateOrganizationInput = {
   name?: string
   slug?: string
   logoUrl?: string
-}
-
-type InviteAdvisorInput = {
-  organizationId: number
-  name: string
-  email: string
-  role: AdvisorRoleDto
 }
 
 export class OrganizationsService {
@@ -41,26 +32,5 @@ export class OrganizationsService {
       .where('organizationId', organizationId)
       .whereIn('role', [USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN])
     return users.map(userToAdvisorDto)
-  }
-
-  public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
-    const existing = await User.query()
-      .where('organizationId', input.organizationId)
-      .whereRaw('LOWER(email) = ?', [input.email.toLowerCase()])
-      .first()
-    if (existing) {
-      throw new Error('Cet email est déjà utilisé par un compte existant.')
-    }
-
-    const backendRole = input.role === 'admin' ? 'admin' : 'advisor'
-    const tempPassword = randomBytes(32).toString('hex')
-    const user = await User.create({
-      organizationId: input.organizationId,
-      email: input.email,
-      name: input.name,
-      password: await hash.make(tempPassword),
-      role: backendRole,
-    })
-    return userToAdvisorDto(user)
   }
 }

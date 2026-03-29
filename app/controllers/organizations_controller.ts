@@ -4,10 +4,14 @@ import { updateOrganizationValidator } from '#validators/organization/organizati
 import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import { AdvisorService } from '../services/advisor_service.js'
 
 @inject()
 export default class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(
+    private organizationsService: OrganizationsService,
+    private advisorService: AdvisorService
+  ) { }
 
   /**
    * Inertia form: update current user's organization then redirect with flash.
@@ -30,7 +34,7 @@ export default class OrganizationsController {
     const orgId = auth.user.organizationId
     const payload = await request.validateUsing(inviteAdvisorValidator)
     try {
-      await this.organizationsService.inviteAdvisor({
+      await this.advisorService.inviteAdvisor({
         organizationId: orgId,
         name: payload.name,
         email: payload.email,
