@@ -1,4 +1,4 @@
-import { userRolesValues } from '#shared/types/advisor/roles.js'
+import { userRolesValues } from '../../shared/types/advisor/roles.js'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
@@ -28,7 +28,7 @@ export default class extends BaseSchema {
       this.schema.raw(`
         ALTER TABLE "${this.tableName}"
         ADD CONSTRAINT "${this.tableName}_role_check"
-        CHECK (role IS NULL OR role IN (${userRolesValues.map((role) => `'${role}'`).join(',')}))
+        CHECK (role IN (${userRolesValues.map((role) => `'${role}'`).join(',')}))
       `)
     }
   }
@@ -38,14 +38,3 @@ export default class extends BaseSchema {
     // pas besoin de DROP CONSTRAINT, dropTable supprime tout
   }
 }
-/*
-// migration: alter_users_role_check_add_admin.ts
-this.schema.raw(`
-  ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_role_check"
-`)
-this.schema.raw(`
-  ALTER TABLE "users"
-  ADD CONSTRAINT "users_role_check"
-  CHECK (role IN ('advisor', 'employee', 'admin', 'super_admin'))
-`)
-*/
