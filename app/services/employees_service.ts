@@ -4,34 +4,14 @@ import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
-import { EmployeeStatus } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/constants/user'
+import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
-
-type CreateEmployeeInput = {
-  organizationId: number
-  advisorId?: number | null
-  name: string
-  email: string
-  currentRole?: string
-  targetRole?: string
-  summary?: string
-}
 
 type CreateEmployeeOptions = {
   /** When set, a User account is created and an onboarding link is sent (e.g. by email). */
   baseUrl?: string
-}
-
-type UpdateEmployeeInput = {
-  advisorNotes?: string
-  status?: EmployeeStatus
-  targetRole?: string
-  summary?: string
-  name?: string
-  currentRole?: string
-  onboarded?: boolean
 }
 
 function randomPassword(): string {
@@ -40,7 +20,7 @@ function randomPassword(): string {
 
 @inject()
 export class EmployeesService {
-  constructor(private onboardingMailService: OnboardingMailService) {}
+  constructor(private onboardingMailService: OnboardingMailService) { }
 
   /**
    * (Re)sends the onboarding link for an existing employee.
@@ -135,7 +115,11 @@ export class EmployeesService {
         })
         userId = user.id
         const token = await OnboardingToken.createForUser(user.id)
-        await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl: options.baseUrl })
+        await this.onboardingMailService.sendSetPasswordLink({
+          user,
+          token,
+          baseUrl: options.baseUrl,
+        })
       }
     }
 
