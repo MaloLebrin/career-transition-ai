@@ -24,20 +24,10 @@ export const ExerciseType = {
 
 export type ExerciseType = (typeof ExerciseType)[keyof typeof ExerciseType]
 
-export type AdvisorRole = 'admin' | 'expert' | 'consultant'
-
 export interface Organization {
   id: number
   name: string
   slug: string
   logoUrl?: string
   createdAt: string
-}
-
-export interface Advisor {
-  id: number
-  organizationId: number
-  email: string
-  name: string
-  role: AdvisorRole
 }

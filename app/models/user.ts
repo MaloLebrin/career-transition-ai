@@ -1,12 +1,12 @@
-import type { UserRole } from '#shared/constants/user'
+import Employee from '#models/employee'
+import Organization from '#models/organization'
+import type { UserRole } from '#shared/types/advisor/roles'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { compose } from '@adonisjs/core/helpers'
 import hash from '@adonisjs/core/services/hash'
 import { BaseModel, beforeSave, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import Employee from './employee.js'
-import Organization from './organization.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],

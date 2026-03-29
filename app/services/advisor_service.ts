@@ -1,13 +1,13 @@
 import { AdvisorDto } from '#dtos/organization_dto'
-import OnboardingToken from '#models/onboarding_token.js'
-import Organization from '#models/organization.js'
+import OnboardingToken from '#models/onboarding_token'
+import Organization from '#models/organization'
 import User from '#models/user'
-import { userToAdvisorDto } from '#shared/helpers/advisor/mappers.js'
+import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { userToAdvisorDto } from '#shared/helpers/advisor/mappers'
 import type { InviteAdvisorInput } from '#shared/types/advisor/invite_advisor'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
-import { OnboardingMailService } from './onboarding_mail_service.js'
 
 @inject()
 export class AdvisorService {

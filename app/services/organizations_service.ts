@@ -1,9 +1,9 @@
 import type { AdvisorDto, OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES } from '#shared/constants/user'
-import { userToAdvisorDto } from '#shared/helpers/advisor/mappers.js'
-import { mapOrganization } from '#shared/helpers/organization/mappers.js'
+import { userToAdvisorDto } from '#shared/helpers/advisor/mappers'
+import { mapOrganization } from '#shared/helpers/organization/mappers'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 
 type UpdateOrganizationInput = {
   name?: string

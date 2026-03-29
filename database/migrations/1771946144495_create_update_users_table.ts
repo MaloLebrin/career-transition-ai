@@ -1,5 +1,5 @@
+import { userRolesValues } from '#shared/types/advisor/roles.js'
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { userRolesValues } from '../../shared/constants/user.js'
 
 export default class extends BaseSchema {
   protected tableName = 'users'

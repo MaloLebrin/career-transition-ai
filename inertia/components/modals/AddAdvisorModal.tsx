@@ -1,6 +1,6 @@
+import type { UserRole } from '#shared/types/advisor/roles'
 import { useForm } from '@inertiajs/react'
 import React, { useEffect } from 'react'
-import type { AdvisorRole } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
@@ -9,17 +9,17 @@ interface Props {
   onClose: () => void
 }
 
-const roles: { id: AdvisorRole; title: string; desc: string }[] = [
+const roles: { id: UserRole; title: string; desc: string }[] = [
   { id: 'admin', title: 'Administrateur', desc: 'Gestion du cabinet, équipe et facturation' },
   { id: 'expert', title: 'Expert Référent', desc: 'Accompagnement et supervision de dossiers' },
-  { id: 'consultant', title: 'Consultant', desc: 'Accompagnement de ses propres candidats' },
+  { id: 'advisor', title: 'Consultant', desc: 'Accompagnement de ses propres candidats' },
 ]
 
 const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
     email: '',
-    role: 'consultant' as AdvisorRole,
+    role: 'consultant' as UserRole,
   })
 
   const handleSubmit = (e: React.FormEvent) => {
