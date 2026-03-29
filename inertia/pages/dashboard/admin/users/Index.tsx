@@ -1,14 +1,11 @@
-import React, { useMemo, useState } from 'react'
+import { USERS_ROLES, userRolesValues, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
+import { useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import { useAuth } from '~/hooks/useAuth'
-import { USERS_ROLES, userRolesValues } from '#shared/constants/user'
-import { isSuperAdmin } from '~/helpers/roles'
-import Input from '~/components/ui/Input'
 import Button from '~/components/ui/Button'
-import Badge from '~/components/ui/Badge'
-
-import { type UserRole } from '#shared/constants/user'
+import Input from '~/components/ui/Input'
+import { useAuth } from '~/hooks/useAuth'
+import { isSuperAdmin } from '../../../../../app/helpers/roles'
 
 interface UserItem {
   id: number
@@ -25,7 +22,8 @@ interface UsersAdminProps {
 
 const ROLE_LABELS: Record<UserRole, string> = {
   [USERS_ROLES.EMPLOYEE]: 'Employé',
-  [USERS_ROLES.ADVISOR]: 'Conseiller',
+  [USERS_ROLES.ADVISOR]: 'Consultant Accompagnateur',
+  [USERS_ROLES.EXPERT]: 'Expert Référent',
   [USERS_ROLES.ADMIN]: 'Admin orga',
   [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
 }

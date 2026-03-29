@@ -1,12 +1,12 @@
-import { mapEmployee, mapSupportPlanStep, mapExerciseResult } from '#mappers/employee_mapper'
+import { mapEmployee, mapExerciseResult, mapSupportPlanStep } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
-import SupportPlanStep from '#models/support_plan_step'
 import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
 import Skill from '#models/skill'
+import SupportPlanStep from '#models/support_plan_step'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
-import { USERS_ROLES } from '#shared/constants/user'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee/employee_update_validator'
 import { inject } from '@adonisjs/core'
@@ -14,7 +14,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EmployeesController {
-  constructor(private employeesService: EmployeesService) {}
+  constructor(private employeesService: EmployeesService) { }
 
   /**
    * Inertia form: resend onboarding link for an existing employee.
@@ -299,11 +299,11 @@ export default class EmployeesController {
     const exerciseResultId = results[0]?.id
     const notes = exerciseResultId
       ? await Note.query()
-          .where('employeeId', employeeId)
-          .where('exerciseResultId', exerciseResultId)
-          .whereNull('deletedAt')
-          .preload('author')
-          .orderBy('createdAt', 'desc')
+        .where('employeeId', employeeId)
+        .where('exerciseResultId', exerciseResultId)
+        .whereNull('deletedAt')
+        .preload('author')
+        .orderBy('createdAt', 'desc')
       : []
 
     return (ctx.inertia as any).render('dashboard/conseiller/employees/StepDetail', {

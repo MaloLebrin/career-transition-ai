@@ -1,5 +1,5 @@
 import React from 'react'
-import { isAdvisorOrAdmin, isSuperAdmin } from '../../helpers/roles'
+import { isAdvisorOrAdmin, isSuperAdmin } from '../../../app/helpers/roles'
 import { useAuth } from '../../hooks/useAuth'
 import Layout from '../layout/Layout'
 import AdvisorSidebar from './AdvisorSidebar'

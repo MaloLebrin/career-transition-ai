@@ -1,5 +1,5 @@
+import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles';
 import { useMemo } from 'react';
-import { USERS_ROLES, UserRole } from '../../../../shared/constants/user';
 
 interface AvatarProps {
   userName?: string

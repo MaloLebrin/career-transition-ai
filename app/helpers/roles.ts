@@ -14,3 +14,11 @@ export function isAdmin(role: UserRole | undefined | null): boolean {
 export function isAdvisorOrAdmin(role: UserRole | undefined | null): boolean {
   return role === USERS_ROLES.ADVISOR || isAdmin(role)
 }
+
+export function isSuperAdmin(role: UserRole): boolean {
+  return role === USERS_ROLES.SUPER_ADMIN
+}
+
+export function isOrganizationAdmin(role: UserRole): boolean {
+  return role === USERS_ROLES.ADMIN
+}

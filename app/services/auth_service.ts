@@ -4,11 +4,11 @@ import InvalidCredentialsException from '#exceptions/invalid_credentials_excepti
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES, type UserRole } from '#shared/constants/user'
+import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { toSessionDto } from '#utils/dto'
-import db from '@adonisjs/lucid/services/db'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
+import db from '@adonisjs/lucid/services/db'
 
 type RegisterInput = {
   email: string

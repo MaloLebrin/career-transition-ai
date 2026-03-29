@@ -1,7 +1,7 @@
 import Employee from '#models/employee'
-import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
-import { USERS_ROLES } from '#shared/constants/user'
+import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import EmployeeTransformer from '#transformers/employee_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
 
