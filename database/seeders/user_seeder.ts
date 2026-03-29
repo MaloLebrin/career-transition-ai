@@ -12,7 +12,7 @@ export default class UserSeeder extends BaseSeeder {
         email: 'expert@ftc.fr',
         password: 'password',
         name: 'Consultant Expert',
-        role: 'advisor' as const,
+        role: 'admin' as const,
       },
       {
         organizationId: ftcParis.id,
