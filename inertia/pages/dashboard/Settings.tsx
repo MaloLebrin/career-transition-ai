@@ -1,8 +1,8 @@
-import React from 'react'
+import type { Advisor } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import OrganizationSettings from '../../components/settings/OrganizationSettings'
-import type { Organization, Advisor } from '../../types'
+import type { Organization } from '../../types'
 
 interface DashboardSettingsProps {
   organization: Organization
