@@ -1,19 +1,20 @@
 import { TeamMember } from "~/components/dashboard/settings/team/TeamMember";
 import Button from "~/components/ui/Button";
 import Card from "~/components/ui/Card";
-import { Advisor } from "~/types";
 import { UserSession } from "~/types/auth";
 
 interface TeamProps {
-  team: Advisor[];
+  team: UserSession[];
   setIsInviteModalOpen: (isOpen: boolean) => void;
   user: UserSession;
+  canInvite?: boolean;
 }
 
 export const TeamCard = ({
   team = [],
   setIsInviteModalOpen,
   user,
+  canInvite = true,
 }: TeamProps) => {
   return (
     <Card className="p-10 space-y-6">
@@ -24,9 +25,11 @@ export const TeamCard = ({
           </span>
           Mon Équipe
         </h3>
-        <Button onClick={() => setIsInviteModalOpen(true)} variant="ghost" size="sm">
-          + Inviter un collaborateur
-        </Button>
+        {canInvite && (
+          <Button onClick={() => setIsInviteModalOpen(true)} variant="ghost" size="sm">
+            + Inviter un collaborateur
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">

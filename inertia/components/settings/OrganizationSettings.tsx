@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
+import type { Advisor } from '#shared/types/advisor/roles'
+import React, { useMemo, useState } from 'react'
 import { GeneralInfoForm } from '~/components/dashboard/settings/organisation/infos/GeneralInfoForm'
 import { VisualIdentity } from '~/components/dashboard/settings/organisation/visual-identity/VisualIdentity'
 import { TeamCard } from '~/components/dashboard/settings/team/TeamCard'
 import { UsageCompletionCard } from '~/components/dashboard/settings/usage/UsageCompletionCard'
 import { ProfileForm } from '~/components/profile/ProfileForm'
 import { UserSession } from '~/types/auth'
+import { MAX_LICENSES_ADVISORS } from '../../../shared/constants/organisation'
+import { isOrganizationAdmin, isSuperAdmin } from '../../../shared/helpers/roles'
 import { useAuth } from '../../hooks/useAuth'
-import { Advisor, Organization } from '../../types'
+import { Organization } from '../../types'
 import AddAdvisorModal from '../modals/AddAdvisorModal'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -29,6 +32,13 @@ const OrganizationSettings: React.FC<Props> = ({
   const [team] = useState<Advisor[]>(membersProp ?? [])
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
+
+  const canInvite = useMemo(() => {
+    const isAdmin = isOrganizationAdmin(user?.role)
+    const isUserSuperAdmin = isSuperAdmin(user?.role)
+    const hasUserRightToInvite = isUserSuperAdmin || isAdmin
+    return hasUserRightToInvite && team.length < MAX_LICENSES_ADVISORS
+  }, [user?.role, team.length])
 
   if (!org) {
     return (
@@ -83,6 +93,7 @@ const OrganizationSettings: React.FC<Props> = ({
             team={team}
             setIsInviteModalOpen={setIsInviteModalOpen}
             user={user as UserSession}
+            canInvite={canInvite}
           />
         </div>
 
