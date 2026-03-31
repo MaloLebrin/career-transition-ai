@@ -1,9 +1,9 @@
 import { Head, router } from '@inertiajs/react'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import ExerciseProgressBadge from '~/components/exercises/ExerciseProgressBadge'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
 import DISCTool from '~/components/exercises/DISCTool'
+import ExerciseProgressBadge from '~/components/exercises/ExerciseProgressBadge'
 import LifeCurveTool from '~/components/exercises/LifeCurveTool'
 import MotivationTool from '~/components/exercises/MotivationTool'
 import PersonalityTool from '~/components/exercises/PersonalityTool'
@@ -13,8 +13,8 @@ import ValuesTool from '~/components/exercises/ValuesTool'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
-import { useEmployee } from '~/hooks/use_employee'
 import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
+import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType, type Employee, type ExerciseDraft } from '~/types'
 
 interface CandidatExerciseProps {
@@ -127,7 +127,7 @@ export default function CandidatExercise({
     <>
       <Head title={`Exercice ${type}`} />
       <DashboardLayout hideSidebar>
-        <div className="animate-fadeIn w-full">
+        <div className="animate-fadeIn w-full max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <AppLink href="/dashboard/candidat">
               <Button variant="ghost" size="sm">

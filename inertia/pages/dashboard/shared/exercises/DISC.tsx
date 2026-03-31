@@ -1,14 +1,12 @@
 import { Head, router } from '@inertiajs/react'
-import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import DISCTool from '~/components/exercises/DISCTool'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
-import { useAuth } from '~/hooks/useAuth'
-import { useEmployee } from '~/hooks/use_employee'
 import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
+import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType, type ExerciseDraft } from '~/types'
 
 interface DISCExerciseProps {
@@ -20,8 +18,7 @@ export default function DISCExercise({
   employeeId,
   initialDraftsByType,
 }: DISCExerciseProps) {
-  const { user } = useAuth()
-  const targetId = employeeId || user?.id || '1'
+  const targetId = employeeId || null
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
@@ -53,25 +50,11 @@ export default function DISCExercise({
     }
   )
 
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) {
-    return (
-      <DashboardLayout selectedEmployeeId={employeeId || null} hideSidebar>
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
-    )
-  }
-
   return (
     <>
       <Head title="Exercice DISC" />
       <DashboardLayout selectedEmployeeId={employeeId || null} hideSidebar>
-        <div className="animate-fadeIn max-w-7xl mx-auto">
+        <div className="animate-fadeIn max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <AppLink href={backHref}>
               <Button variant="ghost" size="sm">

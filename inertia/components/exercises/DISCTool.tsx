@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ExerciseDraft } from '../../types'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -185,7 +185,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
     }
   }
 
-  const finalize = () => {
+  const finalize = useCallback(() => {
     const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
     const scores = { D: 0, I: 0, S: 0, C: 0 }
     ;(Object.values(selections) as Array<{ most: string; least: string }>).forEach((sel) => {
@@ -198,12 +198,12 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
       C: Math.round((scores.C / 15) * 100),
     }
     onSave(normalized, duration)
-  }
+  }, [onSave, selections, currentIdx, startTimeRef])
 
   const currentGroup = DISC_GROUPS[currentIdx]
 
   return (
-    <div className="max-w-5xl mx-auto animate-fadeIn pb-20">
+    <div className="mx-auto animate-fadeIn pb-20">
       <Card className="overflow-hidden p-0">
         <div className="h-3 bg-slate-100 w-full">
           <div

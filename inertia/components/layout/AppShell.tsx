@@ -7,9 +7,9 @@ import { router } from '@inertiajs/react'
 import React, { useEffect, useState } from 'react'
 import { employeeUpdatePayload } from '../../helpers/employee_payload'
 import { useAuth } from '../../hooks/useAuth'
+import { useAdvisorExercises } from '../../hooks/use_advisor_exercises'
 import { useEmployee } from '../../hooks/use_employee'
 import { useEmployees } from '../../hooks/use_employees'
-import { useAdvisorExercises } from '../../hooks/use_advisor_exercises'
 import { ExerciseType, SupportPlanStep } from '../../types'
 import DesignSystem from '../design-system/DesignSystem'
 import CircleOfControlTool from '../exercises/CircleOfControlTool'
@@ -122,7 +122,7 @@ const AppShell: React.FC = () => {
       userName={user?.name}
     >
       {activeView === 'exercise' ? (
-        <div className="animate-fadeIn max-w-7xl mx-auto">
+        <div className="animate-fadeIn max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-10">
             <Button
               onClick={() => {
