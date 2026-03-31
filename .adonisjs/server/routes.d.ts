@@ -11,6 +11,14 @@ export type ScannedRoutes = {
     'auth.logout': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.home': { paramsTuple?: []; params?: {} }
+    'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.store_organization': { paramsTuple?: []; params?: {} }
+    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
@@ -69,19 +77,17 @@ export type ScannedRoutes = {
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
-    'super_admin.organizations': { paramsTuple?: []; params?: {} }
-    'super_admin.store_organization': { paramsTuple?: []; params?: {} }
-    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'super_admin.users': { paramsTuple?: []; params?: {} }
-    'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'super_admin.home': { paramsTuple?: []; params?: {} }
+    'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
@@ -100,14 +106,15 @@ export type ScannedRoutes = {
     'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
-    'super_admin.organizations': { paramsTuple?: []; params?: {} }
-    'super_admin.users': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'super_admin.home': { paramsTuple?: []; params?: {} }
+    'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
     'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
     'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
@@ -126,10 +133,6 @@ export type ScannedRoutes = {
     'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
-    'super_admin.organizations': { paramsTuple?: []; params?: {} }
-    'super_admin.users': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -139,6 +142,8 @@ export type ScannedRoutes = {
     'auth.logout': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.store_organization': { paramsTuple?: []; params?: {} }
+    'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'educations.store': { paramsTuple?: []; params?: {} }
@@ -166,10 +171,15 @@ export type ScannedRoutes = {
     'dashboard.exercises.circle_of_control.draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.circle_of_control.result': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
-    'super_admin.store_organization': { paramsTuple?: []; params?: {} }
-    'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+  }
+  DELETE: {
+    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'educations.delete': { paramsTuple?: []; params?: {} }
+    'experiences.delete': { paramsTuple?: []; params?: {} }
+    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
   }
   PUT: {
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
@@ -181,13 +191,6 @@ export type ScannedRoutes = {
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
-  }
-  DELETE: {
-    'educations.delete': { paramsTuple?: []; params?: {} }
-    'experiences.delete': { paramsTuple?: []; params?: {} }
-    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
-    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

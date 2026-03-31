@@ -2,56 +2,39 @@ import LogExerciseUsageExport from '#jobs/log_exercise_usage_export'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
 import type { HttpContext } from '@adonisjs/core/http'
+import logger from '@adonisjs/core/services/logger'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
-
-function assertSuperAdminOrFail(ctx: HttpContext): boolean {
-  const { auth, response } = ctx
-  if (!auth.user) {
-    response.unauthorized()
-    return false
-  }
-  if (auth.user.role !== 'super_admin') {
-    response.forbidden()
-    return false
-  }
-  return true
-}
 
 export default class SuperAdminController {
   /**
    * Inertia page: super admin home with global metrics.
    */
-  public async home({ inertia, response, auth }: HttpContext) {
-    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
-      return
-    }
-
+  public async home({ inertia }: HttpContext) {
     const organizationsCount = await Organization.query().count('* as total')
     const usersCount = await User.query().count('* as total')
 
     const totalOrgs = Number(organizationsCount[0].$extras.total || 0)
     const totalUsers = Number(usersCount[0].$extras.total || 0)
+    const stats = {
+      organizations: totalOrgs,
+      users: totalUsers,
+    }
 
-    return (inertia as any).render('dashboard/admin/home/Home', {
-      stats: {
-        organizations: totalOrgs,
-        users: totalUsers,
-      },
-    })
+    logger.info('Super admin home', { stats: JSON.stringify(stats) })
+
+    return inertia.render('dashboard/admin/home/Home' as never, { stats })
   }
 
   /**
    * Inertia page: list all organizations with basic aggregates.
    */
-  public async organizations({ inertia, response, auth }: HttpContext) {
-    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
-      return
-    }
-
+  public async organizations({ inertia }: HttpContext) {
     const organizations = await Organization.query().preload('users').preload('employees')
+
+    logger.info('Super admin organizations', { organizations: JSON.stringify(organizations) })
 
     const items = organizations.map((org) => ({
       id: org.id,
@@ -62,7 +45,7 @@ export default class SuperAdminController {
       createdAt: org.createdAt?.toISO() ?? null,
     }))
 
-    return (inertia as any).render('dashboard/admin/organizations/Index', {
+    return inertia.render('dashboard/admin/organizations/Index' as never, {
       organizations: items,
     })
   }
@@ -70,11 +53,7 @@ export default class SuperAdminController {
   /**
    * Inertia page: aggregated exercise usage per organization for a given period.
    */
-  public async exerciseUsage({ inertia, response, auth, request }: HttpContext) {
-    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
-      return
-    }
-
+  public async exerciseUsage({ inertia, request }: HttpContext) {
     const qs = request.qs()
     const from =
       typeof qs.from === 'string' && qs.from.length > 0
@@ -146,7 +125,7 @@ export default class SuperAdminController {
 
     const allOrgs = await Organization.query().select('id', 'name').orderBy('name', 'asc')
 
-    return (inertia as any).render('dashboard/admin/exercises/Usage', {
+    return inertia.render('dashboard/admin/exercises/Usage' as never, {
       filters: {
         from,
         to,
@@ -238,11 +217,7 @@ export default class SuperAdminController {
   /**
    * Inertia page: list all users with global filters and role overview.
    */
-  public async users({ inertia, response, auth }: HttpContext) {
-    if (!assertSuperAdminOrFail({ inertia, response, auth } as HttpContext)) {
-      return
-    }
-
+  public async users({ inertia }: HttpContext) {
     const users = await User.query().preload('organization')
 
     const items = users.map((user) => ({
@@ -256,7 +231,7 @@ export default class SuperAdminController {
       createdAt: user.createdAt?.toISO() ?? null,
     }))
 
-    return (inertia as any).render('dashboard/admin/users/Index', {
+    return inertia.render('dashboard/admin/users/Index' as never, {
       users: items,
     })
   }
@@ -272,7 +247,7 @@ export default class SuperAdminController {
       return response.forbidden()
     }
 
-    const updateRoleValidator = vine.compile(
+    const updateRoleValidator = vine.create(
       vine.object({
         role: vine.enum(userRolesValues),
       })
