@@ -15,7 +15,9 @@ import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
 import { useEmployee } from '~/hooks/use_employee'
-import { ExerciseType, type Employee, type ExerciseDraft } from '~/types'
+import { ExerciseType, type ExerciseDraft, type ExerciseResult } from '~/types'
+import type { Employee } from '~/types/employee'
+import type { Skill } from '~/types/Skill'
 
 interface CandidatExerciseProps {
   type: string
@@ -75,6 +77,20 @@ export default function CandidatExercise({
 
   const exerciseType =
     EXERCISE_TYPES[type.toUpperCase()] ?? null
+
+  const latestCompletedResultData =
+    selectedEmployee && exerciseType
+      ? (selectedEmployee.exercises ?? [])
+          .filter(
+            (r: ExerciseResult) =>
+              String(r?.type ?? '').toLowerCase() === String(exerciseType) && Boolean(r?.data)
+          )
+          .sort((a: ExerciseResult, b: ExerciseResult) => {
+            const ad = a?.date ? new Date(a.date).getTime() : 0
+            const bd = b?.date ? new Date(b.date).getTime() : 0
+            return bd - ad
+          })[0]?.data ?? null
+      : null
 
   if (accessGranted === false) {
     return (
@@ -193,7 +209,7 @@ export default function CandidatExercise({
                 employeeProfile={
                   selectedEmployee
                     ? {
-                        skills: selectedEmployee.skills.map((s) => s.name),
+                        skills: selectedEmployee.skills.map((s: Skill) => s.name),
                         targetRole: selectedEmployee.targetRole || '',
                       }
                     : undefined
@@ -205,6 +221,7 @@ export default function CandidatExercise({
                 onSave={(data, duration) => saveResult(ExerciseType.DISC, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.DISC, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.DISC))}
+                initialResultData={latestCompletedResultData}
               />
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (

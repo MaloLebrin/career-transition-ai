@@ -8,6 +8,7 @@ interface Props {
   onSave: (data: any, duration: number) => void
   onSaveDraft: (data: any) => void
   initialDraftPromise?: Promise<ExerciseDraft | null>
+  initialResultData?: any
 }
 
 const DISC_GROUPS = [
@@ -148,28 +149,56 @@ const DISC_GROUPS = [
   },
 ]
 
-const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
+const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, initialResultData }) => {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [selections, setSelections] = useState<Record<number, { most: string; least: string }>>({})
   const startTimeRef = useRef<number>(Date.now())
+  const hasInitializedRef = useRef(false)
 
   useEffect(() => {
+    if (hasInitializedRef.current) return
+    hasInitializedRef.current = true
+
+    const applyInitialData = (data: any) => {
+      const selectionsCandidate = data?.selections
+      const currentIdxCandidate = data?.currentIdx
+
+      if (
+        selectionsCandidate &&
+        typeof selectionsCandidate === 'object' &&
+        !Array.isArray(selectionsCandidate)
+      ) {
+        setSelections(selectionsCandidate)
+      }
+
+      if (
+        typeof currentIdxCandidate === 'number' &&
+        Number.isFinite(currentIdxCandidate) &&
+        currentIdxCandidate >= 0
+      ) {
+        setCurrentIdx(currentIdxCandidate)
+      }
+    }
+
     if (initialDraftPromise) {
       initialDraftPromise.then((draft) => {
         const data = (draft as any)?.data
-        const selectionsCandidate = data?.selections
-        const currentIdxCandidate = data?.currentIdx
+        const hasSelections = Boolean(data?.selections && typeof data.selections === 'object')
 
-        if (selectionsCandidate && typeof selectionsCandidate === 'object' && !Array.isArray(selectionsCandidate)) {
-          setSelections(selectionsCandidate)
+        if (hasSelections) {
+          applyInitialData(data)
+          return
         }
 
-        if (typeof currentIdxCandidate === 'number' && Number.isFinite(currentIdxCandidate) && currentIdxCandidate >= 0) {
-          setCurrentIdx(currentIdxCandidate)
-        }
+        // Fallback: completed legacy/new result data (if it contains selections)
+        applyInitialData(initialResultData)
       })
+      return
     }
-  }, [])
+
+    // No draft available: try completed result data
+    applyInitialData(initialResultData)
+  }, [initialDraftPromise, initialResultData])
 
   useEffect(() => {
     onSaveDraft({ selections, currentIdx })
@@ -204,7 +233,15 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
       S: Math.round((scores.S / 15) * 100),
       C: Math.round((scores.C / 15) * 100),
     }
-    onSave(normalized, duration)
+    onSave(
+      {
+        ...normalized,
+        selections,
+        currentIdx,
+        version: 1,
+      },
+      duration
+    )
   }, [onSave, selections, currentIdx, startTimeRef])
 
   const currentGroup = DISC_GROUPS[currentIdx]
