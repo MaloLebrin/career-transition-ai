@@ -24,6 +24,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
     { name: '', values: '' },
   ])
   const startTimeRef = useRef<number>(Date.now())
+  const dragFromIndexRef = useRef<number | null>(null)
 
   // Load draft on mount
   useEffect(() => {
@@ -57,6 +58,16 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
 
   const handleRemoveValue = (label: string) => {
     setRankedValues(rankedValues.filter((v) => v !== label))
+  }
+
+  const moveRankedValue = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return
+    if (fromIdx < 0 || toIdx < 0) return
+    if (fromIdx >= rankedValues.length || toIdx >= rankedValues.length) return
+    const next = [...rankedValues]
+    const [moved] = next.splice(fromIdx, 1)
+    next.splice(toIdx, 0, moved)
+    setRankedValues(next)
   }
 
   const updatePerson = (idx: number, field: 'name' | 'values', val: string) => {
@@ -114,12 +125,49 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
               <h4 className="text-[10px] font-bold text-brand-sage uppercase tracking-widest mb-6">
                 Votre hiérarchie ({rankedValues.length}/10)
               </h4>
-              <div className="space-y-3">
+              <div
+                className="space-y-3"
+                onDragOver={(e) => {
+                  e.preventDefault()
+                }}
+                onDropCapture={(e) => {
+                  e.preventDefault()
+                  const target = (e.target as HTMLElement | null)?.closest?.('[data-ranked-idx]') as
+                    | HTMLElement
+                    | null
+                  const toIdx = target ? Number(target.dataset.rankedIdx) : NaN
+                  const fromIdx = dragFromIndexRef.current
+                  if (typeof fromIdx === 'number' && Number.isFinite(toIdx)) {
+                    moveRankedValue(fromIdx, toIdx)
+                  }
+                  dragFromIndexRef.current = null
+                }}
+              >
                 {rankedValues.map((label, idx) => (
                   <div
                     key={label}
+                    data-testid={`ranked-value-${label}`}
+                    data-ranked-idx={idx}
+                    draggable
+                    onDragStart={(e) => {
+                      dragFromIndexRef.current = idx
+                      try {
+                        e.dataTransfer?.setData('text/plain', label)
+                        e.dataTransfer.effectAllowed = 'move'
+                      } catch {}
+                    }}
+                    onDragEnd={() => {
+                      dragFromIndexRef.current = null
+                    }}
                     className="flex items-center bg-white p-4 rounded-2xl shadow-sm border border-brand-sage/10 animate-slideUp"
                   >
+                    <span
+                      className="mr-3 text-brand-navy/20 select-none"
+                      aria-hidden="true"
+                      title="Glisser pour réordonner"
+                    >
+                      ⠿
+                    </span>
                     <span className="w-8 h-8 rounded-lg bg-brand-sage text-white flex items-center justify-center font-bold text-xs mr-4">
                       {idx + 1}
                     </span>
