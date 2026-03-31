@@ -90,6 +90,35 @@ describe('ExerciseResultVisualization', () => {
     expect(screen.getByText('Aucune cible enregistrée.')).toBeInTheDocument()
   })
 
+  test('renders PersonalityResultView for PERSONALITY type', () => {
+    const result = {
+      ...baseResult,
+      type: EXERCICE_RESULTS_TYPES.PERSONALITY,
+      data: { openness: 9, neuroticism: 3, extraversion: 9, agreeableness: 4, conscientiousness: 9 },
+    }
+    render(<ExerciseResultVisualization result={result} />)
+
+    expect(screen.getByText(/Ouverture d'esprit/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/9\/10/i).length).toBeGreaterThanOrEqual(1)
+  })
+
+  test('renders ValuesResultView for VALUES type', () => {
+    const result = {
+      ...baseResult,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      data: {
+        selectedValues: ['La réalisation', 'Le pouvoir'],
+        peopleExercise: [{ name: 'Adrien', values: 'discipline' }],
+      },
+    }
+    render(<ExerciseResultVisualization result={result} />)
+
+    expect(screen.getByText(/Hiérarchie des valeurs/i)).toBeInTheDocument()
+    expect(screen.getByText('La réalisation')).toBeInTheDocument()
+    expect(screen.getByText(/Figures d’inspiration/i)).toBeInTheDocument()
+    expect(screen.getByText('Adrien')).toBeInTheDocument()
+  })
+
   test('renders DefaultResultView for unknown type', () => {
     const result = {
       ...baseResult,

@@ -7,6 +7,8 @@ import DiscResultView from './disc/DiscResultView'
 import LifeCurveResultView from './life_curve/LifeCurveResultView'
 import SkillMappingResultView from './skill_mapping/SkillMappingResultView'
 import TargetingResultView from './targeting/TargetingResultView'
+import PersonalityResultView from './personality/PersonalityResultView'
+import ValuesResultView from './values/ValuesResultView'
 
 interface Props {
   result: ExerciseResult
@@ -66,6 +68,26 @@ export default function ExerciseResultVisualization({ result }: Props) {
     case EXERCICE_RESULTS_TYPES.TARGETING: {
       const targets = Array.isArray(data.targets) ? data.targets : []
       return <TargetingResultView targets={targets} />
+    }
+
+    case EXERCICE_RESULTS_TYPES.PERSONALITY: {
+      return (
+        <PersonalityResultView
+          scores={{
+            openness: Number(data.openness) || 0,
+            conscientiousness: Number(data.conscientiousness) || 0,
+            extraversion: Number(data.extraversion) || 0,
+            agreeableness: Number(data.agreeableness) || 0,
+            neuroticism: Number(data.neuroticism) || 0,
+          }}
+        />
+      )
+    }
+
+    case EXERCICE_RESULTS_TYPES.VALUES: {
+      const selectedValues = Array.isArray(data.selectedValues) ? data.selectedValues : []
+      const peopleExercise = Array.isArray(data.peopleExercise) ? data.peopleExercise : []
+      return <ValuesResultView selectedValues={selectedValues} peopleExercise={peopleExercise} />
     }
 
     default:
