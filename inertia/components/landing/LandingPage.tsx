@@ -37,6 +37,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     <PublicLayout
       headerProps={{
         onLogoClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+        onOfferClick: () => router.visit('/offre'),
         onMethodologyClick: () => router.visit('/methodologie'),
         onAiClick: () => scrollToSection('ai-engine'),
         onActionClick: onEnterApp,
@@ -458,6 +459,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 Plateforme
               </h4>
               <ul className="space-y-4">
+                <li>
+                  <AppLink
+                    href="/offre"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                  >
+                    Offre
+                  </AppLink>
+                </li>
                 <li>
                   <AppLink
                     href="/methodologie"

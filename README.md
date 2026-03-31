@@ -18,7 +18,7 @@ Application d’accompagnement à la transition de carrière (conseillers, candi
 
 ### P1 (conversion / réassurance)
 
-- [ ] **Offre / Pour les cabinets** (`/offre`) — bénéfices, pour qui, différenciation, livrables
+- [x] **Offre / Pour les cabinets** (`/offre`) — bénéfices, pour qui, différenciation, livrables
 - [ ] **Tarifs** (`/tarifs`) — ou “sur devis” + packaging (essentiel pour qualifier les leads)
 - [ ] **FAQ** (`/faq`) — objections: rôle de l’IA, méthodo, RGPD, usages cabinet
 - [ ] **Cas clients / Témoignages** (`/cas-clients`) — preuves sociales et résultats

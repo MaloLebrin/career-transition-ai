@@ -1,14 +1,15 @@
 import { Head, router } from '@inertiajs/react'
-import MethodologyPage from '../components/marketing/MethodologyPage'
+import OfferPage from '../components/marketing/OfferPage'
 
-export default function Methodology() {
+export default function Offer() {
   return (
     <>
-      <Head title="Méthodologie" />
-      <MethodologyPage
+      <Head title="Offre" />
+      <OfferPage
         onEnterApp={() => router.visit('/auth/login')}
         onBackToHome={() => router.visit('/')}
         onOffer={() => router.visit('/offre')}
+        onMethodology={() => router.visit('/methodologie')}
       />
     </>
   )

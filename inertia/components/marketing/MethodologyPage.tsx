@@ -10,13 +10,15 @@ import Logo from '../ui/Logo'
 interface MethodologyPageProps {
   onEnterApp: () => void
   onBackToHome?: () => void
+  onOffer?: () => void
 }
 
-export default function MethodologyPage({ onEnterApp, onBackToHome }: MethodologyPageProps) {
+export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer }: MethodologyPageProps) {
   return (
     <PublicLayout
       headerProps={{
         onLogoClick: onBackToHome ?? (() => {}),
+        onOfferClick: onOffer,
         showAction: true,
         actionLabel: 'Accès Expert',
         onActionClick: onEnterApp,
@@ -245,6 +247,14 @@ export default function MethodologyPage({ onEnterApp, onBackToHome }: Methodolog
                 Plateforme
               </h4>
               <ul className="space-y-4">
+                <li>
+                  <AppLink
+                    href="/offre"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                  >
+                    Offre
+                  </AppLink>
+                </li>
                 <li>
                   <AppLink
                     href="/methodologie"

@@ -4,6 +4,7 @@ import Logo from '../ui/Logo'
 
 export interface PublicHeaderProps {
   onLogoClick: () => void
+  onOfferClick?: () => void
   onMethodologyClick?: () => void
   onAiClick?: () => void
   onActionClick?: () => void
@@ -13,6 +14,7 @@ export interface PublicHeaderProps {
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({
   onLogoClick,
+  onOfferClick,
   onMethodologyClick,
   onAiClick,
   onActionClick,
@@ -31,6 +33,15 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
         </button>
 
         <div className="hidden md:flex items-center space-x-8">
+          {onOfferClick && (
+            <button
+              type="button"
+              onClick={onOfferClick}
+              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            >
+              Offre
+            </button>
+          )}
           {onMethodologyClick && (
             <button
               type="button"
