@@ -1,6 +1,6 @@
 import type { UserRole } from '#shared/types/advisor/roles'
 import { useForm } from '@inertiajs/react'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
@@ -15,14 +15,14 @@ const roles: { id: UserRole; title: string; desc: string }[] = [
   { id: 'advisor', title: 'Consultant', desc: 'Accompagnement de ses propres candidats' },
 ]
 
-const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
+export const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
     email: '',
     role: 'consultant' as UserRole,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     post('/dashboard/conseiller/settings/organization/advisors', {
       onSuccess: () => {
@@ -30,7 +30,7 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
         onClose()
       },
     })
-  }
+  }, [post, reset, onClose])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -183,5 +183,3 @@ const AddAdvisorModal: React.FC<Props> = ({ onClose }) => {
     </div>
   )
 }
-
-export default AddAdvisorModal

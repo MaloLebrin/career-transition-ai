@@ -1,6 +1,6 @@
-import { describe, test, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import AddAdvisorModal from '../../../inertia/components/modals/AddAdvisorModal'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, test, vi } from 'vitest'
+import { AddAdvisorModal } from '../../../inertia/components/modals/AddAdvisorModal'
 
 const mockPost = vi.fn()
 const mockReset = vi.fn()
