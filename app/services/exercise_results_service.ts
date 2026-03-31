@@ -6,6 +6,7 @@ import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
+import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import { DateTime } from 'luxon'
 
 type SaveResultInput = {
@@ -65,6 +66,8 @@ export class ExerciseResultsService {
   public async saveResult(input: SaveResultInput): Promise<EmployeeDto> {
     const employee = await Employee.findOrFail(input.employeeId)
 
+    const progressPercent = getExerciseProgress(String(input.type), input.data ?? {}, input.status)
+
     const existing = await ExerciseResult.query()
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
@@ -76,6 +79,7 @@ export class ExerciseResultsService {
         status: input.status,
         date: input.date ? DateTime.fromISO(input.date) : existing.date,
         duration: input.duration ?? existing.duration,
+        progressPercent,
         data: input.data,
         quantitativeScore: input.quantitativeScore ?? existing.quantitativeScore,
         qualitativeAnalysis: input.qualitativeAnalysis ?? existing.qualitativeAnalysis,
@@ -89,6 +93,7 @@ export class ExerciseResultsService {
         status: input.status,
         date: input.date ? DateTime.fromISO(input.date) : null,
         duration: input.duration ?? null,
+        progressPercent,
         data: input.data,
         quantitativeScore: input.quantitativeScore ?? null,
         qualitativeAnalysis: input.qualitativeAnalysis ?? null,
@@ -169,6 +174,8 @@ export class ExerciseResultsService {
   public async saveDraft(input: SaveDraftInput): Promise<void> {
     const employee = await Employee.findOrFail(input.employeeId)
 
+    const progressPercent = getExerciseProgress(String(input.type), input.data ?? {}, 'draft')
+
     const existing = await ExerciseResult.query()
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
@@ -183,6 +190,7 @@ export class ExerciseResultsService {
         status: 'draft',
         date: null,
         duration: null,
+        progressPercent,
         data: input.data,
         quantitativeScore: null,
         qualitativeAnalysis: null,
@@ -195,6 +203,7 @@ export class ExerciseResultsService {
         status: 'draft',
         date: null,
         duration: null,
+        progressPercent,
         data: input.data,
         quantitativeScore: null,
         qualitativeAnalysis: null,

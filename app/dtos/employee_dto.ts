@@ -42,6 +42,7 @@ export type ExerciseResultDto = {
   date: string
   duration: number
   data: unknown
+  progressPercent?: number
   quantitativeScore: number
   qualitativeAnalysis?: string
 }

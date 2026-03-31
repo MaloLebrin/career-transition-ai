@@ -41,6 +41,7 @@ test.group('exercise_progress helper', () => {
         type: EXERCICE_RESULTS_TYPES.MOTIVATION,
         status: 'completed',
         data: {},
+        progressPercent: null,
         date: { toISO: () => '2026-01-01T00:00:00.000Z' },
         updatedAt: { toISO: () => '2026-01-01T00:00:00.000Z' },
       },
@@ -48,6 +49,7 @@ test.group('exercise_progress helper', () => {
         type: EXERCICE_RESULTS_TYPES.MOTIVATION,
         status: 'draft',
         data: { matrix: [[null, 0], [null, null]], currentI: 0, currentJ: 1 },
+        progressPercent: 40,
         date: null,
         updatedAt: { toISO: () => '2026-02-01T00:00:00.000Z' },
       },
@@ -55,13 +57,14 @@ test.group('exercise_progress helper', () => {
         type: EXERCICE_RESULTS_TYPES.VALUES,
         status: 'completed',
         data: {},
+        progressPercent: 100,
         date: { toISO: () => '2026-03-01T00:00:00.000Z' },
         updatedAt: { toISO: () => '2026-03-01T00:00:00.000Z' },
       },
     ]
 
     const map = getExerciseProgressByType(results as any)
-    assert.isBelow(map.motivation, 100)
+    assert.equal(map.motivation, 40)
     assert.equal(map.values, 100)
     assert.equal(map.personality, 0)
   })

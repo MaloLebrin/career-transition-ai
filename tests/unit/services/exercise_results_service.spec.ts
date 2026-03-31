@@ -81,6 +81,17 @@ test.group('ExerciseResultsService', (group) => {
     assert.equal(dto.exercises[0].quantitativeScore, 10)
     assert.lengthOf(dto.plan, 1)
     assert.isTrue(dto.plan[0].completed)
+
+    const stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .first()
+
+    assert.isNotNull(stored)
+    assert.isAtLeast(stored!.progressPercent ?? 0, 0)
+    assert.isAtMost(stored!.progressPercent ?? 0, 100)
+    assert.equal(stored!.status, exerciceResultStatusValues.COMPLETED)
+    assert.equal(stored!.progressPercent, 100)
   })
 
   test('saveResult marks a step completed only when all associated exercises are completed', async ({
@@ -201,7 +212,9 @@ test.group('ExerciseResultsService', (group) => {
 
     assert.isNotNull(stored)
     assert.equal(stored!.status, 'draft')
-    assert.deepEqual(stored!.data, { foo: 'bar' })
+    assert.equal((stored!.data as any).foo, 'bar')
+    assert.isAtLeast(stored!.progressPercent ?? 0, 0)
+    assert.isAtMost(stored!.progressPercent ?? 0, 100)
 
     await service.saveDraft({
       employeeId: employee.id,
@@ -216,7 +229,9 @@ test.group('ExerciseResultsService', (group) => {
 
     assert.isNotNull(stored)
     assert.equal(stored!.status, 'draft')
-    assert.deepEqual(stored!.data, { foo: 'baz' })
+    assert.equal((stored!.data as any).foo, 'baz')
+    assert.isAtLeast(stored!.progressPercent ?? 0, 0)
+    assert.isAtMost(stored!.progressPercent ?? 0, 100)
   })
 
   test('saveDraft does not downgrade a completed result', async ({ assert }) => {
@@ -316,7 +331,15 @@ test.group('ExerciseResultsService', (group) => {
     assert.isNotNull(draft)
     assert.equal(draft!.employeeId, employee.id)
     assert.equal(draft!.type, EXERCICE_RESULTS_TYPES.MOTIVATION)
-    assert.deepEqual(draft!.data, { foo: 'bar' })
+    assert.equal((draft!.data as any).foo, 'bar')
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .first()
+
+    assert.isNotNull(row)
+    assert.isAtLeast(row!.progressPercent ?? 0, 0)
+    assert.isAtMost(row!.progressPercent ?? 0, 100)
     assert.isString(draft!.lastUpdated)
   })
 

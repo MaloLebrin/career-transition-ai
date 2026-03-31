@@ -82,6 +82,7 @@ test.group('Employee mapper', (group) => {
       status: 'completed',
       date: DateTime.fromISO('2025-01-02'),
       duration: 30,
+      progressPercent: 100,
       data: { foo: 'bar' },
       quantitativeScore: 10,
       qualitativeAnalysis: 'Analyse',
@@ -144,6 +145,7 @@ test.group('Employee mapper', (group) => {
     assert.lengthOf(dto.exercises, 1)
     assert.equal(dto.exercises[0].type, 'MOTIVATION')
     assert.equal(dto.exercises[0].quantitativeScore, 10)
+    assert.equal(dto.exercises[0].progressPercent, 100)
 
     assert.lengthOf(dto.plan, 1)
     assert.deepEqual(dto.plan[0].associatedExercises, ['MOTIVATION'])

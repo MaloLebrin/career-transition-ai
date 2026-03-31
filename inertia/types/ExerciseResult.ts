@@ -6,6 +6,7 @@ export interface ExerciseResult {
   date: string
   duration: number
   data: any
+  progressPercent?: number
   quantitativeScore: number
   qualitativeAnalysis?: string
 }

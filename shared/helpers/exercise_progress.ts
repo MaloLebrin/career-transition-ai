@@ -4,6 +4,7 @@ type ResultLike = {
   type: string
   status?: string | null
   data?: any
+  progressPercent?: number | null
   date?: { toISO: () => string | null } | null
   updatedAt?: { toISO: () => string | null } | null
 }
@@ -165,9 +166,10 @@ export function getExerciseProgressByType(results: ResultLike[]): Record<string,
   const progressByType: Record<string, number> = {}
   for (const exercise of EXERCISE_LIST) {
     const latest = latestByType.get(exercise.slug)
-    progressByType[exercise.slug] = latest
-      ? getExerciseProgress(exercise.slug, latest.data ?? {}, latest.status)
-      : 0
+    progressByType[exercise.slug] =
+      latest && typeof latest.progressPercent === 'number'
+        ? clampPercent(latest.progressPercent)
+        : 0
   }
 
   return progressByType

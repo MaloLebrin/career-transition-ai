@@ -105,6 +105,7 @@ export const mapExerciseResult = (result: ExerciseResult): ExerciseResultDto => 
     date: result.date ? result.date.toISO()! : new Date().toISOString(),
     duration: result.duration ?? 0,
     data: result.data,
+    progressPercent: result.progressPercent ?? undefined,
     quantitativeScore: result.quantitativeScore ?? 0,
     qualitativeAnalysis: result.qualitativeAnalysis ?? undefined,
   }

@@ -30,6 +30,9 @@ export default class ExerciseResult extends BaseModel {
   @column()
   declare duration: number | null
 
+  @column()
+  declare progressPercent: number | null
+
   @column({
     consume: (value: string) => (typeof value === 'string' ? JSON.parse(value) : value),
     prepare: (value: unknown) => (typeof value === 'object' ? JSON.stringify(value) : value),
