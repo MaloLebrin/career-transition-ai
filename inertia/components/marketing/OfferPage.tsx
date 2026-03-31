@@ -5,7 +5,6 @@ import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
-import Logo from '../ui/Logo'
 
 interface OfferPageProps {
   onEnterApp: () => void
@@ -62,9 +61,6 @@ export default function OfferPage({ onEnterApp, onBackToHome, onOffer, onMethodo
             >
               <div className="flex items-center gap-3">
                 <Badge variant="slate">Offre • Pour les cabinets</Badge>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
-                  Conversion & réassurance
-                </span>
               </div>
 
               <h1 className="text-5xl md:text-6xl font-bold tracking-tighter leading-[0.95] text-brand-navy">
@@ -105,7 +101,6 @@ export default function OfferPage({ onEnterApp, onBackToHome, onOffer, onMethodo
             <div className="bg-white rounded-[40px] border border-brand-navy/5 shadow-[0_40px_90px_-35px_rgba(30,47,63,0.25)] overflow-hidden">
               <div className="p-8 border-b border-brand-navy/5 bg-brand-ivory/30">
                 <div className="flex items-center gap-4">
-                  <Logo size="sm" />
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
                       Livrables structurés
@@ -176,7 +171,9 @@ export default function OfferPage({ onEnterApp, onBackToHome, onOffer, onMethodo
           </div>
 
           <div className="bg-brand-ivory/50 border border-brand-navy/5 rounded-[40px] p-10 space-y-8">
-            <Badge variant="slate">Réassurance</Badge>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-brand-navy leading-tight">
+                L&apos;IA comme copilote, pas comme verdict.
+              </h2>
             <div className="space-y-6">
               <Bullet
                 title="IA = copilote"

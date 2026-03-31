@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { APP_NAME } from '#shared/constants/app'
 
 export type LogoSize = 'sm' | 'md' | 'lg'
 
@@ -13,7 +14,7 @@ const HEIGHT_MAP: Record<LogoSize, number> = {
   lg: 52,
 }
 
-const BRAND_NAME = 'France Transition Carrière'
+const BRAND_NAME = APP_NAME
 
 /**
  * Logo de l'application. Pour utiliser des images à la place, ajoute
@@ -39,9 +40,9 @@ const Logo = memo(function Logo({ size = 'md', className = '' }: LogoProps) {
         FTC
       </div>
       <div className="leading-none">
-        <div className="text-sm font-black text-slate-900">France Transition</div>
+        <div className="text-sm font-black text-slate-900">{APP_NAME}</div>
         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          Carrière
+          {/* Intentionnellement laissé vide: le nom complet est géré via APP_NAME */}
         </div>
       </div>
     </div>

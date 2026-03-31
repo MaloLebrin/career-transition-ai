@@ -1,4 +1,5 @@
 import { type UserRole } from '#shared/constants/user'
+import { APP_NAME } from '#shared/constants/app'
 import React, { useState } from 'react'
 import { Avatar } from '~/components/layout/header/Avatar'
 import { LogoutModal } from '~/components/ui/LogoutModal'
@@ -36,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
             <Logo size="md" showText={false} />
             <div className="text-left">
               <h1 className="text-lg font-bold tracking-tight text-brand-navy leading-none">
-                France Transition Carrière
+                {APP_NAME}
               </h1>
               <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest mt-1">
                 Accompagnement Expert
@@ -80,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
       <main className="grow flex flex-col max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 py-10 w-full min-h-0">{children}</main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
-          France Transition Carrière &copy; 2026 • Clarté Stratégique Humaine
+          {APP_NAME} &copy; 2026 • Clarté Stratégique Humaine
         </div>
       </footer>
     </div>
