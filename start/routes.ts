@@ -16,7 +16,6 @@ import './routes/dashboard/conseiller.js'
 import './routes/dashboard/conseiller/employee.js'
 import './routes/dashboard/conseiller/settings.js'
 import './routes/dashboard/index.js'
-import './routes/assets_compat.js'
 import './routes/onboarding.js'
 import './routes/transmit.js'
 

@@ -45,6 +45,33 @@ function buildIsoValue(date: Date | null, time: string): string {
   return merged.toISOString()
 }
 
+function parseTimeToMinutes(t: string): number {
+  const [hh, mm] = String(t).split(':')
+  const h = Number(hh)
+  const m = Number(mm)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN
+  return h * 60 + m
+}
+
+function pad2(n: number) {
+  return String(n).padStart(2, '0')
+}
+
+function buildTimeOptions(minTime: string, maxTime: string, stepMinutes: number) {
+  const min = parseTimeToMinutes(minTime)
+  const max = parseTimeToMinutes(maxTime)
+  const step = Number(stepMinutes) || 15
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max < min || step <= 0) return []
+
+  const opts: string[] = []
+  for (let minutes = min; minutes <= max; minutes += step) {
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    opts.push(`${pad2(h)}:${pad2(m)}`)
+  }
+  return opts
+}
+
 const DateTimePicker = memo(function DateTimePicker({
   label,
   value,
@@ -64,28 +91,37 @@ const DateTimePicker = memo(function DateTimePicker({
   const date = useMemo(() => parseToDate(value), [value])
   const dateLabel = formatDatePart(date)
   const [internalTime, setInternalTime] = useState<string>(formatTimePart(date))
+  const minTime = '07:30'
+  const maxTime = '20:00'
+
+  // Keep time select in sync when parent value changes (e.g. draft load / editing existing RDV)
+  React.useEffect(() => {
+    setInternalTime(formatTimePart(date))
+  }, [value])
 
   const describedBy =
     [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') || undefined
 
   const timeOptions = useMemo(() => {
-    const opts: string[] = []
-    for (let h = 0; h < 24; h += 1) {
-      for (let m = 0; m < 60; m += minuteStep) {
-        const hh = String(h).padStart(2, '0')
-        const mm = String(m).padStart(2, '0')
-        opts.push(`${hh}:${mm}`)
-      }
-    }
-    return opts
+    return buildTimeOptions(minTime, maxTime, minuteStep)
   }, [minuteStep])
 
   const handleDateChange = useCallback(
     (selected: Date | null) => {
-      const iso = buildIsoValue(selected, internalTime)
+      if (!selected) {
+        onChange('')
+        return
+      }
+
+      const timeToUse = internalTime || timeOptions[0] || ''
+      if (!internalTime && timeToUse) {
+        setInternalTime(timeToUse)
+      }
+
+      const iso = buildIsoValue(selected, timeToUse)
       onChange(iso)
     },
-    [internalTime, onChange, value]
+    [internalTime, onChange, timeOptions]
   )
 
   const handleTimeChange = useCallback(
@@ -93,6 +129,10 @@ const DateTimePicker = memo(function DateTimePicker({
       const time = e.target.value
       setInternalTime(time)
       const currentDate = parseToDate(value)
+      if (!currentDate) {
+        // User picked a time before selecting a date: keep local state only.
+        return
+      }
       const iso = buildIsoValue(currentDate, time)
       onChange(iso)
     },

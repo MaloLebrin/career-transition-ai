@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { EXERCISE_LIST } from '~/config/exercises'
 import { ExerciseType, SupportPlanStep } from '~/types'
 import Button from '../ui/Button'
@@ -46,7 +46,7 @@ export const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber,
     }
   }
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
     const payload = {
@@ -68,7 +68,7 @@ export const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber,
     } else {
       post(`/dashboard/conseiller/employees/${employeeId}/steps`, submitOptions)
     }
-  }, [employeeId, isEditing, step, reset, onClose])
+  }
 
   const displayNumber = useMemo(() => {
     return isEditing && step?.sortOrder !== undefined ? step.sortOrder + 1 : stepNumber ?? '?'
