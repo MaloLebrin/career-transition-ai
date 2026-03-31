@@ -25,30 +25,44 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
   ])
   const startTimeRef = useRef<number>(Date.now())
   const dragFromIndexRef = useRef<number | null>(null)
+  const onSaveDraftRef = useRef(onSaveDraft)
+  const didInitFromDraftRef = useRef(false)
 
   // Load draft on mount
   useEffect(() => {
-    if (initialDraftPromise) {
-      initialDraftPromise.then((draft) => {
-        if (draft && draft.data) {
-          setRankedValues(draft.data.selectedValues || [])
-          setPeople(
-            draft.data.peopleExercise || [
-              { name: '', values: '' },
-              { name: '', values: '' },
-              { name: '', values: '' },
-            ]
-          )
-          setStep(draft.data.step || 1)
-        }
-      })
+    if (didInitFromDraftRef.current) return
+    didInitFromDraftRef.current = true
+    let cancelled = false
+
+    initialDraftPromise?.then((draft) => {
+      if (cancelled) return
+      if (draft && (draft as any).data) {
+        const data = (draft as any).data
+        setRankedValues(data.selectedValues || [])
+        setPeople(
+          data.peopleExercise || [
+            { name: '', values: '' },
+            { name: '', values: '' },
+            { name: '', values: '' },
+          ]
+        )
+        setStep(data.step || 1)
+      }
+    })
+
+    return () => {
+      cancelled = true
     }
-  }, [initialDraftPromise])
+  }, [])
+
+  useEffect(() => {
+    onSaveDraftRef.current = onSaveDraft
+  }, [onSaveDraft])
 
   // Auto-save draft whenever relevant state changes
   useEffect(() => {
-    onSaveDraft({ selectedValues: rankedValues, peopleExercise: people, step })
-  }, [rankedValues, people, step, onSaveDraft])
+    onSaveDraftRef.current({ selectedValues: rankedValues, peopleExercise: people, step })
+  }, [rankedValues, people, step])
 
   const unrankedValues = SCHWARTZ_VALUES.filter((v) => !rankedValues.includes(v.label))
 
