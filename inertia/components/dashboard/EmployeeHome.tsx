@@ -9,7 +9,7 @@ export default function EmployeeHome({
   completedExercises,
   totalExercises,
   exerciseCompletionPercent,
-  exerciseProgressByType,
+  exerciseProgressByType: _exerciseProgressByType,
 }: {
   employee: EmployeeData
   completedExercises: number
@@ -76,7 +76,7 @@ export default function EmployeeHome({
                 />
               </div>
             </div>
-            <PlanStepsTimeline plan={employee.plan} exerciseProgressByType={exerciseProgressByType} />
+            <PlanStepsTimeline plan={employee.plan} exercises={employee.exercises ?? []} />
             <div className="mt-8 pt-8 border-t border-brand-navy/5">
               <AppLink
                 href="/dashboard/candidat/exercises"

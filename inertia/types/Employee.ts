@@ -53,6 +53,7 @@ export type EmployeeData = {
     status: string
     date: string | null
     quantitativeScore: number | null
+    progressPercent?: number | null
   }>
   plan: Array<{
     id: number

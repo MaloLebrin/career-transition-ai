@@ -2,10 +2,32 @@ import type { EmployeeData } from '../../types/employee'
 import PlanStepItem from './PlanStepItem'
 
 type PlanStep = EmployeeData['plan'][number]
+type Exercise = EmployeeData['exercises'][number]
 
-/** Slug used in exerciseProgressByType keys (e.g. life_curve). */
-function exerciseSlugFromPlanToken(exerciseType: string): string {
-  return String(exerciseType).toLowerCase()
+function normalizeType(type: string): string {
+  return String(type).toLowerCase()
+}
+
+function getLatestProgressByType(exercises: Exercise[]): Record<string, number> {
+  const latestByType = new Map<string, { ts: string; progress: number }>()
+
+  for (const ex of exercises ?? []) {
+    const type = normalizeType(ex.type)
+    const ts = String(ex.date ?? '')
+    const current = latestByType.get(type)
+    const progress =
+      typeof ex.progressPercent === 'number' ? ex.progressPercent : 0
+
+    if (!current || ts > current.ts) {
+      latestByType.set(type, { ts, progress })
+    }
+  }
+
+  const out: Record<string, number> = {}
+  for (const [type, v] of latestByType.entries()) {
+    out[type] = v.progress
+  }
+  return out
 }
 
 function stepCompletionFromProgress(
@@ -16,17 +38,19 @@ function stepCompletionFromProgress(
   const associated = step.associatedExercises
   if (!associated?.length) return false
   return associated.every(
-    (ex) => (exerciseProgressByType[exerciseSlugFromPlanToken(ex)] ?? 0) >= 100
+    (ex) => (exerciseProgressByType[normalizeType(ex)] ?? 0) >= 100
   )
 }
 
 export default function PlanStepsTimeline({
   plan,
-  exerciseProgressByType,
+  exercises,
 }: {
   plan: PlanStep[]
-  exerciseProgressByType: Record<string, number>
+  exercises: Exercise[]
 }) {
+  const exerciseProgressByType = getLatestProgressByType(exercises)
+
   return (
     <div className="space-y-10">
       {plan.map((step, idx) => {
@@ -40,7 +64,7 @@ export default function PlanStepsTimeline({
             index={idx}
             stepDone={stepDone}
             isLocked={isLocked}
-            exerciseProgressByType={exerciseProgressByType}
+            exercises={exercises}
           />
         )
       })}

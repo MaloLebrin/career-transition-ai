@@ -1,6 +1,7 @@
 import { formatDateTimeFR } from '#shared/helpers/date'
 import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
+import type { EmployeeData } from '../../types/employee'
 
 type PlanStep = {
   id: number
@@ -17,22 +18,39 @@ function exerciseSlugFromPlanToken(exerciseType: string): string {
   return String(exerciseType).toLowerCase()
 }
 
+type Exercise = EmployeeData['exercises'][number]
+
+function latestProgressPercentForType(exercises: Exercise[], type: string): number {
+  const t = String(type).toLowerCase()
+  let bestTs = ''
+  let best = 0
+
+  for (const ex of exercises ?? []) {
+    if (String(ex.type).toLowerCase() !== t) continue
+    const ts = String(ex.date ?? '')
+    if (bestTs && ts && ts <= bestTs) continue
+    bestTs = ts
+    best = typeof ex.progressPercent === 'number' ? ex.progressPercent : 0
+  }
+
+  return best
+}
+
 function PlanStepExercises({
   isLocked,
   associatedExercises,
-  exerciseProgressByType,
+  exercises,
 }: {
   isLocked: boolean
   associatedExercises: string[]
-  exerciseProgressByType: Record<string, number>
+  exercises: Exercise[]
 }) {
   return (
     <div className="mt-6 flex flex-wrap gap-2">
       {associatedExercises.map((exerciseType) => {
         const exerciseLabel = exerciseType.replace(/_/g, ' ')
         const slug = exerciseSlugFromPlanToken(exerciseType)
-        const pct = exerciseProgressByType?.[slug] ?? 0
-        console.log(pct, `pct for ${exerciseType}`)
+        const pct = latestProgressPercentForType(exercises, slug)
         const exerciseComplete = pct >= 100
 
         if (isLocked) {
@@ -107,13 +125,13 @@ export default function PlanStepItem({
   index,
   stepDone,
   isLocked,
-  exerciseProgressByType,
+  exercises,
 }: {
   step: PlanStep
   index: number
   stepDone: boolean
   isLocked: boolean
-  exerciseProgressByType: Record<string, number>
+  exercises: Exercise[]
 }) {
   return (
     <div className="relative flex items-start group">
@@ -185,7 +203,7 @@ export default function PlanStepItem({
           <PlanStepExercises
             isLocked={isLocked}
             associatedExercises={step.associatedExercises}
-            exerciseProgressByType={exerciseProgressByType}
+            exercises={exercises}
           />
         )}
 

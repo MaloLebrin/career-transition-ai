@@ -26,7 +26,16 @@ describe('PlanStepsTimeline', () => {
             associatedExercises: [],
           },
         ] as any}
-        exerciseProgressByType={{ disc: 50 }}
+        exercises={[
+          {
+            id: 10,
+            type: 'disc',
+            status: 'draft',
+            date: '2026-01-01T00:00:00.000Z',
+            quantitativeScore: null,
+            progressPercent: 50,
+          },
+        ] as any}
       />
     )
 
