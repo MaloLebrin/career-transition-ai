@@ -12,7 +12,7 @@ export default class AuthController {
   constructor(
     private authService: AuthService,
     private candidatProfileService: CandidatProfileService
-  ) {}
+  ) { }
 
   public async login({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)
@@ -33,21 +33,10 @@ export default class AuthController {
 
   public async logout({ auth, response }: HttpContext) {
     await auth.use('web').logout()
-    return response.noContent()
+    return response.redirect('/')
   }
 
-  /**
-   * Super admin only: impersonate another user by id.
-   */
   public async impersonate({ auth, params, response, session }: HttpContext) {
-    const current = auth.user
-    if (!current) {
-      return response.unauthorized()
-    }
-    if (current.role !== 'super_admin') {
-      return response.forbidden()
-    }
-
     const targetId = Number(params.id)
     const targetUser = await this.authService.findUserById(targetId)
     if (!targetUser) {
