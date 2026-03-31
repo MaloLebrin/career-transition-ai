@@ -22,6 +22,7 @@ const BRAND_NAME = 'France Transition Carrière'
  */
 const Logo = memo(function Logo({ size = 'md', className = '' }: LogoProps) {
   const height = HEIGHT_MAP[size]
+  const markSize = Math.round(height * 0.9)
 
   return (
     <div
@@ -30,7 +31,19 @@ const Logo = memo(function Logo({ size = 'md', className = '' }: LogoProps) {
       role="img"
       aria-label={BRAND_NAME}
     >
-      <img src="~/assets/images/logo.png" alt="Logo France Transition Carrière" className="w-full h-full" />
+      <div
+        className="shrink-0 rounded-2xl bg-brand-sage/15 border border-brand-sage/25 flex items-center justify-center text-brand-sage font-black tracking-tight"
+        style={{ width: markSize, height: markSize }}
+        aria-hidden="true"
+      >
+        FTC
+      </div>
+      <div className="leading-none">
+        <div className="text-sm font-black text-slate-900">France Transition</div>
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          Carrière
+        </div>
+      </div>
     </div>
   )
 })
