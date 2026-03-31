@@ -20,6 +20,7 @@ describe('DiscResultView', () => {
     const scores = { D: 0, I: 0, S: 0, C: 0 }
     expect(() => render(<DiscResultView scores={scores} />)).not.toThrow()
     expect(screen.getByTestId('radar-chart')).toBeInTheDocument()
+    expect(screen.getByText('Dominante')).toBeInTheDocument()
   })
 
   test('renders with valid scores', () => {
@@ -29,6 +30,7 @@ describe('DiscResultView', () => {
     expect(screen.getByTestId('responsive-container')).toBeInTheDocument()
     expect(screen.getByTestId('radar-chart')).toBeInTheDocument()
     expect(screen.getByTestId('radar')).toBeInTheDocument()
+    expect(screen.getByText('Secondaire')).toBeInTheDocument()
   })
 
   test('renders all chart elements', () => {

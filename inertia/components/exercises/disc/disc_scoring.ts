@@ -1,4 +1,4 @@
-import type { DiscTrait } from './discQuestionnaire'
+import type { DiscTrait } from './discQuestionnaire';
 
 export type DiscSelection = { most: DiscTrait | ''; least: DiscTrait | '' }
 
@@ -19,31 +19,31 @@ export const DISC_TRAIT_COLORS: Record<
 > = {
   D: {
     name: 'Rouge',
-    bg: 'bg-pink-50',
-    text: 'text-pink-700',
-    ring: 'ring-rose-200',
-    fill: 'bg-pink-700',
+    bg: 'bg-red-50',
+    text: 'text-red-700',
+    ring: 'ring-red-200',
+    fill: 'bg-red-500',
   },
   I: {
     name: 'Jaune',
     bg: 'bg-amber-50',
     text: 'text-amber-700',
     ring: 'ring-amber-200',
-    fill: 'bg-amber-700',
+    fill: 'bg-amber-300',
   },
   S: {
     name: 'Vert',
     bg: 'bg-emerald-50',
     text: 'text-emerald-700',
     ring: 'ring-emerald-200',
-    fill: 'bg-emerald-700',
+    fill: 'bg-emerald-500',
   },
   C: {
     name: 'Bleu',
     bg: 'bg-sky-50',
     text: 'text-sky-700',
     ring: 'ring-sky-200',
-    fill: 'bg-sky-700',
+    fill: 'bg-sky-500',
   },
 }
 
@@ -131,4 +131,3 @@ export function computeDiscFromSelections(
     secondary,
   }
 }
-

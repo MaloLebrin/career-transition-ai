@@ -3,11 +3,9 @@ import { ExerciseDraft } from '../../types'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
-import { DISC_PROFILE_COPY } from './disc/discProfileCopy'
 import { DISC_BLOCKS } from './disc/discQuestionnaire'
+import DiscResultSummary from './disc/DiscResultSummary'
 import {
-  DISC_TRAIT_COLORS,
-  DISC_TRAIT_LABELS,
   computeDiscFromSelections,
   type DiscComputation,
   type DiscSelection,
@@ -137,15 +135,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
 
   const currentBlock = DISC_BLOCKS[currentIdx]
 
-  const dominantCopy = useMemo(() => {
-    if (!resultPreview) return null
-    return DISC_PROFILE_COPY[resultPreview.dominant]
-  }, [resultPreview])
-
-  const secondaryCopy = useMemo(() => {
-    if (!resultPreview) return null
-    return DISC_PROFILE_COPY[resultPreview.secondary]
-  }, [resultPreview])
+  const percent = useMemo(() => resultPreview?.percent ?? null, [resultPreview])
 
   return (
     <div className="mx-auto animate-fadeIn pb-20">
@@ -170,151 +160,37 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
           </div>
 
           {resultPreview ? (
-            <div className="space-y-10">
-              <div className="rounded-[32px] border border-slate-100 bg-slate-50 p-8">
-                <p className="text-slate-600 font-medium">
-                  Modèle DISC (comportements & communication). Outil pédagogique, non-diagnostique.
-                </p>
-                <p className="text-xs text-slate-400 mt-2">
-                  Référence modèle/couleurs: <span className="font-bold">Profil4</span> —{' '}
-                  <a
-                    className="underline hover:text-slate-600"
-                    href="https://profil4.com/fr/documentation"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    documentation
-                  </a>
-                  .
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 rounded-[40px] border border-slate-100 bg-white p-8">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 ring-1 ${DISC_TRAIT_COLORS[resultPreview.dominant].bg} ${DISC_TRAIT_COLORS[resultPreview.dominant].text} ${DISC_TRAIT_COLORS[resultPreview.dominant].ring}`}
-                    >
-                      <span className="font-black">Dominante</span>
-                      <span className="font-black">{resultPreview.dominant}</span>
-                      <span className="text-xs font-bold opacity-70">
-                        ({DISC_TRAIT_LABELS[resultPreview.dominant]})
-                      </span>
-                    </span>
-                    <span className="text-slate-300 font-black">+</span>
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 ring-1 ${DISC_TRAIT_COLORS[resultPreview.secondary].bg} ${DISC_TRAIT_COLORS[resultPreview.secondary].text} ${DISC_TRAIT_COLORS[resultPreview.secondary].ring}`}
-                    >
-                      <span className="font-black">Secondaire</span>
-                      <span className="font-black">{resultPreview.secondary}</span>
-                      <span className="text-xs font-bold opacity-70">
-                        ({DISC_TRAIT_LABELS[resultPreview.secondary]})
-                      </span>
-                    </span>
-                  </div>
-
-                  <div className="mt-8 space-y-4">
-                    {(['D', 'I', 'S', 'C'] as const).map((t) => {
-                      const value = resultPreview.percent[t]
-                      const color = DISC_TRAIT_COLORS[t]
-                      const fillClass = color.fill
-
-                      return (
-                        <div key={t} className="space-y-2">
-                          <div className="flex items-baseline justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className={`font-black ${color.text}`}>{t}</span>
-                              <span className="text-xs font-bold text-slate-500">
-                                {DISC_TRAIT_LABELS[t]}
-                              </span>
-                            </div>
-                            <span className="text-xs font-black text-slate-700">{value}%</span>
-                          </div>
-                          <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                              className={`h-full ${fillClass} transition-all duration-700`}
-                              style={{ width: `${value}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                <div className="rounded-[40px] border border-slate-100 bg-white p-8">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    Lecture rapide
-                  </h4>
-                  <div className="mt-4 space-y-4">
-                    {dominantCopy && (
-                      <div>
-                        <div className="font-black text-slate-900">{dominantCopy.title}</div>
-                        <p className="text-sm text-slate-600 mt-1">{dominantCopy.subtitle}</p>
-                      </div>
-                    )}
-                    {secondaryCopy && resultPreview.secondary !== resultPreview.dominant && (
-                      <div className="pt-4 border-t border-slate-100">
-                        <div className="font-black text-slate-900">{secondaryCopy.title}</div>
-                        <p className="text-sm text-slate-600 mt-1">{secondaryCopy.subtitle}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {dominantCopy && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {[dominantCopy.strengths, dominantCopy.watchouts, dominantCopy.prefers, dominantCopy.underStress].map(
-                    (section) => (
-                      <div
-                        key={section.title}
-                        className="rounded-[40px] border border-slate-100 bg-white p-8"
+            percent && (
+              <DiscResultSummary
+                percent={percent}
+                dominant={resultPreview.dominant}
+                secondary={resultPreview.secondary}
+                footer={
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center border-t border-slate-100 pt-10">
+                    <Button onClick={() => setResultPreview(null)} variant="ghost" size="sm">
+                      ← Revoir mes réponses
+                    </Button>
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => {
+                          setSelections({})
+                          setCurrentIdx(0)
+                          setResultPreview(null)
+                          startTimeRef.current = Date.now()
+                        }}
+                        variant="outline"
+                        size="sm"
                       >
-                        <h4 className="text-sm font-black text-slate-900">{section.title}</h4>
-                        <ul className="mt-4 space-y-2 text-sm text-slate-600">
-                          {section.bullets.map((b) => (
-                            <li key={b} className="flex gap-2">
-                              <span className="text-slate-300 font-black" aria-hidden="true">
-                                •
-                              </span>
-                              <span>{b}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center border-t border-slate-100 pt-10">
-                <Button
-                  onClick={() => setResultPreview(null)}
-                  variant="ghost"
-                  size="sm"
-                >
-                  ← Revoir mes réponses
-                </Button>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setSelections({})
-                      setCurrentIdx(0)
-                      setResultPreview(null)
-                      startTimeRef.current = Date.now()
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Recommencer
-                  </Button>
-                  <Button onClick={saveResults} size="lg">
-                    Enregistrer mon profil
-                  </Button>
-                </div>
-              </div>
-            </div>
+                        Recommencer
+                      </Button>
+                      <Button onClick={saveResults} size="lg">
+                        Enregistrer mon profil
+                      </Button>
+                    </div>
+                  </div>
+                }
+              />
+            )
           ) : (
             <>
               <p className="text-slate-500 mb-10 font-medium">
