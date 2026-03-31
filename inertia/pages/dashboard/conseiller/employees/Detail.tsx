@@ -1,5 +1,6 @@
+import { formatDateTimeFR } from '#shared/helpers/date'
 import { Head, router } from '@inertiajs/react'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import NotesSection from '~/components/dashboard/NotesSection'
 import StepEditorModal from '~/components/modals/StepEditorModal'
@@ -8,10 +9,9 @@ import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
-import { useAuth } from '~/hooks/useAuth'
+import type { ExerciseType, SupportPlanStep } from '~/types'
 import type { Note } from '~/types/Note'
-import type { Employee, SupportPlanStep } from '~/types'
-import { formatDateTimeFR } from '#shared/helpers/date'
+import { Employee } from '~/types/employee'
 
 interface EmployeeDetailProps {
   employeeId: string
@@ -19,59 +19,62 @@ interface EmployeeDetailProps {
   notes?: Note[]
 }
 
+const normalizeExerciseType = (t: string | undefined): string =>
+  (t ?? '').toUpperCase().replace(/-/g, '_')
+
 export default function DashboardEmployeeDetail({
   employeeId,
   employee: selectedEmployee,
   notes = [],
 }: EmployeeDetailProps) {
-  const { user } = useAuth()
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isStepEditorOpen, setIsStepEditorOpen] = useState(false)
   const [editingStep, setEditingStep] = useState<SupportPlanStep | undefined>(undefined)
   const [deletingStepId, setDeletingStepId] = useState<number | null>(null)
 
-  const handleToggleLock = (step: SupportPlanStep) => {
+  const handleToggleLock = useCallback((step: SupportPlanStep) => {
     const action = step.isLocked ? 'unlock' : 'lock'
     router.post(`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}/${action}`, {}, {
       preserveScroll: true,
     })
-  }
+  }, [employeeId])
 
-  const handleDeleteStep = () => {
+  const completedExercises = useMemo(() => {
+    return selectedEmployee?.exercises.map((e) => e.type.toLowerCase() as ExerciseType) ?? []
+  }, [selectedEmployee])
+
+  const handleDeleteStep = useCallback(() => {
     if (deletingStepId) {
       router.delete(`/dashboard/conseiller/employees/${employeeId}/steps/${deletingStepId}`, {
         preserveScroll: true,
         onSuccess: () => setDeletingStepId(null),
       })
     }
-  }
+  }, [deletingStepId, employeeId])
 
-  const openEditModal = (step: SupportPlanStep) => {
+  const openEditModal = useCallback((step: SupportPlanStep) => {
     setEditingStep(step)
     setIsStepEditorOpen(true)
-  }
+  }, [])
 
-  const closeStepEditor = () => {
+  const closeStepEditor = useCallback(() => {
     setIsStepEditorOpen(false)
     setEditingStep(undefined)
-  }
+  }, [])
 
-  const normalizeExerciseType = (t: string | undefined): string =>
-    (t ?? '').toUpperCase().replace(/-/g, '_')
-
-  const getResultsForStep = (step: SupportPlanStep) => {
+  const getResultsForStep = useCallback((step: SupportPlanStep) => {
     if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
     const stepTypes = step.associatedExercises.map(normalizeExerciseType)
     return selectedEmployee.exercises.filter(
       (res) => stepTypes.includes(normalizeExerciseType(res.type))
     )
-  }
+  }, [selectedEmployee])
 
-  const hasAnyResultForStep = (step: SupportPlanStep): boolean => {
+  const hasAnyResultForStep = useCallback((step: SupportPlanStep): boolean => {
     return getResultsForStep(step).length > 0
-  }
+  }, [getResultsForStep])
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = useCallback(async () => {
     if (!selectedEmployee) return
     setIsGeneratingPDF(true)
     try {
@@ -82,9 +85,8 @@ export default function DashboardEmployeeDetail({
     } finally {
       setIsGeneratingPDF(false)
     }
-  }
+  }, [selectedEmployee])
 
-  if (!user) return null
   if (!selectedEmployee) {
     return (
       <>
@@ -428,6 +430,7 @@ export default function DashboardEmployeeDetail({
             step={editingStep}
             stepNumber={editingStep ? undefined : (selectedEmployee.plan.length + 1)}
             onClose={closeStepEditor}
+            completedExercises={completedExercises}
           />
         )}
 

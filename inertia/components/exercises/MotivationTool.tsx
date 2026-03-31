@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MOTIVATIONS_LIST } from '../../constants/motivations'
 import { ExerciseDraft } from '../../types'
 import Button from '../ui/Button'
@@ -146,7 +146,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
   }
 
   return (
-    <div className="max-w-6xl mx-auto animate-fadeIn grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div className="mx-auto animate-fadeIn grid grid-cols-1 lg:grid-cols-4 gap-8">
       <div className="lg:col-span-1 space-y-6">
         <Card className="p-8 text-center sticky top-24">
           <div className="text-4xl font-bold text-brand-sage mb-1">{progressPercent}%</div>
@@ -215,8 +215,13 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
             </button>
           </div>
 
-          <div className="mt-16 text-brand-navy/10 text-[10px] font-bold uppercase tracking-[0.5em]">
-            Duel {currentDuelNumber} / {totalDuels}
+          <div className="mt-16 text-brand-navy/80 text-[10px] font-bold uppercase tracking-[0.5em]">
+            <p>Duel {currentDuelNumber} / {totalDuels}</p>
+          </div>
+          <div className='mt-4'>
+            <p className="text-brand-navy text-[10px] font-bold">
+              Vous pouvez utiliser les flèches du clavier pour aller plus vite !
+            </p>
           </div>
         </Card>
       </div>

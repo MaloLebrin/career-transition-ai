@@ -1,20 +1,22 @@
-import React, { useEffect } from 'react'
 import { useForm } from '@inertiajs/react'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { EXERCISE_LIST } from '~/config/exercises'
+import { ExerciseType, SupportPlanStep } from '~/types'
 import Button from '../ui/Button'
-import Input from '../ui/Input'
 import Card from '../ui/Card'
 import DateTimePicker from '../ui/DateTimePicker'
-import { SupportPlanStep } from '~/types'
-import { EXERCISE_LIST } from '~/config/exercises'
+import Input from '../ui/Input'
 
 interface Props {
   employeeId: number | string
   step?: SupportPlanStep
   stepNumber?: number
+  completedExercises?: ExerciseType[]
+
   onClose: () => void
 }
 
-const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClose }) => {
+const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, completedExercises = [], onClose }) => {
   const isEditing = !!step
   const { data, setData, post, put, processing, errors, reset } = useForm({
     instructions: step?.instructions ?? '',
@@ -45,7 +47,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     
     const payload = {
@@ -67,9 +69,15 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
     } else {
       post(`/dashboard/conseiller/employees/${employeeId}/steps`, submitOptions)
     }
-  }
+  }, [employeeId, isEditing, step, reset, onClose])
 
-  const displayNumber = isEditing && step?.sortOrder !== undefined ? step.sortOrder + 1 : stepNumber ?? '?'
+  const displayNumber = useMemo(() => {
+    return isEditing && step?.sortOrder !== undefined ? step.sortOrder + 1 : stepNumber ?? '?'
+  }, [isEditing, step, stepNumber])
+
+  const availableExercises = useMemo(() => {
+    return EXERCISE_LIST.filter((exercise) => !completedExercises.includes(exercise.slug as ExerciseType))
+  }, [completedExercises])
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn">
@@ -141,7 +149,7 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, onClos
               Exercices associés
             </label>
             <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
-              {EXERCISE_LIST.map((exercise) => (
+              {availableExercises.map((exercise) => (
                 <label
                   key={exercise.slug}
                   className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
