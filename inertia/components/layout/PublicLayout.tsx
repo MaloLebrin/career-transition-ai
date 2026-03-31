@@ -1,13 +1,15 @@
 import React from 'react'
+import PublicFooter, { type PublicFooterProps } from './PublicFooter'
 import PublicHeader, { PublicHeaderProps } from './PublicHeader'
 
 interface PublicLayoutProps {
   headerProps: PublicHeaderProps
+  footerProps?: PublicFooterProps
   children: React.ReactNode
   className?: string
 }
 
-const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, children, className }) => {
+const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, footerProps, children, className }) => {
   return (
     <div
       className={
@@ -17,6 +19,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, children, clas
     >
       <PublicHeader {...headerProps} />
       {children}
+      {footerProps ? <PublicFooter {...footerProps} /> : null}
     </div>
   )
 }

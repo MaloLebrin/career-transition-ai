@@ -53,4 +53,22 @@ describe('PublicLayout', () => {
 
     expect(screen.getByRole('button', { name: /Accès Expert/i })).toBeInTheDocument()
   })
+
+  test('renders PublicFooter when footerProps is provided', () => {
+    render(
+      <PublicLayout
+        headerProps={{ onLogoClick: () => {} }}
+        footerProps={{
+          variant: 'marketing',
+          onEnterApp: () => {},
+          footerLine: 'France Transition Carrière © 2026 • Test',
+        }}
+      >
+        <span data-testid="child">Child</span>
+      </PublicLayout>
+    )
+
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
+    expect(screen.getByText(/France Transition Carrière © 2026 • Test/)).toBeInTheDocument()
+  })
 })
