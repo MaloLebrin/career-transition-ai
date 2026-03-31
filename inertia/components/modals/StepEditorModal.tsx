@@ -12,11 +12,10 @@ interface Props {
   step?: SupportPlanStep
   stepNumber?: number
   completedExercises?: ExerciseType[]
-
   onClose: () => void
 }
 
-const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, completedExercises = [], onClose }) => {
+export const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, completedExercises = [], onClose }) => {
   const isEditing = !!step
   const { data, setData, post, put, processing, errors, reset } = useForm({
     instructions: step?.instructions ?? '',
@@ -206,5 +205,3 @@ const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber, comple
     </div>
   )
 }
-
-export default StepEditorModal
