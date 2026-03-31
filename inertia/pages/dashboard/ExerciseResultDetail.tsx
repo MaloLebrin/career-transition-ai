@@ -1,11 +1,9 @@
-import React, { useEffect } from 'react'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '../../components/ui/AppLink'
+import { Head } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import ExerciseResultVisualization from '../../components/exercises/ExerciseResultVisualization'
+import AppLink from '../../components/ui/AppLink'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
-import ExerciseResultVisualization from '../../components/exercises/ExerciseResultVisualization'
-import { useAuth } from '../../hooks/useAuth'
 import type { ExerciseResult } from '../../types'
 
 interface ExerciseResultDetailProps {
@@ -34,22 +32,7 @@ export default function ExerciseResultDetail({
   exerciseType,
   exerciseTitle,
 }: ExerciseResultDetailProps) {
-  const { user } = useAuth()
   const backHref = `/dashboard/conseiller/employees/${employeeId}/exercises`
-
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) {
-    return (
-      <DashboardLayout selectedEmployeeId={employeeId}>
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="w-8 h-8 border-2 border-brand-sage border-t-transparent rounded-full animate-spin" />
-        </div>
-      </DashboardLayout>
-    )
-  }
 
   return (
     <DashboardLayout selectedEmployeeId={employeeId}>

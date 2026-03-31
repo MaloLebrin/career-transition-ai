@@ -52,7 +52,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/exercises/SkillMapping': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/SkillMapping.tsx'))['default']>
     'dashboard/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Targeting.tsx'))['default']>
     'dashboard/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/Values.tsx'))['default']>
-    'dashboard/ExercisesUsageAdmin': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExercisesUsageAdmin.tsx'))['default']>
     'dashboard/shared/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/CircleOfControl.tsx'))['default']>
     'dashboard/shared/exercises/DISC': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/DISC.tsx'))['default']>
     'dashboard/shared/exercises/LifeCurve': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/LifeCurve.tsx'))['default']>
