@@ -11,6 +11,12 @@ export default defineConfig({
     tailwindcss(),
     adonisjs({ entrypoints: ['inertia/app.tsx'], reload: ['resources/views/**/*.edge'] }),
   ],
+  optimizeDeps: {
+    include: ['@headlessui/react'],
+  },
+  ssr: {
+    noExternal: ['@headlessui/react'],
+  },
 
   /**
    * Define aliases for importing modules from
