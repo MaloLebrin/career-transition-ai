@@ -226,9 +226,7 @@ export default function CandidatExercise({
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (
               <SkillMappingTool
-                onSave={(data, duration) =>
-                  saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
-                }
+                onSave={(data, duration) => saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.SKILL_MAPPING))}
                 experiences={selectedEmployee?.experiences || []}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { PersonalityData } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -51,7 +51,7 @@ const PersonalityTool: React.FC<Props> = ({ onSave }) => {
   }
 
   return (
-    <Card variant="amber" className="p-6">
+    <Card variant="default" className="p-6">
       <h3 className="text-xl font-black mb-6 text-amber-900 uppercase tracking-tight">
         Questionnaire de Personnalité (Big Five)
       </h3>
