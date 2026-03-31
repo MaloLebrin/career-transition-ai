@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
-import Button from '../ui/Button'
-import Badge from '../ui/Badge'
-import Card from '../ui/Card'
+import React, { useEffect, useRef, useState } from 'react'
 import { ExerciseDraft } from '../../types'
+import Button from '../ui/Button'
+import Card from '../ui/Card'
 
 interface Props {
   onSave: (data: any, duration: number) => void
@@ -40,15 +39,27 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
   const [decisions, setDecisions] = useState<Record<string, 'inside' | 'outside'>>({})
   const [animationDir, setAnimationDir] = useState<'left' | 'right' | null>(null)
   const startTimeRef = useRef<number>(Date.now())
+  const onSaveDraftRef = useRef(onSaveDraft)
+  const didInitRef = useRef(false)
+  const lastSavedKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    onSaveDraftRef.current = onSaveDraft
+  }, [onSaveDraft])
 
   // Load draft on mount
   useEffect(() => {
     if (initialDraftPromise) {
       initialDraftPromise.then((draft) => {
+        if (didInitRef.current) return
+        didInitRef.current = true
+
         if (draft && draft.data) {
           setDecisions(draft.data.decisions || {})
           setCurrentIndex(draft.data.currentIndex || 0)
           setGameState(draft.data.gameState || 'intro')
+        } else {
+          // still mark init complete to avoid loops when parent recreates promise
         }
       })
     }
@@ -56,8 +67,19 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
 
   // Auto-save draft
   useEffect(() => {
-    onSaveDraft({ decisions, currentIndex, gameState })
-  }, [decisions, currentIndex, gameState, onSaveDraft])
+    if (!didInitRef.current) return
+
+    const key = JSON.stringify({
+      gameState,
+      currentIndex,
+      decisions,
+    })
+
+    if (lastSavedKeyRef.current === key) return
+    lastSavedKeyRef.current = key
+
+    onSaveDraftRef.current({ decisions, currentIndex, gameState })
+  }, [decisions, currentIndex, gameState])
 
   const handleStart = () => {
     startTimeRef.current = Date.now()
@@ -82,6 +104,24 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
     }, 350)
   }
 
+  useEffect(() => {
+    if (gameState !== 'playing') return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        handleDecision('outside')
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        handleDecision('inside')
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [gameState, animationDir, currentIndex])
+
   const handleSave = () => {
     const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
     const inControl = CONTROL_ITEMS.filter((i) => decisions[i.id] === 'inside').map((i) => i.label)
@@ -105,7 +145,6 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
           </svg>
         </div>
         <div className="space-y-4">
-          <Badge variant="violet">Module 04</Badge>
           <h2 className="text-5xl font-black text-slate-900 tracking-tighter italic">
             Cercle de Contrôle
           </h2>
@@ -162,7 +201,7 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
 
       {gameState === 'playing' ? (
         <div className="flex flex-col items-center justify-center space-y-16">
-          <div className="relative w-full max-w-sm aspect-[4/5]">
+          <div className="relative w-full max-w-sm aspect-4/5">
             <div className="absolute inset-0 bg-slate-100 rounded-[48px] rotate-3 translate-x-2 translate-y-2"></div>
             <div
               className={`absolute inset-0 bg-white p-12 rounded-[48px] border-2 border-slate-100 shadow-2xl flex flex-col items-center justify-center text-center space-y-8 transition-all ${animationDir === 'left' ? 'animate-card-left border-pink-200' : animationDir === 'right' ? 'animate-card-right border-violet-200' : ''}`}
@@ -185,7 +224,7 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
               size="lg"
               className="flex-1 py-8 rounded-[40px] flex flex-col items-center space-y-4"
               icon={
-                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-red-300 flex items-center justify-center shadow-sm">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"

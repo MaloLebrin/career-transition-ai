@@ -176,17 +176,15 @@ export class ExerciseResultsService {
 
     const progressPercent = getExerciseProgress(String(input.type), input.data ?? {}, 'draft')
 
-    const existing = await ExerciseResult.query()
+    // First, try to update an existing draft (most common path).
+    const existingDraft = await ExerciseResult.query()
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
+      .andWhere('status', 'draft')
       .first()
 
-    if (existing?.status === 'completed') {
-      return
-    }
-
-    if (existing) {
-      existing.merge({
+    if (existingDraft) {
+      existingDraft.merge({
         status: 'draft',
         date: null,
         duration: null,
@@ -195,8 +193,24 @@ export class ExerciseResultsService {
         quantitativeScore: null,
         qualitativeAnalysis: null,
       })
-      await existing.save()
-    } else {
+      await existingDraft.save()
+      return
+    }
+
+    // If the latest row is completed, never create a draft (avoid downgrading).
+    const existingCompleted = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', input.type)
+      .andWhere('status', 'completed')
+      .first()
+
+    if (existingCompleted) {
+      return
+    }
+
+    // Otherwise create a draft. Under concurrency, two requests can race here.
+    // If the unique draft index triggers, fallback to updating the winning draft.
+    try {
       await ExerciseResult.create({
         employeeId: employee.id,
         type: input.type,
@@ -208,6 +222,37 @@ export class ExerciseResultsService {
         quantitativeScore: null,
         qualitativeAnalysis: null,
       })
+    } catch (err: any) {
+      const msg = String(err?.message ?? '')
+      const looksLikeDraftUniqueViolation =
+        msg.includes('exercise_results_one_draft_per_employee_type') ||
+        msg.toLowerCase().includes('unique') ||
+        msg.toLowerCase().includes('duplicate')
+
+      if (!looksLikeDraftUniqueViolation) {
+        throw err
+      }
+
+      const winnerDraft = await ExerciseResult.query()
+        .where('employeeId', employee.id)
+        .andWhere('type', input.type)
+        .andWhere('status', 'draft')
+        .first()
+
+      if (!winnerDraft) {
+        throw err
+      }
+
+      winnerDraft.merge({
+        status: 'draft',
+        date: null,
+        duration: null,
+        progressPercent,
+        data: input.data,
+        quantitativeScore: null,
+        qualitativeAnalysis: null,
+      })
+      await winnerDraft.save()
     }
   }
 

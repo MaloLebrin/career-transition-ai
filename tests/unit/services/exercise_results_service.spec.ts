@@ -234,6 +234,55 @@ test.group('ExerciseResultsService', (group) => {
     assert.isAtMost(stored!.progressPercent ?? 0, 100)
   })
 
+  test('saveDraft is safe under concurrent calls (one draft per employee + type)', async ({
+    assert,
+  }) => {
+    const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'Concurrent Draft Org',
+      slug: `concurrent-draft-org-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: null,
+      userId: null,
+      name: 'Concurrent Draft Candidate',
+      email: 'concurrent-draft@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+    })
+
+    const type = EXERCICE_RESULTS_TYPES.SKILL_MAPPING
+
+    const r1 = service.saveDraft({
+      employeeId: employee.id,
+      type,
+      data: { foo: 'a' },
+    })
+    const r2 = service.saveDraft({
+      employeeId: employee.id,
+      type,
+      data: { foo: 'b' },
+    })
+
+    await Promise.all([r1, r2])
+
+    const drafts = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .andWhere('type', type)
+      .andWhere('status', 'draft')
+
+    assert.equal(drafts.length, 1)
+    assert.equal(drafts[0].employeeId, employee.id)
+    assert.equal(drafts[0].type, type)
+  })
+
   test('saveDraft does not downgrade a completed result', async ({ assert }) => {
     const service = new ExerciseResultsService()
     const org = await Organization.create({
