@@ -68,5 +68,6 @@ declare module '@adonisjs/inertia/types' {
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
+    'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>
   }
 }

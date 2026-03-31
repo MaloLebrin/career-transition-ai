@@ -31,20 +31,24 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
         </button>
 
         <div className="hidden md:flex items-center space-x-8">
-          <button
-            type="button"
-            onClick={onMethodologyClick}
-            className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
-          >
-            Méthodologie
-          </button>
-          <button
-            type="button"
-            onClick={onAiClick}
-            className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
-          >
-            Intelligence Artificielle
-          </button>
+          {onMethodologyClick && (
+            <button
+              type="button"
+              onClick={onMethodologyClick}
+              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            >
+              Méthodologie
+            </button>
+          )}
+          {onAiClick && (
+            <button
+              type="button"
+              onClick={onAiClick}
+              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+            >
+              Intelligence Artificielle
+            </button>
+          )}
           {showAction && onActionClick && (
             <Button onClick={onActionClick} variant="dark" size="sm">
               {actionLabel}

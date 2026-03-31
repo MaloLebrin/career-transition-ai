@@ -5,6 +5,8 @@ const AuthController = () => import('#controllers/auth_controller')
 // Public / auth pages
 // @ts-expect-error Inertia page name from generated types
 router.on('/').renderInertia('Landing', {})
+// @ts-expect-error Inertia page name from generated types
+router.on('/methodologie').renderInertia('Methodology', {})
 
 // Auth pages: guest middleware redirects already-logged-in users to /dashboard
 router

@@ -9,6 +9,7 @@ import {
   Users,
   Zap
 } from 'lucide-react'
+import { router } from '@inertiajs/react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import React from 'react'
 import { AiAnalisys, Appointnement, Certification, CoachFeedback, Disc, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
@@ -36,7 +37,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
     <PublicLayout
       headerProps={{
         onLogoClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
-        onMethodologyClick: () => scrollToSection('methodology'),
+        onMethodologyClick: () => router.visit('/methodologie'),
         onAiClick: () => scrollToSection('ai-engine'),
         onActionClick: onEnterApp,
       }}
@@ -458,13 +459,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               </h4>
               <ul className="space-y-4">
                 <li>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection('methodology')}
-                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  <AppLink
+                    href="/methodologie"
+                    className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                   >
                     Méthodologie
-                  </button>
+                  </AppLink>
                 </li>
                 <li>
                   <button
