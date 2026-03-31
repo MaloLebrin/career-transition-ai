@@ -103,16 +103,50 @@ export class ExerciseResultsService {
 
     // Secure completion flags:
     // - never trust `input.plan` coming from the client (it can be forged)
-    // - mark as completed only the unlocked support plan steps that are associated
-    //   with the exercise type we just saved.
-    const stepsToComplete = await SupportPlanStep.query()
+    // - recompute completion for unlocked support plan steps that are associated
+    //   with the exercise type we just saved:
+    //   A step is completed iff all its associated exercises have a latest result
+    //   with status = "completed". Steps without exercises are auto-completed.
+    const stepsToRecompute = await SupportPlanStep.query()
       .where('employeeId', input.employeeId)
       .where('isLocked', false)
       .whereHas('exercises', (q) => q.where('exerciseType', input.type))
+      .preload('exercises')
 
-    for (const step of stepsToComplete) {
-      step.completed = true
-      await step.save()
+    if (stepsToRecompute.length > 0) {
+      const allExerciseTypes = new Set<ExerciseResult['type']>()
+      for (const step of stepsToRecompute) {
+        for (const ex of step.exercises || []) {
+          allExerciseTypes.add(ex.exerciseType)
+        }
+      }
+
+      const exerciseTypesList = Array.from(allExerciseTypes)
+      const latestResultByType = new Map<ExerciseResult['type'], ExerciseResult>()
+
+      if (exerciseTypesList.length > 0) {
+        const results = await ExerciseResult.query()
+          .where('employeeId', input.employeeId)
+          .whereIn('type', exerciseTypesList)
+
+        for (const r of results) {
+          latestResultByType.set(r.type, r)
+        }
+      }
+
+      for (const step of stepsToRecompute) {
+        const stepExerciseTypes = (step.exercises || []).map((e) => e.exerciseType)
+
+        const newCompleted =
+          stepExerciseTypes.length === 0
+            ? true
+            : stepExerciseTypes.every((t) => latestResultByType.get(t)?.status === 'completed')
+
+        if (step.completed !== newCompleted) {
+          step.completed = newCompleted
+          await step.save()
+        }
+      }
     }
 
     const loaded = await Employee.query()

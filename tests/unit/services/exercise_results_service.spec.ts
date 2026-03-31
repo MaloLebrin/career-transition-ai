@@ -83,6 +83,89 @@ test.group('ExerciseResultsService', (group) => {
     assert.isTrue(dto.plan[0].completed)
   })
 
+  test('saveResult marks a step completed only when all associated exercises are completed', async ({
+    assert,
+  }) => {
+    const service = new ExerciseResultsService()
+    const org = await Organization.create({
+      name: 'Multi Exercise Org',
+      slug: `multi-exercise-org-${Date.now()}`,
+      logoUrl: null,
+    })
+
+    const employee = await Employee.create({
+      organizationId: org.id,
+      advisorId: null,
+      userId: null,
+      name: 'Multi Exercise Candidate',
+      email: 'multi-exercise@example.com',
+      currentRole: 'Dev',
+      targetRole: 'Lead',
+      summary: 'Résumé',
+      advisorNotes: null,
+      status: 'active',
+      onboarded: false,
+    })
+
+    const step = await SupportPlanStep.create({
+      employeeId: employee.id,
+      advisorId: null,
+      title: 'RDV multi-exercices',
+      description: 'Contient plusieurs exercices',
+      instructions: null,
+      dueDate: DateTime.fromISO('2025-01-10'),
+      scheduledAt: null,
+      endedAt: null,
+      status: APPOINTMENTS_STATUSES.SCHEDULED,
+      locationOrLink: null,
+      completed: false,
+      notes: null,
+      sortOrder: 1,
+      isLocked: false,
+    })
+
+    await SupportPlanStepExercise.create({
+      supportPlanStepId: step.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      sortOrder: 0,
+    })
+    await SupportPlanStepExercise.create({
+      supportPlanStepId: step.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.DISC,
+      sortOrder: 1,
+    })
+
+    await service.saveResult({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      status: exerciceResultStatusValues.COMPLETED,
+      date: '2025-01-05',
+      duration: 30,
+      data: { foo: 'bar' },
+      quantitativeScore: 10,
+      qualitativeAnalysis: 'Analyse',
+      plan: [{ id: step.id, completed: true }],
+    })
+
+    const stepAfterFirst = await SupportPlanStep.findOrFail(step.id)
+    assert.isFalse(stepAfterFirst.completed)
+
+    await service.saveResult({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      date: '2025-01-06',
+      duration: 20,
+      data: { answers: [] },
+      quantitativeScore: 8,
+      qualitativeAnalysis: '',
+      plan: [{ id: step.id, completed: true }],
+    })
+
+    const stepAfterSecond = await SupportPlanStep.findOrFail(step.id)
+    assert.isTrue(stepAfterSecond.completed)
+  })
+
   test('saveDraft creates or updates draft result', async ({ assert }) => {
     const service = new ExerciseResultsService()
     const org = await Organization.create({

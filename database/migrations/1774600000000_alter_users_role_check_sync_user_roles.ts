@@ -10,7 +10,8 @@ export default class extends BaseSchema {
   protected tableName = 'users'
 
   async up() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (!isPostgres) return
 
     const allowed = userRolesValues.map((role) => `'${role}'`).join(',')
@@ -27,7 +28,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (!isPostgres) return
 
     /**
