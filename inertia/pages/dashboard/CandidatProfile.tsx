@@ -1,21 +1,15 @@
-import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import ProfilePage from '../../components/profile/ProfilePage'
+import { candidatProfileUpdatePayload } from '../../helpers/candidat_profile_payload'
 import { useAuth } from '../../hooks/useAuth'
 import { useEmployee } from '../../hooks/use_employee'
-import { candidatProfileUpdatePayload } from '../../helpers/candidat_profile_payload'
 
 export default function CandidatProfile() {
   const { user } = useAuth()
   const targetId = user?.id || '1'
   const { employee: selectedEmployee } = useEmployee(targetId)
 
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) return null
   if (!selectedEmployee) {
     return (
       <DashboardLayout>

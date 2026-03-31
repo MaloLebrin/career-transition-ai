@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react'
-import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import CircleOfControlTool from '../../components/exercises/CircleOfControlTool'
@@ -13,9 +12,8 @@ import ValuesTool from '../../components/exercises/ValuesTool'
 import AppLink from '../../components/ui/AppLink'
 import Button from '../../components/ui/Button'
 import { EXERCISE_SLUGS } from '../../config/exercises'
-import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/use_employee'
 import { useAdvisorExercises } from '../../hooks/use_advisor_exercises'
+import { useEmployee } from '../../hooks/use_employee'
 import { ExerciseType, type ExerciseDraft } from '../../types'
 
 interface ConseillerExerciseProps {
@@ -40,7 +38,6 @@ export default function ConseillerExercise({
   employeeId,
   initialDraftsByType,
 }: ConseillerExerciseProps) {
-  const { user } = useAuth()
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeId)
 
   const draftsByType = initialDraftsByType ?? {}
@@ -73,12 +70,6 @@ export default function ConseillerExercise({
 
   const exerciseType =
     EXERCISE_TYPES[type.toUpperCase()] ?? null
-
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user || !exerciseType) return null
 
   return (
     <>
