@@ -156,9 +156,16 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise })
   useEffect(() => {
     if (initialDraftPromise) {
       initialDraftPromise.then((draft) => {
-        if (draft && draft.data) {
-          setSelections(draft.data.selections)
-          setCurrentIdx(draft.data.currentIdx)
+        const data = (draft as any)?.data
+        const selectionsCandidate = data?.selections
+        const currentIdxCandidate = data?.currentIdx
+
+        if (selectionsCandidate && typeof selectionsCandidate === 'object' && !Array.isArray(selectionsCandidate)) {
+          setSelections(selectionsCandidate)
+        }
+
+        if (typeof currentIdxCandidate === 'number' && Number.isFinite(currentIdxCandidate) && currentIdxCandidate >= 0) {
+          setCurrentIdx(currentIdxCandidate)
         }
       })
     }

@@ -27,6 +27,7 @@ export default function PlanStepsTimeline({
   plan: PlanStep[]
   exerciseProgressByType: Record<string, number>
 }) {
+  console.log(exerciseProgressByType, `exerciseProgressByType`)
   return (
     <div className="space-y-10">
       {plan.map((step, idx) => {
