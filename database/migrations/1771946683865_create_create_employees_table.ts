@@ -35,7 +35,8 @@ export default class extends BaseSchema {
       table.timestamp('deleted_at', { useTz: true }).nullable()
     })
 
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(`
         ALTER TABLE "${this.tableName}"
@@ -46,7 +47,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(
         `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`

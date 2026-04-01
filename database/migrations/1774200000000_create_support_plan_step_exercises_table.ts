@@ -21,7 +21,8 @@ export default class extends BaseSchema {
       table.unique(['support_plan_step_id', 'exercise_type'])
     })
 
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(`
         ALTER TABLE "${this.tableName}"
@@ -49,7 +50,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(
         `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_exercise_type_check"`

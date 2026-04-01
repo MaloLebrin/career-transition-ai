@@ -1,10 +1,13 @@
+import { APPOINTMENTS_STATUSES, appointmentStatusValues } from '#shared/constants/appointment'
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { APPOINTMENTS_STATUSES, appointmentStatusValues } from '../../shared/constants/appointment.js'
 
 export default class extends BaseSchema {
   protected tableName = 'support_plan_steps'
 
   async up() {
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
+
     this.schema.alterTable(this.tableName, (table) => {
       table.integer('advisor_id').unsigned().nullable().references('users.id').onDelete('SET NULL')
       table.text('instructions').nullable()
@@ -19,7 +22,6 @@ export default class extends BaseSchema {
       table.date('due_date').nullable().alter()
     })
 
-    const isPostgres = process.env.NODE_ENV !== 'test'
     if (isPostgres) {
       this.schema.raw(`
         ALTER TABLE "${this.tableName}"
@@ -29,7 +31,6 @@ export default class extends BaseSchema {
     }
 
     this.defer(async (db) => {
-      const isPostgres = process.env.NODE_ENV !== 'test'
       if (isPostgres) {
         await db.rawQuery(
           `ALTER TABLE "appointments" DROP CONSTRAINT IF EXISTS "appointments_status_check"`
@@ -40,7 +41,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(
         `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`

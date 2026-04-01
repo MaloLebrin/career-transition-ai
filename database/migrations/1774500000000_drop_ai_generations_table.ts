@@ -8,7 +8,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
 
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary()

@@ -15,7 +15,8 @@ export default class extends BaseSchema {
   protected tableName = 'ai_generations'
 
   async up() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
 
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary()
@@ -63,7 +64,8 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       this.schema.raw(
         `ALTER TABLE "${this.tableName}" DROP CONSTRAINT IF EXISTS "${this.tableName}_status_check"`

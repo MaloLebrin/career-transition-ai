@@ -22,7 +22,8 @@ export default class extends BaseSchema {
       table.timestamp('deleted_at', { useTz: true }).nullable()
       table.unique(['organization_id', 'email'])
     })
-    const isPostgres = process.env.NODE_ENV !== 'test'
+    const client = this.db.getWriteClient()
+    const isPostgres = client.client?.config?.client === 'pg'
     if (isPostgres) {
       // CHECK séparé pour pouvoir le modifier plus tard (ALTER ... DROP CONSTRAINT + ADD CONSTRAINT)
       this.schema.raw(`
