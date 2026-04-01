@@ -1,5 +1,5 @@
-import { describe, test, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import OrganizationsAdmin from '../../../inertia/pages/dashboard/admin/organizations/Index'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
@@ -18,9 +18,64 @@ const { postMock } = vi.hoisted(() => ({
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = await importOriginal<any>()
+  const React = await import('react')
+
+  /**
+   * useForm posts via @inertiajs/core router, not react's router — mock useForm so
+   * CreateOrganizationModal exercises real UI while submit hits postMock.
+   */
+  function useFormMock(initial: Record<string, unknown>) {
+    const [data, setDataState] = React.useState(() => ({ ...initial }))
+    const dataRef = React.useRef(data)
+    const transformRef = React.useRef<(d: Record<string, unknown>) => Record<string, unknown>>(
+      (d) => d
+    )
+
+    React.useEffect(() => {
+      dataRef.current = data
+    }, [data])
+
+    const setData = React.useCallback((key: string, value: unknown) => {
+      setDataState((prev) => {
+        const next = { ...prev, [key]: value }
+        dataRef.current = next
+        return next
+      })
+    }, [])
+
+    const reset = React.useCallback(() => {
+      const next = { ...initial }
+      setDataState(next)
+      dataRef.current = next
+    }, [initial])
+
+    const transform = React.useCallback(
+      (cb: (d: Record<string, unknown>) => Record<string, unknown>) => {
+        transformRef.current = cb
+      },
+      []
+    )
+
+    const post = React.useCallback((url: string, options: Record<string, unknown> = {}) => {
+      const transformed = transformRef.current({ ...dataRef.current })
+      postMock(url, transformed, options)
+    }, [])
+
+    return {
+      data,
+      setData,
+      post,
+      processing: false,
+      errors: {},
+      reset,
+      transform,
+    }
+  }
+
   return {
     ...actual,
     Head: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    useForm: useFormMock,
     router: {
       ...actual.router,
       post: postMock,
@@ -30,6 +85,10 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
 })
 
 describe('OrganizationsAdmin page', () => {
+  beforeEach(() => {
+    postMock.mockClear()
+  })
+
   test('renders organizations table for super admin', () => {
     const organizations = [
       {
@@ -49,6 +108,18 @@ describe('OrganizationsAdmin page', () => {
     expect(screen.getByText('cabinet-alpha')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('10')).toBeInTheDocument()
+  })
+
+  test('does not show create organization dialog until open button is clicked', () => {
+    render(<OrganizationsAdmin organizations={[]} />)
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByText('Nouvelle organisation')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Créer une organisation/i }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('Nouvelle organisation')).toBeInTheDocument()
   })
 
   test('calls impersonation endpoint when clicking button', () => {
@@ -75,20 +146,23 @@ describe('OrganizationsAdmin page', () => {
     )
   })
 
-  test('submits create organization form with owner fields', () => {
+  test('submits create organization form with owner fields via modal', () => {
     render(<OrganizationsAdmin organizations={[]} />)
 
-    fireEvent.change(screen.getByPlaceholderText('Nom du cabinet'), {
+    fireEvent.click(screen.getByRole('button', { name: /Créer une organisation/i }))
+
+    const dialog = screen.getByRole('dialog')
+    fireEvent.change(within(dialog).getByPlaceholderText('Cabinet Dupont'), {
       target: { value: 'Cabinet Gamma' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Nom du propriétaire'), {
+    fireEvent.change(within(dialog).getByPlaceholderText('Jean Dupont'), {
       target: { value: 'Gamma Owner' },
     })
-    fireEvent.change(screen.getByPlaceholderText('Email du propriétaire'), {
+    fireEvent.change(within(dialog).getByPlaceholderText('jean.dupont@cabinet.fr'), {
       target: { value: 'owner@gamma.test' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Ajouter/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Créer et inviter/i }))
 
     expect(postMock).toHaveBeenCalledWith(
       '/dashboard/super-admin/organizations',

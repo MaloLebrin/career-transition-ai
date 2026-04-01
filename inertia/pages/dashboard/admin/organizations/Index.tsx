@@ -1,7 +1,8 @@
 import { isSuperAdmin } from '#shared/helpers/roles'
 import { Head, router } from '@inertiajs/react'
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { CreateOrganizationModal } from '~/components/modals/CreateOrganizationModal'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
 import { useAuth } from '~/hooks/useAuth'
@@ -24,10 +25,7 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
   const role = user?.role || 'employee'
   const [search, setSearch] = useState('')
   const [minEmployees, setMinEmployees] = useState('')
-  const [newOrgName, setNewOrgName] = useState('')
-  const [newOrgSlug, setNewOrgSlug] = useState('')
-  const [ownerName, setOwnerName] = useState('')
-  const [ownerEmail, setOwnerEmail] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
 
   if (!isSuperAdmin(role)) {
     return (
@@ -61,30 +59,6 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
     })
   }, [organizations, search, minEmployees])
 
-  const handleCreateOrganization = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newOrgName.trim()) return
-    if (!ownerEmail.trim()) return
-
-    router.post(
-      '/dashboard/super-admin/organizations',
-      {
-        name: newOrgName,
-        slug: newOrgSlug || undefined,
-        ownerName,
-        ownerEmail,
-      },
-      {
-        onSuccess: () => {
-          setNewOrgName('')
-          setNewOrgSlug('')
-          setOwnerName('')
-          setOwnerEmail('')
-        },
-      }
-    )
-  }
-
   const handleDeleteOrganization = (id: number) => {
     if (
       // eslint-disable-next-line no-alert
@@ -102,6 +76,7 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
       <Head title="Organisations" />
       <DashboardLayout>
         <div className="space-y-8 animate-fadeIn">
+          <CreateOrganizationModal isOpen={createOpen} onClose={() => setCreateOpen(false)} />
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
@@ -115,53 +90,10 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                 talents suivis.
               </p>
             </div>
-            <div className="space-y-3 w-full md:w-auto">
-              <form
-                onSubmit={handleCreateOrganization}
-                className="bg-white rounded-2xl border border-brand-navy/10 p-4 space-y-3 shadow-xs"
-              >
-                <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
-                  Créer une organisation
-                </p>
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col md:flex-row gap-2">
-                  <Input
-                    value={newOrgName}
-                    onChange={(e) => setNewOrgName(e.target.value)}
-                    placeholder="Nom du cabinet"
-                    className="md:w-44"
-                  />
-                  <Input
-                    value={newOrgSlug}
-                    onChange={(e) => setNewOrgSlug(e.target.value)}
-                    placeholder="Slug (optionnel)"
-                    className="md:w-40"
-                  />
-                  </div>
-                  <div className="flex flex-col md:flex-row gap-2">
-                    <Input
-                      value={ownerName}
-                      onChange={(e) => setOwnerName(e.target.value)}
-                      placeholder="Nom du propriétaire"
-                      className="md:w-44"
-                    />
-                    <Input
-                      value={ownerEmail}
-                      onChange={(e) => setOwnerEmail(e.target.value)}
-                      placeholder="Email du propriétaire"
-                      className="md:w-56"
-                    />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="md:w-auto w-full"
-                    disabled={!newOrgName.trim() || !ownerEmail.trim()}
-                  >
-                    Ajouter
-                  </Button>
-                  </div>
-                </div>
-              </form>
+            <div className="flex w-full md:w-auto md:justify-end">
+              <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+                Créer une organisation
+              </Button>
             </div>
           </div>
 
