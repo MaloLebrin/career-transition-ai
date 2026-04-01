@@ -2,13 +2,18 @@ import LogExerciseUsageExport from '#jobs/log_exercise_usage_export'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
+import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
+import { userRolesValues } from '#shared/types/advisor/roles'
+import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 
+@inject()
 export default class SuperAdminController {
+  constructor(private superAdminOrganizationsService: SuperAdminOrganizationsService) { }
   /**
    * Inertia page: super admin home with global metrics.
    */
@@ -143,13 +148,6 @@ export default class SuperAdminController {
    * CSV export: exercise usage per organization and type for a given period.
    */
   public async exerciseUsageExport({ auth, request, response }: HttpContext) {
-    if (!auth.user) {
-      return response.unauthorized()
-    }
-    if (auth.user.role !== 'super_admin') {
-      return response.forbidden()
-    }
-
     const qs = request.qs()
     const from =
       typeof qs.from === 'string' && qs.from.length > 0
@@ -185,7 +183,7 @@ export default class SuperAdminController {
     const rows = await query
 
     await LogExerciseUsageExport.dispatch({
-      userId: auth.user.id,
+      userId: auth.user!.id,
       from,
       to,
       organizationId,
@@ -239,14 +237,7 @@ export default class SuperAdminController {
   /**
    * Inertia form: update a user's role from the Super Admin dashboard.
    */
-  public async updateUserRole({ auth, request, params, response, session }: HttpContext) {
-    if (!auth.user) {
-      return response.unauthorized()
-    }
-    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
-      return response.forbidden()
-    }
-
+  public async updateUserRole({ request, params, response, session }: HttpContext) {
     const updateRoleValidator = vine.create(
       vine.object({
         role: vine.enum(userRolesValues),
@@ -271,52 +262,28 @@ export default class SuperAdminController {
   /**
    * Inertia form: create a new organization from the Super Admin dashboard.
    */
-  public async storeOrganization({ auth, request, response, session }: HttpContext) {
-    if (!auth.user) {
-      return response.unauthorized()
-    }
-    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
-      return response.forbidden()
-    }
-
-    const createOrganizationValidator = vine.compile(
-      vine.object({
-        name: vine.string().trim().minLength(1).maxLength(255),
-        slug: vine.string().trim().maxLength(100).optional(),
-      })
-    )
-
+  public async storeOrganization({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(createOrganizationValidator)
 
-    const baseSlug =
-      payload.slug ||
-      payload.name
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '')
-
-    await Organization.create({
-      name: payload.name,
-      slug: baseSlug,
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
+    await this.superAdminOrganizationsService.createOrganizationWithOwner({
+      organizationName: payload.name,
+      organizationSlug: payload.slug,
+      ownerName: payload.ownerName,
+      ownerEmail: payload.ownerEmail,
+      baseUrl,
     })
-
-    session.flash('success', 'Organisation créée.')
+    session.flash(
+      'success',
+      'Organisation créée. Email envoyé au propriétaire pour créer son mot de passe.'
+    )
     return response.redirect('/dashboard/super-admin/organizations')
   }
 
   /**
    * Inertia form: delete an organization from the Super Admin dashboard.
    */
-  public async destroyOrganization({ auth, params, response, session }: HttpContext) {
-    if (!auth.user) {
-      return response.unauthorized()
-    }
-    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
-      return response.forbidden()
-    }
-
+  public async destroyOrganization({ params, response, session }: HttpContext) {
     const id = Number(params.id)
     const organization = await Organization.find(id)
     if (!organization) {

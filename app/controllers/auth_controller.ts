@@ -53,15 +53,7 @@ export default class AuthController {
    * Super admin only: reset another user's password to a temporary one.
    * In un contexte réel, on enverrait un email de réinitialisation ; ici, on fixe un mot de passe simple.
    */
-  public async resetPassword({ auth, params, response, session }: HttpContext) {
-    const current = auth.user
-    if (!current) {
-      return response.unauthorized()
-    }
-    if (current.role !== 'super_admin') {
-      return response.forbidden()
-    }
-
+  public async resetPassword({ params, response, session }: HttpContext) {
     const targetId = Number(params.id)
     const result = await this.authService.resetPasswordForUser(targetId)
     if (!result) {
@@ -80,11 +72,12 @@ export default class AuthController {
    * Inertia form: update current user's profile (name, email) then redirect with flash.
    */
   public async updateFromDashboard({ auth, request, response, session }: HttpContext) {
-    if (!auth.user) {
+    const user = auth.user
+    if (!user) {
       return response.unauthorized()
     }
     const payload = await request.validateUsing(userProfileUpdateValidator)
-    await this.authService.updateProfile(auth.user, payload)
+    await this.authService.updateProfile(user, payload)
     session.flash('success', 'Profil mis à jour.')
     return response.redirect('/dashboard/conseiller/settings')
   }
