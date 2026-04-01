@@ -1,5 +1,5 @@
-import { describe, test, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import UsersAdmin from '../../../inertia/pages/dashboard/admin/users/Index'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
@@ -29,6 +29,10 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
 })
 
 describe('UsersAdmin page', () => {
+  beforeEach(() => {
+    postMock.mockClear()
+  })
+
   test('renders users table for super admin', () => {
     const users = [
       {
@@ -49,7 +53,7 @@ describe('UsersAdmin page', () => {
     expect(screen.getByText('Cabinet Alpha')).toBeInTheDocument()
   })
 
-  test('filters by role and triggers role change', () => {
+  test('opens confirmation modal then posts role change on confirm', () => {
     const users = [
       {
         id: 2,
@@ -68,13 +72,46 @@ describe('UsersAdmin page', () => {
 
     expect(screen.getByText('Bob')).toBeInTheDocument()
 
-    const makeAdminButton = screen.getByRole('button', { name: /Admin orga/i })
-    fireEvent.click(makeAdminButton)
+    const row = screen.getByText('Bob').closest('tr') as HTMLElement
+    fireEvent.click(within(row).getByRole('button', { name: /Admin orga/i }))
+
+    const dialog = screen.getByRole('dialog', { name: /Modifier le rôle/i })
+    expect(dialog).toBeInTheDocument()
+    expect(
+      within(dialog).getByText(/Vous allez passer Bob du rôle « Employé » au rôle « Admin orga »/)
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Confirmer le changement/i }))
 
     expect(postMock).toHaveBeenCalledWith(
       '/dashboard/super-admin/users/2/role',
       { role: 'admin' },
       expect.objectContaining({ preserveScroll: true })
     )
+  })
+
+  test('does not post when role change is cancelled', () => {
+    const users = [
+      {
+        id: 3,
+        name: 'Carol',
+        email: 'carol@example.com',
+        role: 'advisor' as const,
+        organization: { id: 12, name: 'Cabinet Gamma' },
+        createdAt: '2025-03-01T00:00:00.000Z',
+      },
+    ]
+
+    render(<UsersAdmin users={users} />)
+
+    const row = screen.getByText('Carol').closest('tr') as HTMLElement
+    fireEvent.click(within(row).getByRole('button', { name: /^Super admin$/i }))
+
+    expect(screen.getByRole('dialog', { name: /Modifier le rôle/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /^Annuler$/ }))
+
+    expect(postMock).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog', { name: /Modifier le rôle/i })).not.toBeInTheDocument()
   })
 })

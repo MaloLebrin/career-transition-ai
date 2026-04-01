@@ -1,9 +1,10 @@
 import { isSuperAdmin, ROLE_LABELS } from '#shared/helpers/roles'
 import { userRolesValues, USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Button from '~/components/ui/Button'
+import ConfirmModal from '~/components/ui/ConfirmModal'
 import Input from '~/components/ui/Input'
 import { useAuth } from '~/hooks/useAuth'
 
@@ -20,11 +21,20 @@ interface UsersAdminProps {
   users: UserItem[]
 }
 
+type PendingRoleChange = {
+  userId: number
+  userName: string
+  currentRole: UserRole
+  newRole: UserRole
+}
+
 export default function UsersAdmin({ users }: UsersAdminProps) {
   const { user } = useAuth()
   const role = user?.role || 'employee'
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
+  const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null)
+  const [roleSubmitting, setRoleSubmitting] = useState(false)
 
   if (!isSuperAdmin(role)) {
     return (
@@ -59,13 +69,47 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
     })
   }, [users, search, roleFilter])
 
-  const handleChangeRole = (id: number, newRole: UserRole) => {
+  const openConfirmChangeRole = (u: UserItem, newRole: UserRole) => {
+    setPendingRoleChange({
+      userId: u.id,
+      userName: u.name,
+      currentRole: u.role,
+      newRole,
+    })
+  }
+
+  const closeRoleConfirmModal = () => {
+    if (roleSubmitting) return
+    setPendingRoleChange(null)
+  }
+
+  const confirmRoleChange = () => {
+    if (!pendingRoleChange || roleSubmitting) return
+    const { userId, newRole } = pendingRoleChange
+    setRoleSubmitting(true)
     router.post(
-      `/dashboard/super-admin/users/${id}/role`,
+      `/dashboard/super-admin/users/${userId}/role`,
       { role: newRole },
-      { preserveScroll: true }
+      {
+        preserveScroll: true,
+        onFinish: () => {
+          setRoleSubmitting(false)
+          setPendingRoleChange(null)
+        },
+      }
     )
   }
+
+  useEffect(() => {
+    if (!pendingRoleChange || roleSubmitting) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setPendingRoleChange(null)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [pendingRoleChange, roleSubmitting])
 
   return (
     <>
@@ -81,8 +125,8 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                 Utilisateurs de la plateforme
               </h1>
               <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-                Liste globale des comptes, avec leur rôle et leur cabinet associé. Vous pouvez
-                ajuster les rôles en un clic.
+                Liste globale des comptes, avec leur rôle et leur cabinet associé. Chaque
+                changement de rôle est confirmé avant envoi.
               </p>
             </div>
 
@@ -153,7 +197,7 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                               variant={u.role === r ? 'primary' : 'outline'}
                               className="text-[10px]"
                               disabled={u.role === r}
-                              onClick={() => handleChangeRole(u.id, r)}
+                              onClick={() => openConfirmChangeRole(u, r)}
                             >
                               {ROLE_LABELS[r]}
                             </Button>
@@ -176,6 +220,21 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
               </tbody>
             </table>
           </div>
+
+          <ConfirmModal
+            isOpen={pendingRoleChange !== null}
+            variant="warning"
+            title="Modifier le rôle ?"
+            description={
+              pendingRoleChange
+                ? `Vous allez passer ${pendingRoleChange.userName} du rôle « ${ROLE_LABELS[pendingRoleChange.currentRole]} » au rôle « ${ROLE_LABELS[pendingRoleChange.newRole]} ». Cette action modifie immédiatement ses droits sur la plateforme.`
+                : undefined
+            }
+            confirmLabel="Confirmer le changement"
+            state={roleSubmitting ? 'loading' : 'idle'}
+            onCancel={closeRoleConfirmModal}
+            onConfirm={confirmRoleChange}
+          />
         </div>
       </DashboardLayout>
     </>
