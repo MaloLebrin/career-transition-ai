@@ -26,6 +26,8 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
   const [minEmployees, setMinEmployees] = useState('')
   const [newOrgName, setNewOrgName] = useState('')
   const [newOrgSlug, setNewOrgSlug] = useState('')
+  const [ownerName, setOwnerName] = useState('')
+  const [ownerEmail, setOwnerEmail] = useState('')
 
   if (!isSuperAdmin(role)) {
     return (
@@ -62,17 +64,22 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
   const handleCreateOrganization = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newOrgName.trim()) return
+    if (!ownerEmail.trim()) return
 
     router.post(
       '/dashboard/super-admin/organizations',
       {
         name: newOrgName,
         slug: newOrgSlug || undefined,
+        ownerName,
+        ownerEmail,
       },
       {
         onSuccess: () => {
           setNewOrgName('')
           setNewOrgSlug('')
+          setOwnerName('')
+          setOwnerEmail('')
         },
       }
     )
@@ -116,7 +123,8 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                 <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
                   Créer une organisation
                 </p>
-                <div className="flex flex-col md:flex-row gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col md:flex-row gap-2">
                   <Input
                     value={newOrgName}
                     onChange={(e) => setNewOrgName(e.target.value)}
@@ -129,14 +137,29 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                     placeholder="Slug (optionnel)"
                     className="md:w-40"
                   />
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <Input
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      placeholder="Nom du propriétaire"
+                      className="md:w-44"
+                    />
+                    <Input
+                      value={ownerEmail}
+                      onChange={(e) => setOwnerEmail(e.target.value)}
+                      placeholder="Email du propriétaire"
+                      className="md:w-56"
+                    />
                   <Button
                     type="submit"
                     size="sm"
                     className="md:w-auto w-full"
-                    disabled={!newOrgName.trim()}
+                    disabled={!newOrgName.trim() || !ownerEmail.trim()}
                   >
                     Ajouter
                   </Button>
+                  </div>
                 </div>
               </form>
             </div>

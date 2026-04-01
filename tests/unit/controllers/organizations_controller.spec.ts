@@ -4,14 +4,11 @@ import type { OrganizationDto } from '#dtos/organization_dto'
 import Organization from '#models/organization'
 
 type UpdateCall = { org: Organization; payload: { name?: string; slug?: string } }
-type InviteAdvisorCall = { organizationId: number; name: string; email: string; role: string }
 
 class FakeOrganizationsService {
   public calls: Array<{ id: number }> = []
   public result: OrganizationDto | null = null
   public updateCalls: UpdateCall[] = []
-  public inviteAdvisorCalls: InviteAdvisorCall[] = []
-  public inviteAdvisorError: Error | null = null
 
   async getById(id: number): Promise<OrganizationDto | null> {
     this.calls.push({ id })
@@ -30,22 +27,18 @@ class FakeOrganizationsService {
       createdAt: org.createdAt.toISO() ?? '',
     }
   }
+}
 
-  async inviteAdvisor(input: {
-    organizationId: number
-    name: string
-    email: string
-    role: string
-  }): Promise<{ id: number; organizationId: number; email: string; name: string; role: string }> {
+type InviteAdvisorCall = { organizationId: number; name: string; email: string; role: string }
+
+class FakeAdvisorService {
+  public inviteAdvisorCalls: InviteAdvisorCall[] = []
+  public inviteAdvisorError: Error | null = null
+
+  async inviteAdvisor(input: InviteAdvisorCall, _baseUrl: string) {
     this.inviteAdvisorCalls.push(input)
     if (this.inviteAdvisorError) throw this.inviteAdvisorError
-    return {
-      id: 1,
-      organizationId: input.organizationId,
-      email: input.email,
-      name: input.name,
-      role: input.role,
-    }
+    return { id: 1, ...input }
   }
 }
 
@@ -80,7 +73,7 @@ function makeResponse() {
 test.group('OrganizationsController.updateFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any)
+    const controller = new OrganizationsController(service as any, new FakeAdvisorService() as any)
     const response = makeResponse()
 
     await controller.updateFromDashboard({
@@ -102,7 +95,7 @@ test.group('OrganizationsController.updateFromDashboard', () => {
     })
 
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any)
+    const controller = new OrganizationsController(service as any, new FakeAdvisorService() as any)
     const session = makeSession()
     const response = makeResponse()
 
@@ -126,7 +119,8 @@ test.group('OrganizationsController.updateFromDashboard', () => {
 test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any)
+    const advisorService = new FakeAdvisorService()
+    const controller = new OrganizationsController(service as any, advisorService as any)
     const response = makeResponse()
 
     await controller.storeAdvisorFromDashboard({
@@ -137,12 +131,13 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     } as any)
 
     assert.isTrue(response.unauthorizedCalled)
-    assert.lengthOf(service.inviteAdvisorCalls, 0)
+    assert.lengthOf(advisorService.inviteAdvisorCalls, 0)
   })
 
   test('calls service.inviteAdvisor then redirects with success flash', async ({ assert }) => {
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any)
+    const advisorService = new FakeAdvisorService()
+    const controller = new OrganizationsController(service as any, advisorService as any)
     const session = makeSession()
     const response = makeResponse()
 
@@ -154,24 +149,29 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
 
     await controller.storeAdvisorFromDashboard({
       auth: { user: { organizationId: 42 } },
-      request: { validateUsing: () => Promise.resolve(payload) },
+      request: {
+        validateUsing: () => Promise.resolve(payload),
+        protocol: () => 'https',
+        hostname: () => 'example.test',
+      },
       response: response as any,
       session: session as any,
     } as any)
 
-    assert.lengthOf(service.inviteAdvisorCalls, 1)
-    assert.equal(service.inviteAdvisorCalls[0].organizationId, 42)
-    assert.equal(service.inviteAdvisorCalls[0].name, payload.name)
-    assert.equal(service.inviteAdvisorCalls[0].email, payload.email)
-    assert.equal(service.inviteAdvisorCalls[0].role, payload.role)
+    assert.lengthOf(advisorService.inviteAdvisorCalls, 1)
+    assert.equal(advisorService.inviteAdvisorCalls[0].organizationId, 42)
+    assert.equal(advisorService.inviteAdvisorCalls[0].name, payload.name)
+    assert.equal(advisorService.inviteAdvisorCalls[0].email, payload.email)
+    assert.equal(advisorService.inviteAdvisorCalls[0].role, payload.role)
     assert.deepEqual(session.flashes, [['success', 'Collaborateur invité.']])
     assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 
   test('on duplicate email sets error flash and redirects', async ({ assert }) => {
     const service = new FakeOrganizationsService()
-    service.inviteAdvisorError = new Error('Cet email est déjà utilisé par un compte existant.')
-    const controller = new OrganizationsController(service as any)
+    const advisorService = new FakeAdvisorService()
+    advisorService.inviteAdvisorError = new Error('Cet email est déjà utilisé par un compte existant.')
+    const controller = new OrganizationsController(service as any, advisorService as any)
     const session = makeSession()
     const response = makeResponse()
 
@@ -183,12 +183,16 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
 
     await controller.storeAdvisorFromDashboard({
       auth: { user: { organizationId: 42 } },
-      request: { validateUsing: () => Promise.resolve(payload) },
+      request: {
+        validateUsing: () => Promise.resolve(payload),
+        protocol: () => 'https',
+        hostname: () => 'example.test',
+      },
       response: response as any,
       session: session as any,
     } as any)
 
-    assert.lengthOf(service.inviteAdvisorCalls, 1)
+    assert.lengthOf(advisorService.inviteAdvisorCalls, 1)
     assert.deepEqual(session.flashes, [
       ['error', 'Cet email est déjà utilisé par un compte existant.'],
     ])

@@ -1,11 +1,12 @@
-import { memo } from 'react'
 import { APP_NAME } from '#shared/constants/app'
+import { memo } from 'react'
 
 export type LogoSize = 'sm' | 'md' | 'lg'
 
 export interface LogoProps {
   size?: LogoSize
   className?: string
+  showText?: boolean
 }
 
 const HEIGHT_MAP: Record<LogoSize, number> = {
@@ -21,7 +22,7 @@ const BRAND_NAME = APP_NAME
  * logo-with-name.png et logo-without-name.png dans inertia/assets/images/
  * et réactive les imports + balises <img>.
  */
-const Logo = memo(function Logo({ size = 'md', className = '' }: LogoProps) {
+export const Logo = memo(function Logo({ size = 'md', className = '', showText = true }: LogoProps) {
   const height = HEIGHT_MAP[size]
   const markSize = Math.round(height * 0.9)
 
@@ -39,16 +40,16 @@ const Logo = memo(function Logo({ size = 'md', className = '' }: LogoProps) {
       >
         FTC
       </div>
-      <div className="leading-none">
-        <div className="text-sm font-black text-slate-900">{APP_NAME}</div>
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          {/* Intentionnellement laissé vide: le nom complet est géré via APP_NAME */}
+      {showText && (
+        <div className="leading-none">
+          <div className="text-sm font-black text-slate-900">{APP_NAME}</div>
+          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            {/* Intentionnellement laissé vide: le nom complet est géré via APP_NAME */}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 })
 
 Logo.displayName = 'Logo'
-
-export default Logo

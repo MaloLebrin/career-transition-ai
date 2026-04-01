@@ -1,4 +1,10 @@
-import { isAdmin, isAdvisorOrAdmin, isOrganizationAdmin, isSuperAdmin } from '#shared/helpers/roles'
+import {
+  isAdmin,
+  isAdvisorOrAdmin,
+  isConseillerDashboardRole,
+  isOrganizationAdmin,
+  isSuperAdmin,
+} from '#shared/helpers/roles'
 import { describe, expect, test } from 'vitest'
 
 describe('role helpers (inertia)', () => {
@@ -36,5 +42,15 @@ describe('role helpers (inertia)', () => {
     expect(isAdvisorOrAdmin('employee')).toBe(false)
     expect(isAdvisorOrAdmin(undefined)).toBe(false)
     expect(isAdvisorOrAdmin(null)).toBe(false)
+  })
+
+  test('isConseillerDashboardRole for advisor, admin and expert only', () => {
+    expect(isConseillerDashboardRole('advisor')).toBe(true)
+    expect(isConseillerDashboardRole('admin')).toBe(true)
+    expect(isConseillerDashboardRole('expert')).toBe(true)
+    expect(isConseillerDashboardRole('super_admin')).toBe(false)
+    expect(isConseillerDashboardRole('employee')).toBe(false)
+    expect(isConseillerDashboardRole(undefined)).toBe(false)
+    expect(isConseillerDashboardRole(null)).toBe(false)
   })
 })

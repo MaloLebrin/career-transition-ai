@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import OrganizationsAdmin from '../../../inertia/pages/dashboard/OrganizationsAdmin'
+import OrganizationsAdmin from '../../../inertia/pages/dashboard/admin/organizations/Index'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({
@@ -72,6 +72,32 @@ describe('OrganizationsAdmin page', () => {
       '/auth/impersonate/42',
       undefined,
       expect.objectContaining({ preserveScroll: true })
+    )
+  })
+
+  test('submits create organization form with owner fields', () => {
+    render(<OrganizationsAdmin organizations={[]} />)
+
+    fireEvent.change(screen.getByPlaceholderText('Nom du cabinet'), {
+      target: { value: 'Cabinet Gamma' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Nom du propriétaire'), {
+      target: { value: 'Gamma Owner' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Email du propriétaire'), {
+      target: { value: 'owner@gamma.test' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Ajouter/i }))
+
+    expect(postMock).toHaveBeenCalledWith(
+      '/dashboard/super-admin/organizations',
+      expect.objectContaining({
+        name: 'Cabinet Gamma',
+        ownerName: 'Gamma Owner',
+        ownerEmail: 'owner@gamma.test',
+      }),
+      expect.any(Object)
     )
   })
 })

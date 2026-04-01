@@ -30,7 +30,7 @@ function getLatestProgressByType(exercises: Exercise[]): Record<string, number> 
   return out
 }
 
-function stepCompletionFromProgress(
+export function stepCompletionFromProgress(
   step: PlanStep,
   exerciseProgressByType: Record<string, number>
 ): boolean {

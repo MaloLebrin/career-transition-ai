@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import ExercisesUsageAdmin from '../../../inertia/pages/dashboard/ExercisesUsageAdmin'
+import ExercisesUsageAdmin from '../../../inertia/pages/dashboard/admin/exercises/Usage'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({

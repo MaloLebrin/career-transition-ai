@@ -5,7 +5,13 @@ import { ExerciseType } from '../../../inertia/types'
 
 const mockRouterPost = vi.fn().mockResolvedValue(undefined)
 vi.mock('@inertiajs/react', () => ({
-  router: { post: (...args: unknown[]) => mockRouterPost(...args) },
+  router: {
+    post: (url: unknown, data: unknown, options?: any) => {
+      mockRouterPost(url, data, options)
+      options?.onSuccess?.()
+      options?.onFinish?.()
+    },
+  },
 }))
 
 const mockEmployee = {
@@ -84,7 +90,8 @@ describe('useCandidateExercises', () => {
 
     expect(mockRouterPost).toHaveBeenCalledWith(
       '/dashboard/candidat/exercises/disc/result',
-      expect.objectContaining({ type: ExerciseType.DISC, status: 'completed' })
+      expect.objectContaining({ type: ExerciseType.DISC, status: 'completed' }),
+      expect.any(Object)
     )
     expect(onComplete).toHaveBeenCalled()
   })

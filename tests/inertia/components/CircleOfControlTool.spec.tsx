@@ -23,7 +23,6 @@ describe('CircleOfControlTool', () => {
   })
 
   test('supports keyboard arrows during playing', async () => {
-    vi.useFakeTimers()
     render(
       <CircleOfControlTool
         onSave={onSave}
@@ -31,6 +30,9 @@ describe('CircleOfControlTool', () => {
         initialDraftPromise={Promise.resolve({ data: { decisions: {}, currentIndex: 0, gameState: 'intro' } } as any)}
       />
     )
+
+    // Ensure initial draft promise has been applied before interacting
+    await act(async () => {})
 
     const startButton = screen.getByRole('button', { name: /Commencer le tri/i })
     await act(async () => {
@@ -43,13 +45,12 @@ describe('CircleOfControlTool', () => {
 
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
-      vi.advanceTimersByTime(360)
     })
+
+    await new Promise((r) => setTimeout(r, 400))
 
     await waitFor(() => {
       expect(screen.getByText(/Item 2 \/ 20/i)).toBeInTheDocument()
     })
-
-    vi.useRealTimers()
   })
 })

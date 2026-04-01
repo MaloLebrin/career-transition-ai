@@ -10,6 +10,9 @@ test.group('ResendMailProvider', (group) => {
   })
 
   test('maps MailMessage to Resend payload', async ({ assert }) => {
+    process.env.NODE_ENV = 'test'
+    process.env.MAIL_RESEND_TEST_MODE = 'false'
+
     const sent: any[] = []
     const provider = new ResendMailProvider({
       emails: {

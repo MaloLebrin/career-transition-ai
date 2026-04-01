@@ -78,7 +78,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
 
     await ExerciseResult.create({
       employeeId: employee.id,
-      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      type: 'motivation',
       status: 'completed',
       date: DateTime.fromISO('2026-01-01'),
       duration: 120,
@@ -88,7 +88,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
     })
     await ExerciseResult.create({
       employeeId: employee.id,
-      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      type: 'motivation',
       status: 'draft',
       date: null,
       duration: null,
@@ -98,7 +98,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
     })
     await ExerciseResult.create({
       employeeId: employee.id,
-      type: EXERCICE_RESULTS_TYPES.VALUES,
+      type: 'values',
       status: 'completed',
       date: DateTime.fromISO('2026-02-01'),
       duration: 90,

@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import SuperAdminHome from '../../../inertia/pages/dashboard/SuperAdminHome'
+import SuperAdminHome from '../../../inertia/pages/dashboard/admin/home/Home'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({

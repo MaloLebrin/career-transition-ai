@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-import EmployeeHome, { stepCompletionFromProgress } from '../../../../inertia/components/dashboard/EmployeeHome'
+import EmployeeHome from '../../../../inertia/components/dashboard/EmployeeHome'
+import { stepCompletionFromProgress } from '../../../../inertia/components/dashboard/PlanStepsTimeline'
 import type { EmployeeData } from '../../../../inertia/types/Employee'
 
 describe('stepCompletionFromProgress', () => {
@@ -62,7 +63,20 @@ describe('EmployeeHome roadmap', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
       skills: [],
-      exercises: [],
+      exercises: [
+        {
+          id: 1,
+          employeeId: 1,
+          type: 'life_curve',
+          status: 'completed',
+          date: '2026-01-01T00:00:00.000Z',
+          duration: 10,
+          progressPercent: 100,
+          quantitativeScore: null,
+          qualitativeAnalysis: null,
+          data: {},
+        },
+      ],
       experiences: [],
       educations: [],
       plan: [

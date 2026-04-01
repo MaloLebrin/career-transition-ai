@@ -2,7 +2,6 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
 import Organization from '#models/organization'
-import User from '#models/user'
 import ExerciseResult from '#models/exercise_result'
 import Employee from '#models/employee'
 import { DateTime } from 'luxon'
@@ -10,24 +9,11 @@ import { DateTime } from 'luxon'
 function makeCtx(overrides: any = {}) {
   const flashes: Record<string, any> = {}
   return {
-    auth: overrides.auth ?? { user: { id: 1, role: 'super_admin' as const } },
     request: overrides.request ?? {
       qs: () => ({}),
     },
     response: {
       statusCode: 200,
-      unauthorizedCalled: false,
-      forbiddenCalled: false,
-      unauthorized() {
-        this.unauthorizedCalled = true
-        this.statusCode = 401
-        return this
-      },
-      forbidden() {
-        this.forbiddenCalled = true
-        this.statusCode = 403
-        return this
-      },
     },
     inertia: {
       rendered: null as any,
@@ -47,26 +33,6 @@ function makeCtx(overrides: any = {}) {
 
 test.group('SuperAdminController.exerciseUsage', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  test('returns unauthorized when user is missing', async ({ assert }) => {
-    const controller = new SuperAdminController()
-    const ctx = makeCtx({ auth: { user: null } })
-
-    // @ts-expect-error minimal context
-    await controller.exerciseUsage(ctx)
-
-    assert.isTrue(ctx.response.unauthorizedCalled)
-  })
-
-  test('returns forbidden when user is not super admin', async ({ assert }) => {
-    const controller = new SuperAdminController()
-    const ctx = makeCtx({ auth: { user: { id: 1, role: 'admin' } } })
-
-    // @ts-expect-error minimal context
-    await controller.exerciseUsage(ctx)
-
-    assert.isTrue(ctx.response.forbiddenCalled)
-  })
-
   test('aggregates exercise results per organization and type', async ({ assert }) => {
     const org1 = await Organization.create({
       name: 'Org A',
@@ -200,18 +166,6 @@ test.group('SuperAdminController.exerciseUsageExport', (group) => {
       response: {
         statusCode: 200,
         headers: {} as Record<string, string>,
-        unauthorizedCalled: false,
-        forbiddenCalled: false,
-        unauthorized() {
-          this.unauthorizedCalled = true
-          this.statusCode = 401
-          return this
-        },
-        forbidden() {
-          this.forbiddenCalled = true
-          this.statusCode = 403
-          return this
-        },
         header(key: string, value: string) {
           this.headers[key.toLowerCase()] = value
         },

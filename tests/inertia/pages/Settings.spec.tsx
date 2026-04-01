@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import Settings from '../../../inertia/pages/dashboard/Settings'
+import Settings from '../../../inertia/pages/dashboard/conseiller/settings/Home'
 
 vi.mock('../../../inertia/hooks/useAuth', () => ({
   useAuth: () => ({
