@@ -15,6 +15,8 @@ router
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
     // @ts-expect-error Inertia page name from generated types
     router.on('/bulk-jobs').renderInertia('dashboard/admin/jobs/Index', {})
+    // @ts-expect-error Inertia page name from generated types
+    router.on('/design-system').renderInertia('dashboard/admin/DesignSystem', {})
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.superAdmin()])

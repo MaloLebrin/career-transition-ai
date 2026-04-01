@@ -1,9 +1,9 @@
 import { usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
+import { useEmployees } from '../../hooks/use_employees'
 import AppLink from '../ui/AppLink'
 import Input from '../ui/Input'
 import NavLink from '../ui/NavLink'
-import { useEmployees } from '../../hooks/use_employees'
 
 interface AdvisorSidebarProps {
   /** Selected employee id to highlight. From route /dashboard/conseiller/employees/:id */
@@ -11,16 +11,53 @@ interface AdvisorSidebarProps {
   showSuperAdminLinks?: boolean
 }
 
-const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
+const sidebarShellClass =
+  'lg:col-span-1 flex flex-col min-h-0 lg:max-h-[calc(100vh-15.5rem)]'
+
+function SuperAdminSidebarContent() {
+  return (
+    <aside className={sidebarShellClass}>
+      <div className="bg-white rounded-[24px] border border-brand-navy/5 p-3 flex flex-col flex-1 min-h-0 lg:sticky lg:top-24 shadow-sm">
+        <nav className="flex flex-col flex-1 min-h-0 space-y-0.5">
+          <div className="px-3 py-2 mb-2">
+            <h3 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
+              Supervision
+            </h3>
+          </div>
+          <NavLink
+            href="/dashboard/super-admin"
+            icon="dashboard"
+            label="Supervision Plateforme"
+          />
+          <NavLink
+            href="/dashboard/super-admin/organizations"
+            icon="building"
+            label="Organisations"
+          />
+          <NavLink href="/dashboard/super-admin/users" icon="user" label="Utilisateurs" />
+          <NavLink
+            href="/dashboard/super-admin/exercises-usage"
+            icon="target"
+            label="Usage exercices"
+          />
+          <NavLink href="/dashboard/super-admin/design-system" icon="palette" label="Design" />
+        </nav>
+      </div>
+    </aside>
+  )
+}
+
+function AdvisorSidebarContent({
   selectedEmployeeId = null,
-  showSuperAdminLinks = false,
-}) => {
+}: {
+  selectedEmployeeId?: string | null
+}) {
   const [searchTerm, setSearchTerm] = useState('')
   const { url } = usePage()
   const { filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm)
 
   return (
-    <aside className="lg:col-span-1 flex flex-col min-h-0 lg:max-h-[calc(100vh-15.5rem)]">
+    <aside className={sidebarShellClass}>
       <div className="bg-white rounded-[24px] border border-brand-navy/5 p-3 flex flex-col flex-1 min-h-0 lg:sticky lg:top-24 shadow-sm">
         <nav className="flex flex-col flex-1 min-h-0 space-y-0.5">
           <div className="px-3 py-2 mb-2">
@@ -31,32 +68,6 @@ const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
           <NavLink href="/dashboard/conseiller" icon="dashboard" label="Bureau" />
           <NavLink href="/dashboard/conseiller/employees" icon="users" label="Candidats" />
           <NavLink href="/dashboard/conseiller/settings" icon="settings" label="Réglages" />
-          <NavLink href="/dashboard/conseiller/design-system" icon="palette" label="Design" />
-          {showSuperAdminLinks && (
-            <>
-              <div className="px-3 pt-4 mt-4 pb-2 border-t border-brand-navy/5">
-                <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.2em]">
-                  Supervision
-                </h4>
-              </div>
-              <NavLink
-                href="/dashboard/super-admin"
-                icon="dashboard"
-                label="Supervision Plateforme"
-              />
-              <NavLink
-                href="/dashboard/super-admin/organizations"
-                icon="building"
-                label="Organisations"
-              />
-              <NavLink href="/dashboard/super-admin/users" icon="user" label="Utilisateurs" />
-              <NavLink
-                href="/dashboard/super-admin/exercises-usage"
-                icon="target"
-                label="Usage exercices"
-              />
-            </>
-          )}
 
           <div className="pt-4 mt-4 border-t border-brand-navy/5 flex flex-col flex-1 min-h-0">
             <div className="px-3 py-2 shrink-0">
@@ -118,6 +129,16 @@ const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
       </div>
     </aside>
   )
+}
+
+const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
+  selectedEmployeeId = null,
+  showSuperAdminLinks = false,
+}) => {
+  if (showSuperAdminLinks) {
+    return <SuperAdminSidebarContent />
+  }
+  return <AdvisorSidebarContent selectedEmployeeId={selectedEmployeeId} />
 }
 
 export default AdvisorSidebar

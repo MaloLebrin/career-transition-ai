@@ -4,13 +4,13 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'super_admin.home': { paramsTuple?: []; params?: {} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
@@ -136,12 +136,12 @@ export type ScannedRoutes = {
     'event_stream': { paramsTuple?: []; params?: {} }
   }
   POST: {
-    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }

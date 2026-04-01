@@ -32,7 +32,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/ConseillerExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerExercise.tsx'))['default']>
     'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
     'dashboard/ConseillerProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerProfile.tsx'))['default']>
-    'dashboard/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/DesignSystem.tsx'))['default']>
     'dashboard/employee/exercises/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/Home.tsx'))['default']>
     'dashboard/employee/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/List.tsx'))['default']>
     'dashboard/employee/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/home/Home.tsx'))['default']>
@@ -70,9 +69,10 @@ declare module '@adonisjs/inertia/types' {
     'Offer': ExtractProps<(typeof import('../../inertia/pages/Offer.tsx'))['default']>
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
-    'Pricing': ExtractProps<(typeof import('../../inertia/pages/Pricing.tsx'))['default']>
     'PrivacyPolicy': ExtractProps<(typeof import('../../inertia/pages/PrivacyPolicy.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
+    'Pricing': ExtractProps<(typeof import('../../inertia/pages/Pricing.tsx'))['default']>
+    'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
   }
 }

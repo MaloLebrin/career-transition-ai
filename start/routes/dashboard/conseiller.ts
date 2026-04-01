@@ -15,8 +15,6 @@ router
     // @ts-expect-error Inertia page name from generated types
     router.on('/').renderInertia('dashboard/conseiller/home/Home') // TODO put in his controller
     // @ts-expect-error Inertia page name from generated types
-    router.on('/design-system').renderInertia('dashboard/dev/design_system/DesignSystem', {}) // TODO put in his controller
-    // @ts-expect-error Inertia page name from generated types
     router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {}) // TODO put in his controller
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/bulk-jobs', [BulkJobsController, 'index'])
