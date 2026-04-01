@@ -9,15 +9,23 @@ interface SecurityPageProps {
   onEnterApp: () => void
   onBackToHome?: () => void
   onOffer?: () => void
+  onTarifs?: () => void
   onMethodology?: () => void
 }
 
-export default function SecurityPage({ onEnterApp, onBackToHome, onOffer, onMethodology }: SecurityPageProps) {
+export default function SecurityPage({
+  onEnterApp,
+  onBackToHome,
+  onOffer,
+  onTarifs,
+  onMethodology,
+}: SecurityPageProps) {
   return (
     <PublicLayout
       headerProps={{
         onLogoClick: onBackToHome ?? (() => {}),
         onOfferClick: onOffer,
+        onTarifsClick: onTarifs,
         onMethodologyClick: onMethodology,
         showAction: true,
         actionLabel: 'Accès Expert',
@@ -28,7 +36,6 @@ export default function SecurityPage({ onEnterApp, onBackToHome, onOffer, onMeth
         onEnterApp,
         footerLine: 'France Transition Carrière © 2026 • Sécurité',
       }}
-      className="pb-24"
     >
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto">

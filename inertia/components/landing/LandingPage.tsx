@@ -37,6 +37,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       headerProps={{
         onLogoClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
         onOfferClick: () => router.visit('/offre'),
+        onTarifsClick: () => router.visit('/tarifs'),
         onMethodologyClick: () => router.visit('/methodologie'),
         onAiClick: () => scrollToSection('ai-engine'),
         onActionClick: onEnterApp,

@@ -10,10 +10,17 @@ interface OfferPageProps {
   onEnterApp: () => void
   onBackToHome?: () => void
   onOffer?: () => void
+  onTarifs?: () => void
   onMethodology?: () => void
 }
 
-export default function OfferPage({ onEnterApp, onBackToHome, onOffer, onMethodology }: OfferPageProps) {
+export default function OfferPage({
+  onEnterApp,
+  onBackToHome,
+  onOffer,
+  onTarifs,
+  onMethodology,
+}: OfferPageProps) {
   const [demoName, setDemoName] = useState('')
   const [demoEmail, setDemoEmail] = useState('')
   const [demoOrg, setDemoOrg] = useState('')
@@ -40,15 +47,15 @@ export default function OfferPage({ onEnterApp, onBackToHome, onOffer, onMethodo
         onActionClick: onEnterApp,
         actionLabel: 'Accès Expert',
         showAction: true,
-        onMethodologyClick: onMethodology,
         onOfferClick: onOffer,
+        onTarifsClick: onTarifs,
+        onMethodologyClick: onMethodology,
       }}
       footerProps={{
         variant: 'marketing',
         onEnterApp,
         footerLine: 'France Transition Carrière © 2026 • Offre cabinets',
       }}
-      className="pb-24"
     >
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">

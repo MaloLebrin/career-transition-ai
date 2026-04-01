@@ -9,6 +9,7 @@ export default function Methodology() {
         onEnterApp={() => router.visit('/auth/login')}
         onBackToHome={() => router.visit('/')}
         onOffer={() => router.visit('/offre')}
+        onTarifs={() => router.visit('/tarifs')}
       />
     </>
   )

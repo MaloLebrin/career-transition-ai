@@ -9,6 +9,7 @@ export default function Security() {
         onEnterApp={() => router.visit('/auth/login')}
         onBackToHome={() => router.visit('/')}
         onOffer={() => router.visit('/offre')}
+        onTarifs={() => router.visit('/tarifs')}
         onMethodology={() => router.visit('/methodologie')}
       />
     </>

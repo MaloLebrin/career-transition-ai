@@ -9,6 +9,7 @@ interface LegalNoticePageProps {
   onEnterApp: () => void
   onBackToHome?: () => void
   onOffer?: () => void
+  onTarifs?: () => void
   onMethodology?: () => void
 }
 
@@ -16,6 +17,7 @@ export default function LegalNoticePage({
   onEnterApp,
   onBackToHome,
   onOffer,
+  onTarifs,
   onMethodology,
 }: LegalNoticePageProps) {
   return (
@@ -23,6 +25,7 @@ export default function LegalNoticePage({
       headerProps={{
         onLogoClick: onBackToHome ?? (() => {}),
         onOfferClick: onOffer,
+        onTarifsClick: onTarifs,
         onMethodologyClick: onMethodology,
         showAction: true,
         actionLabel: 'Accès Expert',
@@ -33,7 +36,6 @@ export default function LegalNoticePage({
         onEnterApp,
         footerLine: 'France Transition Carrière © 2026 • Mentions légales',
       }}
-      className="pb-24"
     >
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto">

@@ -64,14 +64,15 @@ declare module '@adonisjs/inertia/types' {
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
     'Landing': ExtractProps<(typeof import('../../inertia/pages/Landing.tsx'))['default']>
+    'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
     'Login': ExtractProps<(typeof import('../../inertia/pages/Login.tsx'))['default']>
-    'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
-    'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
-    'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
     'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>
     'Offer': ExtractProps<(typeof import('../../inertia/pages/Offer.tsx'))['default']>
-    'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
+    'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
+    'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
+    'Pricing': ExtractProps<(typeof import('../../inertia/pages/Pricing.tsx'))['default']>
     'PrivacyPolicy': ExtractProps<(typeof import('../../inertia/pages/PrivacyPolicy.tsx'))['default']>
+    'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
   }
 }

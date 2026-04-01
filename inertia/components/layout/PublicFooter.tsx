@@ -40,6 +40,14 @@ const PublicFooter: React.FC<PublicFooterProps> = ({ variant, onEnterApp, onAiCl
               </li>
               <li>
                 <AppLink
+                  href="/tarifs"
+                  className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
+                >
+                  Tarifs
+                </AppLink>
+              </li>
+              <li>
+                <AppLink
                   href="/methodologie"
                   className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                 >

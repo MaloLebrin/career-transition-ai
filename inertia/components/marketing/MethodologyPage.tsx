@@ -9,14 +9,16 @@ interface MethodologyPageProps {
   onEnterApp: () => void
   onBackToHome?: () => void
   onOffer?: () => void
+  onTarifs?: () => void
 }
 
-export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer }: MethodologyPageProps) {
+export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onTarifs }: MethodologyPageProps) {
   return (
     <PublicLayout
       headerProps={{
         onLogoClick: onBackToHome ?? (() => {}),
         onOfferClick: onOffer,
+        onTarifsClick: onTarifs,
         showAction: true,
         actionLabel: 'Accès Expert',
         onActionClick: onEnterApp,
@@ -26,7 +28,6 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer }: M
         onEnterApp,
         footerLine: 'France Transition Carrière © 2026 • Rigueur & accompagnement',
       }}
-      className="pb-24"
     >
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto text-center">

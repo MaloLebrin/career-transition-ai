@@ -1,11 +1,11 @@
 import { Head, router } from '@inertiajs/react'
-import LegalNoticePage from '../components/marketing/LegalNoticePage'
+import PricingPage from '../components/marketing/PricingPage'
 
-export default function LegalNotice() {
+export default function Pricing() {
   return (
     <>
-      <Head title="Mentions légales" />
-      <LegalNoticePage
+      <Head title="Tarifs" />
+      <PricingPage
         onEnterApp={() => router.visit('/auth/login')}
         onBackToHome={() => router.visit('/')}
         onOffer={() => router.visit('/offre')}
@@ -15,4 +15,3 @@ export default function LegalNotice() {
     </>
   )
 }
-
