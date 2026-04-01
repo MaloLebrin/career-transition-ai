@@ -9,6 +9,12 @@ router.on('/').renderInertia('Landing', {})
 router.on('/methodologie').renderInertia('Methodology', {})
 // @ts-expect-error Inertia page name from generated types
 router.on('/offre').renderInertia('Offer', {})
+// @ts-expect-error Inertia page name from generated types
+router.on('/mentions-legales').renderInertia('LegalNotice', {})
+// @ts-expect-error Inertia page name from generated types
+router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
+// @ts-expect-error Inertia page name from generated types
+router.on('/securite').renderInertia('Security', {})
 
 // Auth pages: guest middleware redirects already-logged-in users to /dashboard
 router

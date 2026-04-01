@@ -84,7 +84,7 @@ const PublicFooter: React.FC<PublicFooterProps> = ({ variant, onEnterApp, onAiCl
             <ul className="space-y-4">
               <li>
                 <AppLink
-                  href="#"
+                  href="/mentions-legales"
                   className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                 >
                   Mentions Légales
@@ -92,18 +92,18 @@ const PublicFooter: React.FC<PublicFooterProps> = ({ variant, onEnterApp, onAiCl
               </li>
               <li>
                 <AppLink
-                  href="#"
+                  href="/confidentialite"
                   className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                 >
-                  RGPD
+                  Confidentialité (RGPD)
                 </AppLink>
               </li>
               <li>
                 <AppLink
-                  href="#"
+                  href="/securite"
                   className="text-sm font-bold text-brand-navy/60 hover:text-brand-sage transition-colors"
                 >
-                  Support
+                  Sécurité
                 </AppLink>
               </li>
             </ul>

@@ -70,5 +70,8 @@ declare module '@adonisjs/inertia/types' {
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
     'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>
     'Offer': ExtractProps<(typeof import('../../inertia/pages/Offer.tsx'))['default']>
+    'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
+    'PrivacyPolicy': ExtractProps<(typeof import('../../inertia/pages/PrivacyPolicy.tsx'))['default']>
+    'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
   }
 }
