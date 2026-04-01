@@ -34,10 +34,15 @@ export default class SuperAdminController {
   }
 
   /**
-   * Inertia page: list all organizations with basic aggregates.
+   * Inertia page: list client organizations with basic aggregates.
+   * Excludes the current super admin's own organization (e.g. platform / internal cabinet).
    */
-  public async organizations({ inertia }: HttpContext) {
-    const organizations = await Organization.query().preload('users').preload('employees')
+  public async organizations({ inertia, auth }: HttpContext) {
+    const currentUser = auth.user!
+    const organizations = await Organization.query()
+      .whereNot('id', currentUser.organizationId)
+      .preload('users')
+      .preload('employees')
 
     logger.info('Super admin organizations', { organizations: JSON.stringify(organizations) })
 

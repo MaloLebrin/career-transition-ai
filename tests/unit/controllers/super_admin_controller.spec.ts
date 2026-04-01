@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
+import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import Organization from '#models/organization'
 import ExerciseResult from '#models/exercise_result'
 import Employee from '#models/employee'
@@ -30,6 +31,41 @@ function makeCtx(overrides: any = {}) {
     },
   } as any
 }
+
+test.group('SuperAdminController.organizations', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('excludes current super admin organization from the list', async ({ assert }) => {
+    const platformOrg = await Organization.create({
+      name: 'Platform Org',
+      slug: `platform-${Date.now()}`,
+    })
+    const clientOrg = await Organization.create({
+      name: 'Client Org',
+      slug: `client-${Date.now()}`,
+    })
+
+    const controller = new SuperAdminController({} as SuperAdminOrganizationsService)
+    const ctx = makeCtx()
+    ctx.auth = {
+      user: {
+        id: 1,
+        organizationId: platformOrg.id,
+        role: 'super_admin' as const,
+      },
+    }
+
+    // @ts-expect-error minimal context
+    await controller.organizations(ctx)
+
+    const rendered = ctx.inertia.rendered
+    assert.equal(rendered.name, 'dashboard/admin/organizations/Index')
+    const items = rendered.props.organizations as { id: number; name: string }[]
+    assert.lengthOf(items, 1)
+    assert.equal(items[0].id, clientOrg.id)
+    assert.equal(items[0].name, 'Client Org')
+  })
+})
 
 test.group('SuperAdminController.exerciseUsage', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
