@@ -31,9 +31,23 @@ export function isConseillerDashboardRole(role: UserRole | undefined | null): bo
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
-  [USERS_ROLES.EMPLOYEE]: 'Employé',
+  [USERS_ROLES.EMPLOYEE]: 'Talent',
   [USERS_ROLES.ADVISOR]: 'Consultant Accompagnateur',
   [USERS_ROLES.EXPERT]: 'Expert Référent',
   [USERS_ROLES.ADMIN]: 'Admin orga',
   [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
+} as const
+
+const ROLE_CATEGORY: Record<string, string> = {
+  SUPER_ADMIN: 'super-admin',
+  EXPERT: 'expert',
+  TALENT: 'talent',
+} as const
+
+export type RoleCategory = (typeof ROLE_CATEGORY)[keyof typeof ROLE_CATEGORY]
+
+export const ROLE_CATEGORY_LABELS: Record<RoleCategory, string> = {
+  [ROLE_CATEGORY.SUPER_ADMIN]: 'Super admin',
+  [ROLE_CATEGORY.EXPERT]: 'Expert',
+  [ROLE_CATEGORY.TALENT]: 'Talent',
 } as const
