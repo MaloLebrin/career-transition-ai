@@ -1,9 +1,5 @@
-import {
-  isSuperAdmin,
-  ROLE_DESCRIPTIONS,
-  ROLE_FILTER_ALL_DESCRIPTION,
-  ROLE_LABELS,
-} from '#shared/helpers/roles'
+import { ROLE_DESCRIPTIONS, ROLE_FILTER_ALL_DESCRIPTION } from '#shared/constants/roles'
+import { isSuperAdmin, ROLE_LABELS } from '#shared/helpers/roles'
 import { userRolesValues, USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -106,6 +102,16 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
     []
   )
 
+  const roleRowSelectOptions = useMemo<SelectFieldOption<UserRole>[]>(
+    () =>
+      userRolesValues.map((r) => ({
+        value: r,
+        label: ROLE_LABELS[r],
+        description: ROLE_DESCRIPTIONS[r],
+      })),
+    []
+  )
+
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase()
 
@@ -153,10 +159,9 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
     )
   }
 
-  const handleRoleSelectChange = (u: UserItem, newRole: string) => {
-    const r = newRole as UserRole
-    if (r === u.role) return
-    openConfirmChangeRole(u, r)
+  const handleRoleSelectChange = (u: UserItem, newRole: UserRole) => {
+    if (newRole === u.role) return
+    openConfirmChangeRole(u, newRole)
   }
 
   const handleResendOnboarding = (id: number) => {
@@ -266,19 +271,16 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
                     <td className="px-6 py-4 text-xs text-brand-navy/70">
                       {u.organization ? u.organization.name : '—'}
                     </td>
-                    <td className="px-6 py-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleSelectChange(u, e.target.value)}
-                        className="w-full max-w-[200px] border border-brand-navy/10 rounded-xl text-xs px-2 py-1.5 text-brand-navy bg-white"
+                    <td className="px-6 py-4 align-top">
+                      <SelectField<UserRole>
                         aria-label={`Changer le rôle de ${u.name}`}
-                      >
-                        {userRolesValues.map((r) => (
-                          <option key={r} value={r}>
-                            {ROLE_LABELS[r]}
-                          </option>
-                        ))}
-                      </select>
+                        options={roleRowSelectOptions}
+                        value={u.role}
+                        onChange={(newRole) => handleRoleSelectChange(u, newRole)}
+                        showSelectedOptionDescription
+                        className="w-full max-w-[240px]"
+                        selectClassName="py-1.5 px-2 text-xs"
+                      />
                     </td>
                     <td className="px-6 py-4">
                       <span

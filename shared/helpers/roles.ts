@@ -1,6 +1,8 @@
 import type { UserRole } from '#shared/types/advisor/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 
+export { ROLE_DESCRIPTIONS, ROLE_FILTER_ALL_DESCRIPTION } from '#shared/constants/roles'
+
 /**
  * User has admin or super_admin role (organization admin).
  */
@@ -37,24 +39,6 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   [USERS_ROLES.ADMIN]: 'Admin orga',
   [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
 } as const
-
-/** Texte d’aide court pour filtres ou sélecteurs de rôle (super admin, etc.). */
-export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
-  [USERS_ROLES.EMPLOYEE]:
-    'Compte talent : accès au parcours personnel et aux outils côté collaborateur.',
-  [USERS_ROLES.ADVISOR]:
-    'Accompagne les talents au quotidien et pilote les dossiers dans le cabinet.',
-  [USERS_ROLES.EXPERT]:
-    'Intervient en expertise sur des dossiers ; accès conseiller ciblé.',
-  [USERS_ROLES.ADMIN]:
-    'Gère les utilisateurs et les réglages de son organisation (cabinet).',
-  [USERS_ROLES.SUPER_ADMIN]:
-    'Administration globale de la plateforme (organisations, utilisateurs, supervision).',
-} as const
-
-/** Description pour l’option « tous les rôles » dans un filtre. */
-export const ROLE_FILTER_ALL_DESCRIPTION =
-  'Affiche tous les comptes sans filtrer par type de rôle.'
 
 const ROLE_CATEGORY: Record<string, string> = {
   SUPER_ADMIN: 'super-admin',
