@@ -22,3 +22,10 @@ export function isSuperAdmin(role: UserRole): boolean {
 export function isOrganizationAdmin(role: UserRole): boolean {
   return role === USERS_ROLES.ADMIN
 }
+
+/**
+ * Roles that use the conseiller dashboard (excludes super_admin, who has a dedicated area).
+ */
+export function isConseillerDashboardRole(role: UserRole | undefined | null): boolean {
+  return role === USERS_ROLES.ADVISOR || role === USERS_ROLES.ADMIN || role === USERS_ROLES.EXPERT
+}

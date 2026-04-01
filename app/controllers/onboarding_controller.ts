@@ -1,5 +1,7 @@
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
+import { isConseillerDashboardRole } from '#shared/helpers/roles'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { onboardingSetPasswordValidator } from '#validators/auth/onboarding_set_password_validator'
 import type { HttpContext } from '@adonisjs/core/http'
 import hash from '@adonisjs/core/services/hash'
@@ -60,6 +62,15 @@ export default class OnboardingController {
 
     await auth.use('web').login(user)
     session.flash('success', 'Mot de passe créé. Bienvenue !')
-    return response.redirect('/dashboard/candidat')
+    if (user.role === USERS_ROLES.EMPLOYEE) {
+      return response.redirect('/dashboard/candidat')
+    }
+    if (isConseillerDashboardRole(user.role)) {
+      return response.redirect('/dashboard/conseiller')
+    }
+    if (user.role === USERS_ROLES.SUPER_ADMIN) {
+      return response.redirect('/dashboard/super-admin')
+    }
+    return response.redirect('/dashboard')
   }
 }
