@@ -1,6 +1,6 @@
 import React from 'react'
 import Button from '../ui/Button'
-import Logo from '../ui/Logo'
+import { Logo } from '../ui/Logo'
 
 export interface PublicHeaderProps {
   onLogoClick: () => void

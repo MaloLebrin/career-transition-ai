@@ -1,10 +1,10 @@
-import { type UserRole } from '#shared/constants/user'
 import { APP_NAME } from '#shared/constants/app'
+import { type UserRole } from '#shared/constants/user'
 import React, { useState } from 'react'
 import { Avatar } from '~/components/layout/header/Avatar'
 import { LogoutModal } from '~/components/ui/LogoutModal'
 import Button from '../ui/Button'
-import Logo from '../ui/Logo'
+import { Logo } from '../ui/Logo'
 import FlashBanner from './FlashBanner'
 
 interface LayoutProps {

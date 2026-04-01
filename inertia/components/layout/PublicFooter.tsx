@@ -1,6 +1,6 @@
 import React from 'react'
 import AppLink from '../ui/AppLink'
-import Logo from '../ui/Logo'
+import { Logo } from '../ui/Logo'
 
 export type PublicFooterVariant = 'landing' | 'marketing'
 

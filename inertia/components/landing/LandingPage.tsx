@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react'
 import {
   ArrowRight,
   BarChart3,
@@ -9,14 +10,13 @@ import {
   Users,
   Zap
 } from 'lucide-react'
-import { router } from '@inertiajs/react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import React from 'react'
 import { AiAnalisys, Appointnement, Certification, CoachFeedback, Disc, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
 import PublicLayout from '../layout/PublicLayout'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
-import Logo from '../ui/Logo'
+import { Logo } from '../ui/Logo'
 
 interface LandingPageProps {
   onEnterApp: () => void
