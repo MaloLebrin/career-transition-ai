@@ -3,6 +3,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import Organization from '#models/organization'
+import User from '#models/user'
 import ExerciseResult from '#models/exercise_result'
 import Employee from '#models/employee'
 import { DateTime } from 'luxon'
@@ -64,6 +65,56 @@ test.group('SuperAdminController.organizations', (group) => {
     assert.lengthOf(items, 1)
     assert.equal(items[0].id, clientOrg.id)
     assert.equal(items[0].name, 'Client Org')
+  })
+})
+
+test.group('SuperAdminController.users', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('excludes users in current super admin organization from the list', async ({ assert }) => {
+    const platformOrg = await Organization.create({
+      name: 'Platform Org Users',
+      slug: `platform-users-${Date.now()}`,
+    })
+    const clientOrg = await Organization.create({
+      name: 'Client Org Users',
+      slug: `client-users-${Date.now()}`,
+    })
+
+    await User.create({
+      organizationId: platformOrg.id,
+      email: `platform-user-${Date.now()}@test.example`,
+      name: 'Platform User',
+      password: 'temp-password-hash',
+      role: 'super_admin',
+    })
+    const clientUser = await User.create({
+      organizationId: clientOrg.id,
+      email: `client-user-${Date.now()}@test.example`,
+      name: 'Client User',
+      password: 'temp-password-hash',
+      role: 'admin',
+    })
+
+    const controller = new SuperAdminController({} as SuperAdminOrganizationsService)
+    const ctx = makeCtx()
+    ctx.auth = {
+      user: {
+        id: 999,
+        organizationId: platformOrg.id,
+        role: 'super_admin' as const,
+      },
+    }
+
+    // @ts-expect-error minimal context
+    await controller.users(ctx)
+
+    const rendered = ctx.inertia.rendered
+    assert.equal(rendered.name, 'dashboard/admin/users/Index')
+    const items = rendered.props.users as { id: number; email: string }[]
+    assert.lengthOf(items, 1)
+    assert.equal(items[0].id, clientUser.id)
+    assert.equal(items[0].email, clientUser.email)
   })
 })
 

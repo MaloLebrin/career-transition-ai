@@ -1,5 +1,5 @@
-import { isSuperAdmin } from '#shared/helpers/roles'
-import { USERS_ROLES, userRolesValues, type UserRole } from '#shared/types/advisor/roles'
+import { isSuperAdmin, ROLE_LABELS } from '#shared/helpers/roles'
+import { userRolesValues, USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -18,14 +18,6 @@ interface UserItem {
 
 interface UsersAdminProps {
   users: UserItem[]
-}
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  [USERS_ROLES.EMPLOYEE]: 'Employé',
-  [USERS_ROLES.ADVISOR]: 'Consultant Accompagnateur',
-  [USERS_ROLES.EXPERT]: 'Expert Référent',
-  [USERS_ROLES.ADMIN]: 'Admin orga',
-  [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
 }
 
 export default function UsersAdmin({ users }: UsersAdminProps) {

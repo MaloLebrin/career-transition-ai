@@ -218,10 +218,14 @@ export default class SuperAdminController {
   }
 
   /**
-   * Inertia page: list all users with global filters and role overview.
+   * Inertia page: list users with global filters and role overview.
+   * Excludes users in the current super admin's own organization (e.g. platform / internal cabinet).
    */
-  public async users({ inertia }: HttpContext) {
-    const users = await User.query().preload('organization')
+  public async users({ inertia, auth }: HttpContext) {
+    const currentUser = auth.user!
+    const users = await User.query()
+      .whereNot('organizationId', currentUser.organizationId)
+      .preload('organization')
 
     const items = users.map((user) => ({
       id: user.id,

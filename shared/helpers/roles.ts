@@ -29,3 +29,11 @@ export function isOrganizationAdmin(role: UserRole): boolean {
 export function isConseillerDashboardRole(role: UserRole | undefined | null): boolean {
   return role === USERS_ROLES.ADVISOR || role === USERS_ROLES.ADMIN || role === USERS_ROLES.EXPERT
 }
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  [USERS_ROLES.EMPLOYEE]: 'Employé',
+  [USERS_ROLES.ADVISOR]: 'Consultant Accompagnateur',
+  [USERS_ROLES.EXPERT]: 'Expert Référent',
+  [USERS_ROLES.ADMIN]: 'Admin orga',
+  [USERS_ROLES.SUPER_ADMIN]: 'Super admin',
+} as const
