@@ -78,6 +78,7 @@ test.group('AuthService', (group) => {
     const user = await User.findByOrFail('email', uniqueEmail)
     assert.equal(dto.id, user.id)
     assert.equal(dto.organizationId, user.organizationId)
+    assert.isNotNull(user.onboardingCompletedAt)
   })
 
   test('register rejects duplicate email', async ({ assert }) => {

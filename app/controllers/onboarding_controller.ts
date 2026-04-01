@@ -55,6 +55,7 @@ export default class OnboardingController {
 
     const user = tokenRecord.user as User
     user.password = await hash.make(payload.password)
+    user.onboardingCompletedAt = DateTime.now()
     await user.save()
 
     tokenRecord.usedAt = DateTime.now()

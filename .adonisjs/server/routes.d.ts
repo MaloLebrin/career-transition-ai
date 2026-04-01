@@ -16,7 +16,9 @@ export type ScannedRoutes = {
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin.store_user': { paramsTuple?: []; params?: {} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
@@ -143,7 +145,9 @@ export type ScannedRoutes = {
     'auth.reset_password': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
+    'super_admin.store_user': { paramsTuple?: []; params?: {} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'exercise_results.save_draft_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'exercise_results.store_from_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'educations.store': { paramsTuple?: []; params?: {} }

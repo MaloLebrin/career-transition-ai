@@ -10,7 +10,9 @@ router
     router.post('/organizations', [SuperAdminController, 'storeOrganization'])
     router.delete('/organizations/:id', [SuperAdminController, 'destroyOrganization'])
     router.get('/users', [SuperAdminController, 'users'])
+    router.post('/users', [SuperAdminController, 'storeUser'])
     router.post('/users/:id/role', [SuperAdminController, 'updateUserRole'])
+    router.post('/users/:id/resend-onboarding', [SuperAdminController, 'resendUserOnboarding'])
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
     // @ts-expect-error Inertia page name from generated types

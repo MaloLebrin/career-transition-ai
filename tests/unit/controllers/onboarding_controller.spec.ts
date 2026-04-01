@@ -85,6 +85,8 @@ test.group('OnboardingController.submit', (group) => {
     assert.equal(loginCalls[0].id, user.id)
     assert.isTrue(!!token.usedAt)
     assert.isTrue(DateTime.isDateTime(token.usedAt))
+    assert.isNotNull(user.onboardingCompletedAt)
+    assert.isTrue(DateTime.isDateTime(user.onboardingCompletedAt))
     assert.equal(response.redirectUrl, '/dashboard/conseiller')
     assert.deepEqual(session.flashes, [['success', 'Mot de passe créé. Bienvenue !']])
   })

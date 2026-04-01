@@ -13,6 +13,7 @@ type ExtractProps<T> =
 declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'Auth': ExtractProps<(typeof import('../../inertia/pages/Auth.tsx'))['default']>
+    'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
     'dashboard/admin/exercises/Usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/exercises/Usage.tsx'))['default']>
     'dashboard/admin/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/home/Home.tsx'))['default']>
     'dashboard/admin/jobs/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/jobs/Index.tsx'))['default']>
@@ -69,10 +70,9 @@ declare module '@adonisjs/inertia/types' {
     'Offer': ExtractProps<(typeof import('../../inertia/pages/Offer.tsx'))['default']>
     'onboarding/InvalidToken': ExtractProps<(typeof import('../../inertia/pages/onboarding/InvalidToken.tsx'))['default']>
     'onboarding/SetPassword': ExtractProps<(typeof import('../../inertia/pages/onboarding/SetPassword.tsx'))['default']>
+    'Pricing': ExtractProps<(typeof import('../../inertia/pages/Pricing.tsx'))['default']>
     'PrivacyPolicy': ExtractProps<(typeof import('../../inertia/pages/PrivacyPolicy.tsx'))['default']>
     'Register': ExtractProps<(typeof import('../../inertia/pages/Register.tsx'))['default']>
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
-    'Pricing': ExtractProps<(typeof import('../../inertia/pages/Pricing.tsx'))['default']>
-    'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
   }
 }

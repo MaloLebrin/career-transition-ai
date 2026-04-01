@@ -9,6 +9,7 @@ import { toSessionDto } from '#utils/dto'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
 import db from '@adonisjs/lucid/services/db'
+import { DateTime } from 'luxon'
 
 type RegisterInput = {
   email: string
@@ -69,6 +70,7 @@ export class AuthService {
           name: input.name,
           password: input.password,
           role: USERS_ROLES.ADVISOR,
+          onboardingCompletedAt: DateTime.now(),
         },
         { client: trx }
       )

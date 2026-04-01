@@ -1,11 +1,18 @@
-import { isSuperAdmin, ROLE_LABELS } from '#shared/helpers/roles'
+import {
+  isSuperAdmin,
+  ROLE_DESCRIPTIONS,
+  ROLE_FILTER_ALL_DESCRIPTION,
+  ROLE_LABELS,
+} from '#shared/helpers/roles'
 import { userRolesValues, USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { CreateUserModal } from '~/components/modals/CreateUserModal'
 import Button from '~/components/ui/Button'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import Input from '~/components/ui/Input'
+import SelectField, { type SelectFieldOption } from '~/components/ui/SelectField'
 import { useAuth } from '~/hooks/useAuth'
 
 interface UserItem {
@@ -15,10 +22,18 @@ interface UserItem {
   role: UserRole
   organization: { id: number; name: string } | null
   createdAt: string | null
+  onboardingCompleted: boolean
+}
+
+interface OrganizationOption {
+  id: number
+  name: string
+  slug: string
 }
 
 interface UsersAdminProps {
   users: UserItem[]
+  organizations: OrganizationOption[]
 }
 
 type PendingRoleChange = {
@@ -28,13 +43,15 @@ type PendingRoleChange = {
   newRole: UserRole
 }
 
-export default function UsersAdmin({ users }: UsersAdminProps) {
+export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
   const { user } = useAuth()
   const role = user?.role || 'employee'
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
   const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null)
   const [roleSubmitting, setRoleSubmitting] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [resendSubmittingId, setResendSubmittingId] = useState<number | null>(null)
 
   if (!isSuperAdmin(role)) {
     return (
@@ -52,6 +69,42 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
       </>
     )
   }
+
+  const roleFilterOptions = useMemo<SelectFieldOption<UserRole | 'all'>[]>(
+    () => [
+      {
+        value: 'all',
+        label: 'Tous les rôles',
+        description: ROLE_FILTER_ALL_DESCRIPTION,
+      },
+      {
+        value: USERS_ROLES.EMPLOYEE,
+        label: ROLE_LABELS[USERS_ROLES.EMPLOYEE],
+        description: ROLE_DESCRIPTIONS[USERS_ROLES.EMPLOYEE],
+      },
+      {
+        value: USERS_ROLES.ADVISOR,
+        label: ROLE_LABELS[USERS_ROLES.ADVISOR],
+        description: ROLE_DESCRIPTIONS[USERS_ROLES.ADVISOR],
+      },
+      {
+        value: USERS_ROLES.EXPERT,
+        label: ROLE_LABELS[USERS_ROLES.EXPERT],
+        description: ROLE_DESCRIPTIONS[USERS_ROLES.EXPERT],
+      },
+      {
+        value: USERS_ROLES.ADMIN,
+        label: ROLE_LABELS[USERS_ROLES.ADMIN],
+        description: ROLE_DESCRIPTIONS[USERS_ROLES.ADMIN],
+      },
+      {
+        value: USERS_ROLES.SUPER_ADMIN,
+        label: ROLE_LABELS[USERS_ROLES.SUPER_ADMIN],
+        description: ROLE_DESCRIPTIONS[USERS_ROLES.SUPER_ADMIN],
+      },
+    ],
+    []
+  )
 
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -100,6 +153,24 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
     )
   }
 
+  const handleRoleSelectChange = (u: UserItem, newRole: string) => {
+    const r = newRole as UserRole
+    if (r === u.role) return
+    openConfirmChangeRole(u, r)
+  }
+
+  const handleResendOnboarding = (id: number) => {
+    setResendSubmittingId(id)
+    router.post(
+      `/dashboard/super-admin/users/${id}/resend-onboarding`,
+      {},
+      {
+        preserveScroll: true,
+        onFinish: () => setResendSubmittingId(null),
+      }
+    )
+  }
+
   useEffect(() => {
     if (!pendingRoleChange || roleSubmitting) return
     const onKeyDown = (event: KeyboardEvent) => {
@@ -116,6 +187,12 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
       <Head title="Utilisateurs" />
       <DashboardLayout>
         <div className="space-y-8 animate-fadeIn">
+          <CreateUserModal
+            isOpen={createOpen}
+            onClose={() => setCreateOpen(false)}
+            organizations={organizations}
+          />
+
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="space-y-2">
               <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
@@ -125,28 +202,28 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                 Utilisateurs de la plateforme
               </h1>
               <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-                Liste globale des comptes, avec leur rôle et leur cabinet associé. Chaque
-                changement de rôle est confirmé avant envoi.
+                Création de comptes, invitation par email, changement de rôle (confirmé) et renvoi
+                de lien pour les comptes non activés.
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto md:items-center md:justify-end">
+              <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+                Créer un utilisateur
+              </Button>
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Rechercher par nom, email, cabinet…"
               />
-              <select
+              <SelectField<UserRole | 'all'>
+                aria-label="Filtrer par rôle"
+                options={roleFilterOptions}
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value as UserRole | 'all')}
-                className="border border-brand-navy/10 rounded-xl text-xs px-3 py-2 text-brand-navy/80 bg-white"
-              >
-                <option value="all">Tous les rôles</option>
-                <option value={USERS_ROLES.EMPLOYEE}>Employé</option>
-                <option value={USERS_ROLES.ADVISOR}>Conseiller</option>
-                <option value={USERS_ROLES.ADMIN}>Admin orga</option>
-                <option value={USERS_ROLES.SUPER_ADMIN}>Super admin</option>
-              </select>
+                onChange={(v) => setRoleFilter(v)}
+                showSelectedOptionDescription
+                className="shrink-0 w-full sm:min-w-[200px] sm:max-w-[280px]"
+              />
             </div>
           </div>
 
@@ -165,6 +242,9 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                   </th>
                   <th className="px-6 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
                     Rôle
+                  </th>
+                  <th className="px-6 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
+                    Accès
                   </th>
                   <th className="px-6 py-3 text-right text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
                     Actions
@@ -186,22 +266,47 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                     <td className="px-6 py-4 text-xs text-brand-navy/70">
                       {u.organization ? u.organization.name : '—'}
                     </td>
-                    <td className="px-6 py-4 text-xs text-brand-navy/80">{ROLE_LABELS[u.role]}</td>
                     <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
+                      <select
+                        value={u.role}
+                        onChange={(e) => handleRoleSelectChange(u, e.target.value)}
+                        className="w-full max-w-[200px] border border-brand-navy/10 rounded-xl text-xs px-2 py-1.5 text-brand-navy bg-white"
+                        aria-label={`Changer le rôle de ${u.name}`}
+                      >
                         {userRolesValues.map((r) => (
-                            <Button
-                              key={r}
-                              type="button"
-                              size="xs"
-                              variant={u.role === r ? 'primary' : 'outline'}
-                              className="text-[10px]"
-                              disabled={u.role === r}
-                              onClick={() => openConfirmChangeRole(u, r)}
-                            >
-                              {ROLE_LABELS[r]}
-                            </Button>
-                          )
+                          <option key={r} value={r}>
+                            {ROLE_LABELS[r]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg ${
+                          u.onboardingCompleted
+                            ? 'bg-brand-sage/15 text-brand-sage'
+                            : 'bg-amber-50 text-amber-800'
+                        }`}
+                      >
+                        {u.onboardingCompleted ? 'Actif' : 'En attente'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end">
+                        {!u.onboardingCompleted ? (
+                          <Button
+                            type="button"
+                            size="xs"
+                            variant="outline"
+                            className="text-[10px]"
+                            disabled={resendSubmittingId === u.id}
+                            isLoading={resendSubmittingId === u.id}
+                            onClick={() => handleResendOnboarding(u.id)}
+                          >
+                            Renvoyer l’invitation
+                          </Button>
+                        ) : (
+                          <span className="text-[10px] text-brand-navy/30">—</span>
                         )}
                       </div>
                     </td>
@@ -211,7 +316,7 @@ export default function UsersAdmin({ users }: UsersAdminProps) {
                   <tr>
                     <td
                       className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
-                      colSpan={5}
+                      colSpan={6}
                     >
                       Aucun utilisateur ne correspond à vos critères pour le moment.
                     </td>

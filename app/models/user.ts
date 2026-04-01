@@ -49,6 +49,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare role: UserRole
 
+  /** Première activation du compte (mot de passe définitif / inscription directe). */
+  @column.dateTime()
+  declare onboardingCompletedAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

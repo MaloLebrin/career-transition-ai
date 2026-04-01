@@ -401,7 +401,7 @@ export class SupportPlanStepSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'deletedAt', 'email', 'id', 'name', 'organizationId', 'password', 'role', 'updatedAt'] as const
+  static $columns = ['createdAt', 'deletedAt', 'email', 'id', 'name', 'onboardingCompletedAt', 'organizationId', 'password', 'role', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -413,6 +413,8 @@ export class UserSchema extends BaseModel {
   declare id: number
   @column()
   declare name: string
+  @column.dateTime()
+  declare onboardingCompletedAt: DateTime | null
   @column()
   declare organizationId: number
   @column({ serializeAs: null })

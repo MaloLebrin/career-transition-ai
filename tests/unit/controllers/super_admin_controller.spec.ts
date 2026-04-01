@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
+import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import Organization from '#models/organization'
 import User from '#models/user'
 import ExerciseResult from '#models/exercise_result'
@@ -46,7 +47,10 @@ test.group('SuperAdminController.organizations', (group) => {
       slug: `client-${Date.now()}`,
     })
 
-    const controller = new SuperAdminController({} as SuperAdminOrganizationsService)
+    const controller = new SuperAdminController(
+      {} as SuperAdminOrganizationsService,
+      {} as SuperAdminUsersService
+    )
     const ctx = makeCtx()
     ctx.auth = {
       user: {
@@ -96,7 +100,10 @@ test.group('SuperAdminController.users', (group) => {
       role: 'admin',
     })
 
-    const controller = new SuperAdminController({} as SuperAdminOrganizationsService)
+    const controller = new SuperAdminController(
+      {} as SuperAdminOrganizationsService,
+      {} as SuperAdminUsersService
+    )
     const ctx = makeCtx()
     ctx.auth = {
       user: {
@@ -111,10 +118,18 @@ test.group('SuperAdminController.users', (group) => {
 
     const rendered = ctx.inertia.rendered
     assert.equal(rendered.name, 'dashboard/admin/users/Index')
-    const items = rendered.props.users as { id: number; email: string }[]
+    const items = rendered.props.users as {
+      id: number
+      email: string
+      onboardingCompleted: boolean
+    }[]
+    const orgs = rendered.props.organizations as { id: number; name: string }[]
     assert.lengthOf(items, 1)
     assert.equal(items[0].id, clientUser.id)
     assert.equal(items[0].email, clientUser.email)
+    assert.isFalse(items[0].onboardingCompleted)
+    assert.lengthOf(orgs, 1)
+    assert.equal(orgs[0].id, clientOrg.id)
   })
 })
 
@@ -180,7 +195,10 @@ test.group('SuperAdminController.exerciseUsage', (group) => {
       },
     ])
 
-    const controller = new SuperAdminController()
+    const controller = new SuperAdminController(
+      {} as SuperAdminOrganizationsService,
+      {} as SuperAdminUsersService
+    )
     const ctx = makeCtx({
       request: {
         qs: () => ({
@@ -239,7 +257,10 @@ test.group('SuperAdminController.exerciseUsageExport', (group) => {
       qualitativeAnalysis: null,
     })
 
-    const controller = new SuperAdminController()
+    const controller = new SuperAdminController(
+      {} as SuperAdminOrganizationsService,
+      {} as SuperAdminUsersService
+    )
     const bodyChunks: any[] = []
 
     const ctx = {

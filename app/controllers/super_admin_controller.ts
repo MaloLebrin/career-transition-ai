@@ -3,8 +3,10 @@ import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
+import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import { userRolesValues } from '#shared/types/advisor/roles'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
+import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
@@ -13,7 +15,10 @@ import { DateTime } from 'luxon'
 
 @inject()
 export default class SuperAdminController {
-  constructor(private superAdminOrganizationsService: SuperAdminOrganizationsService) { }
+  constructor(
+    private superAdminOrganizationsService: SuperAdminOrganizationsService,
+    private superAdminUsersService: SuperAdminUsersService
+  ) {}
   /**
    * Inertia page: super admin home with global metrics.
    */
@@ -223,9 +228,17 @@ export default class SuperAdminController {
    */
   public async users({ inertia, auth }: HttpContext) {
     const currentUser = auth.user!
-    const users = await User.query()
-      .whereNot('organizationId', currentUser.organizationId)
-      .preload('organization')
+    const platformOrganizationId = currentUser.organizationId
+
+    const [users, organizationRows] = await Promise.all([
+      User.query()
+        .whereNot('organizationId', platformOrganizationId)
+        .preload('organization'),
+      Organization.query()
+        .whereNot('id', platformOrganizationId)
+        .orderBy('name', 'asc')
+        .select('id', 'name', 'slug'),
+    ])
 
     const items = users.map((user) => ({
       id: user.id,
@@ -236,11 +249,59 @@ export default class SuperAdminController {
         ? { id: user.organization.id, name: user.organization.name }
         : null,
       createdAt: user.createdAt?.toISO() ?? null,
+      onboardingCompleted: user.onboardingCompletedAt != null,
+    }))
+
+    const organizations = organizationRows.map((o) => ({
+      id: o.id,
+      name: o.name,
+      slug: o.slug,
     }))
 
     return inertia.render('dashboard/admin/users/Index' as never, {
       users: items,
+      organizations,
     })
+  }
+
+  /**
+   * Inertia form: create a user in a client organization and send onboarding email.
+   */
+  public async storeUser({ request, response, session, auth }: HttpContext) {
+    const payload = await request.validateUsing(createPlatformUserValidator)
+    const currentUser = auth.user!
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
+
+    await this.superAdminUsersService.createUserWithInvite({
+      organizationId: payload.organizationId,
+      name: payload.name,
+      email: payload.email,
+      role: payload.role,
+      baseUrl,
+      platformOrganizationId: currentUser.organizationId,
+    })
+
+    session.flash('success', 'Utilisateur créé. Un email d’invitation a été envoyé.')
+    return response.redirect('/dashboard/super-admin/users')
+  }
+
+  /**
+   * Inertia form: resend set-password link for users who have not completed onboarding.
+   */
+  public async resendUserOnboarding({ params, request, response, session, auth }: HttpContext) {
+    const id = Number(params.id)
+    const currentUser = auth.user!
+    const user = await User.find(id)
+
+    if (!user || user.organizationId === currentUser.organizationId) {
+      session.flash('error', 'Utilisateur introuvable.')
+      return response.redirect('/dashboard/super-admin/users')
+    }
+
+    const baseUrl = `${request.protocol()}://${request.hostname()}`
+    await this.superAdminUsersService.resendOnboardingInvitation(user, baseUrl)
+    session.flash('success', `Lien d’invitation renvoyé à ${user.email}.`)
+    return response.redirect('/dashboard/super-admin/users')
   }
 
   /**
