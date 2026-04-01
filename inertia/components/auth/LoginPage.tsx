@@ -147,7 +147,7 @@ export default function LoginPage({
             <p className="text-sm text-brand-navy/60 font-medium">
               Vous n’avez pas encore de compte ?{' '}
               <button
-                type="button"
+                type="submit"
                 onClick={onGoToRegister}
                 className="ml-2 text-brand-sage font-bold uppercase text-[10px] tracking-widest hover:underline"
               >
