@@ -1,0 +1,57 @@
+name: CI build typecheck
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (tsc)
+        env:
+          NODE_ENV: test
+          PORT: 3333
+          HOST: localhost
+          APP_KEY: ci_app_key
+          LOG_LEVEL: info
+          SESSION_DRIVER: cookie
+          QUEUE_DRIVER: database
+          VITE_AI_PROVIDER: none
+        run: pnpm typecheck
+
+      - name: Build (node ace build)
+        env:
+          NODE_ENV: test
+          PORT: 3333
+          HOST: localhost
+          APP_KEY: ci_app_key
+          LOG_LEVEL: info
+          SESSION_DRIVER: cookie
+          QUEUE_DRIVER: database
+          VITE_AI_PROVIDER: none
+        run: pnpm build
