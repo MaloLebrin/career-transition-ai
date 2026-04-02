@@ -88,4 +88,3 @@ export function createFrontAiClient(): AiClient {
     completeJson: async () => null,
   }
 }
-

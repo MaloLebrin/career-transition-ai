@@ -5,7 +5,7 @@ import { ExperienceForm } from '~/components/dashboard/employee/profile/experien
 import { ExperienceItem } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperienceItem'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
-import { EmployeeData } from '~/types'
+import type { EmployeeData } from '~/types/employee'
 
 interface ExperiencesCardProps {
   employee: EmployeeData

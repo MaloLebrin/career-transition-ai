@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/react';
 import Button from '~/components/ui/Button';
 import DatePicker from '~/components/ui/DatePicker';
 import Input from '~/components/ui/Input';
-import { EmployeeData } from '~/types';
+import type { EmployeeData } from '~/types/employee';
 
 interface ExperienceFormProps {
   experience: Omit<EmployeeData['experiences'][0], 'id'> & { id?: number };
@@ -25,13 +25,12 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(data, 'experience')
     if (experience.id) {
-      put(`/dashboard/candidat/experiences`, data, {
+      put('/dashboard/candidat/experiences', {
         onSuccess: () => onSuccess?.(),
       });
     } else {
-      post('/dashboard/candidat/experiences', data, {
+      post('/dashboard/candidat/experiences', {
         onSuccess: () => onSuccess?.(),
       });
     }
@@ -109,7 +108,7 @@ export const ExperienceForm = ({ experience, onCancel, onSuccess }: ExperienceFo
             const isChecked = e.target.checked
             setData('isCurrent', isChecked)
             if (isChecked) {
-              setData('endDate', null)
+              setData('endDate', '')
             }
           }}
           className="w-4 h-4 rounded text-brand-sage focus:ring-brand-sage"

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { EducationForm } from '~/components/dashboard/employee/profile/educations/EducationForm';
 import { EducationItem } from '~/components/dashboard/employee/profile/educations/EducationItem';
 import Button from '~/components/ui/Button';
-import { EmployeeData } from '~/types';
+import { EmployeeData } from '~/types/employee';
 import Card from '../../../../ui/Card';
 
 interface EducationsCardProps {

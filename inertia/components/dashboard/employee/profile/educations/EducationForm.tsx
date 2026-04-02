@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react';
 import Button from '~/components/ui/Button';
 import DatePicker from '~/components/ui/DatePicker';
 import Input from '~/components/ui/Input';
-import { EmployeeData } from '~/types';
+import type { EmployeeData } from '~/types/employee';
 
 interface EducationFormProps {
   education: Omit<EmployeeData['educations'][0], 'id'> & { id?: number };

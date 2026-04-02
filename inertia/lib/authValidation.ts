@@ -88,5 +88,5 @@ export function validateRegister(data: RegisterFields): RegisterErrors {
 }
 
 export function hasErrors(errors: Record<string, string | undefined>): boolean {
-  return Object.values(errors).some((e) => e != null && e !== '')
+  return Object.values(errors).some((e) => e !== null && e !== '' && e !== undefined)
 }

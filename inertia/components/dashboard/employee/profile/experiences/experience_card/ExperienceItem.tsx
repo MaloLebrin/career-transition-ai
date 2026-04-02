@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react'
 import { Pencil, Trash } from 'lucide-react'
 import { useState } from 'react'
 import ConfirmModal, { type ConfirmModalState } from '~/components/ui/ConfirmModal'
-import { EmployeeData } from '~/types'
+import type { EmployeeData } from '~/types/employee'
 import { formatDate } from '../../../../../../../shared/helpers/date'
 import { ExperienceForm } from '../ExperienceForm'
 

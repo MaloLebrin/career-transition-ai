@@ -4,7 +4,7 @@ import { Pencil, Trash } from 'lucide-react'
 import { useState } from 'react'
 import { EducationForm } from '~/components/dashboard/employee/profile/educations/EducationForm'
 import ConfirmModal, { type ConfirmModalState } from '~/components/ui/ConfirmModal'
-import { EmployeeData } from '~/types'
+import type { EmployeeData } from '~/types/employee'
 
 interface EducationItemProps {
   education: EmployeeData['educations'][0]

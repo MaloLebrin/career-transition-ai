@@ -2,7 +2,7 @@ import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import AddSkillModal from '~/components/dashboard/employee/profile/AddSkillModal'
 import Button from '~/components/ui/Button'
-import { EmployeeData } from '~/types'
+import { EmployeeData } from '~/types/employee'
 import Card from '../../../ui/Card'
 
 interface AvailableSkill {
