@@ -29,12 +29,19 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   | Variables for configuring database connection
   |----------------------------------------------------------
+  | Use DB_* locally. On Clever Cloud, the PostgreSQL add-on injects
+  | POSTGRESQL_ADDON_*; either set is enough (see resolvePostgresConnection).
   */
-  DB_HOST: Env.schema.string({ format: 'host' }),
-  DB_PORT: Env.schema.number(),
-  DB_USER: Env.schema.string(),
+  DB_HOST: Env.schema.string.optional({ format: 'host' }),
+  DB_PORT: Env.schema.number.optional(),
+  DB_USER: Env.schema.string.optional(),
   DB_PASSWORD: Env.schema.string.optional(),
-  DB_DATABASE: Env.schema.string(),
+  DB_DATABASE: Env.schema.string.optional(),
+  POSTGRESQL_ADDON_HOST: Env.schema.string.optional({ format: 'host' }),
+  POSTGRESQL_ADDON_PORT: Env.schema.number.optional(),
+  POSTGRESQL_ADDON_USER: Env.schema.string.optional(),
+  POSTGRESQL_ADDON_PASSWORD: Env.schema.string.optional(),
+  POSTGRESQL_ADDON_DB: Env.schema.string.optional(),
   SQLITE_DB_PATH: Env.schema.string.optional(),
 
   /*

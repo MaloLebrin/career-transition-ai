@@ -1,0 +1,56 @@
+# Deploy to Clever Cloud via clever-tools (git push to app remote).
+# See docs/clever-cloud.md — GitHub Actions.
+
+name: Clever Cloud deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git branch to checkout and push to Clever (e.g. main)'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: clever-dev-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy to Clever Cloud (dev)
+        env:
+          CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
+          CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
+        run: npx --yes clever-tools@latest deploy --app "${{ secrets.CLEVER_APP_ID_DEV }}" --branch main
+
+  deploy-prod:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: clever-prod
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref || 'main' }}
+
+      - name: Deploy to Clever Cloud (prod)
+        env:
+          CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
+          CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
+          DEPLOY_BRANCH: ${{ github.event.inputs.ref || 'main' }}
+        run: npx --yes clever-tools@latest deploy --app "${{ secrets.CLEVER_APP_ID_PROD }}" --branch "$DEPLOY_BRANCH"

@@ -4,8 +4,12 @@
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "start": "node bin/server.js",
+    "clever:postbuild": "./clevercloud/post-build.sh",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
