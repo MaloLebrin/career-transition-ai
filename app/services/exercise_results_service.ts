@@ -100,7 +100,7 @@ export class ExerciseResultsService {
       })
     }
 
-    if (input.status === exerciceResultStatusValues.COMPLETED) {
+    if (resultRow.status === exerciceResultStatusValues.COMPLETED) {
       await AnalyzeExerciseQualitativeJob.dispatch({
         exerciseResultId: resultRow.id,
       }).toQueue('ai')

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { suggestTargets } from '../../services/ai_service'
+import { suggestTargets } from '../../helpers/ai'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 

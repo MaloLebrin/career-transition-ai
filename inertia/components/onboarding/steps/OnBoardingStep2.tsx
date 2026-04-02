@@ -1,6 +1,6 @@
-import { ChangeEvent, useCallback, useRef, useState } from 'react';
-import Button from '~/components/ui/Button';
-import { extractCVData } from '~/services/ai_service';
+import { ChangeEvent, useCallback, useRef, useState } from 'react'
+import Button from '~/components/ui/Button'
+import { extractCVData } from '~/helpers/ai'
 
 interface OnBoardingStep2Props {
   onNext: () => void

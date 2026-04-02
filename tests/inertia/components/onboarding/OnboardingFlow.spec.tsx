@@ -13,7 +13,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
 })
 
 // Avoid hitting Gemini in tests
-vi.mock('../../../../inertia/services/ai_service', () => ({
+vi.mock('../../../../inertia/helpers/ai', () => ({
   extractCVData: vi.fn(async () => null),
 }))
 
