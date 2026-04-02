@@ -1,16 +1,14 @@
 import { Head, router } from '@inertiajs/react'
 import AuthPage from '../components/auth/AuthPage'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../hooks/use_auth'
 
 export default function Auth() {
-  const { login, register, error } = useAuth()
+  const { error } = useAuth()
 
   return (
     <>
       <Head title="Connexion" />
       <AuthPage
-        login={login}
-        register={register}
         error={error}
         onBackToLanding={() => router.visit('/')}
         onAuthSuccess={() => { window.location.href = '/dashboard' }}

@@ -1,4 +1,6 @@
+import { router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
+import { UserSession } from '~/types/auth'
 import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -7,21 +9,12 @@ import Input from '../ui/Input'
 interface AuthPageProps {
   onAuthSuccess: () => void
   onBackToLanding: () => void
-  login: (email: string, password: string) => Promise<any>
-  register: (
-    email: string,
-    password: string,
-    name: string,
-    organizationName: string
-  ) => Promise<any>
   error: string | null
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({
   onAuthSuccess,
   onBackToLanding,
-  login,
-  register,
   error,
 }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -33,20 +26,18 @@ const AuthPage: React.FC<AuthPageProps> = ({
     organizationName: '',
   })
 
+  const { props } = usePage<{ csrfToken?: string; user?: UserSession }>()
+  const csrfToken = props.csrfToken
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
-      if (mode === 'login') {
-        await login(formData.email, formData.password)
-      } else {
-        await register(
-          formData.email,
-          formData.password,
-          formData.name,
-          formData.organizationName
-        )
-      }
+      router.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
+        ...(csrfToken ? { _csrf: csrfToken } : {}),
+      })
       onAuthSuccess()
     } catch (err) {
       // Erreur gérée par le hook et affichée via la prop error
