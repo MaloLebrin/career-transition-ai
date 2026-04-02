@@ -1,23 +1,24 @@
+import { buildCompletedPlanPayload, buildExerciseEndpoint } from '#shared/helpers/exercise_hooks'
 import { router } from '@inertiajs/react'
 import { useCallback, useState } from 'react'
-import { buildCompletedPlanPayload, buildExerciseEndpoint } from '#shared/helpers/exercise_hooks'
+import { Employee } from '~/types/employee'
 import { EXERCISES_WITH_INERTIA_DRAFT, EXERCISE_SLUGS } from '../config/exercises'
-import { Employee, ExerciseDraft, ExerciseType } from '../types'
+import { ExerciseDraft, ExerciseType } from '../types'
 
 function inertiaPost(url: string, data: any, opts?: Parameters<typeof router.post>[2]) {
   return new Promise<void>((resolve, reject) => {
     router.post(url, data, {
       ...opts,
       onSuccess: (...args: any[]) => {
-        ;(opts as any)?.onSuccess?.(...args)
+        ; (opts as any)?.onSuccess?.(...args)
         resolve()
       },
       onError: (errors: any) => {
-        ;(opts as any)?.onError?.(errors)
+        ; (opts as any)?.onError?.(errors)
         reject(Object.assign(new Error('Inertia post failed'), { errors }))
       },
       onFinish: (...args: any[]) => {
-        ;(opts as any)?.onFinish?.(...args)
+        ; (opts as any)?.onFinish?.(...args)
       },
     } as any)
   })
@@ -86,7 +87,12 @@ export function useCandidateExercises(
     }
   }
 
-  const saveResult = async (type: ExerciseType, data: unknown, quantScore: number, duration: number) => {
+  const saveResult = async (
+    type: ExerciseType,
+    data: unknown,
+    quantScore: number,
+    duration: number
+  ) => {
     if (!employee) return
 
     setIsAnalyzing(true)

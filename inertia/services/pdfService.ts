@@ -1,6 +1,8 @@
+import { APP_NAME } from '#shared/constants/app'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
-import { Employee, ExerciseType } from '../types'
+import { Employee } from '~/types/employee'
+import { ExerciseType } from '../types'
 
 /**
  * Service de génération de PDF "Expert" pour France Transition Carrière.
@@ -99,7 +101,7 @@ export async function generateComprehensivePDF(employee: Employee) {
         <div style="font-size: 11pt; font-weight: 600; color: #94a3b8; margin-top: 4mm; text-transform: uppercase; letter-spacing: 0.2em;">Dossier de Rebond Systémique</div>
       </div>
       <div class="pdf-footer" style="border-color: rgba(255,255,255,0.1); color: #64748b;">
-        <span>FRANCE TRANSITION CARRIÈRE</span>
+        <span>${APP_NAME}</span>
         <span>${new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })}</span>
       </div>
     `
@@ -172,7 +174,7 @@ export async function generateComprehensivePDF(employee: Employee) {
         </div>
       </div>
 
-      <div class="pdf-footer"><span>FRANCE TRANSITION CARRIÈRE</span><span>APPROCHE SYSTÉMIQUE</span></div>
+      <div class="pdf-footer"><span>${APP_NAME}</span><span>APPROCHE SYSTÉMIQUE</span></div>
     `
     renderRoot.appendChild(systemicPage)
     await captureAndAddPage(systemicPage)
@@ -195,8 +197,8 @@ export async function generateComprehensivePDF(employee: Employee) {
           <span class="data-label">Maîtrise Compétences</span>
           <div style="margin-top: 4mm;">
             ${employee.skills
-              .map(
-                (s) => `
+        .map(
+          (s) => `
               <div style="margin-bottom: 4mm;">
                 <div style="display: flex; justify-content: space-between; font-size: 8pt; font-weight: 800; color: #1e293b; margin-bottom: 1mm;">
                   <span>${s.name}</span>
@@ -207,8 +209,8 @@ export async function generateComprehensivePDF(employee: Employee) {
                 </div>
               </div>
             `
-              )
-              .join('')}
+        )
+        .join('')}
           </div>
         </div>
         <div class="card">
@@ -222,7 +224,7 @@ export async function generateComprehensivePDF(employee: Employee) {
           </div>
         </div>
       </div>
-      <div class="pdf-footer"><span>FRANCE TRANSITION CARRIÈRE</span><span>CONFIDENTIEL</span></div>
+      <div class="pdf-footer"><span>${APP_NAME}</span><span>CONFIDENTIEL</span></div>
     `
     renderRoot.appendChild(summaryPage)
     await captureAndAddPage(summaryPage)
@@ -240,22 +242,22 @@ export async function generateComprehensivePDF(employee: Employee) {
             <div>
               <span class="data-label">Top 11 Facteurs</span>
               ${result.data.ranked
-                .slice(0, 11)
-                .map(
-                  (m: string, i: number) =>
-                    `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i + 1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
-                )
-                .join('')}
+            .slice(0, 11)
+            .map(
+              (m: string, i: number) =>
+                `<div class="list-item"><div class="list-number" style="background: #8B5CF6; color: white;">${i + 1}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
+            )
+            .join('')}
             </div>
             <div>
               <span class="data-label">Suivant</span>
               ${result.data.ranked
-                .slice(11, 22)
-                .map(
-                  (m: string, i: number) =>
-                    `<div class="list-item"><div class="list-number">${i + 12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
-                )
-                .join('')}
+            .slice(11, 22)
+            .map(
+              (m: string, i: number) =>
+                `<div class="list-item"><div class="list-number">${i + 12}</div><div class="data-value" style="font-size: 8pt;">${m}</div></div>`
+            )
+            .join('')}
             </div>
           </div>
         `
@@ -264,8 +266,8 @@ export async function generateComprehensivePDF(employee: Employee) {
           <h2 class="section-title">Analyse Valeurs</h2>
           <div style="display: flex; flex-direction: column; gap: 2mm;">
             ${result.data.selectedValues
-              .map(
-                (v: string, i: number) => `
+            .map(
+              (v: string, i: number) => `
               <div style="display: flex; align-items: center; gap: 4mm;">
                 <div style="width: 8mm; font-size: 7pt; font-weight: 900; color: #94a3b8;">${i + 1}</div>
                 <div style="grow: 1; height: 6mm; background: #f8fafc; border: 0.5pt solid #e2e8f0; border-radius: 2mm; overflow: hidden; position: relative;">
@@ -274,8 +276,8 @@ export async function generateComprehensivePDF(employee: Employee) {
                 </div>
               </div>
             `
-              )
-              .join('')}
+            )
+            .join('')}
           </div>
         `
       } else if (result.type === ExerciseType.DISC) {
@@ -283,8 +285,8 @@ export async function generateComprehensivePDF(employee: Employee) {
           <h2 class="section-title">Analyse DISC</h2>
           <div class="card">
              ${Object.entries(result.data)
-               .map(
-                 ([key, val]) => `
+            .map(
+              ([key, val]) => `
                <div style="margin-bottom: 4mm;">
                  <div style="display: flex; justify-content: space-between; margin-bottom: 1mm;">
                    <span style="font-size: 9pt; font-weight: 900;">${key === 'D' ? 'Dominance' : key === 'I' ? 'Influence' : key === 'S' ? 'Stabilité' : 'Conformité'}</span>
@@ -293,8 +295,8 @@ export async function generateComprehensivePDF(employee: Employee) {
                  <div style="height: 2mm; background: #f1f5f9; border-radius: 1mm; overflow: hidden;"><div style="height: 100%; background: #8B5CF6; width: ${val}%"></div></div>
                </div>
              `
-               )
-               .join('')}
+            )
+            .join('')}
           </div>
         `
       }

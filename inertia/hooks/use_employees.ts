@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react'
 import { useMemo } from 'react'
-import { Employee } from '../types'
+import type { Employee } from '~/types/employee'
 
 export function useEmployees(searchTerm: string = '') {
   const { props } = usePage<{ employees: Employee[] }>()
