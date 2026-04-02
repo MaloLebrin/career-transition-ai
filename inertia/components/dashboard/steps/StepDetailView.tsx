@@ -1,11 +1,12 @@
-import React, { memo } from 'react'
-import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
-import Badge from '~/components/ui/Badge'
-import Breadcrumb from '~/components/ui/Breadcrumb'
-import AppLink from '~/components/ui/AppLink'
-import type { ExerciseResult, SupportPlanStep } from '~/types'
 import { formatDateTimeFR, formatSessionDate } from '#shared/helpers/date'
 import { getExerciseTitle } from '#shared/helpers/exercises'
+import React, { memo } from 'react'
+import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
+import AppLink from '~/components/ui/AppLink'
+import Badge from '~/components/ui/Badge'
+import Breadcrumb from '~/components/ui/Breadcrumb'
+import MarkdownContent from '~/components/ui/MarkdownContent'
+import type { ExerciseResult, SupportPlanStep } from '~/types'
 
 export interface StepDetailViewProps {
   breadcrumbItems: { label: string; href?: string }[]
@@ -63,11 +64,9 @@ const StepDetailView = memo(function StepDetailView({
               <div className="bg-violet-50/50 p-8 rounded-[32px] border border-violet-100 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-2 h-full bg-violet-600" />
                 <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-2">
-                  Analyse Gemini
+                  Analyse IA
                 </p>
-                <p className="italic text-violet-900 leading-relaxed text-sm font-medium relative z-10">
-                  &quot;{result.qualitativeAnalysis}&quot;
-                </p>
+                <MarkdownContent>{result.qualitativeAnalysis}</MarkdownContent>
               </div>
             )}
           </div>

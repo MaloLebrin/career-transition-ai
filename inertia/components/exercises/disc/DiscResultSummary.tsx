@@ -98,7 +98,6 @@ export default function DiscResultSummary({
             {(DISC_TRAITS as DiscTrait[]).map((t) => {
               const value = clampPercent(percent[t])
               const color = DISC_TRAIT_COLORS[t]
-              console.log(color, 'color')
               return (
                 <div key={t} className="space-y-2">
                   <div className="flex items-baseline justify-between">
