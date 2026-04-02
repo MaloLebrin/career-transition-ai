@@ -5,7 +5,7 @@ import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVi
 import AppLink from '~/components/ui/AppLink'
 import Badge from '~/components/ui/Badge'
 import Breadcrumb from '~/components/ui/Breadcrumb'
-import MarkdownContent from '~/components/ui/MarkdownContent'
+import ExerciseQualitativeAnalysisCard from './ExerciseQualitativeAnalysisCard'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
 
 export interface StepDetailViewProps {
@@ -61,12 +61,11 @@ const StepDetailView = memo(function StepDetailView({
             <h4 className="text-lg font-bold text-slate-800">{getExerciseTitle(result.type)}</h4>
             <ExerciseResultVisualization result={result} />
             {result.qualitativeAnalysis && (
-              <div className="bg-violet-50/50 p-8 rounded-[32px] border border-violet-100 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-2 h-full bg-violet-600" />
-                <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-2">
-                  Analyse IA
-                </p>
-                <MarkdownContent>{result.qualitativeAnalysis}</MarkdownContent>
+              <div className="lg:hidden">
+                <ExerciseQualitativeAnalysisCard
+                  markdown={result.qualitativeAnalysis}
+                  exerciseTitle={results.length > 1 ? getExerciseTitle(result.type) : undefined}
+                />
               </div>
             )}
           </div>
@@ -189,6 +188,16 @@ const StepDetailView = memo(function StepDetailView({
               {sidebarExtras}
             </div>
           </div>
+          {results.map((r) =>
+            r.qualitativeAnalysis ? (
+              <div key={`sidebar-analysis-${r.id}`} className="hidden lg:block">
+                <ExerciseQualitativeAnalysisCard
+                  markdown={r.qualitativeAnalysis}
+                  exerciseTitle={results.length > 1 ? getExerciseTitle(r.type) : undefined}
+                />
+              </div>
+            ) : null
+          )}
           {afterSidebarCard}
         </div>
       </div>
