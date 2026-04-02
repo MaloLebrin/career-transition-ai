@@ -1,7 +1,9 @@
+import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
-import { buildAnalyzeExercisePrompt } from '#shared/helpers/ai/prompts/analyze_exercise'
+import { buildEmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
+import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompts/exercises/index'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
@@ -34,8 +36,27 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       return
     }
 
+    const employee = await Employee.query()
+      .where('id', result.employeeId)
+      .preload('experiences')
+      .preload('educations')
+      .preload('skills', (q) => q.pivotColumns(['level']))
+      .first()
+
+    if (!employee) {
+      logger.warn('AnalyzeExerciseQualitativeJob: employee introuvable', {
+        exerciseResultId,
+        employeeId: result.employeeId,
+      })
+      return
+    }
+
     const provider = resolveAiTextCompletionProvider()
-    const prompt = buildAnalyzeExercisePrompt(result.type, result.data)
+    const profile = buildEmployeeAiProfile(employee as any)
+    const prompt = buildQualitativePromptForExerciseType(result.type, {
+      profile,
+      exerciseData: result.data,
+    })
 
     try {
       const text = await provider.completeText(prompt)
