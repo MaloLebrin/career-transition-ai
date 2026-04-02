@@ -21,6 +21,7 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
   async execute() {
     const { exerciseResultId } = this.payload
     const result = await ExerciseResult.find(exerciseResultId)
+
     if (!result) {
       logger.warn('AnalyzeExerciseQualitativeJob: exercise_result introuvable', {
         exerciseResultId,
@@ -64,9 +65,12 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       await result.save()
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      console.error(error)
       logger.error('AnalyzeExerciseQualitativeJob: échec IA', { exerciseResultId, message })
       result.qualitativeAnalysis = "Erreur lors de la génération de l'analyse."
       await result.save()
+    } finally {
+      logger.info('AnalyzeExerciseQualitativeJob: terminé', { exerciseResultId })
     }
   }
 }
