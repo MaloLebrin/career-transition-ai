@@ -131,7 +131,7 @@ function AdvisorSidebarContent({
   )
 }
 
-const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
+export const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
   selectedEmployeeId = null,
   showSuperAdminLinks = false,
 }) => {
@@ -140,5 +140,3 @@ const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
   }
   return <AdvisorSidebarContent selectedEmployeeId={selectedEmployeeId} />
 }
-
-export default AdvisorSidebar

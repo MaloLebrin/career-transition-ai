@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "inertia/app.tsx",
+    "inertia/ssr.tsx",
+    "inertia/pages/**/*.tsx",
+    "inertia/hooks/**/*.{ts,tsx}",
+    "inertia/services/**/*.{ts,tsx}"
+  ],
+  "project": ["inertia/**/*.{ts,tsx}"]
+}

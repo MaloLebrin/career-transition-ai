@@ -1,6 +1,6 @@
-import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import AdvisorSidebar from '../../../../inertia/components/dashboard/AdvisorSidebar'
+import { describe, expect, test, vi } from 'vitest'
+import { AdvisorSidebar } from '../../../../inertia/components/dashboard/AdvisorSidebar'
 
 vi.mock('../../../../inertia/hooks/use_employees', () => ({
   useEmployees: () => ({

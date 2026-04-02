@@ -1,6 +1,0 @@
-export { default as SkillMappingResultView } from './SkillMappingResultView'
-export { default as LifeCurveResultView } from './LifeCurveResultView'
-export { default as DiscResultView } from './DiscResultView'
-export { default as CircleOfControlResultView } from './CircleOfControlResultView'
-export { default as TargetingResultView } from './TargetingResultView'
-export { default as DefaultResultView } from './DefaultResultView'
