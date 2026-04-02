@@ -12,6 +12,8 @@
     "clever:postbuild": "./clevercloud/post-build.sh",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
+    "dev:worker": "node ace queue:work",
+    "dev:with-worker": "node bin/dev-with-worker.mjs",
     "test": "node ace test",
     "test:inertia": "vitest run",
     "lint": "eslint .",

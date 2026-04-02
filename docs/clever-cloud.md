@@ -36,6 +36,8 @@ La file d’attente utilise `QUEUE_DRIVER=database` (pas de Redis). Sur la **mê
 | `CC_WORKER_COMMAND` | `cd build && node ace.js queue:work` |
 | `QUEUE_DRIVER` | `database` |
 
+À faire **aussi** pour l’application Clever Cloud `dev` (pas seulement `prod`) : sinon les jobs restent en attente car aucun worker ne tourne.
+
 Le worker partage les mêmes variables que le serveur (`APP_KEY`, base de données, clés API IA, etc.). Chaque instance scalée lance un web + un worker ; plusieurs workers consomment la queue en parallèle (comportement généralement souhaité).
 
 Pour scaler **uniquement** les workers, créer une seconde app Node avec le même hook de build et `CC_RUN_COMMAND` égal à la commande worker (sans `CC_WORKER_COMMAND`).
