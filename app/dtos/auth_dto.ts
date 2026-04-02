@@ -1,4 +1,4 @@
-import { UserRole } from '#shared/constants/user'
+import type { UserRole } from '#shared/types/advisor/roles'
 
 export type UserSessionDto = {
   id: number

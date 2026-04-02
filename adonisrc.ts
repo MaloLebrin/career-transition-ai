@@ -1,3 +1,4 @@
+/// <reference path="./.adonisjs/server/pages.d.ts" />
 import { indexEntities } from '@adonisjs/core'
 import { defineConfig } from '@adonisjs/core/app'
 import { indexPages } from '@adonisjs/inertia'

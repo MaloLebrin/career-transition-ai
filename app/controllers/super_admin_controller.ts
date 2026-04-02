@@ -35,7 +35,7 @@ export default class SuperAdminController {
 
     logger.info('Super admin home', { stats: JSON.stringify(stats) })
 
-    return inertia.render('dashboard/admin/home/Home' as never, { stats })
+    return inertia.render('dashboard/admin/home/Home', { stats })
   }
 
   /**
@@ -60,7 +60,7 @@ export default class SuperAdminController {
       createdAt: org.createdAt?.toISO() ?? null,
     }))
 
-    return inertia.render('dashboard/admin/organizations/Index' as never, {
+    return inertia.render('dashboard/admin/organizations/Index', {
       organizations: items,
     })
   }
@@ -140,7 +140,7 @@ export default class SuperAdminController {
 
     const allOrgs = await Organization.query().select('id', 'name').orderBy('name', 'asc')
 
-    return inertia.render('dashboard/admin/exercises/Usage' as never, {
+    return inertia.render('dashboard/admin/exercises/Usage', {
       filters: {
         from,
         to,
@@ -258,7 +258,7 @@ export default class SuperAdminController {
       slug: o.slug,
     }))
 
-    return inertia.render('dashboard/admin/users/Index' as never, {
+    return inertia.render('dashboard/admin/users/Index', {
       users: items,
       organizations,
     })
