@@ -1,4 +1,3 @@
-import { GoogleGenAI } from '@google/genai'
 import { Mistral } from '@mistralai/mistralai'
 import type { AiClient, AiProvider } from '../../../shared/helpers/ai/ai_client'
 
@@ -7,14 +6,7 @@ function resolveFrontProvider(): AiProvider {
     .trim()
     .toLowerCase()
   if (raw === 'mistral') return 'mistral'
-  if (raw === 'gemini') return 'gemini'
   return 'none'
-}
-
-function getGeminiClient(): GoogleGenAI | null {
-  const apiKey = String(import.meta.env.VITE_GEMINI_API_KEY ?? '').trim()
-  if (resolveFrontProvider() !== 'gemini' || !apiKey) return null
-  return new GoogleGenAI({ apiKey })
 }
 
 function getMistralApiKey(): string | null {
@@ -86,40 +78,6 @@ export function createFrontAiClient(): AiClient {
           .trim()
 
         return markdown || null
-      },
-    }
-  }
-
-  if (provider === 'gemini') {
-    const ai = getGeminiClient()
-    if (!ai) {
-      return {
-        provider: 'none',
-        completeText: async () => null,
-        completeJson: async () => null,
-      }
-    }
-
-    return {
-      provider: 'gemini',
-      completeText: async (prompt, options) => {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: { parts: [{ text: prompt }] },
-          config: { temperature: options?.temperature ?? 0.7 },
-        })
-        return response.text || null
-      },
-      completeJson: async (prompt, options) => {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: { parts: [{ text: prompt }] },
-          config: {
-            temperature: options?.temperature ?? 0.4,
-            responseMimeType: 'application/json',
-          },
-        })
-        return parseJsonOrNull(response.text)
       },
     }
   }

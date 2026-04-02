@@ -1,4 +1,4 @@
-export type AiProvider = 'mistral' | 'gemini' | 'none'
+export type AiProvider = 'mistral' | 'none'
 
 export type AiJson = Record<string, unknown> | unknown[] | null
 

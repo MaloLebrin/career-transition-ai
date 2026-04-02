@@ -46,13 +46,10 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | IA serveur (jobs d’analyse — Mistral, Gemini, OpenAI ou none)
+  | IA serveur (jobs d’analyse — Mistral ou none)
   |----------------------------------------------------------
   */
-  AI_PROVIDER: Env.schema.enum.optional(['mistral', 'gemini', 'openai', 'none'] as const),
+  AI_PROVIDER: Env.schema.enum.optional(['mistral', 'none'] as const),
   MISTRAL_API_KEY: Env.schema.string.optional(),
   MISTRAL_MODEL: Env.schema.string.optional(),
-  GEMINI_API_KEY: Env.schema.string.optional(),
-  OPENAI_API_KEY: Env.schema.string.optional(),
-  OPENAI_MODEL: Env.schema.string.optional(),
 })
