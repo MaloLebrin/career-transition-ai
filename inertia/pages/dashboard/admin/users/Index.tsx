@@ -1,6 +1,6 @@
 import { ROLE_DESCRIPTIONS, ROLE_FILTER_ALL_DESCRIPTION } from '#shared/constants/roles'
-import { isSuperAdmin, ROLE_LABELS } from '#shared/helpers/roles'
-import { userRolesValues, USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
+import { ROLE_LABELS, isSuperAdmin } from '#shared/helpers/roles'
+import { USERS_ROLES, userRolesValues, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -9,7 +9,7 @@ import Button from '~/components/ui/Button'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import Input from '~/components/ui/Input'
 import SelectField, { type SelectFieldOption } from '~/components/ui/SelectField'
-import { useAuth } from '~/hooks/useAuth'
+import { useAuth } from '~/hooks/use_auth'
 
 interface UserItem {
   id: number

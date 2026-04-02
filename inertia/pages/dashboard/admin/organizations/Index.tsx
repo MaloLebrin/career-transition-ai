@@ -5,7 +5,7 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { CreateOrganizationModal } from '~/components/modals/CreateOrganizationModal'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
-import { useAuth } from '~/hooks/useAuth'
+import { useAuth } from '~/hooks/use_auth'
 
 interface OrganizationItem {
   id: number

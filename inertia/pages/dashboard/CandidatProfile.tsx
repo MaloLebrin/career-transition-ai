@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import ProfilePage from '../../components/profile/ProfilePage'
 import { candidatProfileUpdatePayload } from '../../helpers/candidat_profile_payload'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/use_auth'
 import { useEmployee } from '../../hooks/use_employee'
 
 export default function CandidatProfile() {

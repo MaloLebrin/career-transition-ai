@@ -4,9 +4,9 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import TargetingTool from '../../../components/exercises/TargetingTool'
 import AppLink from '../../../components/ui/AppLink'
 import Button from '../../../components/ui/Button'
-import { useAuth } from '../../../hooks/useAuth'
-import { useEmployee } from '../../../hooks/use_employee'
 import { useAdvisorExercises } from '../../../hooks/use_advisor_exercises'
+import { useAuth } from '../../../hooks/use_auth'
+import { useEmployee } from '../../../hooks/use_employee'
 import { ExerciseType } from '../../../types'
 
 interface TargetingExerciseProps {

@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
-import AppLink from '../../../components/ui/AppLink'
+import { useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import AppLink from '../../../components/ui/AppLink'
 import Card from '../../../components/ui/Card'
-import { useAuth } from '../../../hooks/useAuth'
+import { useAuth } from '../../../hooks/use_auth'
 
 export interface ExerciseResultListItem {
   slug: string

@@ -5,9 +5,9 @@ import SkillMappingTool from '../../../components/exercises/SkillMappingTool'
 import AppLink from '../../../components/ui/AppLink'
 import Button from '../../../components/ui/Button'
 import { EXERCISE_SLUGS } from '../../../config/exercises'
-import { useAuth } from '../../../hooks/useAuth'
-import { useEmployee } from '../../../hooks/use_employee'
 import { useAdvisorExercises } from '../../../hooks/use_advisor_exercises'
+import { useAuth } from '../../../hooks/use_auth'
+import { useEmployee } from '../../../hooks/use_employee'
 import { ExerciseType, type ExerciseDraft } from '../../../types'
 
 interface SkillMappingExerciseProps {

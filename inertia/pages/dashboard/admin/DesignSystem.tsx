@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import DesignSystem from '../../../components/design-system/DesignSystem'
-import { useAuth } from '../../../hooks/useAuth'
+import { useAuth } from '../../../hooks/use_auth'
 
 export default function DashboardDesignSystem() {
   const { user } = useAuth()

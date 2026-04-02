@@ -5,7 +5,7 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Badge from '~/components/ui/Badge'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
-import { useAuth } from '~/hooks/useAuth'
+import { useAuth } from '~/hooks/use_auth'
 
 type TotalsByType = Record<string, number>
 

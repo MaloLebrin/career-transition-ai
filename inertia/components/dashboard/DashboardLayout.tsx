@@ -1,6 +1,6 @@
 import { isAdvisorOrAdmin, isSuperAdmin } from '#shared/helpers/roles'
 import React from 'react'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/use_auth'
 import Layout from '../layout/Layout'
 import AdvisorSidebar from './AdvisorSidebar'
 

@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react'
-import AppLink from '../../components/ui/AppLink'
 import { useState } from 'react'
+import SupportPlanStep from '../../../app/models/support_plan_step'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
+import AppLink from '../../components/ui/AppLink'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
-import { useAuth } from '../../hooks/useAuth'
-import { useEmployee } from '../../hooks/use_employee'
-import type { Employee, SupportPlanStep } from '../../types'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '../../config/exercises'
+import { useAuth } from '../../hooks/use_auth'
+import { useEmployee } from '../../hooks/use_employee'
+import type { Employee } from '../../types/employee'
 
 interface EmployeeDetailProps {
   employeeId: string

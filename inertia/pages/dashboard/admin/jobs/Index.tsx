@@ -2,9 +2,8 @@ import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
-import { BadgeVariant } from '~/components/ui/Badge'
-import Badge from '~/components/ui/Badge'
-import { useAuth } from '~/hooks/useAuth'
+import Badge, { BadgeVariant } from '~/components/ui/Badge'
+import { useAuth } from '~/hooks/use_auth'
 
 import {
   BULK_JOB_SCOPES,

@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
+import { useEffect } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import ProfilePage from '~/components/profile/ProfilePage'
-import { useAuth } from '~/hooks/useAuth'
-import { useEmployee } from '~/hooks/use_employee'
 import { employeeUpdatePayload } from '~/helpers/employee_payload'
+import { useAuth } from '~/hooks/use_auth'
+import { useEmployee } from '~/hooks/use_employee'
 
 export default function ConseillerProfile() {
   const { user } = useAuth()

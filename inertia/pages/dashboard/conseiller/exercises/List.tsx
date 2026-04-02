@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '~/components/ui/AppLink'
+import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import AppLink from '~/components/ui/AppLink'
 import Card from '~/components/ui/Card'
-import { useAuth } from '~/hooks/useAuth'
 
 export interface ExerciseResultListItem {
   slug: string
@@ -28,14 +26,7 @@ export default function ConseillerExerciseList({
   results = [],
   employeeId,
 }: ConseillerExerciseListProps) {
-  const { user } = useAuth()
   const basePath = `/dashboard/conseiller/employees/${employeeId}/exercises/results`
-
-  useEffect(() => {
-    if (!user) router.visit('/auth/login')
-  }, [user])
-
-  if (!user) return null
 
   return (
     <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>

@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react'
 import { Head, router } from '@inertiajs/react'
+import { useEffect } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
-import { useAuth } from '../../hooks/useAuth'
-import type { Employee } from '../../types'
+import { useAuth } from '../../hooks/use_auth'
+import type { Employee } from '../../types/employee'
 
 interface DashboardEmployeesProps {
   employees: Employee[]
