@@ -3,9 +3,6 @@ import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import {
-  EXERCICE_RESULTS_TYPES,
-  exerciceResultStatusValues,
-  exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
   type ExerciceResultStatus,
   type ExerciceResultType,
@@ -56,9 +53,6 @@ export default class ExerciseResult extends BaseModel {
 }
 
 // Ré-export pour compatibilité des imports existants (#models/exercise_result)
-export {
-  EXERCICE_RESULTS_TYPES, exerciceResultStatusValues,
-  exerciceResultStatusValuesValues, exerciceResultTypesValues
-}
-export type { ExerciceResultStatus, ExerciceResultType }
+export { exerciceResultTypesValues }
+export type { ExerciceResultType }
 

@@ -3,7 +3,7 @@ import { ResendMailProvider } from '#services/mail/providers/resend_mail_provide
 import type { MailMessage, MailProvider } from '#services/mail/types'
 import { inject } from '@adonisjs/core'
 
-export type MailProviderName = 'console' | 'resend'
+type MailProviderName = 'console' | 'resend'
 
 function resolveProviderName(): MailProviderName {
   const raw = String(process.env.MAIL_PROVIDER ?? 'console')

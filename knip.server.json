@@ -1,0 +1,26 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreIssues": {
+    "database/factories/**": ["exports", "types", "nsExports", "nsTypes", "enumMembers"],
+    "database/seeders/**": ["exports", "types", "nsExports", "nsTypes"],
+    "shared/**": ["exports", "types", "nsExports", "nsTypes", "enumMembers"]
+  },
+  "entry": [
+    "bin/console.ts",
+    "bin/test.ts",
+    "start/routes.ts",
+    "start/kernel.ts",
+    "start/scheduler.ts",
+    "start/env.ts",
+    "app/jobs/**/*.ts",
+    "database/factories/**/*.ts"
+  ],
+  "project": [
+    "app/**/*.ts",
+    "start/**/*.ts",
+    "config/**/*.ts",
+    "database/**/*.ts",
+    "shared/**/*.ts"
+  ],
+  "ignore": ["database/migrations/**"]
+}

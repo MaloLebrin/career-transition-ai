@@ -15,7 +15,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "knip:inertia": "knip --tsConfig tsconfig.inertia.json --include files"
+    "knip:inertia": "knip -c knip.json --tsConfig tsconfig.inertia.json --include files",
+    "knip:inertia:exports": "knip -c knip.json --tsConfig tsconfig.inertia.json --include exports,types,enumMembers",
+    "knip:server:exports": "knip -c knip.server.json --tsConfig tsconfig.json --include exports,types,enumMembers",
+    "knip:exports": "pnpm run knip:inertia:exports && pnpm run knip:server:exports"
   },
   "imports": {
     "#generated/*": "./.adonisjs/server/*.js",

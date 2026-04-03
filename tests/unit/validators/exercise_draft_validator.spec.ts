@@ -1,9 +1,6 @@
 import { test } from '@japa/runner'
-import {
-  fetchExerciseDraftValidator,
-  saveExerciseDraftValidator,
-} from '#validators/exercise/exercise_draft_validator'
-import { exerciceResultTypesValues } from '#models/exercise_result'
+import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
+import { exerciceResultTypesValues } from '#shared/constants/exercises'
 
 test.group('exercise draft validators', () => {
   test('saveExerciseDraftValidator accepts valid draft', async ({ assert }) => {
@@ -16,15 +13,6 @@ test.group('exercise draft validators', () => {
     const result = await saveExerciseDraftValidator.validate(data)
     assert.equal(result.employeeId, '1')
     assert.equal(result.type, data.type)
-  })
-
-  test('fetchExerciseDraftValidator rejects invalid type', async ({ assert }) => {
-    const data: any = {
-      employeeId: '1',
-      type: 'invalid',
-    }
-
-    await assert.rejects(() => fetchExerciseDraftValidator.validate(data))
   })
 
   test('saveExerciseDraftValidator rejects numeric employeeId (Inertia JSON sends numbers)', async ({

@@ -1,5 +1,3 @@
-export { EXERCICE_RESULTS_TYPES } from '../shared/constants/exercises'
-export type { ExerciceResultType } from '../shared/constants/exercises'
 export * from './types/Education'
 export * from './types/ExerciseResult'
 export * from './types/Experience'

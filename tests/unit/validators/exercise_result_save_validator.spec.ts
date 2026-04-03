@@ -3,7 +3,7 @@ import { saveExerciseResultValidator } from '#validators/exercise/exercise_resul
 import {
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
-} from '#models/exercise_result'
+} from '#shared/constants/exercises'
 
 test.group('saveExerciseResultValidator', () => {
   test('accepts a valid payload', async ({ assert }) => {

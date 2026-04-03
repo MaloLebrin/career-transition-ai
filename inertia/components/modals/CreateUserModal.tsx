@@ -6,7 +6,7 @@ import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
 
-export const SUPER_ADMIN_CREATABLE_ROLES = ['advisor', 'admin', 'expert', 'employee'] as const satisfies readonly UserRole[]
+const SUPER_ADMIN_CREATABLE_ROLES = ['advisor', 'admin', 'expert', 'employee'] as const satisfies readonly UserRole[]
 
 interface OrganizationOption {
   id: number

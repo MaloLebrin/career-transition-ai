@@ -7,14 +7,3 @@ export const updateEmployeeSkillValidator = vine.create(
     employeeSkillId: vine.number().exists({ table: 'employee_skills', column: 'id' }),
   })
 )
-
-export const updateEmployeeSkillsValidator = vine.create(
-  vine.object({
-    skills: vine.array(
-      vine.object({
-        id: vine.number().exists({ table: 'employee_skills', column: 'id' }),
-        level: vine.number().in([1, 2, 3, 4, 5]),
-      })
-    ),
-  })
-)

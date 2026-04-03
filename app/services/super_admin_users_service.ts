@@ -7,7 +7,7 @@ import type { SuperAdminCreatableUserRole } from '#validators/super_admin/create
 import { inject } from '@adonisjs/core'
 import { randomBytes } from 'node:crypto'
 
-export type CreatePlatformUserInput = {
+type CreatePlatformUserInput = {
   organizationId: number
   name: string
   email: string
@@ -19,7 +19,7 @@ export type CreatePlatformUserInput = {
 
 @inject()
 export class SuperAdminUsersService {
-  constructor(private onboardingMailService: OnboardingMailService) {}
+  constructor(private onboardingMailService: OnboardingMailService) { }
 
   /**
    * Indique si le compte utilisateur est activé (`users.onboarding_completed_at` renseigné).
@@ -31,10 +31,9 @@ export class SuperAdminUsersService {
 
   public async createUserWithInvite(input: CreatePlatformUserInput): Promise<User> {
     if (input.organizationId === input.platformOrganizationId) {
-      throw new DomainException(
-        'Vous ne pouvez pas créer d’utilisateur dans cette organisation.',
-        { status: 403 }
-      )
+      throw new DomainException('Vous ne pouvez pas créer d’utilisateur dans cette organisation.', {
+        status: 403,
+      })
     }
 
     const email = input.email.trim()
