@@ -4,6 +4,7 @@ const EmployeesController = () => import('#controllers/employees_controller')
 const SupportPlanStepsController = () => import('#controllers/support_plan_steps_controller')
 const NotesController = () => import('#controllers/notes_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
+const EmployeeSynthesesController = () => import('#controllers/employee_syntheses_controller')
 
 /**
  * Employees management
@@ -20,6 +21,11 @@ router
         router.get('/profile', [EmployeesController, 'showProfileDashboard'])
         router.get('/dossier', [EmployeesController, 'downloadDossier'])
         router.post('/onboarding/resend', [EmployeesController, 'resendOnboardingLink'])
+        router.get('/synthesis', [EmployeeSynthesesController, 'showAdvisor'])
+        router.put('/synthesis', [EmployeeSynthesesController, 'updateAdvisor'])
+        router.post('/synthesis/share', [EmployeeSynthesesController, 'share'])
+        router.post('/synthesis/unshare', [EmployeeSynthesesController, 'unshare'])
+        router.get('/synthesis/pdf', [EmployeeSynthesesController, 'downloadShareablePdfAdvisor'])
 
         /**
          * Step Detail (Feuille de Route)

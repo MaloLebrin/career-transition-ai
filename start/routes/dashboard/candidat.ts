@@ -6,6 +6,7 @@ const DashboardController = () => import('#controllers/dashboard_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const CandidatOnboardingController = () => import('#controllers/candidat_onboarding_controller')
+const EmployeeSynthesesController = () => import('#controllers/employee_syntheses_controller')
 
 // Dashboard candidat (employee only)
 router
@@ -20,6 +21,8 @@ router
         router.get('/steps/:stepId', [EmployeesController, 'showStepDetailCandidat'])
         router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
         router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
+        router.get('/synthesis', [EmployeeSynthesesController, 'showCandidate'])
+        router.get('/synthesis/pdf', [EmployeeSynthesesController, 'downloadShareablePdfCandidate'])
         router.post('/exercises/:type/draft', [
           ExerciseResultsController,
           'saveDraftFromDashboardCandidat',

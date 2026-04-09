@@ -123,6 +123,11 @@ export default function DashboardEmployeeDetail({
                   Voir le profil
                 </Button>
               </AppLink>
+              <AppLink href={`/dashboard/conseiller/employees/${employeeId}/synthesis`}>
+                <Button variant="outline" size="sm">
+                  Synthèse
+                </Button>
+              </AppLink>
               <a
                 href={`/dashboard/conseiller/employees/${employeeId}/dossier`}
                 className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"

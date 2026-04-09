@@ -11,6 +11,7 @@ import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/luc
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import ExerciseResult from './exercise_result.js'
+import EmployeeSynthesis from './employee_synthesis.js'
 
 export default class Employee extends BaseModel {
   static table = 'employees'
@@ -88,6 +89,9 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => Note)
   declare notes: HasMany<typeof Note>
+
+  @hasMany(() => EmployeeSynthesis)
+  declare syntheses: HasMany<typeof EmployeeSynthesis>
 
   @manyToMany(() => Skill, {
     pivotTable: 'employee_skills',

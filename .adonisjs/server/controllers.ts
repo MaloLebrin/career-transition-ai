@@ -10,6 +10,7 @@ export const controllers = {
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),
   EmployeeSkills: () => import('#controllers/employee_skills_controller'),
+  EmployeeSyntheses: () => import('#controllers/employee_syntheses_controller'),
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
