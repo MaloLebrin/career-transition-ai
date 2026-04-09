@@ -3,7 +3,7 @@ import {
   exerciceResultStatusValues,
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
-} from '../../shared/constants/exercises'
+} from '../../shared/constants/exercises.js'
 
 export default class extends BaseSchema {
   protected tableName = 'exercise_results'
@@ -39,13 +39,13 @@ export default class extends BaseSchema {
         ALTER TABLE "${this.tableName}"
         ADD CONSTRAINT "${this.tableName}_type_check"
         CHECK (type IS NULL OR type IN (
-          ${exerciceResultTypesValues.map((type) => `'${type}'`).join(',')}))
+          ${exerciceResultTypesValues.map((type: string) => `'${type}'`).join(',')}))
       `)
 
       this.schema.raw(`
         ALTER TABLE "${this.tableName}"
         ADD CONSTRAINT "${this.tableName}_status_check"
-        CHECK (status IS NULL OR status IN (${exerciceResultStatusValuesValues.map((status) => `'${status}'`).join(',')}))
+        CHECK (status IS NULL OR status IN (${exerciceResultStatusValuesValues.map((status: string) => `'${status}'`).join(',')}))
       `)
     }
 

@@ -3,7 +3,6 @@ import router from '@adonisjs/core/services/router'
 
 router
   .group(() => {
-    router.on('/').renderInertia('Landing', {})
     router.on('/methodologie').renderInertia('Methodology', {})
     router.on('/offre').renderInertia('Offer', {})
     router.on('/tarifs').renderInertia('Pricing', {})

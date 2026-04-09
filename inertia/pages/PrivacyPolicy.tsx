@@ -7,7 +7,7 @@ export default function PrivacyPolicy() {
       <Head title="Politique de confidentialité" />
       <PrivacyPolicyPage
         onEnterApp={() => router.visit('/auth/login')}
-        onBackToHome={() => router.visit('/')}
+        onBackToHome={() => router.visit('/offre')}
         onOffer={() => router.visit('/offre')}
         onTarifs={() => router.visit('/tarifs')}
         onMethodology={() => router.visit('/methodologie')}

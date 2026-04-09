@@ -30,7 +30,7 @@ describe('PublicFooter', () => {
       />
     )
 
-    expect(screen.getByRole('link', { name: /Accueil/i })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: /Accueil/i })).toHaveAttribute('href', '/offre')
     expect(screen.getByRole('link', { name: /^Tarifs$/i })).toHaveAttribute('href', '/tarifs')
     fireEvent.click(screen.getByRole('button', { name: /Accès Expert/i }))
     expect(onEnterApp).toHaveBeenCalledTimes(1)

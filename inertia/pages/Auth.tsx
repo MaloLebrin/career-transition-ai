@@ -10,7 +10,7 @@ export default function Auth() {
       <Head title="Connexion" />
       <AuthPage
         error={error}
-        onBackToLanding={() => router.visit('/')}
+        onBackToLanding={() => router.visit('/offre')}
         onAuthSuccess={() => { window.location.href = '/dashboard' }}
       />
     </>

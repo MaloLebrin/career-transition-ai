@@ -11,7 +11,7 @@ export default function Register() {
       <RegisterPage
         csrfToken={props.csrfToken}
         error={flashError ?? null}
-        onBackToLanding={() => router.visit('/')}
+        onBackToLanding={() => router.visit('/offre')}
         onGoToLogin={() => router.visit('/auth/login')}
       />
     </>

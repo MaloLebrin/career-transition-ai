@@ -13,7 +13,7 @@ export default function InvalidToken({ expired }: InvalidTokenProps) {
   return (
     <>
       <Head title="Lien invalide" />
-      <PublicLayout headerProps={{ onLogoClick: () => router.visit('/'), showAction: false }}>
+      <PublicLayout headerProps={{ onLogoClick: () => router.visit('/offre'), showAction: false }}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8 text-center">
             <h1 className="text-2xl font-bold text-brand-navy tracking-tight">
