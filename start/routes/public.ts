@@ -1,6 +1,9 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
+// Public landing/root (must exist)
+router.on('/').renderInertia('home', {})
+
 router
   .group(() => {
     router.on('/').renderInertia('home', {})
