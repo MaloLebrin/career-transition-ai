@@ -21,7 +21,7 @@ vi.mock('@inertiajs/react', () => ({
   ),
 }))
 
-vi.mock('../../../../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'employee' },
   }),

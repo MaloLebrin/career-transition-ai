@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Card from '~/components/ui/Card'
 import Button from '~/components/ui/Button'
@@ -11,6 +11,7 @@ type CandidateSynthesisProps =
       employee: null
       synthesis: null
       latestCompletedByType: Record<string, number>
+      latestPdfJob: null
     }
   | {
       shared: true
@@ -23,6 +24,11 @@ type CandidateSynthesisProps =
         executiveSummaryOverride: string | null
       }
       latestCompletedByType: Record<string, number>
+      latestPdfJob: null | {
+        id: number
+        status: string
+        downloadUrl: string | null
+      }
     }
 
 export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
@@ -55,11 +61,21 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
           <div className="mt-2 text-2xl font-bold text-brand-navy">{employee.name}</div>
           <div className="text-sm text-brand-navy/60">{employee.currentRole}</div>
           <div className="mt-4">
-            <a href="/dashboard/candidat/synthesis/pdf">
-              <Button variant="dark" size="sm">
-                Télécharger le PDF
+            {props.latestPdfJob?.downloadUrl ? (
+              <a href={props.latestPdfJob.downloadUrl}>
+                <Button variant="dark" size="sm">
+                  Télécharger le PDF
+                </Button>
+              </a>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.post('/dashboard/candidat/synthesis/pdf')}
+              >
+                Générer le PDF (async)
               </Button>
-            </a>
+            )}
           </div>
         </Card>
 

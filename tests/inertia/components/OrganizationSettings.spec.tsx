@@ -4,7 +4,7 @@ import OrganizationSettings from '../../../inertia/components/settings/Organizat
 
 const mockOnBack = vi.fn()
 
-vi.mock('../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, name: 'Conseiller Test', email: 'advisor@example.com', role: 'advisor' as const },
   }),

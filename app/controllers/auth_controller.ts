@@ -6,6 +6,7 @@ import { candidatProfileUpdateValidator } from '#validators/profile/candidat_pro
 import { userProfileUpdateValidator } from '#validators/user/user_profile_update_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 
 @inject()
 export default class AuthController {
@@ -37,6 +38,13 @@ export default class AuthController {
   }
 
   public async impersonate({ auth, params, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
+      return response.forbidden()
+    }
+
     const targetId = Number(params.id)
     const targetUser = await this.authService.findUserById(targetId)
     if (!targetUser) {
@@ -53,7 +61,14 @@ export default class AuthController {
    * Super admin only: reset another user's password to a temporary one.
    * In un contexte réel, on enverrait un email de réinitialisation ; ici, on fixe un mot de passe simple.
    */
-  public async resetPassword({ params, response, session }: HttpContext) {
+  public async resetPassword({ auth, params, response, session }: HttpContext) {
+    if (!auth.user) {
+      return response.unauthorized()
+    }
+    if (auth.user.role !== USERS_ROLES.SUPER_ADMIN) {
+      return response.forbidden()
+    }
+
     const targetId = Number(params.id)
     const result = await this.authService.resetPasswordForUser(targetId)
     if (!result) {

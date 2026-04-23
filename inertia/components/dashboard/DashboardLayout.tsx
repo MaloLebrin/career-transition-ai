@@ -1,5 +1,7 @@
 import { isAdvisorOrAdmin, isSuperAdmin } from '#shared/helpers/roles'
+import { Transmit } from '@adonisjs/transmit-client'
 import React from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/use_auth'
 import Layout from '../layout/Layout'
 import { AdvisorSidebar } from './AdvisorSidebar'
@@ -18,6 +20,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   hideSidebar = false,
 }) => {
   const { user, logout } = useAuth()
+  const [pdfJobStatuses, setPdfJobStatuses] = useState<Record<number, string>>({})
 
   if (!user) {
     return null
@@ -28,6 +31,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const superAdmin = isSuperAdmin(userRole)
   const showSidebar = isAdvisor && !hideSidebar
 
+  useEffect(() => {
+    if (!user || !showSidebar) return
+
+    const transmit = new Transmit({
+      baseUrl: window.location.origin,
+    })
+    const subscription = transmit.subscription(`users/${user.id}/pdf-exports`)
+    let unsubscribe: (() => void) | null = null
+
+    subscription
+      .create()
+      .then(() => {
+        unsubscribe = subscription.onMessage((data: any) => {
+          const status = String(data?.status)
+          const id = Number(data?.id)
+          if (!id) return
+          setPdfJobStatuses((prev) => ({ ...prev, [id]: status }))
+        })
+      })
+      .catch(() => {})
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+      subscription.delete().catch(() => {})
+    }
+  }, [showSidebar, user])
+
   return (
     <Layout userRole={userRole} onRoleChange={() => {}} onLogout={logout} userName={user.name}>
       {showSidebar ? (
@@ -35,6 +65,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <AdvisorSidebar
             selectedEmployeeId={selectedEmployeeId}
             showSuperAdminLinks={superAdmin}
+            activePdfJobsCount={Object.values(pdfJobStatuses).filter(
+              (s) => s === 'pending' || s === 'processing'
+            ).length}
           />
           <div className="lg:col-span-5">{children}</div>
         </div>  

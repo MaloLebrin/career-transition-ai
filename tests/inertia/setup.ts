@@ -4,6 +4,22 @@ import * as matchers from '@testing-library/jest-dom/matchers'
 
 expect.extend(matchers)
 
+// Many components use `usePage()` without an Inertia provider in tests.
+// Provide a safe default implementation globally; individual tests can still override via `vi.mock`.
+vi.mock('@inertiajs/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@inertiajs/react')>()
+  return {
+    ...actual,
+    usePage: () =>
+      ({
+        props: {},
+        url: '/',
+        component: 'Test',
+        version: null,
+      }) as any,
+  }
+})
+
 afterEach(() => {
   cleanup()
 })
@@ -22,6 +38,32 @@ if (!('IntersectionObserver' in globalThis)) {
 
   // @ts-expect-error jsdom global patch for tests
   globalThis.IntersectionObserver = IntersectionObserverStub
+}
+
+// Transmit client uses EventSource for SSE
+if (!('EventSource' in globalThis)) {
+  class EventSourceStub {
+    url: string
+    readyState = 1
+    withCredentials = false
+
+    constructor(url: string) {
+      this.url = url
+    }
+
+    close() {}
+
+    addEventListener() {}
+
+    removeEventListener() {}
+
+    dispatchEvent() {
+      return false
+    }
+  }
+
+  // @ts-expect-error jsdom global patch for tests
+  globalThis.EventSource = EventSourceStub
 }
 
 // Stub window.alert used in a few components so jsdom doesn't throw

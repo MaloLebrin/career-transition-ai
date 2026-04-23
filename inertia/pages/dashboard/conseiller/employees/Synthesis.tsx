@@ -18,6 +18,11 @@ type SynthesisProps = {
     executiveSummaryOverride: string | null
   }
   latestCompletedByType: Record<string, number>
+  latestPdfJob: null | {
+    id: number
+    status: string
+    downloadUrl: string | null
+  }
 }
 
 export default function EmployeeSynthesisPage({
@@ -25,8 +30,10 @@ export default function EmployeeSynthesisPage({
   employee,
   synthesis,
   latestCompletedByType,
+  latestPdfJob,
 }: SynthesisProps) {
   const [saving, setSaving] = useState(false)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
   const [expertCommentsShared, setExpertCommentsShared] = useState(synthesis.expertCommentsShared ?? '')
   const [expertNotesInternal, setExpertNotesInternal] = useState(synthesis.expertNotesInternal ?? '')
   const [executiveSummaryOverride, setExecutiveSummaryOverride] = useState(
@@ -71,6 +78,19 @@ export default function EmployeeSynthesisPage({
     )
   }, [employeeId, isShared])
 
+  const handleGeneratePdf = useCallback(() => {
+    if (!isShared) return
+    setGeneratingPdf(true)
+    router.post(
+      `/dashboard/conseiller/employees/${employeeId}/synthesis/pdf`,
+      {},
+      {
+        preserveScroll: true,
+        onFinish: () => setGeneratingPdf(false),
+      }
+    )
+  }, [employeeId, isShared])
+
   return (
     <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`Synthèse - ${employee.name}`} />
@@ -91,17 +111,25 @@ export default function EmployeeSynthesisPage({
             <Button variant={isShared ? 'outline' : 'dark'} size="sm" onClick={handleShareToggle}>
               {isShared ? 'Désactiver le partage' : 'Partager au talent'}
             </Button>
-            <a
-              href={`/dashboard/conseiller/employees/${employeeId}/synthesis/pdf`}
-              className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"
-              aria-disabled={!isShared}
-              onClick={(e) => {
-                if (!isShared) e.preventDefault()
-              }}
-              title={!isShared ? 'Partager la synthèse pour activer l’export' : 'Exporter PDF partageable'}
-            >
-              Export PDF
-            </a>
+            {latestPdfJob?.downloadUrl ? (
+              <a
+                href={latestPdfJob.downloadUrl}
+                className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer border-2 border-brand-sage/20 text-brand-sage hover:border-brand-sage px-4 py-2 text-sm rounded-xl gap-2"
+                title="Télécharger le dernier PDF"
+              >
+                Télécharger PDF
+              </a>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGeneratePdf}
+                isLoading={generatingPdf}
+                disabled={!isShared}
+              >
+                Générer PDF (async)
+              </Button>
+            )}
             <Button variant="dark" size="sm" onClick={handleSave} isLoading={saving}>
               Enregistrer
             </Button>

@@ -25,7 +25,7 @@ router
         router.put('/synthesis', [EmployeeSynthesesController, 'updateAdvisor'])
         router.post('/synthesis/share', [EmployeeSynthesesController, 'share'])
         router.post('/synthesis/unshare', [EmployeeSynthesesController, 'unshare'])
-        router.get('/synthesis/pdf', [EmployeeSynthesesController, 'downloadShareablePdfAdvisor'])
+        router.post('/synthesis/pdf', [EmployeeSynthesesController, 'generateShareablePdfAdvisor'])
 
         /**
          * Step Detail (Feuille de Route)

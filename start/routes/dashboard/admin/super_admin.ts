@@ -1,6 +1,7 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 const SuperAdminController = () => import('#controllers/super_admin_controller')
+const PdfExportsController = () => import('#controllers/pdf_exports_controller')
 
 // Super admin only dashboard routes
 router
@@ -15,7 +16,9 @@ router
     router.post('/users/:id/resend-onboarding', [SuperAdminController, 'resendUserOnboarding'])
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
-    router.on('/bulk-jobs').renderInertia('dashboard/admin/jobs/Index', {})
+    router
+      .get('/pdf-exports', [PdfExportsController, 'index'])
+      .as('super_admin.pdf_exports')
     router.on('/design-system').renderInertia('dashboard/admin/DesignSystem', {})
   })
   .prefix('/dashboard/super-admin')

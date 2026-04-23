@@ -31,6 +31,10 @@ describe('AdvisorSidebar', () => {
     expect(screen.getByRole('link', { name: /Supervision Plateforme/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Organisations$/ })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Design$/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Exports PDF$/ })).toHaveAttribute(
+      'href',
+      '/dashboard/super-admin/pdf-exports'
+    )
 
     expect(screen.queryByText('Navigation')).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /^Bureau$/ })).not.toBeInTheDocument()
@@ -42,6 +46,10 @@ describe('AdvisorSidebar', () => {
 
     expect(screen.getByText('Navigation')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Bureau$/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Tâches$/ })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/pdf-exports'
+    )
     expect(screen.getByPlaceholderText('Filtrer...')).toBeInTheDocument()
 
     expect(screen.queryByRole('link', { name: /^Organisations$/ })).not.toBeInTheDocument()

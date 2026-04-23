@@ -4,7 +4,7 @@ import router from '@adonisjs/core/services/router'
 const AuthController = () => import('#controllers/auth_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const NotesController = () => import('#controllers/notes_controller')
-const BulkJobsController = () => import('#controllers/bulk_jobs_controller')
+const PdfExportsController = () => import('#controllers/pdf_exports_controller')
 
 // Dashboard conseiller (advisor, admin, super_admin)
 router
@@ -15,7 +15,7 @@ router
     router.on('/').renderInertia('dashboard/conseiller/home/Home', {}) // TODO put in his controller
     router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {}) // TODO put in his controller
     router.put('/profile', [AuthController, 'updateFromDashboard'])
-    router.get('/bulk-jobs', [BulkJobsController, 'index'])
+    router.get('/pdf-exports', [PdfExportsController, 'index']).as('pdf_exports.index')
 
     /**
      * Notes management (update/delete)

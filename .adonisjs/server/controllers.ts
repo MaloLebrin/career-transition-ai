@@ -5,7 +5,6 @@
 
 export const controllers = {
   Auth: () => import('#controllers/auth_controller'),
-  BulkJobs: () => import('#controllers/bulk_jobs_controller'),
   CandidatOnboarding: () => import('#controllers/candidat_onboarding_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),
@@ -17,6 +16,8 @@ export const controllers = {
   Notes: () => import('#controllers/notes_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
+  PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),
+  PdfExports: () => import('#controllers/pdf_exports_controller'),
   Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),

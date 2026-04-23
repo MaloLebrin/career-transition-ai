@@ -7,31 +7,35 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
-export class BulkJobSchema extends BaseModel {
-  static $columns = ['createdAt', 'errorMessage', 'finishedAt', 'id', 'meta', 'organizationId', 'queueJobId', 'scope', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
-  $columns = BulkJobSchema.$columns
+export class PdfExportSchema extends BaseModel {
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  $columns = PdfExportSchema.$columns
+  @column()
+  declare advisorUserId: number | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
+  declare employeeId: number
+  @column()
   declare errorMessage: string | null
+  @column()
+  declare fileName: string | null
+  @column()
+  declare filePath: string | null
   @column.dateTime()
   declare finishedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare meta: any | null
+  declare mimeType: string | null
   @column()
   declare organizationId: number | null
   @column()
-  declare queueJobId: string | null
-  @column()
-  declare scope: string
+  declare size: number | null
   @column.dateTime()
   declare startedAt: DateTime | null
   @column()
   declare status: string
-  @column()
-  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
@@ -78,6 +82,33 @@ export class EmployeeSkillSchema extends BaseModel {
   declare level: number
   @column()
   declare skillId: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class EmployeeSynthesisSchema extends BaseModel {
+  static $columns = ['createdAt', 'employeeId', 'executiveSummaryOverride', 'expertCommentsShared', 'expertNotesInternal', 'id', 'organizationId', 'shareStatus', 'sharedAt', 'sharedByUserId', 'updatedAt'] as const
+  $columns = EmployeeSynthesisSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: number
+  @column()
+  declare executiveSummaryOverride: string | null
+  @column()
+  declare expertCommentsShared: string | null
+  @column()
+  declare expertNotesInternal: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare organizationId: number
+  @column()
+  declare shareStatus: string
+  @column.dateTime()
+  declare sharedAt: DateTime | null
+  @column()
+  declare sharedByUserId: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

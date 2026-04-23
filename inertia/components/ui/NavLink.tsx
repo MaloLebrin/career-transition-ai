@@ -9,6 +9,7 @@ export interface NavLinkProps {
   'label': string
   /** Accessible name overrides label for screen readers when different */
   'aria-label'?: string
+  'badgeCount'?: number
 }
 
 const ICONS: Record<NavLinkIcon, React.ReactNode> = {
@@ -95,6 +96,7 @@ const NavLink = memo(function NavLink({
   icon,
   label,
   'aria-label': ariaLabel,
+  badgeCount,
 }: NavLinkProps) {
   const { url } = usePage()
   const isAreaRoot = ['/dashboard/conseiller', '/dashboard/candidat', '/dashboard/super-admin'].includes(
@@ -130,6 +132,14 @@ const NavLink = memo(function NavLink({
       >
         {label}
       </span>
+      {typeof badgeCount === 'number' && badgeCount > 0 && (
+        <span
+          className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-terracotta/15 text-brand-terracotta text-[10px] font-black"
+          aria-label={`${badgeCount} tâches en cours`}
+        >
+          {badgeCount > 99 ? '99+' : badgeCount}
+        </span>
+      )}
       {active && <div className="ml-auto w-1 h-4 bg-brand-sage rounded-full" aria-hidden />}
     </Link>
   )

@@ -1,81 +1,96 @@
 import { Transmit } from '@adonisjs/transmit-client'
 import { Head } from '@inertiajs/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Badge, { BadgeVariant } from '~/components/ui/Badge'
 import { useAuth } from '~/hooks/use_auth'
 
-import {
-  BULK_JOB_SCOPES,
-  BULK_JOB_STATUSES,
-  BULK_JOB_TYPES,
-  type BulkJobScope,
-  type BulkJobStatus,
-  type BulkJobType,
-} from '#shared/constants/bulk_job'
+import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
 
-type BulkJobDto = {
+export type PdfExportListItem = {
   id: number
   userId: number
   organizationId: number | null
-  type: BulkJobType
-  scope: BulkJobScope
-  status: BulkJobStatus
+  employeeId: number
+  advisorUserId: number | null
+  status: PdfExportStatus
   errorMessage: string | null
   createdAt: string
   startedAt: string | null
   finishedAt: string | null
+  downloadUrl: string | null
+  fileName: string | null
 }
 
-const STATUS_LABELS: Record<BulkJobStatus, string> = {
-  [BULK_JOB_STATUSES.PENDING]: 'En attente',
-  [BULK_JOB_STATUSES.PROCESSING]: 'En cours',
-  [BULK_JOB_STATUSES.COMPLETED]: 'Terminé',
-  [BULK_JOB_STATUSES.FAILED]: 'Erreur',
+type PdfExportBroadcastPayload = {
+  id: number
+  userId: number
+  organizationId: number | null
+  employeeId: number
+  advisorUserId: number | null
+  status: PdfExportStatus
+  errorMessage: string | null
+  fileName: string | null
+  createdAt: string | null
+  startedAt: string | null
+  finishedAt: string | null
 }
 
-const STATUS_VARIANTS: Record<BulkJobStatus, BadgeVariant> = {
-  [BULK_JOB_STATUSES.PENDING]: 'slate',
-  [BULK_JOB_STATUSES.PROCESSING]: 'indigo',
-  [BULK_JOB_STATUSES.COMPLETED]: 'lime',
-  [BULK_JOB_STATUSES.FAILED]: 'pink',
+const STATUS_LABELS: Record<PdfExportStatus, string> = {
+  [PDF_EXPORT_STATUSES.PENDING]: 'En attente',
+  [PDF_EXPORT_STATUSES.PROCESSING]: 'En cours',
+  [PDF_EXPORT_STATUSES.COMPLETED]: 'Terminé',
+  [PDF_EXPORT_STATUSES.FAILED]: 'Erreur',
 }
 
-const TYPE_LABELS: Record<BulkJobType, string> = {
-  [BULK_JOB_TYPES.EMAILS]: 'Emails',
-  [BULK_JOB_TYPES.PDFS]: 'PDFs',
-  [BULK_JOB_TYPES.MIXED]: 'Mixte',
+const STATUS_VARIANTS: Record<PdfExportStatus, BadgeVariant> = {
+  [PDF_EXPORT_STATUSES.PENDING]: 'slate',
+  [PDF_EXPORT_STATUSES.PROCESSING]: 'indigo',
+  [PDF_EXPORT_STATUSES.COMPLETED]: 'lime',
+  [PDF_EXPORT_STATUSES.FAILED]: 'pink',
 }
 
-const SCOPE_LABELS: Record<BulkJobScope, string> = {
-  [BULK_JOB_SCOPES.SINGLE]: 'Individuel',
-  [BULK_JOB_SCOPES.BATCH]: 'Batch',
-  [BULK_JOB_SCOPES.ORG]: 'Organisation',
+function downloadUrlForExport(id: number, status: PdfExportStatus): string | null {
+  if (status !== PDF_EXPORT_STATUSES.COMPLETED) return null
+  return `/dashboard/pdf-exports/${id}/download`
 }
 
-interface BulkJobsProps {
-  jobs: BulkJobDto[]
+function mergeFromBroadcast(data: PdfExportBroadcastPayload): PdfExportListItem {
+  const status = data.status
+  return {
+    id: data.id,
+    userId: data.userId,
+    organizationId: data.organizationId,
+    employeeId: data.employeeId,
+    advisorUserId: data.advisorUserId,
+    status,
+    errorMessage: data.errorMessage,
+    createdAt: data.createdAt ?? new Date().toISOString(),
+    startedAt: data.startedAt,
+    finishedAt: data.finishedAt,
+    fileName: data.fileName,
+    downloadUrl: downloadUrlForExport(data.id, status),
+  }
 }
 
-export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
+interface PdfExportsListProps {
+  exports?: PdfExportListItem[]
+}
+
+export default function PdfExportsList({ exports: initialExports = [] }: PdfExportsListProps) {
   const { user } = useAuth()
-  const [jobs, setJobs] = useState<BulkJobDto[]>(initialJobs)
+  const [exports, setExports] = useState<PdfExportListItem[]>(initialExports)
   const [loading] = useState(false)
   const [error] = useState<string | null>(null)
 
-  const transmit = useMemo(
-    () =>
-      new Transmit({
-        baseUrl: window.location.origin,
-      }),
-    []
-  )
-
-
   useEffect(() => {
-    if (!user) return
+    if (!user || typeof window === 'undefined') return
 
-    const channelUser = `users/${user.id}/bulk-jobs`
+    const transmit = new Transmit({
+      baseUrl: window.location.origin,
+    })
+
+    const channelUser = `users/${user.id}/pdf-exports`
     const subscription = transmit.subscription(channelUser)
 
     let unsubscribe: (() => void) | null = null
@@ -83,29 +98,36 @@ export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
     subscription
       .create()
       .then(() => {
-        unsubscribe = subscription.onMessage((data: BulkJobDto) => {
-          setJobs((prev) => {
-            const exists = prev.find((j) => j.id === data.id)
+        unsubscribe = subscription.onMessage((raw: PdfExportBroadcastPayload) => {
+          const data = mergeFromBroadcast(raw)
+          setExports((prev) => {
+            const exists = prev.find((e) => e.id === data.id)
             if (exists) {
-              return prev.map((j) => (j.id === data.id ? data : j))
+              return prev.map((e) =>
+                e.id === data.id
+                  ? {
+                      ...e,
+                      ...data,
+                      downloadUrl: data.downloadUrl ?? downloadUrlForExport(data.id, data.status),
+                    }
+                  : e
+              )
             }
             return [data, ...prev]
           })
         })
       })
-      .catch(() => {
-        // On reste silencieux côté UI, les jobs seront visibles via refresh manuel si besoin
-      })
+      .catch(() => {})
 
     return () => {
       if (unsubscribe) {
         unsubscribe()
       }
-      subscription.delete().catch(() => { })
+      subscription.delete().catch(() => {})
     }
-  }, [transmit, user])
+  }, [user])
 
-  const title = 'Tâches en arrière-plan'
+  const title = 'Exports PDF'
 
   return (
     <>
@@ -114,15 +136,14 @@ export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
         <div className="space-y-6 animate-fadeIn">
           <div className="space-y-2">
             <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-[0.25em]">
-              Suivi des jobs asynchrones
+              Suivi des générations
             </p>
             <h1 className="text-3xl md:text-4xl font-bold text-brand-navy tracking-tight">
               {title}
             </h1>
             <p className="text-brand-navy/60 text-sm font-medium max-w-2xl">
-              Visualisez l&apos;état des envois d&apos;emails et des générations de PDFs lancés en
-              arrière-plan. La liste se met à jour automatiquement grâce aux événements serveur
-              (SSE).
+              Visualisez l&apos;état des PDFs de synthèse lancés en arrière-plan. La liste se met à
+              jour automatiquement grâce aux événements serveur (SSE).
             </p>
           </div>
 
@@ -140,10 +161,10 @@ export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
                     ID
                   </th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
-                    Type
+                    Candidat
                   </th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
-                    Portée
+                    Utilisateur
                   </th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
                     Statut
@@ -160,63 +181,79 @@ export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
                   <th className="px-6 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
                     Erreur
                   </th>
+                  <th className="px-6 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
+                    Fichier
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
-                {loading && jobs.length === 0 && (
+                {loading && exports.length === 0 && (
                   <tr>
                     <td
                       className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
-                      colSpan={8}
+                      colSpan={9}
                     >
-                      Chargement des jobs...
+                      Chargement…
                     </td>
                   </tr>
                 )}
                 {!loading &&
-                  jobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-brand-ivory/60 transition-colors">
-                      <td className="px-6 py-4 text-xs font-mono text-brand-navy/70">{job.id}</td>
+                  exports.map((row) => (
+                    <tr key={row.id} className="hover:bg-brand-ivory/60 transition-colors">
+                      <td className="px-6 py-4 text-xs font-mono text-brand-navy/70">{row.id}</td>
                       <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        {TYPE_LABELS[job.type] ?? job.type}
+                        {row.employeeId}
                       </td>
                       <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        {SCOPE_LABELS[job.scope] ?? job.scope}
+                        {row.userId}
                       </td>
                       <td className="px-4 py-4">
-                        <Badge variant={STATUS_VARIANTS[job.status]}>
+                        <Badge variant={STATUS_VARIANTS[row.status]}>
                           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                            {STATUS_LABELS[job.status]}
+                            {STATUS_LABELS[row.status]}
                           </span>
                         </Badge>
                       </td>
                       <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {new Date(job.createdAt).toLocaleString()}
+                        {new Date(row.createdAt).toLocaleString()}
                       </td>
                       <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {job.startedAt ? new Date(job.startedAt).toLocaleString() : '—'}
+                        {row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}
                       </td>
                       <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {job.finishedAt ? new Date(job.finishedAt).toLocaleString() : '—'}
+                        {row.finishedAt ? new Date(row.finishedAt).toLocaleString() : '—'}
                       </td>
                       <td className="px-6 py-4 text-xs text-brand-navy/60 max-w-xs">
-                        {job.errorMessage ? (
-                          <span className="line-clamp-2" title={job.errorMessage}>
-                            {job.errorMessage}
+                        {row.errorMessage ? (
+                          <span className="line-clamp-2" title={row.errorMessage}>
+                            {row.errorMessage}
                           </span>
+                        ) : (
+                          <span className="text-brand-navy/30">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs text-brand-navy/60">
+                        {row.downloadUrl ? (
+                          <a
+                            href={row.downloadUrl}
+                            className="text-brand-sage font-bold hover:underline"
+                            title={row.fileName ?? 'Télécharger'}
+                          >
+                            Télécharger
+                          </a>
                         ) : (
                           <span className="text-brand-navy/30">—</span>
                         )}
                       </td>
                     </tr>
                   ))}
-                {!loading && jobs.length === 0 && (
+                {!loading && exports.length === 0 && (
                   <tr>
                     <td
                       className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
-                      colSpan={8}
+                      colSpan={9}
                     >
-                      Aucun job en arrière-plan pour le moment.
+                      Aucun export PDF pour le moment.
                     </td>
                   </tr>
                 )}
@@ -228,4 +265,3 @@ export default function BulkJobs({ jobs: initialJobs = [] }: BulkJobsProps) {
     </>
   )
 }
-

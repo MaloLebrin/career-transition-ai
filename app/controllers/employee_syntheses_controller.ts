@@ -1,10 +1,13 @@
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
+import PdfExport from '#models/pdf_export'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
+import GenerateEmployeeSynthesisPdf from '#jobs/generate_employee_synthesis_pdf'
+import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 
 @inject()
 export default class EmployeeSynthesesController {
@@ -26,11 +29,28 @@ export default class EmployeeSynthesesController {
       employeeId,
     })
 
+    const recentPdfExports = await PdfExport.query()
+      .where('organizationId', user.organizationId)
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+
+    const latestForEmployee = recentPdfExports.find((e) => e.employeeId === employeeId)
+
     return (ctx.inertia as any).render('dashboard/conseiller/employees/Synthesis', {
       employeeId: String(employeeId),
       employee: payload.employee,
       synthesis: payload.synthesis,
       latestCompletedByType: payload.latestCompletedByType,
+      latestPdfJob: latestForEmployee
+        ? {
+            id: latestForEmployee.id,
+            status: latestForEmployee.status,
+            downloadUrl:
+              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED && latestForEmployee.filePath
+                ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
+                : null,
+          }
+        : null,
     })
   }
 
@@ -149,6 +169,7 @@ export default class EmployeeSynthesesController {
         employee: null,
         synthesis: null,
         latestCompletedByType: {},
+        latestPdfJob: null,
       })
     }
 
@@ -157,20 +178,37 @@ export default class EmployeeSynthesesController {
       employeeId: employee.id,
     })
 
+    const recentPdfExports = await PdfExport.query()
+      .where('userId', user.id)
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+
+    const latestForEmployee = recentPdfExports.find((e) => e.employeeId === employee.id)
+
     return (ctx.inertia as any).render('dashboard/candidat/Synthesis', {
       shared: true,
       employeeId: String(employee.id),
       employee: payload.employee,
       synthesis: payload.synthesis,
       latestCompletedByType: payload.latestCompletedByType,
+      latestPdfJob: latestForEmployee
+        ? {
+            id: latestForEmployee.id,
+            status: latestForEmployee.status,
+            downloadUrl:
+              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED && latestForEmployee.filePath
+                ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
+                : null,
+          }
+        : null,
     })
   }
 
   /**
-   * Shareable PDF export for advisor.
-   * GET /dashboard/conseiller/employees/:id/synthesis/pdf
+   * Async PDF generation for advisor.
+   * POST /dashboard/conseiller/employees/:id/synthesis/pdf
    */
-  public async downloadShareablePdfAdvisor(ctx: HttpContext) {
+  public async generateShareablePdfAdvisor(ctx: HttpContext) {
     const user = ctx.auth.user!
     const employeeId = Number(ctx.params.id)
 
@@ -180,27 +218,42 @@ export default class EmployeeSynthesesController {
       .first()
 
     if (!synthesis || synthesis.shareStatus !== EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED) {
-      ctx.session.flash('error', 'La synthèse doit être partagée avant export PDF.')
+      ctx.session.flash('error', 'La synthèse doit être partagée avant génération PDF.')
       return ctx.response.redirect().back()
     }
 
-    const payload = await this.synthesisService.buildForCandidate({
-      organizationId: user.organizationId,
-      employeeId,
-    })
+    // Ensure employee exists and is org-scoped
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
 
-    const bytes = await this.pdfService.generateShareablePdf({ payload })
-    const filename = `Synthese_${payload.employee.name.replace(/\s+/g, '_')}.pdf`
-    ctx.response.header('Content-Type', 'application/pdf')
-    ctx.response.header('Content-Disposition', `attachment; filename="${filename}"`)
-    return ctx.response.send(Buffer.from(bytes))
+    const pdfExport = await PdfExport.create({
+      userId: user.id,
+      organizationId: user.organizationId,
+      employeeId: employee.id,
+      advisorUserId: user.id,
+      status: PDF_EXPORT_STATUSES.PENDING,
+      errorMessage: null,
+      filePath: null,
+      fileName: null,
+      mimeType: null,
+      size: null,
+      startedAt: null,
+      finishedAt: null,
+    } as any)
+
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    ctx.session.flash('success', 'Génération PDF lancée.')
+    return ctx.response.redirect().back()
   }
 
   /**
-   * Shareable PDF export for candidate (only if shared).
-   * GET /dashboard/candidat/synthesis/pdf
+   * Async PDF generation for candidate (only if shared).
+   * POST /dashboard/candidat/synthesis/pdf
    */
-  public async downloadShareablePdfCandidate(ctx: HttpContext) {
+  public async generateShareablePdfCandidate(ctx: HttpContext) {
     const user = ctx.auth.user!
 
     const employee = await Employee.query()
@@ -214,19 +267,32 @@ export default class EmployeeSynthesesController {
       .first()
 
     if (!synthesis || synthesis.shareStatus !== EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED) {
-      return ctx.response.forbidden()
+      ctx.session.flash('error', 'La synthèse doit être partagée avant génération PDF.')
+      return ctx.response.redirect().back()
     }
 
-    const payload = await this.synthesisService.buildForCandidate({
+    // If candidate has an advisor, notify both candidate and advisor channels
+    const advisorId = employee.advisorId ?? null
+
+    const pdfExport = await PdfExport.create({
+      userId: user.id,
       organizationId: user.organizationId,
       employeeId: employee.id,
-    })
+      advisorUserId: advisorId,
+      status: PDF_EXPORT_STATUSES.PENDING,
+      errorMessage: null,
+      filePath: null,
+      fileName: null,
+      mimeType: null,
+      size: null,
+      startedAt: null,
+      finishedAt: null,
+    } as any)
 
-    const bytes = await this.pdfService.generateShareablePdf({ payload })
-    const filename = `Synthese_${payload.employee.name.replace(/\s+/g, '_')}.pdf`
-    ctx.response.header('Content-Type', 'application/pdf')
-    ctx.response.header('Content-Disposition', `attachment; filename="${filename}"`)
-    return ctx.response.send(Buffer.from(bytes))
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    ctx.session.flash('success', 'Génération PDF lancée.')
+    return ctx.response.redirect().back()
   }
 }
 

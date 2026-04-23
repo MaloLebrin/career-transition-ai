@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import StepDetail from '../../../../../inertia/pages/dashboard/candidat/StepDetail'
-import { useAuth } from '../../../../../inertia/hooks/useAuth'
+import { useAuth } from '../../../../../inertia/hooks/use_auth'
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = (await importOriginal()) as object
@@ -12,7 +12,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
-vi.mock('../../../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../../../inertia/hooks/use_auth', () => ({
   useAuth: vi.fn(),
 }))
 

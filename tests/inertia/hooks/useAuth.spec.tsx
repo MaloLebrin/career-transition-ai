@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useAuth } from '../../../inertia/hooks/useAuth'
+import { useAuth } from '../../../inertia/hooks/use_auth'
 
 const mockSession = {
   id: 1,

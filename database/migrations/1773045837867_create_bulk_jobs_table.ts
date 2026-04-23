@@ -1,4 +1,3 @@
-import { BULK_JOB_STATUSES } from '../../shared/constants/bulk_job.js'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
@@ -27,7 +26,7 @@ export default class extends BaseSchema {
       table.string('type', 50).notNullable() // emails, pdfs, mixed...
       table.string('scope', 50).notNullable() // single, batch, org, etc.
 
-      table.string('status', 20).notNullable().defaultTo(BULK_JOB_STATUSES.PENDING)
+      table.string('status', 20).notNullable().defaultTo('pending')
 
       table.string('queue_job_id').nullable()
 
@@ -44,6 +43,6 @@ export default class extends BaseSchema {
   }
 
   async down() {
-    this.schema.dropTable(this.tableName)
+    await this.db.rawQuery(`DROP TABLE IF EXISTS "${this.tableName}"`)
   }
 }

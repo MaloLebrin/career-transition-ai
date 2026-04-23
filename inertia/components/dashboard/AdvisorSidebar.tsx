@@ -9,6 +9,7 @@ interface AdvisorSidebarProps {
   /** Selected employee id to highlight. From route /dashboard/conseiller/employees/:id */
   selectedEmployeeId?: string | null
   showSuperAdminLinks?: boolean
+  activePdfJobsCount?: number
 }
 
 const sidebarShellClass =
@@ -41,6 +42,7 @@ function SuperAdminSidebarContent() {
             label="Usage exercices"
           />
           <NavLink href="/dashboard/super-admin/design-system" icon="palette" label="Design" />
+          <NavLink href="/dashboard/super-admin/pdf-exports" icon="settings" label="Exports PDF" />
         </nav>
       </div>
     </aside>
@@ -49,8 +51,10 @@ function SuperAdminSidebarContent() {
 
 function AdvisorSidebarContent({
   selectedEmployeeId = null,
+  activePdfJobsCount = 0,
 }: {
   selectedEmployeeId?: string | null
+  activePdfJobsCount?: number
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const { url } = usePage()
@@ -68,6 +72,12 @@ function AdvisorSidebarContent({
           <NavLink href="/dashboard/conseiller" icon="dashboard" label="Bureau" />
           <NavLink href="/dashboard/conseiller/employees" icon="users" label="Candidats" />
           <NavLink href="/dashboard/conseiller/settings" icon="settings" label="Réglages" />
+          <NavLink
+            href="/dashboard/conseiller/pdf-exports"
+            icon="target"
+            label="Tâches"
+            badgeCount={activePdfJobsCount}
+          />
 
           <div className="pt-4 mt-4 border-t border-brand-navy/5 flex flex-col flex-1 min-h-0">
             <div className="px-3 py-2 shrink-0">
@@ -134,9 +144,15 @@ function AdvisorSidebarContent({
 export const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({
   selectedEmployeeId = null,
   showSuperAdminLinks = false,
+  activePdfJobsCount = 0,
 }) => {
   if (showSuperAdminLinks) {
     return <SuperAdminSidebarContent />
   }
-  return <AdvisorSidebarContent selectedEmployeeId={selectedEmployeeId} />
+  return (
+    <AdvisorSidebarContent
+      selectedEmployeeId={selectedEmployeeId}
+      activePdfJobsCount={activePdfJobsCount}
+    />
+  )
 }

@@ -205,3 +205,5 @@ export const StepEditorModal: React.FC<Props> = ({ employeeId, step, stepNumber,
     </div>
   )
 }
+
+export default StepEditorModal
