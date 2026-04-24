@@ -1,9 +1,10 @@
-import PdfExport from '#models/pdf_export'
 import Employee from '#models/employee'
-import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
+import PdfExport from '#models/pdf_export'
 import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
+import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { broadcastPdfExportUpdatedToUsers } from '#services/pdf_export_events_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
+import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
@@ -17,7 +18,7 @@ type GenerateEmployeeSynthesisPdfPayload = {
 
 export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSynthesisPdfPayload> {
   static options: JobOptions = {
-    queue: 'pdfs',
+    queue: QUEUE_NAMES.pdfs,
     maxRetries: 2,
   }
 
@@ -67,7 +68,8 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
     } catch (error: any) {
       pdfExport.status = PDF_EXPORT_STATUSES.FAILED
-      pdfExport.errorMessage = error?.message || 'Unknown error while generating employee synthesis PDF'
+      pdfExport.errorMessage =
+        error?.message || 'Unknown error while generating employee synthesis PDF'
       pdfExport.finishedAt = DateTime.now()
       await pdfExport.save()
       broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
@@ -81,4 +83,3 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
     }
   }
 }
-

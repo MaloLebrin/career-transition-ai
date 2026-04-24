@@ -1,6 +1,7 @@
+import { QUEUE_NAMES } from '#utils/queues/queue_names'
+import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
-import logger from '@adonisjs/core/services/logger'
 
 interface LogExerciseUsageExportPayload {
   userId: number
@@ -11,7 +12,7 @@ interface LogExerciseUsageExportPayload {
 
 export default class LogExerciseUsageExport extends Job<LogExerciseUsageExportPayload> {
   static options: JobOptions = {
-    queue: 'analytics',
+    queue: QUEUE_NAMES.analytics,
     maxRetries: 3,
   }
 

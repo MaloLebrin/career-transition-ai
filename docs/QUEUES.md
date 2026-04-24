@@ -75,6 +75,7 @@ Route :
 - `GET /dashboard/pdf-exports/:id/download`
 
 La route vérifie :
+
 - que l’export est `completed`
 - et que l’utilisateur a le droit d’accéder à cet export (RBAC + correspondance `employeeId` côté candidat)
 
@@ -97,6 +98,8 @@ Commande de base :
 ```bash
 node ace queue:work
 ```
+
+Ne pas préciser la queue ne lance que la queue `default`.
 
 Options utiles :
 
@@ -140,4 +143,3 @@ Pour tester le dispatch de jobs sans exécuter un worker, utiliser l’outil de 
 - `QueueManager.fake()` avant l’action à tester.
 - `fake.assertPushed(MyJob, { payload: {...} })` / `fake.assertNotPushed(MyJob)`.
 - `QueueManager.restore()` en teardown.
-

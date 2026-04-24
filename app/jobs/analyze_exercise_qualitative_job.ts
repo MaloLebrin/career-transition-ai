@@ -4,6 +4,7 @@ import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_pr
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { buildEmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
 import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompts/exercises/index'
+import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
@@ -14,7 +15,7 @@ export interface AnalyzeExerciseQualitativePayload {
 
 export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQualitativePayload> {
   static options: JobOptions = {
-    queue: 'ai',
+    queue: QUEUE_NAMES.ai,
     maxRetries: 2,
   }
 
