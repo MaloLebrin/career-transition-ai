@@ -72,14 +72,7 @@ async function createPendingExport(
     employeeId,
     advisorUserId,
     status: PDF_EXPORT_STATUSES.PENDING,
-    errorMessage: null,
-    filePath: null,
-    fileName: null,
-    mimeType: null,
-    size: null,
-    startedAt: null,
-    finishedAt: null,
-  } as any)
+  })
 }
 
 // ─── succes ───────────────────────────────────────────────────────────────────

@@ -72,13 +72,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: a.employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
 
     await PdfExport.create({
@@ -87,13 +80,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: b.employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
 
     const controller = new PdfExportsController()
@@ -127,13 +113,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: a.employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PROCESSING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
     await PdfExport.create({
       userId: b.admin.id,
@@ -141,13 +120,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: b.employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
 
     const controller = new PdfExportsController()
@@ -177,13 +149,10 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.COMPLETED,
-      errorMessage: null,
       filePath: '/tmp/test.pdf',
       fileName: 'test.pdf',
       mimeType: 'application/pdf',
       size: 100,
-      startedAt: null,
-      finishedAt: null,
     })
 
     // Export pending dans la même orga — ne doit pas apparaître
@@ -193,13 +162,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
 
     const controller = new PdfExportsController()
@@ -225,13 +187,6 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
     })
     await PdfExport.create({
       userId: admin.id,
@@ -239,13 +194,10 @@ test.group('PdfExportsController.index', (group) => {
       employeeId: employee.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.COMPLETED,
-      errorMessage: null,
       filePath: '/tmp/x.pdf',
       fileName: 'x.pdf',
       mimeType: 'application/pdf',
       size: 10,
-      startedAt: null,
-      finishedAt: null,
     })
 
     const controller = new PdfExportsController()

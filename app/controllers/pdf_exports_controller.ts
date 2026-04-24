@@ -23,8 +23,8 @@ export default class PdfExportsController {
       query = query.where('status', qs.status)
     }
 
-    const rows = await query.orderBy('createdAt', 'desc').limit(100)
-    const exports = rows.map(serializePdfExport)
+    const rows = await query.preload('employee').orderBy('createdAt', 'desc').limit(100)
+    const exports = rows.map((row) => serializePdfExport(row, row.employee?.name ?? null))
 
     return (inertia as any).render('dashboard/admin/jobs/Index', { exports })
   }

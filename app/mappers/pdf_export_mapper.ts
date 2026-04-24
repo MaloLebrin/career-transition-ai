@@ -2,7 +2,7 @@ import PdfExport from '#models/pdf_export'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import type { PdfExportListItem } from '#dtos/pdf_export_list_item'
 
-export function serializePdfExport(row: PdfExport): PdfExportListItem {
+export function serializePdfExport(row: PdfExport, employeeName: string | null = null): PdfExportListItem {
   const downloadUrl =
     row.status === PDF_EXPORT_STATUSES.COMPLETED && row.filePath
       ? `/dashboard/pdf-exports/${row.id}/download`
@@ -13,6 +13,7 @@ export function serializePdfExport(row: PdfExport): PdfExportListItem {
     userId: row.userId,
     organizationId: row.organizationId,
     employeeId: row.employeeId,
+    employeeName,
     advisorUserId: row.advisorUserId,
     status: row.status,
     errorMessage: row.errorMessage,

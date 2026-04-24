@@ -5,6 +5,7 @@ export type PdfExportListItem = {
   userId: number
   organizationId: number | null
   employeeId: number
+  employeeName: string | null
   advisorUserId: number | null
   status: PdfExportStatus
   errorMessage: string | null

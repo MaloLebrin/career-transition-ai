@@ -12,6 +12,7 @@ export type PdfExportListItem = {
   userId: number
   organizationId: number | null
   employeeId: number
+  employeeName: string | null
   advisorUserId: number | null
   status: PdfExportStatus
   errorMessage: string | null
@@ -55,13 +56,14 @@ function downloadUrlForExport(id: number, status: PdfExportStatus): string | nul
   return `/dashboard/pdf-exports/${id}/download`
 }
 
-function mergeFromBroadcast(data: PdfExportBroadcastPayload): PdfExportListItem {
+function mergeFromBroadcast(data: PdfExportBroadcastPayload, existing?: PdfExportListItem): PdfExportListItem {
   const status = data.status
   return {
     id: data.id,
     userId: data.userId,
     organizationId: data.organizationId,
     employeeId: data.employeeId,
+    employeeName: existing?.employeeName ?? null,
     advisorUserId: data.advisorUserId,
     status,
     errorMessage: data.errorMessage,
@@ -80,8 +82,6 @@ interface PdfExportsListProps {
 export default function PdfExportsList({ exports: initialExports = [] }: PdfExportsListProps) {
   const { user } = useAuth()
   const [exports, setExports] = useState<PdfExportListItem[]>(initialExports)
-  const [loading] = useState(false)
-  const [error] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user || typeof window === 'undefined') return
@@ -99,21 +99,13 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
       .create()
       .then(() => {
         unsubscribe = subscription.onMessage((raw: PdfExportBroadcastPayload) => {
-          const data = mergeFromBroadcast(raw)
           setExports((prev) => {
-            const exists = prev.find((e) => e.id === data.id)
+            const exists = prev.find((e) => e.id === raw.id)
+            const merged = mergeFromBroadcast(raw, exists)
             if (exists) {
-              return prev.map((e) =>
-                e.id === data.id
-                  ? {
-                      ...e,
-                      ...data,
-                      downloadUrl: data.downloadUrl ?? downloadUrlForExport(data.id, data.status),
-                    }
-                  : e
-              )
+              return prev.map((e) => (e.id === merged.id ? merged : e))
             }
-            return [data, ...prev]
+            return [merged, ...prev]
           })
         })
       })
@@ -146,12 +138,6 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
               jour automatiquement grâce aux événements serveur (SSE).
             </p>
           </div>
-
-          {error && (
-            <div className="bg-red-50 text-red-700 text-xs font-medium px-4 py-2 rounded-2xl border border-red-100">
-              {error}
-            </div>
-          )}
 
           <div className="bg-white rounded-3xl border border-brand-navy/5 overflow-x-auto shadow-sm">
             <table className="min-w-full divide-y divide-brand-navy/5 text-sm">
@@ -187,25 +173,14 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
-                {loading && exports.length === 0 && (
-                  <tr>
-                    <td
-                      className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
-                      colSpan={9}
-                    >
-                      Chargement…
-                    </td>
-                  </tr>
-                )}
-                {!loading &&
-                  exports.map((row) => (
+                {exports.map((row) => (
                     <tr key={row.id} className="hover:bg-brand-ivory/60 transition-colors">
                       <td className="px-6 py-4 text-xs font-mono text-brand-navy/70">{row.id}</td>
                       <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        {row.employeeId}
+                        {row.employeeName ?? `#${row.employeeId}`}
                       </td>
                       <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        {row.userId}
+                        #{row.userId}
                       </td>
                       <td className="px-4 py-4">
                         <Badge variant={STATUS_VARIANTS[row.status]}>
@@ -247,7 +222,7 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
                       </td>
                     </tr>
                   ))}
-                {!loading && exports.length === 0 && (
+                {exports.length === 0 && (
                   <tr>
                     <td
                       className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"

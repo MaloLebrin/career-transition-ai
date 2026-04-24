@@ -82,14 +82,11 @@ async function seedCompletedExport(
     employeeId,
     advisorUserId: null,
     status: PDF_EXPORT_STATUSES.COMPLETED,
-    errorMessage: null,
     filePath,
     fileName: 'Synthese.pdf',
     mimeType: 'application/pdf',
     size: 13,
-    startedAt: null,
-    finishedAt: null,
-  } as any)
+  })
 }
 
 // ─── tests : non authentifié ──────────────────────────────────────────────────
@@ -128,14 +125,7 @@ test.group('PdfExportDownloadsController.show — export non complete', (group) 
       employeeId: emp.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
-    } as any)
+    })
 
     const ctx = makeCtx({ auth: { user }, params: { id: String(pdfExport.id) } })
     const result = await controller.show(ctx as any)
@@ -155,13 +145,7 @@ test.group('PdfExportDownloadsController.show — export non complete', (group) 
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.FAILED,
       errorMessage: 'boom',
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
-    } as any)
+    })
 
     const ctx = makeCtx({ auth: { user }, params: { id: String(pdfExport.id) } })
     const result = await controller.show(ctx as any)
@@ -255,14 +239,9 @@ test.group('PdfExportDownloadsController.show — acces candidat', (group) => {
       employeeId: emp.id,
       advisorUserId: null,
       status: PDF_EXPORT_STATUSES.COMPLETED,
-      errorMessage: null,
-      filePath: null,
       fileName: 'Synthese.pdf',
       mimeType: 'application/pdf',
-      size: null,
-      startedAt: null,
-      finishedAt: null,
-    } as any)
+    })
 
     const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
     const result = await controller.show(ctx as any)

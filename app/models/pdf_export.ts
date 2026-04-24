@@ -1,5 +1,7 @@
+import Employee from '#models/employee'
 import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
 export default class PdfExport extends BaseModel {
@@ -47,6 +49,9 @@ export default class PdfExport extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @belongsTo(() => Employee)
+  declare employee: BelongsTo<typeof Employee>
 
   static statuses = PDF_EXPORT_STATUSES
 }

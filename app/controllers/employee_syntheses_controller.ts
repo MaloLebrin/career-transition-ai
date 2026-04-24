@@ -234,14 +234,7 @@ export default class EmployeeSynthesesController {
       employeeId: employee.id,
       advisorUserId: user.id,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
-    } as any)
+    })
 
     await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
 
@@ -271,23 +264,13 @@ export default class EmployeeSynthesesController {
       return ctx.response.redirect().back()
     }
 
-    // If candidate has an advisor, notify both candidate and advisor channels
-    const advisorId = employee.advisorId ?? null
-
     const pdfExport = await PdfExport.create({
       userId: user.id,
       organizationId: user.organizationId,
       employeeId: employee.id,
-      advisorUserId: advisorId,
+      advisorUserId: employee.advisorId ?? null,
       status: PDF_EXPORT_STATUSES.PENDING,
-      errorMessage: null,
-      filePath: null,
-      fileName: null,
-      mimeType: null,
-      size: null,
-      startedAt: null,
-      finishedAt: null,
-    } as any)
+    })
 
     await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
 
