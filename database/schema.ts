@@ -7,41 +7,6 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
-export class PdfExportSchema extends BaseModel {
-  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
-  $columns = PdfExportSchema.$columns
-  @column()
-  declare advisorUserId: number | null
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column()
-  declare employeeId: number
-  @column()
-  declare errorMessage: string | null
-  @column()
-  declare fileName: string | null
-  @column()
-  declare filePath: string | null
-  @column.dateTime()
-  declare finishedAt: DateTime | null
-  @column({ isPrimary: true })
-  declare id: number
-  @column()
-  declare mimeType: string | null
-  @column()
-  declare organizationId: number | null
-  @column()
-  declare size: number | null
-  @column.dateTime()
-  declare startedAt: DateTime | null
-  @column()
-  declare status: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
-  @column()
-  declare userId: number
-}
-
 export class EducationSchema extends BaseModel {
   static $columns = ['createdAt', 'degree', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'school', 'sortOrder', 'startDate', 'updatedAt'] as const
   $columns = EducationSchema.$columns
@@ -294,6 +259,41 @@ export class OrganizationSchema extends BaseModel {
   declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class PdfExportSchema extends BaseModel {
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  $columns = PdfExportSchema.$columns
+  @column()
+  declare advisorUserId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: number
+  @column()
+  declare errorMessage: string | null
+  @column()
+  declare fileName: string | null
+  @column()
+  declare filePath: string | null
+  @column.dateTime()
+  declare finishedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare mimeType: string | null
+  @column()
+  declare organizationId: number | null
+  @column()
+  declare size: number | null
+  @column.dateTime()
+  declare startedAt: DateTime | null
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
 }
 
 export class QueueJobSchema extends BaseModel {
