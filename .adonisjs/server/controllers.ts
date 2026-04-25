@@ -16,9 +16,9 @@ export const controllers = {
   Notes: () => import('#controllers/notes_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
-  PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),
-  PdfExports: () => import('#controllers/pdf_exports_controller'),
   Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
+  PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),
+  PdfExports: () => import('#controllers/pdf_exports_controller'),
 }
