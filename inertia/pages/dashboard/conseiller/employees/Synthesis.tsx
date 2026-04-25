@@ -1,10 +1,12 @@
 import { Head, router } from '@inertiajs/react'
-import { useCallback, useMemo, useState } from 'react'
+import { Transmit } from '@adonisjs/transmit-client'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
+import { useAuth } from '~/hooks/use_auth'
 import type { Employee } from '~/types/employee'
 
 type SynthesisProps = {
@@ -18,6 +20,11 @@ type SynthesisProps = {
     executiveSummaryOverride: string | null
   }
   latestCompletedByType: Record<string, number>
+  latestPdfJob: null | {
+    id: number
+    status: string
+    downloadUrl: string | null
+  }
 }
 
 export default function EmployeeSynthesisPage({
@@ -25,8 +32,12 @@ export default function EmployeeSynthesisPage({
   employee,
   synthesis,
   latestCompletedByType,
+  latestPdfJob,
 }: SynthesisProps) {
+  const { user } = useAuth()
   const [saving, setSaving] = useState(false)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
+  const [livePdfJob, setLivePdfJob] = useState<SynthesisProps['latestPdfJob']>(latestPdfJob)
   const [expertCommentsShared, setExpertCommentsShared] = useState(synthesis.expertCommentsShared ?? '')
   const [expertNotesInternal, setExpertNotesInternal] = useState(synthesis.expertNotesInternal ?? '')
   const [executiveSummaryOverride, setExecutiveSummaryOverride] = useState(
@@ -34,6 +45,43 @@ export default function EmployeeSynthesisPage({
   )
 
   const isShared = synthesis.shareStatus === 'shared'
+
+  useEffect(() => {
+    setLivePdfJob(latestPdfJob)
+  }, [latestPdfJob])
+
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') return
+
+    const transmit = new Transmit({ baseUrl: window.location.origin })
+    const subscription = transmit.subscription(`users/${user.id}/pdf-exports`)
+    let unsubscribe: (() => void) | null = null
+
+    subscription
+      .create()
+      .then(() => {
+        unsubscribe = subscription.onMessage((data: any) => {
+          const exportId = Number(data?.id)
+          const status = String(data?.status ?? '')
+          const exportEmployeeId = Number(data?.employeeId)
+
+          if (!exportId || !status) return
+          if (exportEmployeeId !== Number(employeeId)) return
+
+          setLivePdfJob({
+            id: exportId,
+            status,
+            downloadUrl: status === 'completed' ? `/dashboard/pdf-exports/${exportId}/download` : null,
+          })
+        })
+      })
+      .catch(() => {})
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+      subscription.delete().catch(() => {})
+    }
+  }, [employeeId, user])
 
   const latestResults = useMemo(() => {
     const byType = new Map<string, typeof employee.exercises[0]>()
@@ -71,6 +119,19 @@ export default function EmployeeSynthesisPage({
     )
   }, [employeeId, isShared])
 
+  const handleGeneratePdf = useCallback(() => {
+    if (!isShared) return
+    setGeneratingPdf(true)
+    router.post(
+      `/dashboard/conseiller/employees/${employeeId}/synthesis/pdf`,
+      {},
+      {
+        preserveScroll: true,
+        onFinish: () => setGeneratingPdf(false),
+      }
+    )
+  }, [employeeId, isShared])
+
   return (
     <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`Synthèse - ${employee.name}`} />
@@ -91,17 +152,25 @@ export default function EmployeeSynthesisPage({
             <Button variant={isShared ? 'outline' : 'dark'} size="sm" onClick={handleShareToggle}>
               {isShared ? 'Désactiver le partage' : 'Partager au talent'}
             </Button>
-            <a
-              href={`/dashboard/conseiller/employees/${employeeId}/synthesis/pdf`}
-              className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"
-              aria-disabled={!isShared}
-              onClick={(e) => {
-                if (!isShared) e.preventDefault()
-              }}
-              title={!isShared ? 'Partager la synthèse pour activer l’export' : 'Exporter PDF partageable'}
-            >
-              Export PDF
-            </a>
+            {livePdfJob?.downloadUrl ? (
+              <a
+                href={livePdfJob.downloadUrl}
+                className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer border-2 border-brand-sage/20 text-brand-sage hover:border-brand-sage px-4 py-2 text-sm rounded-xl gap-2"
+                title="Télécharger le dernier PDF"
+              >
+                Télécharger PDF
+              </a>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGeneratePdf}
+                isLoading={generatingPdf}
+                disabled={!isShared}
+              >
+                Générer PDF (async)
+              </Button>
+            )}
             <Button variant="dark" size="sm" onClick={handleSave} isLoading={saving}>
               Enregistrer
             </Button>

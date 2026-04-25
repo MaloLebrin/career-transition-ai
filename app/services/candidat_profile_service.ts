@@ -130,7 +130,7 @@ export class CandidatProfileService {
           if (nextEmail !== user.email) {
             const existing = await User.query({ client: trx })
               .where('email', nextEmail)
-              .whereNot('id', user.id)
+              .whereNot('id', '=', user.id)
               .first()
             if (existing) throw new EmailAlreadyUsedException()
           }
@@ -141,7 +141,7 @@ export class CandidatProfileService {
           if (nextEmail !== user.email) {
             const existing = await User.query()
               .where('email', nextEmail)
-              .whereNot('id', user.id)
+              .whereNot('id', '=', user.id)
               .first()
             if (existing) throw new EmailAlreadyUsedException()
           }

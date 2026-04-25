@@ -2,7 +2,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import ExercisesUsageAdmin from '../../../inertia/pages/dashboard/admin/exercises/Usage'
 
-vi.mock('../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, name: 'Super Admin', role: 'super_admin' as const },
   }),

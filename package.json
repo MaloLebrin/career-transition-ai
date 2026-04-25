@@ -9,6 +9,7 @@
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "dev:worker": "node ace queue:work",
+    "dev:worker:all": "node ace queue:work --queue=default,ai,pdfs,analytics",
     "dev:with-worker": "node bin/dev-with-worker.mjs",
     "test": "node ace test",
     "test:inertia": "vitest run",

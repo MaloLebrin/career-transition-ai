@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import OrganizationsAdmin from '../../../inertia/pages/dashboard/admin/organizations/Index'
 
-vi.mock('../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, name: 'Super Admin', role: 'super_admin' as const },
   }),

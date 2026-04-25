@@ -22,7 +22,7 @@ router
         router.get('/exercises', [ExerciseResultsController, 'exerciseListCandidat'])
         router.get('/exercises/:type', [ExerciseResultsController, 'showDashboardCandidat'])
         router.get('/synthesis', [EmployeeSynthesesController, 'showCandidate'])
-        router.get('/synthesis/pdf', [EmployeeSynthesesController, 'downloadShareablePdfCandidate'])
+        router.post('/synthesis/pdf', [EmployeeSynthesesController, 'generateShareablePdfCandidate'])
         router.post('/exercises/:type/draft', [
           ExerciseResultsController,
           'saveDraftFromDashboardCandidat',

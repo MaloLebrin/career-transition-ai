@@ -2,7 +2,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import ExerciseList from '../../../../../inertia/pages/dashboard/exercises/List'
 
-vi.mock('../../../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, name: 'Test User', role: 'employee' as const },
   }),

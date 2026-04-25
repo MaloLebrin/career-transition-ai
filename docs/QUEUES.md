@@ -44,6 +44,41 @@ Job : `app/jobs/log_exercise_usage_export.ts`
 
 Il est dispatché depuis `SuperAdminController.exerciseUsageExport`.
 
+### Job “pdfs” (synthèse partageable – PDF individuel)
+
+Job : `app/jobs/generate_employee_synthesis_pdf.ts`
+
+- **Payload** : `{ pdfExportId }`
+- **Queue** : `pdfs`
+- **But** : générer un **PDF partageable** (synthèse) pour un candidat, sans bloquer la requête HTTP.
+- **Entrées** :
+  - Ligne `pdf_exports` : `employee_id`, `user_id`, `organization_id`, `advisor_user_id`, etc.
+- **Sorties** :
+  - Écrit un fichier PDF dans `tmp/exports/…pdf` (MVP)
+  - Met à jour `pdf_exports` (`file_path`, `file_name`, `mime_type`, `size`)
+  - Met à jour `pdf_exports.status` : `pending → processing → completed/failed`
+- **Suivi temps réel** :
+  - Des événements sont diffusés via Transmit (SSE) sur les channels `users/{id}/pdf-exports` et `organizations/{orgId}/pdf-exports`
+  - La page **Exports PDF** (menu conseiller « Tâches ») et le badge de menu se mettent à jour sans refresh
+
+#### Déclenchement (Inertia)
+
+- **Conseiller** : `POST /dashboard/conseiller/employees/:id/synthesis/pdf`
+- **Candidat** : `POST /dashboard/candidat/synthesis/pdf`
+
+Ces endpoints créent un enregistrement `pdf_exports` puis dispatchent le job dans la queue `pdfs`.
+
+#### Téléchargement
+
+Route :
+
+- `GET /dashboard/pdf-exports/:id/download`
+
+La route vérifie :
+
+- que l’export est `completed`
+- et que l’utilisateur a le droit d’accéder à cet export (RBAC + correspondance `employeeId` côté candidat)
+
 ### Job “ai” (analyse qualitative d’exercice)
 
 Voir **[AI_JOBS.md](AI_JOBS.md)**.
@@ -63,6 +98,8 @@ Commande de base :
 ```bash
 node ace queue:work
 ```
+
+Ne pas préciser la queue ne lance que la queue `default`.
 
 Options utiles :
 
@@ -106,4 +143,3 @@ Pour tester le dispatch de jobs sans exécuter un worker, utiliser l’outil de 
 - `QueueManager.fake()` avant l’action à tester.
 - `fake.assertPushed(MyJob, { payload: {...} })` / `fake.assertNotPushed(MyJob)`.
 - `QueueManager.restore()` en teardown.
-

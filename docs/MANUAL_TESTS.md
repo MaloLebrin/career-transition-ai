@@ -327,24 +327,24 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
 
 ## 8. Jobs de fond
 
-### 8.1. Jobs en arrière-plan
+### 8.1. Exports PDF en arrière-plan
 
-- **Scénario “aucun job”**
+- **Scénario “aucun export”**
   - **Étapes**
-    1. Accéder à la page des jobs sans job actif.
+    1. Accéder à la page **Exports PDF** (menu conseiller « Tâches ») sans export actif.
   - **Vérifications**
-    - Un message “Aucun job en arrière-plan pour le moment” (ou similaire) est affiché.
+    - Un message du type « Aucun export PDF pour le moment » est affiché.
 
-- **Scénario “jobs présents”**
+- **Scénario “exports présents”**
   - **Étapes**
-    1. Lancer une opération qui déclenche un job (ex. génération d’un lot de PDF ou campagne d’emails).
-    2. Revenir sur la page des jobs.
+    1. Lancer une génération de PDF partageable depuis une synthèse.
+    2. Revenir sur la page **Exports PDF**.
   - **Vérifications**
-    - Le job apparaît avec un statut (pending/processing/completed/failed).
+    - L’export apparaît avec un statut (pending/processing/completed/failed).
 
 - **Mise à jour temps réel**
   - **Étapes**
-    1. Lancer un job en restant sur la page.
+    1. Lancer une génération en restant sur la page **Exports PDF**.
   - **Vérifications**
     - Le statut évolue sans rechargement complet (si SSE activé).
 
@@ -356,7 +356,13 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
 
 - **Scénario “dossier riche”**
   - **Étapes**
-    1. Sur un candidat avec plusieurs exercices complétés, lancer la génération PDF.
+    1. Sur un candidat avec plusieurs exercices complétés, ouvrir sa page **Synthèse**.
+    2. Cliquer sur **“Générer PDF (async)”**.
+    3. Ouvrir la page **Exports PDF** (menu conseiller → “Tâches”) et observer la ligne d’export apparaître.
+    4. Attendre le statut `Terminé`.
+    5. Télécharger le PDF depuis :
+       - le lien “Télécharger” dans la table des exports, ou
+       - la page Synthèse (bouton “Télécharger PDF”).
   - **Vérifications**
     - Page de couverture : nom candidat, date, branding.
     - Présence de synthèses pour motivations, valeurs, personnalité, compétences.
@@ -367,6 +373,26 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
     1. Générer un PDF pour un candidat avec peu de données.
   - **Vérifications**
     - Le PDF reste lisible et utilise des formulations de fallback (“En cours”, “Non défini”, etc.).
+
+- **Scénario “candidat (talent) déclenche la génération”**
+  - **Préconditions**
+    - La synthèse est **partagée** par l’expert.
+  - **Étapes**
+    1. Se connecter en candidat.
+    2. Aller sur `/dashboard/candidat/synthesis`.
+    3. Cliquer sur **“Générer le PDF (async)”**.
+    4. Revenir côté conseiller sur **Exports PDF** (« Tâches ») et vérifier que la ligne se met à jour en temps réel.
+  - **Vérifications**
+    - L’export PDF apparaît et passe en `En cours`, puis `Terminé` (ou `Erreur` avec message).
+    - Une fois terminé, le candidat peut télécharger le PDF depuis sa page Synthèse.
+
+- **Confidentialité (essentiel)**
+  - **Étapes**
+    1. En expert, remplir des **notes internes** sur la synthèse (zone “Notes internes”).
+    2. Générer un PDF partageable.
+    3. Ouvrir le PDF téléchargé.
+  - **Vérifications**
+    - Les notes internes n’apparaissent **pas** dans le PDF partageable.
 
 ### 9.2. Exports CSV
 

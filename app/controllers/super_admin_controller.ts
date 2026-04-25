@@ -44,8 +44,10 @@ export default class SuperAdminController {
    */
   public async organizations({ inertia, auth }: HttpContext) {
     const currentUser = auth.user!
+    const platformOrganizationId = Number(currentUser.organizationId)
+    const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
     const organizations = await Organization.query()
-      .whereNot('id', currentUser.organizationId)
+      .where('id', '!=', excludeOrgId)
       .preload('users')
       .preload('employees')
 
@@ -228,14 +230,15 @@ export default class SuperAdminController {
    */
   public async users({ inertia, auth }: HttpContext) {
     const currentUser = auth.user!
-    const platformOrganizationId = currentUser.organizationId
+    const platformOrganizationId = Number(currentUser.organizationId)
+    const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
 
     const [users, organizationRows] = await Promise.all([
       User.query()
-        .whereNot('organizationId', platformOrganizationId)
+        .where('organizationId', '!=', excludeOrgId)
         .preload('organization'),
       Organization.query()
-        .whereNot('id', platformOrganizationId)
+        .where('id', '!=', excludeOrgId)
         .orderBy('name', 'asc')
         .select('id', 'name', 'slug'),
     ])

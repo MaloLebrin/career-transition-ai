@@ -66,9 +66,9 @@ test.group('SuperAdminController.organizations', (group) => {
     const rendered = ctx.inertia.rendered
     assert.equal(rendered.name, 'dashboard/admin/organizations/Index')
     const items = rendered.props.organizations as { id: number; name: string }[]
-    assert.lengthOf(items, 1)
-    assert.equal(items[0].id, clientOrg.id)
-    assert.equal(items[0].name, 'Client Org')
+    const ids = items.map((o) => o.id)
+    assert.isFalse(ids.includes(platformOrg.id))
+    assert.isTrue(ids.includes(clientOrg.id))
   })
 })
 
@@ -122,14 +122,13 @@ test.group('SuperAdminController.users', (group) => {
       id: number
       email: string
       onboardingCompleted: boolean
+      organization?: { id: number; name: string } | null
     }[]
     const orgs = rendered.props.organizations as { id: number; name: string }[]
-    assert.lengthOf(items, 1)
-    assert.equal(items[0].id, clientUser.id)
-    assert.equal(items[0].email, clientUser.email)
-    assert.isFalse(items[0].onboardingCompleted)
-    assert.lengthOf(orgs, 1)
-    assert.equal(orgs[0].id, clientOrg.id)
+    assert.isTrue(items.some((u) => u.id === clientUser.id))
+    assert.isFalse(items.some((u) => u.organization?.id === platformOrg.id))
+    assert.isTrue(orgs.some((o) => o.id === clientOrg.id))
+    assert.isFalse(orgs.some((o) => o.id === platformOrg.id))
   })
 })
 

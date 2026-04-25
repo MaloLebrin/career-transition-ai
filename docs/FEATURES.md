@@ -258,13 +258,10 @@
 
 ## 8. Jobs de fond & industrialisation
 
-### 8.1 Tâches asynchrones (Bulk Jobs)
+### 8.1 Tâches asynchrones (exports PDF)
 
 - **Suivi**
-  - Inventaire des traitements lourds :
-    - Envois d’emails automatiques (invitations, relances).
-    - Générations de PDFs en masse.
-    - Autres tâches batch.
+  - Génération de PDFs de synthèse partageable (conseiller ou candidat), exécutée en queue.
 - **État**
   - Statuts lisibles pour l’utilisateur avancé :
     - En attente.
@@ -273,6 +270,9 @@
     - Erreur (avec message explicatif si possible).
 - **Temps réel**
   - Mise à jour via événements serveur (SSE / Transmit), sans rafraîchir manuellement la page.
+- **Accès**
+  - Les exports sont visibles depuis l’espace conseiller via **“Tâches”** (`/dashboard/conseiller/pdf-exports`).
+  - Un badge dans le menu indique le nombre d’exports PDF **en cours** (pending/processing).
 
 ---
 
@@ -287,6 +287,13 @@
 - **Usage**
   - Support de restitution au talent ou à un tiers (employeur, financeur).
   - Preuve de valeur du travail du cabinet.
+- **Génération asynchrone**
+  - Le PDF est généré en **tâche de fond** (queue) ; le suivi passe par la table **`pdf_exports`**.
+  - Le PDF est **téléchargeable** une fois l’export terminé :
+    - depuis la page **Synthèse** du candidat,
+    - et depuis la page **Exports PDF** (menu « Tâches » / super admin).
+- **Partage & confidentialité**
+  - Le PDF “partageable” est construit à partir des données partageables (commentaires partagés, synthèse), **sans inclure les notes internes expert**.
 
 ### 9.2 Exports CSV
 

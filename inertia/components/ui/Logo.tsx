@@ -53,3 +53,5 @@ export const Logo = memo(function Logo({ size = 'md', className = '', showText =
 })
 
 Logo.displayName = 'Logo'
+
+export default Logo

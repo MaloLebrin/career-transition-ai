@@ -1,0 +1,13 @@
+---
+globs: *.tsx
+alwaysApply: false
+---
+# Les export des composants REACT
+
+## composant
+
+Pas d'export default des composants react.
+
+## pages
+
+Inertia impose l'export par default pour les pages seulement

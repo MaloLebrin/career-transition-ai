@@ -89,7 +89,7 @@ export class AuthService {
     if (input.email !== user.email) {
       const existing = await User.query()
         .where('email', input.email)
-        .whereNot('id', user.id)
+        .whereNot('id', '=', user.id)
         .first()
 
       if (existing) {

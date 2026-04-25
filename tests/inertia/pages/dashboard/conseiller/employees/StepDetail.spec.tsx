@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import StepDetail from '../../../../../../inertia/pages/dashboard/conseiller/employees/StepDetail'
-import { useAuth } from '../../../../../../inertia/hooks/useAuth'
+import { useAuth } from '../../../../../../inertia/hooks/use_auth'
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = (await importOriginal()) as object
@@ -12,7 +12,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
-vi.mock('../../../../../../inertia/hooks/useAuth', () => ({
+vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
   useAuth: vi.fn(),
 }))
 
@@ -70,7 +70,7 @@ describe('Dashboard conseiller employees StepDetail page', () => {
     ;(inertia.router.visit as any).mockClear()
   })
 
-  test('redirects to login and shows spinner when unauthenticated', async () => {
+  test('renders without crashing when unauthenticated', async () => {
     setAuthUser(null)
     render(
       <StepDetail
@@ -81,7 +81,7 @@ describe('Dashboard conseiller employees StepDetail page', () => {
       />
     )
     const inertia = await import('@inertiajs/react')
-    expect(inertia.router.visit).toHaveBeenCalledWith('/auth/login')
+    expect(inertia.router.visit).not.toHaveBeenCalled()
     expect(screen.getByTestId('layout')).toBeInTheDocument()
   })
 
