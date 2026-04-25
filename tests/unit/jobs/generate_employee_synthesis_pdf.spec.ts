@@ -102,6 +102,25 @@ test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
     assert.isNull(updated.errorMessage)
   })
 
+  test('supporte les caracteres non WinAnsi (ex: fleche) via sanitation', async ({ assert }) => {
+    const { org, advisor, employee } = await seedFullScenario('job-unicode')
+    employee.targetRole = 'Lead Developer / Formateur tech'
+    await employee.save()
+    const pdfExport = await createPendingExport(advisor.id, org.id, employee.id, advisor.id)
+
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    const updated = await PdfExport.findOrFail(pdfExport.id)
+    if (updated.status !== PDF_EXPORT_STATUSES.COMPLETED) {
+      assert.fail(
+        `Statut inattendu : ${updated.status} — erreur : ${updated.errorMessage ?? 'n/a'}`
+      )
+    }
+    assert.equal(updated.status, PDF_EXPORT_STATUSES.COMPLETED)
+    assert.isString(updated.filePath)
+    assert.isNotEmpty(updated.filePath)
+  })
+
   test('le nom du fichier contient le nom de employe', async ({ assert }) => {
     const { org, advisor, employee } = await seedFullScenario('job-filename')
     const pdfExport = await createPendingExport(advisor.id, org.id, employee.id, advisor.id)
