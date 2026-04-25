@@ -7,6 +7,31 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class ContactRequestSchema extends BaseModel {
+  static $columns = ['createdAt', 'email', 'id', 'message', 'name', 'organization', 'phone', 'status', 'type', 'updatedAt'] as const
+  $columns = ContactRequestSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare message: string
+  @column()
+  declare name: string
+  @column()
+  declare organization: string | null
+  @column()
+  declare phone: string | null
+  @column()
+  declare status: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class EducationSchema extends BaseModel {
   static $columns = ['createdAt', 'degree', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'school', 'sortOrder', 'startDate', 'updatedAt'] as const
   $columns = EducationSchema.$columns

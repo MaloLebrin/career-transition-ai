@@ -16,7 +16,6 @@ interface LoginPageProps {
 export default function LoginPage({
   csrfToken,
   error,
-  onBackToLanding,
   onGoToRegister,
 }: LoginPageProps) {
   const [email, setEmail] = useState('')
@@ -48,7 +47,7 @@ export default function LoginPage({
 
   return (
     <PublicLayout
-      headerProps={{ onLogoClick: onBackToLanding, showAction: false }}
+      headerProps={{ showAction: false }}
       className="flex flex-col lg:flex-row overflow-hidden"
     >
       <div className="hidden lg:flex lg:w-1/2 bg-brand-navy relative items-center justify-center p-20 overflow-hidden pt-32">

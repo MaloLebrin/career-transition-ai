@@ -4,6 +4,7 @@ import React from 'react'
 import PublicLayout from '../layout/PublicLayout'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
+import { ContactDemoForm } from './ContactDemoForm'
 
 interface MethodologyPageProps {
   onEnterApp: () => void
@@ -16,7 +17,6 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
   return (
     <PublicLayout
       headerProps={{
-        onLogoClick: onBackToHome ?? (() => {}),
         onOfferClick: onOffer,
         onTarifsClick: onTarifs,
         showAction: true,
@@ -54,24 +54,24 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              onClick={onEnterApp}
-              size="lg"
-              className="w-full sm:w-auto px-10 py-6 bg-brand-navy text-white hover:bg-brand-navy/90 shadow-xl shadow-brand-navy/10 group"
-            >
-              Accès Expert
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-
-            {onBackToHome && (
-              <button
-                type="button"
-                onClick={onBackToHome}
-                className="w-full sm:w-auto px-10 py-6 text-brand-navy font-bold hover:bg-brand-navy/5 rounded-2xl transition-colors cursor-pointer disabled:cursor-not-allowed"
+              <Button
+                onClick={onEnterApp}
+                size="lg"
+                className="w-full sm:w-auto px-10 py-6 bg-brand-navy text-white hover:bg-brand-navy/90 shadow-xl shadow-brand-navy/10 group"
               >
-                Retour à l&apos;accueil
-              </button>
-            )}
+                Accès Expert
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+
+              {onBackToHome && (
+                <button
+                  type="button"
+                  onClick={onBackToHome}
+                  className="w-full sm:w-auto px-10 py-6 text-brand-navy font-bold hover:bg-brand-navy/5 rounded-2xl transition-colors cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Retour à l&apos;accueil
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
@@ -207,6 +207,23 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
               title="Responsabilité"
               desc="Les recommandations restent des propositions: le conseiller arbitre avec la personne accompagnée."
             />
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="px-6 py-24 bg-brand-ivory/30 border-y border-brand-navy/5">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          <div className="space-y-6">
+            <Badge variant="slate">Demande de démo</Badge>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-brand-navy leading-tight">
+              Intéressé par la méthodologie ?
+            </h2>
+            <p className="text-brand-navy/60 font-medium leading-relaxed">
+              Demandez une démo ou posez vos questions : nous revenons vers vous sous 48h ouvrées.
+            </p>
+          </div>
+          <div className="bg-white border border-brand-navy/5 rounded-[40px] p-10">
+            <ContactDemoForm variant="contact" title="" description="" />
           </div>
         </div>
       </section>

@@ -11,7 +11,7 @@ Application d’accompagnement à la transition de carrière (conseillers, candi
 
 ### P0 (indispensable)
 
-- [ ] **Contact / Demande de démo** (`/contact`) — formulaire simple + CTA “Demander une démo”
+- [x] **Contact / Demande de démo** (`/contact`) — formulaire simple + CTA “Demander une démo”
 - [x] **Mentions légales** (`/mentions-legales`)
 - [x] **Politique de confidentialité (RGPD)** (`/confidentialite`)
 - [x] **Sécurité & confidentialité** (`/securite`) — accès, rôles, hébergement, traitement des données (version marketing + liens vers pages légales)

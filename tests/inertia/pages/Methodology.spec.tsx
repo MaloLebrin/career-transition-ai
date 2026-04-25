@@ -19,6 +19,15 @@ vi.mock('@inertiajs/react', () => ({
     </a>
   ),
   router: { visit: vi.fn() },
+  useForm: () => ({
+    data: { name: '', email: '', phone: '', organization: '', message: '', type: 'contact' },
+    setData: vi.fn(),
+    post: vi.fn(),
+    processing: false,
+    errors: {},
+    wasSuccessful: false,
+    reset: vi.fn(),
+  }),
 }))
 
 describe('Methodology page', () => {

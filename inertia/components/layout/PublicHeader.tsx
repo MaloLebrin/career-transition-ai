@@ -1,9 +1,10 @@
+import { router } from '@inertiajs/react'
 import React from 'react'
+import AppLink from '~/components/ui/AppLink'
 import Button from '../ui/Button'
 import { Logo } from '../ui/Logo'
 
 export interface PublicHeaderProps {
-  onLogoClick: () => void
   onOfferClick?: () => void
   onTarifsClick?: () => void
   onMethodologyClick?: () => void
@@ -14,7 +15,6 @@ export interface PublicHeaderProps {
 }
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({
-  onLogoClick,
   onOfferClick,
   onTarifsClick,
   onMethodologyClick,
@@ -26,13 +26,12 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
   return (
     <nav className="fixed top-0 w-full z-100 bg-white/80 backdrop-blur-xl border-b border-brand-navy/5 px-6 py-4">
       <div className="max-w-7xl 2xl:max-w-(--width-app-container) mx-auto flex justify-between items-center">
-        <button
-          type="button"
-          onClick={onLogoClick}
+        <AppLink
+          href="/"
           className="flex items-center space-x-3 cursor-pointer disabled:cursor-not-allowed group border-none bg-transparent p-0"
         >
           <Logo size="md" />
-        </button>
+        </AppLink>
 
         <div className="hidden md:flex items-center space-x-8">
           {onOfferClick && (
@@ -79,7 +78,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
           {!showAction && (
             <button
               type="button"
-              onClick={onLogoClick}
+              onClick={() => router.visit('/')}
               className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
             >
               Retour à l'accueil

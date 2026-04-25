@@ -1,5 +1,5 @@
+import { Head, useForm } from '@inertiajs/react'
 import React from 'react'
-import { Head, useForm, router } from '@inertiajs/react'
 import PublicLayout from '../../components/layout/PublicLayout'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
@@ -24,7 +24,7 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
   return (
     <>
       <Head title="Créer votre mot de passe" />
-      <PublicLayout headerProps={{ onLogoClick: () => router.visit('/offre'), showAction: false }}>
+      <PublicLayout headerProps={{ showAction: false }}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8">
             <div className="text-center mb-8">

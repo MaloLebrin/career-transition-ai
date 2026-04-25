@@ -14,7 +14,6 @@ interface AuthPageProps {
 
 const AuthPage: React.FC<AuthPageProps> = ({
   onAuthSuccess,
-  onBackToLanding,
   error,
 }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -48,7 +47,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
 
   return (
     <PublicLayout
-      headerProps={{ onLogoClick: onBackToLanding, showAction: false }}
+      headerProps={{ showAction: false }}
       className="flex flex-col lg:flex-row overflow-hidden"
     >
       {/* Côté Gauche - Visuel & Branding */}

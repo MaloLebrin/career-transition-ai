@@ -1,7 +1,6 @@
-import React from 'react'
-import { Head, router } from '@inertiajs/react'
-import AppLink from '../../components/ui/AppLink'
+import { Head } from '@inertiajs/react'
 import PublicLayout from '../../components/layout/PublicLayout'
+import AppLink from '../../components/ui/AppLink'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 
@@ -13,7 +12,7 @@ export default function InvalidToken({ expired }: InvalidTokenProps) {
   return (
     <>
       <Head title="Lien invalide" />
-      <PublicLayout headerProps={{ onLogoClick: () => router.visit('/offre'), showAction: false }}>
+      <PublicLayout headerProps={{ showAction: false }}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8 text-center">
             <h1 className="text-2xl font-bold text-brand-navy tracking-tight">

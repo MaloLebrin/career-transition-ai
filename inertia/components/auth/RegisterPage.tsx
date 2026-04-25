@@ -1,19 +1,18 @@
-import React, { useState } from 'react'
 import { router } from '@inertiajs/react'
+import React, { useState } from 'react'
+import { hasErrors, validateRegister, type RegisterErrors } from '../../lib/authValidation'
 import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
-import { hasErrors, validateRegister, type RegisterErrors } from '../../lib/authValidation'
 
 interface RegisterPageProps {
   csrfToken?: string
-  onBackToLanding: () => void
   onGoToLogin: () => void
   error: string | null
 }
 
-export default function RegisterPage({ csrfToken, onBackToLanding, onGoToLogin, error }: RegisterPageProps) {
+export default function RegisterPage({ csrfToken, onGoToLogin, error }: RegisterPageProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -49,7 +48,7 @@ export default function RegisterPage({ csrfToken, onBackToLanding, onGoToLogin, 
 
   return (
     <PublicLayout
-      headerProps={{ onLogoClick: onBackToLanding, showAction: false }}
+      headerProps={{ showAction: false }}
       className="flex flex-col lg:flex-row overflow-hidden"
     >
       <div className="hidden lg:flex lg:w-1/2 bg-brand-navy relative items-center justify-center p-20 overflow-hidden pt-32">

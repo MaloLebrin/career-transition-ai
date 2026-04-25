@@ -1,6 +1,7 @@
 import { ArrowRight, CheckCircle2, HelpCircle } from 'lucide-react'
 import { motion } from 'motion/react'
-import React, { useMemo, useState } from 'react'
+import React from 'react'
+import { ContactDemoForm } from './ContactDemoForm'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import Badge from '../ui/Badge'
@@ -21,25 +22,6 @@ export default function PricingPage({
   onTarifs,
   onMethodology,
 }: PricingPageProps) {
-  const [demoName, setDemoName] = useState('')
-  const [demoEmail, setDemoEmail] = useState('')
-  const [demoOrg, setDemoOrg] = useState('')
-  const [demoMessage, setDemoMessage] = useState('')
-
-  const mailtoHref = useMemo(() => {
-    const subject = encodeURIComponent('Demande de devis / tarifs — France Transition Carrière')
-    const body = encodeURIComponent(
-      [
-        `Nom: ${demoName || '-'}`,
-        `Email: ${demoEmail || '-'}`,
-        `Cabinet/Organisation: ${demoOrg || '-'}`,
-        '',
-        demoMessage || '',
-      ].join('\n')
-    )
-    return `mailto:contact@francetransitioncarriere.fr?subject=${subject}&body=${body}`
-  }, [demoEmail, demoMessage, demoName, demoOrg])
-
   return (
     <PublicLayout
       headerProps={{
@@ -183,61 +165,11 @@ export default function PricingPage({
           </div>
 
           <div className="bg-brand-ivory/50 border border-brand-navy/5 rounded-[40px] p-10">
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <Field label="Nom">
-                <input
-                  value={demoName}
-                  onChange={(e) => setDemoName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-brand-navy/10 bg-white focus:outline-none focus:ring-2 focus:ring-brand-sage/30"
-                  placeholder="Votre nom"
-                />
-              </Field>
-              <Field label="Email">
-                <input
-                  value={demoEmail}
-                  onChange={(e) => setDemoEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-brand-navy/10 bg-white focus:outline-none focus:ring-2 focus:ring-brand-sage/30"
-                  placeholder="prenom@cabinet.fr"
-                />
-              </Field>
-              <Field label="Cabinet / Organisation">
-                <input
-                  value={demoOrg}
-                  onChange={(e) => setDemoOrg(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-brand-navy/10 bg-white focus:outline-none focus:ring-2 focus:ring-brand-sage/30"
-                  placeholder="Nom du cabinet"
-                />
-              </Field>
-              <Field label="Message (volume, nombre de conseillers…)">
-                <textarea
-                  value={demoMessage}
-                  onChange={(e) => setDemoMessage(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-brand-navy/10 bg-white focus:outline-none focus:ring-2 focus:ring-brand-sage/30 min-h-[120px]"
-                  placeholder="Contexte pour le devis…"
-                />
-              </Field>
-
-              <div className="pt-4 flex flex-col sm:flex-row gap-3">
-                <a
-                  href={mailtoHref}
-                  className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-brand-sage text-white font-bold hover:bg-brand-sage/90 transition-colors"
-                >
-                  Envoyer la demande de devis
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </a>
-                <Button
-                  onClick={onEnterApp}
-                  variant="dark"
-                  className="px-8 py-4 rounded-2xl"
-                >
-                  Accès Expert
-                </Button>
-              </div>
-
-              <p className="pt-2 text-xs font-bold uppercase tracking-widest text-brand-navy/30">
-                Pas de spam • Réponse sous 48h ouvrées
-              </p>
-            </form>
+            <ContactDemoForm
+              variant="demo"
+              title=""
+              description=""
+            />
           </div>
         </div>
       </section>
@@ -358,13 +290,3 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
-        {label}
-      </span>
-      {children}
-    </label>
-  )
-}

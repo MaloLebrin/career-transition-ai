@@ -23,7 +23,6 @@ export default function PrivacyPolicyPage({
   return (
     <PublicLayout
       headerProps={{
-        onLogoClick: onBackToHome ?? (() => {}),
         onOfferClick: onOffer,
         onTarifsClick: onTarifs,
         onMethodologyClick: onMethodology,

@@ -13,6 +13,7 @@ import {
 import { motion, useScroll, useTransform } from 'motion/react'
 import React from 'react'
 import { AiAnalisys, Appointnement, Certification, CoachFeedback, Disc, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
+import { ContactDemoForm } from '../marketing/ContactDemoForm'
 import PublicLayout from '../layout/PublicLayout'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -400,6 +401,38 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
              </div>
           </div>
           </div>
+        </div>
+      </section>
+
+      {/* --- CONTACT / DEMO --- */}
+      <section id="contact" className="py-24 px-6 bg-white border-y border-brand-navy/5">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="space-y-6"
+          >
+            <Badge variant="slate">Demande de démo</Badge>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-brand-navy leading-tight">
+              Voyons si c&apos;est un fit pour votre cabinet.
+            </h2>
+            <p className="text-brand-navy/60 font-medium leading-relaxed">
+              Décrivez votre organisation et vos attentes : nous revenons vers vous sous 48h ouvrées
+              avec une proposition adaptée.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="bg-brand-ivory/50 border border-brand-navy/5 rounded-[40px] p-10"
+          >
+            <ContactDemoForm variant="demo" title="" description="" />
+          </motion.div>
         </div>
       </section>
 
