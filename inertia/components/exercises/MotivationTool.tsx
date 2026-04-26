@@ -138,7 +138,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
           Comparez les 22 leviers d'engagement un par un. Cette méthode élimine les biais et révèle
           vos priorités réelles.
         </p>
-        <Button onClick={handleStart} className="w-full" size="lg" variant="dark">
+        <Button onClick={handleStart} className="w-full" size="lg" variant="emphasis">
           Commencer l'analyse
         </Button>
       </Card>

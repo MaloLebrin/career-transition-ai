@@ -89,7 +89,7 @@ const PersonalityTool: React.FC<Props> = ({ onSave }) => {
         ))}
       </div>
 
-      <Button onClick={handleSave} className="mt-10 w-full" variant="lime" size="lg">
+      <Button onClick={handleSave} className="mt-10 w-full" variant="primary" size="lg">
         Finaliser le profil de personnalité
       </Button>
     </Card>

@@ -226,7 +226,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
       </div>
 
       <div className="mt-12 flex flex-col md:flex-row gap-4 border-t border-slate-50 pt-10">
-        <Button onClick={handleSave} className="grow" size="lg" variant="dark">
+        <Button onClick={handleSave} className="grow" size="lg" variant="emphasis">
           Valider mon ciblage expert
         </Button>
       </div>

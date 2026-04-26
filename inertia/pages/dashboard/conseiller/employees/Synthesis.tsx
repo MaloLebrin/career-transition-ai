@@ -171,7 +171,7 @@ export default function EmployeeSynthesisPage({
                 Générer PDF (async)
               </Button>
             )}
-            <Button variant="dark" size="sm" onClick={handleSave} isLoading={saving}>
+            <Button variant="emphasis" size="sm" onClick={handleSave} isLoading={saving}>
               Enregistrer
             </Button>
           </div>

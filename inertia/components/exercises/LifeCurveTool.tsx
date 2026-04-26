@@ -191,7 +191,7 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
                     }
                   />
                 </div>
-                <Button onClick={handleAddPoint} className="w-full" variant="dark" size="sm">
+                <Button onClick={handleAddPoint} className="w-full" variant="emphasis" size="sm">
                   Ajouter au graphique
                 </Button>
               </div>

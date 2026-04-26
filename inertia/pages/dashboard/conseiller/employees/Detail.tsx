@@ -148,7 +148,7 @@ export default function DashboardEmployeeDetail({
               </a>
               <Button
                 onClick={handleDownloadPDF}
-                variant="dark"
+                variant="emphasis"
                 size="sm"
                 isLoading={isGeneratingPDF}
                 disabled={!selectedEmployee?.plan.some((step) => step.completed)}

@@ -31,7 +31,7 @@ export const OnBoardingStep1 = ({ employee, onNext }: OnBoardingStep1Props) => (
         profil professionnel.
       </p>
     </div>
-    <Button onClick={onNext} size="lg" variant="dark">
+    <Button onClick={onNext} size="lg" variant="emphasis">
       Compléter mon Profil
     </Button>
   </div>

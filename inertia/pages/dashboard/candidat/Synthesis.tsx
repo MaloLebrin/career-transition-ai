@@ -63,7 +63,7 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
           <div className="mt-4">
             {props.latestPdfJob?.downloadUrl ? (
               <a href={props.latestPdfJob.downloadUrl}>
-                <Button variant="dark" size="sm">
+                <Button variant="emphasis" size="sm">
                   Télécharger le PDF
                 </Button>
               </a>

@@ -71,7 +71,7 @@ const LinkActions = memo(function LinkActions({
       </Button>
       <Button
         type="button"
-        variant="dark"
+        variant="emphasis"
         size="sm"
         onClick={handleOpen}
         aria-label="Ouvrir le lien dans un nouvel onglet"

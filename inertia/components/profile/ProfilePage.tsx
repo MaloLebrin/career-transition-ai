@@ -152,7 +152,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
             <Button
               onClick={() => fileInputRef.current?.click()}
               size="sm"
-              variant="dark"
+              variant="emphasis"
               className="grow md:flex-none"
               isLoading={isExtracting}
               icon={
@@ -608,7 +608,7 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
                 disabled={!newSkill.name.trim()}
                 className="w-full"
                 size="lg"
-                variant="dark"
+                variant="emphasis"
               >
                 Ajouter au profil
               </Button>

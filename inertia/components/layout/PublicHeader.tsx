@@ -71,7 +71,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
             </button>
           )}
           {showAction && onActionClick && (
-            <Button onClick={onActionClick} variant="dark" size="sm">
+            <Button onClick={onActionClick} variant="emphasis" size="sm">
               {actionLabel}
             </Button>
           )}

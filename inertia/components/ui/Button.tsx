@@ -5,10 +5,9 @@ export type ButtonVariant =
   | 'secondary'
   | 'outline'
   | 'ghost'
-  | 'dark'
+  | 'emphasis'
   | 'danger'
-  | 'lime'
-  | 'terracotta'
+  | 'cta'
 
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 
@@ -22,13 +21,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-brand-sage text-white shadow-lg shadow-brand-sage/10 hover:bg-brand-sage/90',
   secondary: 'border-2 border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white',
-  terracotta:
-    'bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/20 hover:bg-brand-terracotta/90',
-  lime: 'bg-brand-sage text-white hover:bg-brand-sage/90',
+  cta: 'bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/20 hover:bg-brand-terracotta/90',
   outline:
     'bg-white border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy',
   ghost: 'bg-transparent text-brand-navy/40 hover:text-brand-navy',
-  dark: 'bg-brand-navy text-white shadow-xl shadow-brand-navy/20 hover:bg-brand-navy/90',
+  emphasis: 'bg-brand-navy text-white shadow-xl shadow-brand-navy/20 hover:bg-brand-navy/90',
   danger: 'bg-rose-500 text-white shadow-lg shadow-rose-100 hover:bg-rose-600',
 }
 

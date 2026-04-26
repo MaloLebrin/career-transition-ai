@@ -113,8 +113,8 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div className="flex flex-wrap gap-4">
                 <Button variant="primary">Primary Sage</Button>
                 <Button variant="secondary">Secondary Navy</Button>
-                <Button variant="terracotta">CTA Terracotta</Button>
-                <Button variant="dark">Dark Expert</Button>
+                <Button variant="cta">CTA Terracotta</Button>
+                <Button variant="emphasis">Dark Expert</Button>
                 <Button variant="outline">Outline</Button>
                 <Button variant="ghost">Ghost</Button>
               </div>
@@ -206,7 +206,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </p>
               <div className="bg-white p-8 rounded-[32px] border border-brand-navy/5 flex flex-wrap gap-3">
                 <Badge variant="violet">Expert</Badge>
-                <Badge variant="lime">Validé</Badge>
+                <Badge variant="primary">Validé</Badge>
                 <Badge variant="orange">En cours</Badge>
                 <Badge variant="pink">Urgent</Badge>
                 <Badge variant="cyan">Nouveau</Badge>
@@ -231,7 +231,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 The standard container for most content blocks. Soft shadows and large radius.
               </p>
             </Card>
-            <Card variant="dark">
+            <Card variant="emphasis">
               <h4 className="text-xl font-bold text-white mb-4">Dark Card</h4>
               <p className="text-white/60 text-sm">
                 High contrast container for important highlights or dark-themed sections.
