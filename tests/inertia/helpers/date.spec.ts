@@ -1,5 +1,5 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
-import { formatDateTimeFR, formatSessionDate, formatRelativeTime } from '../../../shared/helpers/date'
+import { formatDateTimeFR, formatRelativeTime, formatSessionDate } from '#shared/helpers/date'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 describe('shared/helpers/date', () => {
   test('formatSessionDate returns — for undefined', () => {
