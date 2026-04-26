@@ -9,10 +9,24 @@ export default class UserSeeder extends BaseSeeder {
     const users = [
       {
         organizationId: ftcParis.id,
+        email: 'admin@ftc.fr',
+        password: 'password',
+        name: 'Thomas Girard',
+        role: 'admin' as const,
+      },
+      {
+        organizationId: ftcParis.id,
+        email: 'advisor@ftc.fr',
+        password: 'password',
+        name: 'Sophie Renard',
+        role: 'advisor' as const,
+      },
+      {
+        organizationId: ftcParis.id,
         email: 'expert@ftc.fr',
         password: 'password',
-        name: 'Consultant Expert',
-        role: 'admin' as const,
+        name: 'Claire Fontaine',
+        role: 'expert' as const,
       },
       {
         organizationId: ftcParis.id,
@@ -26,6 +40,13 @@ export default class UserSeeder extends BaseSeeder {
         email: 'm.lebrin@example.fr',
         password: 'password',
         name: 'Malo Lebrin',
+        role: 'employee' as const,
+      },
+      {
+        organizationId: ftcParis.id,
+        email: 'a.martin@example.fr',
+        password: 'password',
+        name: 'Aurélie Martin',
         role: 'employee' as const,
       },
     ]
