@@ -136,9 +136,12 @@ export default class EmployeesController {
       return ctx.response.unauthorized()
     }
 
+    const employeeIdFromParam = ctx.params.id ? Number(ctx.params.id) : null
+
     const employeeQuery = Employee.query()
-      .where('user_id', user.id)
       .where('organizationId', user.organizationId)
+      .if(employeeIdFromParam !== null, (q) => q.where('id', employeeIdFromParam!))
+      .if(employeeIdFromParam === null, (q) => q.where('userId', user.id))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
       .preload('educations')
