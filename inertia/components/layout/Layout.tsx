@@ -1,6 +1,7 @@
 import { APP_NAME } from '#shared/constants/app'
 import { type UserRole } from '#shared/constants/user'
 import React, { useState } from 'react'
+import { NotificationBell } from '~/components/notifications/NotificationBell'
 import { Avatar } from '~/components/layout/header/Avatar'
 import { LogoutModal } from '~/components/ui/LogoutModal'
 import Button from '../ui/Button'
@@ -47,6 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
 
           <div className="flex items-center space-x-2 md:space-x-6">
             <Avatar userName={userName} userRole={userRole} />
+            <NotificationBell />
 
             <Button
               onClick={() => setShowLogoutModal(true)}
