@@ -15,6 +15,7 @@ export const controllers = {
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
   Notes: () => import('#controllers/notes_controller'),
+  Notifications: () => import('#controllers/notifications_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
   PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),

@@ -88,6 +88,8 @@ export type ScannedRoutes = {
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
     'pdf_export_downloads.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notifications.mark_as_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notifications.mark_all_as_read': { paramsTuple?: []; params?: {} }
     'contact_requests.store': { paramsTuple?: []; params?: {} }
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -219,6 +221,10 @@ export type ScannedRoutes = {
     'employee_syntheses.update_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
+  }
+  PATCH: {
+    'notifications.mark_as_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notifications.mark_all_as_read': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {
