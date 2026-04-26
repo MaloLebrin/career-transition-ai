@@ -17,15 +17,15 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const THEMES: Record<BadgeVariant, string> = {
-  violet: 'bg-brand-sage/10 text-brand-sage border-brand-sage/20',
-  lime: 'bg-brand-sage/10 text-brand-sage border-brand-sage/20',
-  orange: 'bg-brand-terracotta/10 text-brand-terracotta border-brand-terracotta/20',
-  pink: 'bg-rose-50 text-rose-600 border-rose-100',
-  cyan: 'bg-sky-50 text-sky-600 border-sky-100',
+  violet: 'bg-violet-50 text-violet-600 border-violet-200',
+  lime: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+  orange: 'bg-orange-50 text-orange-600 border-orange-200',
+  pink: 'bg-pink-50 text-pink-600 border-pink-200',
+  cyan: 'bg-cyan-50 text-cyan-600 border-cyan-200',
   slate: 'bg-brand-navy/5 text-brand-navy/60 border-brand-navy/10',
-  indigo: 'bg-brand-sage/10 text-brand-sage border-brand-sage/20',
-  emerald: 'bg-brand-sage/10 text-brand-sage border-brand-sage/20',
-  amber: 'bg-brand-terracotta/10 text-brand-terracotta border-brand-terracotta/20',
+  indigo: 'bg-indigo-50 text-indigo-600 border-indigo-200',
+  emerald: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+  amber: 'bg-amber-50 text-amber-600 border-amber-200',
 }
 
 const Badge = memo(function Badge({

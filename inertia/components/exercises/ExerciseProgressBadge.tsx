@@ -11,11 +11,11 @@ export default function ExerciseProgressBadge({
 
   return (
     <div className="inline-flex items-center gap-3">
-      <span className="text-[10px] font-bold text-brand-sage uppercase tracking-widest">
+      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
         {label}: {safeValue}%
       </span>
       <div className="w-24 h-1.5 rounded-full bg-brand-navy/10 overflow-hidden">
-        <div className="h-full rounded-full bg-brand-sage" style={{ width: `${safeValue}%` }} />
+        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${safeValue}%` }} />
       </div>
     </div>
   )

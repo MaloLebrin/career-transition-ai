@@ -11,6 +11,11 @@
   --color-brand-ivory: #f4f1ea; /* Ivoire chaud — Fond premium */
   --color-brand-gray: #6b7280; /* Gris technique */
 
+  /* Accents vifs — états dynamiques uniquement (badges, barres, icônes) */
+  --color-brand-violet: #7c3aed; /* Violet vif — exercices, gamification */
+  --color-brand-emerald: #059669; /* Vert émeraude — complété, succès */
+  --color-brand-amber: #d97706; /* Ambre — en cours, attention */
+
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   --radius-3xl: 1.5rem;

@@ -109,7 +109,7 @@ function PlanStepExercises({
               >
                 {exerciseLabel}
               </Button>
-              <span className="text-[10px] font-bold text-brand-sage uppercase tracking-wider">
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${exerciseComplete ? 'text-emerald-600' : 'text-brand-amber'}`}>
                 {exerciseComplete ? 'Complété' : `${pct}%`}
               </span>
             </div>
@@ -138,7 +138,7 @@ export default function PlanStepItem({
       <div
         className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
           stepDone
-            ? 'bg-brand-sage text-white shadow-lg shadow-brand-sage/20'
+            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
             : isLocked
             ? 'bg-amber-100 border-2 border-amber-200 text-amber-600'
             : 'bg-white border-2 border-brand-navy/5 text-brand-navy/20'

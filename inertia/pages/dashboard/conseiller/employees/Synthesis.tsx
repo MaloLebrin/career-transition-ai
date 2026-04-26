@@ -5,7 +5,8 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
-import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
+import { EXERCISE_COLORS, EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
+import type { ExerciseType } from '~/types'
 import { useAuth } from '~/hooks/use_auth'
 import type { Employee } from '~/types/employee'
 
@@ -221,22 +222,25 @@ export default function EmployeeSynthesisPage({
                     const title =
                       EXERCISE_LIST.find((e) => e.slug === slug)?.title ?? (res.type as string)
                     const isLatestCompleted = Boolean(latestCompletedByType[(res.type as string).toLowerCase()])
+                    const colors = EXERCISE_COLORS[res.type as ExerciseType]
                     return (
                       <AppLink
                         key={res.id}
                         href={`/dashboard/conseiller/employees/${employeeId}/exercises/results/${slug}`}
-                        className="block p-4 rounded-2xl border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-md transition-all"
+                        className={`block p-4 rounded-2xl border hover:shadow-md transition-all ${colors ? `${colors.bg} ${colors.border}` : 'bg-brand-ivory/30 border-brand-navy/5'}`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="font-bold text-brand-navy">{title}</div>
-                            <div className="text-xs text-brand-navy/60 mt-1">
+                            <div className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}>{title}</div>
+                            <div className="text-xs text-brand-navy/50 mt-1">
                               Score: {res.quantitativeScore ?? 0}
                             </div>
                           </div>
-                          <div className="text-[9px] font-bold uppercase tracking-widest text-brand-sage">
-                            {isLatestCompleted ? 'Dernier' : ''}
-                          </div>
+                          {isLatestCompleted && (
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                              Dernier
+                            </span>
+                          )}
                         </div>
                       </AppLink>
                     )

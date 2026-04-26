@@ -72,7 +72,7 @@ export default function EmployeeHome({
                 aria-valuenow={exerciseCompletionPercent}
               >
                 <div
-                  className="h-full rounded-full bg-brand-sage transition-all"
+                  className="h-full rounded-full bg-emerald-500 transition-all"
                   style={{ width: `${exerciseCompletionPercent}%` }}
                 />
               </div>
@@ -112,7 +112,7 @@ export default function EmployeeHome({
                   </div>
                   <div className="h-1.5 bg-brand-navy/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-brand-sage rounded-full"
+                      className="h-full bg-emerald-500 rounded-full"
                       style={{ width: `${(s.level / 5) * 100}%` }}
                     />
                   </div>

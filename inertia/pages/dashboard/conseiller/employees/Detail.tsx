@@ -8,7 +8,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import ConfirmModal from '~/components/ui/ConfirmModal'
-import { EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
+import { EXERCISE_COLORS, EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
 import type { ExerciseType, SupportPlanStep } from '~/types'
 import type { Note } from '~/types/Note'
 import { Employee } from '~/types/employee'
@@ -269,8 +269,8 @@ export default function DashboardEmployeeDetail({
                             <div
                               className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
                                 step.completed
-                                  ? 'bg-brand-sage/20 text-brand-sage'
-                                  : 'bg-brand-terracotta/10 text-brand-terracotta'
+                                  ? 'bg-emerald-50 text-emerald-600'
+                                  : 'bg-amber-50 text-amber-600'
                               }`}
                             >
                               {step.completed ? 'Validée' : 'À faire'}
@@ -315,14 +315,17 @@ export default function DashboardEmployeeDetail({
                               {exerciseCount} exercice{exerciseCount > 1 ? 's' : ''} associé{exerciseCount > 1 ? 's' : ''}
                             </span>
                             <div className="flex flex-wrap gap-2">
-                              {step.associatedExercises?.map((exerciseType) => (
-                                <span
-                                  key={exerciseType}
-                                  className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest"
-                                >
-                                  {exerciseType.replace(/_/g, ' ')}
-                                </span>
-                              ))}
+                              {step.associatedExercises?.map((exerciseType) => {
+                                const colors = EXERCISE_COLORS[exerciseType as ExerciseType]
+                                return (
+                                  <span
+                                    key={exerciseType}
+                                    className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${colors ? `${colors.bg} ${colors.text} ${colors.border}` : 'bg-brand-navy/5 text-brand-navy/50 border-brand-navy/10'}`}
+                                  >
+                                    {exerciseType.replace(/_/g, ' ')}
+                                  </span>
+                                )
+                              })}
                             </div>
                             <p className="mt-3 text-[10px] text-brand-navy/50 uppercase tracking-widest">
                               Les experts consultent uniquement les résultats des exercices.
@@ -373,14 +376,15 @@ export default function DashboardEmployeeDetail({
                                   year: 'numeric',
                                 })
                               : '—'
+                            const colors = EXERCISE_COLORS[res.type as ExerciseType]
                             return (
                               <AppLink
                                 key={res.id}
                                 href={`/dashboard/conseiller/employees/${employeeId}/exercises/results/${slug}`}
-                                className="block p-4 rounded-2xl border border-brand-navy/5 bg-brand-ivory/30 hover:bg-white hover:border-brand-sage/30 hover:shadow-md transition-all"
+                                className={`block p-4 rounded-2xl border hover:shadow-md transition-all ${colors ? `${colors.bg} ${colors.border}` : 'bg-brand-ivory/30 border-brand-navy/5 hover:bg-white hover:border-brand-sage/30'}`}
                               >
-                                <h4 className="font-bold text-brand-navy">{title}</h4>
-                                <p className="text-brand-navy/60 text-xs mt-1">
+                                <h4 className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}>{title}</h4>
+                                <p className="text-brand-navy/50 text-xs mt-1">
                                   Complété le {dateStr}
                                 </p>
                               </AppLink>
@@ -409,7 +413,7 @@ export default function DashboardEmployeeDetail({
                       </div>
                       <div className="h-1 bg-brand-navy/5 rounded-full w-full">
                         <div
-                          className="h-full bg-brand-sage rounded-full"
+                          className="h-full bg-emerald-500 rounded-full"
                           style={{ width: `${(s.level / 5) * 100}%` }}
                         />
                       </div>
