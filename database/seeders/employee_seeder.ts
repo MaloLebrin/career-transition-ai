@@ -13,7 +13,7 @@ export default class EmployeeSeeder extends BaseSeeder {
     if (!org) return
 
     const advisor = await User.query()
-      .where('role', 'advisor')
+      .where('role', 'admin')
       .where('organizationId', org.id)
       .first()
     if (!advisor) return
@@ -21,11 +21,8 @@ export default class EmployeeSeeder extends BaseSeeder {
     const skills = await Skill.query().whereNull('organizationId').select('id', 'slug')
     const bySlug = Object.fromEntries(skills.map((s) => [s.slug, s.id]))
 
-    const expert = await User.findBy('email', 'expert@ftc.fr')
-
     const hubertUser = await User.findBy('email', 'h.duboc@example.fr')
     const maloUser = await User.findBy('email', 'm.lebrin@example.fr')
-    const aureliUser = await User.findBy('email', 'a.martin@example.fr')
 
     // ----- Hubert Duboc (CV réel) -----
     const hubert = await Employee.updateOrCreate(
@@ -254,115 +251,6 @@ export default class EmployeeSeeder extends BaseSeeder {
           [bySlug['travail-equipe']]: { level: 5 },
           [bySlug.leadership]: { level: 4 },
           [bySlug['gestion-equipe']]: { level: 4 },
-        },
-        false
-      )
-    }
-
-    // ----- Aurélie Martin (suivi par l'expert) -----
-    if (!expert) return
-
-    const aurelie = await Employee.updateOrCreate(
-      { email: 'a.martin@example.fr', organizationId: org.id },
-      {
-        organizationId: org.id,
-        advisorId: expert.id,
-        userId: aureliUser?.id ?? null,
-        name: 'Aurélie Martin',
-        email: 'a.martin@example.fr',
-        currentRole: 'Responsable Communication — LVMH',
-        targetRole: 'Directrice Communication & Marque',
-        summary:
-          "Responsable communication corporate avec 12 ans d'expérience dans le secteur du luxe. Expertise en stratégie de marque, relations presse et gestion de crise. Engagée dans une démarche de montée en responsabilité vers un rôle de direction.",
-        advisorNotes:
-          "Profil senior très structuré. Leadership naturel, bonne maîtrise des enjeux de réputation. À travailler : affirmation du leadership en CODIR et transition vers périmètre international.",
-        status: 'active',
-        onboarded: true,
-      }
-    )
-
-    const aurelieExps = [
-      {
-        employeeId: aurelie.id,
-        title: 'Responsable Communication Corporate',
-        company: 'LVMH',
-        type: 'cdi' as const,
-        startDate: DateTime.fromISO('2018-03-01'),
-        endDate: null,
-        isCurrent: true,
-        description:
-          "Pilotage de la stratégie de communication interne et externe du groupe. Gestion des relations presse nationales et internationales. Coordination des prises de parole dirigeants. Management d'une équipe de 6 personnes.",
-        sortOrder: 0,
-      },
-      {
-        employeeId: aurelie.id,
-        title: 'Chargée de Communication Senior',
-        company: 'L\'Oréal',
-        type: 'cdi' as const,
-        startDate: DateTime.fromISO('2013-09-01'),
-        endDate: DateTime.fromISO('2018-02-01'),
-        isCurrent: false,
-        description:
-          "Élaboration et déploiement des plans de communication pour les marques premium. Production de contenus éditoriaux pour les supports digitaux et print. Coordination avec les agences créatives. Animation des réseaux sociaux corporate.",
-        sortOrder: 1,
-      },
-      {
-        employeeId: aurelie.id,
-        title: 'Attachée de Presse',
-        company: 'Havas Paris',
-        type: 'cdi' as const,
-        startDate: DateTime.fromISO('2011-06-01'),
-        endDate: DateTime.fromISO('2013-08-01'),
-        isCurrent: false,
-        description:
-          "Relations presse pour des clients secteurs luxe, mode et culture. Rédaction de communiqués et dossiers de presse. Organisation d'événements médias et conférences de presse.",
-        sortOrder: 2,
-      },
-    ]
-    for (const row of aurelieExps) {
-      await Experience.updateOrCreate(
-        { employeeId: aurelie.id, company: row.company, title: row.title },
-        row
-      )
-    }
-
-    const aurelieEdu = [
-      {
-        employeeId: aurelie.id,
-        degree: 'Master Communication des Organisations',
-        school: 'Sciences Po Paris',
-        startDate: DateTime.fromISO('2009-09-01'),
-        endDate: DateTime.fromISO('2011-06-01'),
-        isCurrent: false,
-        description: 'Spécialisation communication corporate et stratégie de marque.',
-        sortOrder: 0,
-      },
-      {
-        employeeId: aurelie.id,
-        degree: 'Licence Information-Communication',
-        school: 'Université Paris IV Sorbonne',
-        startDate: DateTime.fromISO('2006-09-01'),
-        endDate: DateTime.fromISO('2009-06-01'),
-        isCurrent: false,
-        description: 'Mention Bien.',
-        sortOrder: 1,
-      },
-    ]
-    for (const row of aurelieEdu) {
-      await Education.updateOrCreate(
-        { employeeId: aurelie.id, degree: row.degree, school: row.school },
-        row
-      )
-    }
-
-    if (bySlug.communication && bySlug.leadership && bySlug['travail-equipe']) {
-      await aurelie.related('skills').sync(
-        {
-          [bySlug.communication]: { level: 5 },
-          [bySlug.leadership]: { level: 4 },
-          [bySlug['travail-equipe']]: { level: 5 },
-          ...(bySlug.redaction ? { [bySlug.redaction]: { level: 5 } } : {}),
-          ...(bySlug['gestion-equipe'] ? { [bySlug['gestion-equipe']]: { level: 4 } } : {}),
         },
         false
       )
