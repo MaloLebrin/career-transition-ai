@@ -17,6 +17,12 @@ const COLORS: Record<StatCardColor, string> = {
   terracotta: 'bg-brand-terracotta/10 text-brand-terracotta',
 }
 
+const ICON_SHADOWS: Record<StatCardColor, string> = {
+  navy: 'shadow-md shadow-brand-navy/10',
+  sage: 'shadow-md shadow-brand-sage/15',
+  terracotta: 'shadow-md shadow-brand-terracotta/15',
+}
+
 const StatCard = memo(function StatCard({
   label,
   value,
@@ -32,7 +38,7 @@ const StatCard = memo(function StatCard({
       aria-label={description}
     >
       <div
-        className={`w-12 h-12 rounded-2xl ${COLORS[color]} flex items-center justify-center mb-6`}
+        className={`w-12 h-12 rounded-2xl ${COLORS[color]} ${ICON_SHADOWS[color]} flex items-center justify-center mb-6`}
         aria-hidden
       >
         <svg className="w-6 h-6 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

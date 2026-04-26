@@ -54,8 +54,8 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
     <DashboardLayout>
       <Head title="Synthèse" />
       <div className="space-y-6">
-        <Card className="p-8">
-          <div className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest">
+        <Card className="p-8 border-t-[3px] border-t-brand-sage">
+          <div className="text-sm font-bold text-brand-sage uppercase tracking-widest">
             Synthèse partagée
           </div>
           <div className="mt-2 text-2xl font-bold text-brand-navy">{employee.name}</div>
@@ -90,7 +90,7 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
           </Card>
         )}
 
-        <Card className="p-8">
+        <Card variant="sage" className="p-8">
           <div className="text-sm font-bold text-brand-sage uppercase tracking-widest mb-3">
             Commentaires de votre expert
           </div>

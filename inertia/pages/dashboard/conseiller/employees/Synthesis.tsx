@@ -137,9 +137,9 @@ export default function EmployeeSynthesisPage({
       <Head title={`Synthèse - ${employee.name}`} />
 
       <div className="space-y-6">
-        <Card className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <Card className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-t-[3px] border-t-brand-sage">
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-brand-navy/40">
+            <div className="text-xs font-bold uppercase tracking-widest text-brand-sage">
               Synthèse
             </div>
             <div className="text-2xl font-bold text-brand-navy">{employee.name}</div>
@@ -149,7 +149,7 @@ export default function EmployeeSynthesisPage({
             <AppLink href={`/dashboard/conseiller/employees/${employeeId}`}>
               <Button variant="outline" size="sm">Retour</Button>
             </AppLink>
-            <Button variant={isShared ? 'outline' : 'dark'} size="sm" onClick={handleShareToggle}>
+            <Button variant={isShared ? 'outline' : 'emphasis'} size="sm" onClick={handleShareToggle}>
               {isShared ? 'Désactiver le partage' : 'Partager au talent'}
             </Button>
             {livePdfJob?.downloadUrl ? (

@@ -29,6 +29,7 @@ export default function EmployeeHome({
     <div className="space-y-8 animate-fadeIn w-full">
       <div className="bg-brand-navy p-10 md:p-14 rounded-[48px] text-white shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-brand-sage/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-brand-terracotta/8 rounded-full -ml-20 -mb-20 blur-3xl" />
         <div className="relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Hello, {employee.name.split(' ')[0]} 🚀
@@ -104,7 +105,7 @@ export default function EmployeeHome({
             </h3>
             <div className="space-y-4">
               {employee.skills.slice(0, 5).map((s, i) => (
-                <div key={i} className="space-y-1.5">
+                <div key={i} className="space-y-1.5 pl-3 border-l-2 border-brand-sage/30">
                   <div className="flex justify-between text-[10px] font-bold text-brand-navy/60 uppercase">
                     <span>{s.name}</span>
                     <span className="text-brand-sage">{s.level}/5</span>

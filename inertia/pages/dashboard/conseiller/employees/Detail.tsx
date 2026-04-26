@@ -107,7 +107,7 @@ export default function DashboardEmployeeDetail({
         <div className="space-y-8 animate-fadeIn">
           <Card className="p-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
             <div className="flex items-center space-x-6">
-              <div className="w-16 h-16 rounded-2xl bg-brand-ivory flex items-center justify-center text-brand-sage font-bold text-xl">
+              <div className="w-16 h-16 rounded-2xl bg-brand-sage/10 shadow-md shadow-brand-sage/10 flex items-center justify-center text-brand-sage font-bold text-xl">
                 {selectedEmployee.name[0]}
               </div>
               <div>
@@ -270,7 +270,7 @@ export default function DashboardEmployeeDetail({
                               className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
                                 step.completed
                                   ? 'bg-brand-sage/20 text-brand-sage'
-                                  : 'bg-brand-navy/10 text-brand-navy/40'
+                                  : 'bg-brand-terracotta/10 text-brand-terracotta'
                               }`}
                             >
                               {step.completed ? 'Validée' : 'À faire'}

@@ -48,7 +48,7 @@ export default function AdvisorHome() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="p-8">
-          <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6">
+          <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6 pb-3 border-b border-brand-sage/20">
             Dernières Activités
           </h3>
           <div className="space-y-4">
@@ -66,7 +66,7 @@ export default function AdvisorHome() {
                   className="flex items-center justify-between p-4 rounded-2xl bg-brand-ivory/50 border border-brand-navy/5"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-sage/10 text-brand-sage flex items-center justify-center font-bold text-xs">
+                    <div className="w-10 h-10 rounded-xl bg-brand-sage/10 text-brand-sage shadow-sm shadow-brand-sage/15 flex items-center justify-center font-bold text-xs">
                       {activity.employeeName[0]}
                     </div>
                     <div>
@@ -90,7 +90,7 @@ export default function AdvisorHome() {
         </Card>
 
         <Card className="p-8">
-          <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6">
+          <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6 pb-3 border-b border-brand-sage/20">
             Prochains Rendez-vous
           </h3>
           <div className="space-y-4">

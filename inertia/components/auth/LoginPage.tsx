@@ -142,7 +142,7 @@ export default function LoginPage({
             </Button>
           </form>
 
-          <div className="mt-10 pt-8 border-t border-brand-navy/5 text-center">
+          <div className="mt-10 pt-8 border-t border-brand-sage/20 text-center">
             <p className="text-sm text-brand-navy/60 font-medium">
               Vous n’avez pas encore de compte ?{' '}
               <button

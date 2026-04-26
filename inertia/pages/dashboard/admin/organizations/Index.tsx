@@ -115,7 +115,7 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
 
           <div className="bg-white rounded-3xl border border-brand-navy/5 overflow-hidden shadow-sm">
             <table className="min-w-full divide-y divide-brand-navy/5 text-sm">
-              <thead className="bg-brand-ivory/60">
+              <thead className="bg-brand-sage/5 border-b border-brand-sage/10">
                 <tr>
                   <th className="px-6 py-3 text-left text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
                     ID
@@ -149,10 +149,10 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">
+                    <td className="px-6 py-4 text-xs font-bold text-brand-sage">
                       {org.usersCount}
                     </td>
-                    <td className="px-6 py-4 text-xs font-bold text-brand-navy/70">
+                    <td className="px-6 py-4 text-xs font-bold text-brand-terracotta">
                       {org.employeesCount}
                     </td>
                     <td className="px-6 py-4 text-xs text-brand-navy/40">
