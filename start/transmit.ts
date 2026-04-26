@@ -16,3 +16,11 @@ transmit.authorize<{ orgId: string }>('organizations/:orgId/pdf-exports', (ctx, 
   if (user.role === USERS_ROLES.SUPER_ADMIN) return true
   return user.organizationId === Number(orgId)
 })
+
+// User-specific notifications channel: users/:id/notifications
+transmit.authorize<{ id: string }>('users/:id/notifications', (ctx, { id }) => {
+  const user = ctx.auth.user
+  if (!user) return false
+  if (user.role === USERS_ROLES.SUPER_ADMIN) return true
+  return user.id === Number(id)
+})
