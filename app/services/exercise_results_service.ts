@@ -5,7 +5,9 @@ import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
+import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
+import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import { DateTime } from 'luxon'
 
@@ -104,6 +106,17 @@ export class ExerciseResultsService {
       await AnalyzeExerciseQualitativeJob.dispatch({
         exerciseResultId: resultRow.id,
       }).toQueue('ai')
+
+      if (employee.advisorId) {
+        const notifService = new NotificationService()
+        await notifService.notify({
+          userId: employee.advisorId,
+          type: NOTIFICATION_TYPES.EXERCISE_COMPLETED,
+          title: `Exercice terminé par ${employee.name}`,
+          body: `L'exercice "${input.type}" vient d'être complété.`,
+          meta: { employeeId: employee.id, exerciseType: input.type },
+        })
+      }
     }
 
     // Secure completion flags:

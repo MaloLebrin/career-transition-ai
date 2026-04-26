@@ -3,7 +3,9 @@ import PdfExport from '#models/pdf_export'
 import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { broadcastPdfExportUpdatedToUsers } from '#services/pdf_export_events_service'
+import { NotificationService } from '#services/notification_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
+import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
@@ -66,6 +68,17 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       pdfExport.finishedAt = DateTime.now()
       await pdfExport.save()
       broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
+
+      const notifService = new NotificationService()
+      for (const uid of notifyUserIds) {
+        await notifService.notify({
+          userId: uid,
+          type: NOTIFICATION_TYPES.PDF_EXPORT_COMPLETED,
+          title: `Export PDF prêt : ${fileName}`,
+          body: 'Votre export PDF est disponible au téléchargement.',
+          meta: { pdfExportId: pdfExport.id, employeeId: pdfExport.employeeId, fileName },
+        })
+      }
     } catch (error: any) {
       pdfExport.status = PDF_EXPORT_STATUSES.FAILED
       pdfExport.errorMessage =

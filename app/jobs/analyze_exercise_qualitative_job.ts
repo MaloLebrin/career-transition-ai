@@ -1,7 +1,9 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
+import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
+import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { buildEmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
 import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompts/exercises/index'
 import { QUEUE_NAMES } from '#utils/queues/queue_names'
@@ -64,6 +66,17 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       const text = await provider.completeText(prompt)
       result.qualitativeAnalysis = text
       await result.save()
+
+      if (employee.advisorId) {
+        const notifService = new NotificationService()
+        await notifService.notify({
+          userId: employee.advisorId,
+          type: NOTIFICATION_TYPES.AI_SYNTHESIS_READY,
+          title: `Analyse IA disponible : ${employee.name}`,
+          body: `L'analyse de l'exercice "${result.type}" est prête.`,
+          meta: { exerciseResultId: result.id, employeeId: employee.id, exerciseType: result.type },
+        })
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       console.error(error)
