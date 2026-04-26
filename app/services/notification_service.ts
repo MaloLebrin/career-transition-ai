@@ -4,6 +4,7 @@ import {
   type NotificationStatus,
   type NotificationType,
 } from '#shared/constants/notifications'
+import { inject } from '@adonisjs/core'
 import transmit from '@adonisjs/transmit/services/main'
 import { DateTime } from 'luxon'
 
@@ -39,6 +40,7 @@ function serialize(n: Notification): SerializedNotification {
   }
 }
 
+@inject()
 export class NotificationService {
   async notify(input: NotifyInput): Promise<Notification> {
     const notification = await Notification.create({
