@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import Employee from '#models/employee'
+import { NotificationService } from '#services/notification_service'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   async share(ctx: HttpContext) {
@@ -30,6 +31,14 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       }
     }
 
+    let notifications: any[] = []
+    let unreadNotificationsCount = 0
+    if (user && ['advisor', 'admin', 'super_admin'].includes(user.role)) {
+      const notifService = new NotificationService()
+      notifications = await notifService.getRecentForUser(user.id, 20)
+      unreadNotificationsCount = notifications.filter((n: any) => n.status === 'unread').length
+    }
+
     return {
       errors: ctx.inertia.always(this.getValidationErrors(ctx)),
       flash: ctx.inertia.always({
@@ -39,6 +48,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       user: ctx.inertia.always(userDto),
       employees: ctx.inertia.always(employees),
       csrfToken: request.csrfToken,
+      notifications: ctx.inertia.always(notifications),
+      unreadNotificationsCount: ctx.inertia.always(unreadNotificationsCount),
     }
   }
 

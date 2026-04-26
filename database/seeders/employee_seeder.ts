@@ -13,7 +13,7 @@ export default class EmployeeSeeder extends BaseSeeder {
     if (!org) return
 
     const advisor = await User.query()
-      .where('role', 'advisor')
+      .where('role', 'admin')
       .where('organizationId', org.id)
       .first()
     if (!advisor) return
