@@ -173,6 +173,64 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         qualitativeAnalysis:
           'La cartographie des compétences de Malo révèle une transition naturelle vers la formation. Ses preuves de mentoring et de lead technique sont particulièrement solides pour un rôle de formateur tech.',
       },
+      {
+        employeeId: malo.id,
+        type: 'values' as const,
+        status: 'completed' as const,
+        date: DateTime.fromISO('2024-06-18'),
+        duration: 680,
+        data: {
+          selectedValues: [
+            'La bienveillance',
+            "L'autonomie",
+            "L'universalisme",
+            'La réalisation',
+            'La stimulation',
+            'La sécurité',
+            "L'hédonisme",
+            'La tradition',
+            'La conformité',
+            'Le pouvoir',
+          ],
+          peopleExercise: [
+            {
+              name: 'Richard Feynman',
+              values:
+                'Curiosité insatiable, passion de transmettre des savoirs complexes avec simplicité. Il incarne la conviction que comprendre et expliquer sont des actes profondément humains.',
+            },
+            {
+              name: 'Ma mère',
+              values:
+                "Bienveillance inconditionnelle et générosité. Elle m'a appris que aider les autres sans attendre de retour est une valeur fondamentale, pas une faiblesse.",
+            },
+            {
+              name: 'Dan Abramov',
+              values:
+                "Partage de connaissances, transparence sur ses propres limites et doutes. Il montre qu'un expert peut rester humble et que l'open source est un acte de don à la communauté.",
+            },
+          ],
+        },
+        quantitativeScore: 10,
+        qualitativeAnalysis:
+          "Le profil de valeurs de Malo confirme une hiérarchie cohérente avec son projet de transition : la bienveillance et l'autonomie dominent, reflet d'un besoin de donner du sens tout en conservant une liberté d'action. Les figures d'inspiration choisies (transmission, générosité, partage) forment un fil rouge puissant vers le métier de formateur.",
+      },
+      {
+        employeeId: malo.id,
+        type: 'personality' as const,
+        status: 'completed' as const,
+        date: DateTime.fromISO('2024-06-24'),
+        duration: 390,
+        data: {
+          openness: 9,
+          conscientiousness: 7,
+          extraversion: 8,
+          agreeableness: 9,
+          neuroticism: 2,
+        },
+        quantitativeScore: 10,
+        qualitativeAnalysis:
+          "Le profil Big Five de Malo est très favorable au métier de formateur : une ouverture d'esprit au-dessus de la moyenne (9/10) traduit une curiosité intellectuelle constante et une capacité à s'adapter à des contextes variés. L'extraversion élevée (8/10) combinée à une agréabilité forte (9/10) confirme l'aisance relationnelle observée en entretien. La stabilité émotionnelle exceptionnelle (névrosisme 2/10) est un atout majeur pour gérer des groupes sous tension. Seul point de vigilance : une conscience professionnelle de 7/10 solide mais perfectible sur l'aspect planification long terme.",
+      },
     ]
 
     for (const row of exerciseResults) {
@@ -243,7 +301,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         isLocked: false,
       },
       {
-        instructions: 'Séance finale : cartographie complète de vos compétences transférables.',
+        instructions: 'Cartographie complète de vos compétences transférables.',
         scheduledAt: DateTime.fromISO('2024-06-12T10:00:00'),
         endedAt: DateTime.fromISO('2024-06-12T12:00:00'),
         status: APPOINTMENTS_STATUSES.COMPLETED,
@@ -251,6 +309,30 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         completed: true,
         exercises: ['skill_mapping'] as const,
         sortOrder: 5,
+        isLocked: false,
+      },
+      {
+        instructions:
+          "Classez les 10 valeurs de Schwartz par ordre d'importance, puis identifiez 3 figures qui les incarnent.",
+        scheduledAt: DateTime.fromISO('2024-06-18T10:00:00'),
+        endedAt: DateTime.fromISO('2024-06-18T11:30:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'https://meet.google.com/val-ues-ftc',
+        completed: true,
+        exercises: ['values'] as const,
+        sortOrder: 6,
+        isLocked: false,
+      },
+      {
+        instructions:
+          'Positionnez-vous sur les 5 traits fondamentaux du modèle Big Five pour affiner votre profil professionnel.',
+        scheduledAt: DateTime.fromISO('2024-06-24T14:00:00'),
+        endedAt: DateTime.fromISO('2024-06-24T15:00:00'),
+        status: APPOINTMENTS_STATUSES.COMPLETED,
+        locationOrLink: 'Salle 2 - FTC Paris',
+        completed: true,
+        exercises: ['personality'] as const,
+        sortOrder: 7,
         isLocked: false,
       },
     ]
