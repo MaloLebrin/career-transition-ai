@@ -250,6 +250,31 @@ export class NoteSchema extends BaseModel {
   declare visibility: string
 }
 
+export class NotificationSchema extends BaseModel {
+  static $columns = ['body', 'createdAt', 'id', 'meta', 'readAt', 'status', 'title', 'type', 'updatedAt', 'userId'] as const
+  $columns = NotificationSchema.$columns
+  @column()
+  declare body: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare meta: any | null
+  @column.dateTime()
+  declare readAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number
+}
+
 export class OnboardingTokenSchema extends BaseModel {
   static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'usedAt', 'userId'] as const
   $columns = OnboardingTokenSchema.$columns
