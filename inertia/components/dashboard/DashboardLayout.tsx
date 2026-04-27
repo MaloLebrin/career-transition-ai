@@ -21,11 +21,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { user, logout } = useAuth()
   const [pdfJobStatuses, setPdfJobStatuses] = useState<Record<number, string>>({})
 
-  if (!user) {
-    return null
-  }
-
-  const userRole = user.role || 'employee'
+  const userRole = user?.role || 'employee'
   const isAdvisor = isConseillerDashboardRole(userRole)
   const superAdmin = isSuperAdmin(userRole)
   const showSidebar = isAdvisor && !hideSidebar
@@ -55,7 +51,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       if (unsubscribe) unsubscribe()
       subscription.delete().catch(() => { })
     }
-  }, [showSidebar, user])
+  }, [showSidebar, user?.id])
+
+  if (!user) {
+    return null
+  }
 
   return (
     <Layout userRole={userRole} onRoleChange={() => { }} onLogout={logout} userName={user.name}>
