@@ -13,6 +13,13 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
+vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Advisor', role: 'advisor' as const },
+    logout: vi.fn(),
+  }),
+}))
+
 vi.mock('../../../../../../inertia/components/dashboard/DashboardLayout', () => ({
   default: ({
     children,

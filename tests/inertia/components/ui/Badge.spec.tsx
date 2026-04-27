@@ -11,7 +11,7 @@ describe('Badge', () => {
   test('applies variant styles', () => {
     const { container } = render(<Badge variant="pink">Pink</Badge>)
     const span = container.firstElementChild
-    expect(span).toHaveClass('text-rose-600', 'border-rose-100')
+    expect(span).toHaveClass('text-pink-600', 'border-pink-200')
   })
 
   test('forwards className and other span props', () => {
