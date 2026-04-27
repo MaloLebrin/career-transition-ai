@@ -14,7 +14,7 @@ export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => 
 
   useEffect(() => {
     if (org) orgForm.setData({ name: org.name, slug: org.slug })
-  }, [org?.id, orgForm])
+  }, [org?.id])
 
   return (
     <Card className="space-y-8 p-10">
