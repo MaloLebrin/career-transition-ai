@@ -2,7 +2,6 @@ import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import PdfExport from '#models/pdf_export'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
-import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
@@ -11,10 +10,7 @@ import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 
 @inject()
 export default class EmployeeSynthesesController {
-  constructor(
-    private synthesisService: EmployeeSynthesisService,
-    private pdfService: EmployeeSynthesisPdfService
-  ) {}
+  constructor(private synthesisService: EmployeeSynthesisService) {}
 
   /**
    * Advisor view (Inertia): synthesis + editable notes.
