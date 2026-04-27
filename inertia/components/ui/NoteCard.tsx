@@ -1,6 +1,6 @@
 import { Pencil, Trash2, Lock, Users } from 'lucide-react'
 import { memo } from 'react'
-import type { Note } from '~/types/Note'
+import type { Note } from '~/types/note'
 
 interface NoteCardProps {
   note: Note

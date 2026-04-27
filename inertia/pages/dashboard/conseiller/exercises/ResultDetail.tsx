@@ -6,7 +6,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import type { ExerciseResult } from '~/types'
-import type { Note } from '~/types/Note'
+import type { Note } from '~/types/note'
 
 interface ExerciseResultDetailProps {
   employeeId: string

@@ -3,7 +3,7 @@ import { ExerciseDraft } from '../../types'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
-import { DISC_BLOCKS } from './disc/discQuestionnaire'
+import { DISC_BLOCKS } from './disc/disc_questionnaire'
 import DiscResultSummary from './disc/DiscResultSummary'
 import {
   computeDiscFromSelections,

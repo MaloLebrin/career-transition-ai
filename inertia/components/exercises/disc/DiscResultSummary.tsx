@@ -5,8 +5,8 @@ import {
   DISC_TRAITS,
   type DiscScores,
 } from './disc_scoring'
-import { DISC_PROFILE_COPY } from './discProfileCopy'
-import type { DiscTrait } from './discQuestionnaire'
+import { DISC_PROFILE_COPY } from './disc_profile_copy'
+import type { DiscTrait } from './disc_questionnaire'
 
 type DiscPercent = DiscScores
 

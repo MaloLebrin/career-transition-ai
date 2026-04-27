@@ -250,7 +250,7 @@ export default class SuperAdminController {
         ? { id: user.organization.id, name: user.organization.name }
         : null,
       createdAt: user.createdAt?.toISO() ?? null,
-      onboardingCompleted: user.onboardingCompletedAt != null,
+      onboardingCompleted: user.onboardingCompletedAt !== null,
     }))
 
     const organizations = organizationRows.map((o) => ({

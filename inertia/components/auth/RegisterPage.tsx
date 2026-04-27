@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react'
 import React, { useState } from 'react'
-import { hasErrors, validateRegister, type RegisterErrors } from '../../lib/authValidation'
+import { hasErrors, validateRegister, type RegisterErrors } from '../../lib/auth_validation'
 import PublicLayout from '../layout/PublicLayout'
 import Button from '../ui/Button'
 import Card from '../ui/Card'

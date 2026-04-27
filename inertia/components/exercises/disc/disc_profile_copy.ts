@@ -1,4 +1,4 @@
-import type { DiscTrait } from './discQuestionnaire'
+import type { DiscTrait } from './disc_questionnaire'
 
 export type DiscProfileSection = {
   title: string

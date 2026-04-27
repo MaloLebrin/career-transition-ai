@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import EmployeeHome from '~/components/dashboard/EmployeeHome'
-import { EmployeeData } from '~/types/Employee'
+import { EmployeeData } from '~/types/employee'
 
 export default function CandidatHome({
   employee,

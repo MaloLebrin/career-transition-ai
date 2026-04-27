@@ -26,7 +26,7 @@ export class SuperAdminUsersService {
    */
   public static async hasCompletedOnboarding(userId: number): Promise<boolean> {
     const user = await User.query().where('id', userId).select('onboardingCompletedAt').first()
-    return user?.onboardingCompletedAt != null
+    return user?.onboardingCompletedAt !== null
   }
 
   public async createUserWithInvite(input: CreatePlatformUserInput): Promise<User> {

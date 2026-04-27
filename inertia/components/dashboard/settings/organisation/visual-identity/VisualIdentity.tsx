@@ -1,6 +1,6 @@
 import Button from "~/components/ui/Button";
 import Card from "~/components/ui/Card";
-import { Organization } from "~/types/Organization";
+import { Organization } from "~/types/organization";
 
 interface VisualIdentityProps {
   organization: Organization;

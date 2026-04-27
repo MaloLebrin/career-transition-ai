@@ -10,7 +10,7 @@ import Card from '~/components/ui/Card'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import { EXERCISE_COLORS, EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
 import type { ExerciseType, SupportPlanStep } from '~/types'
-import type { Note } from '~/types/Note'
+import type { Note } from '~/types/note'
 import { Employee } from '~/types/employee'
 
 interface EmployeeDetailProps {
@@ -78,7 +78,7 @@ export default function DashboardEmployeeDetail({
     if (!selectedEmployee) return
     setIsGeneratingPDF(true)
     try {
-      const { generateComprehensivePDF } = await import('~/services/pdfService')
+      const { generateComprehensivePDF } = await import('~/services/pdf_service')
       await generateComprehensivePDF(selectedEmployee)
     } catch (err) {
       alert('Erreur PDF.')

@@ -17,7 +17,7 @@ import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
 import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType, type ExerciseDraft, type ExerciseResult } from '~/types'
 import type { Employee } from '~/types/employee'
-import type { Skill } from '~/types/Skill'
+import type { Skill } from '~/types/skill'
 
 interface CandidatExerciseProps {
   type: string

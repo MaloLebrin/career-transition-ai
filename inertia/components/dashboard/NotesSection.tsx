@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react'
 import { MessageSquarePlus, StickyNote } from 'lucide-react'
 import { memo, useCallback, useEffect, useState } from 'react'
-import type { Note, NoteVisibility } from '~/types/Note'
+import type { Note, NoteVisibility } from '~/types/note'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import ConfirmModal from '../ui/ConfirmModal'

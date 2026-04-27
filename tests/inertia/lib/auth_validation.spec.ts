@@ -5,7 +5,7 @@ import {
   hasErrors,
   type LoginFields,
   type RegisterFields,
-} from '../../../inertia/lib/authValidation'
+} from '../../../inertia/lib/auth_validation'
 
 describe('authValidation', () => {
   describe('validateLogin', () => {

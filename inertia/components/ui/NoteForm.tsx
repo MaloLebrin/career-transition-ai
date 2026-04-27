@@ -1,6 +1,6 @@
 import { AlertTriangle, Lock, Users } from 'lucide-react'
 import { memo, useCallback, useState } from 'react'
-import type { NoteVisibility } from '~/types/Note'
+import type { NoteVisibility } from '~/types/note'
 import Button from './Button'
 
 interface NoteFormProps {

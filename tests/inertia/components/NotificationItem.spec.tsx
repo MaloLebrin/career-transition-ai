@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { NotificationItem } from '../../../inertia/components/notifications/NotificationItem'
-import type { NotificationItem as NotificationItemType } from '../../../inertia/types/Notification'
+import type { NotificationItem as NotificationItemType } from '../../../inertia/types/notification'
 
 const baseNotification: NotificationItemType = {
   id: 1,

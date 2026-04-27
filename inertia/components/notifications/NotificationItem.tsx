@@ -1,6 +1,6 @@
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatRelativeTime } from '#shared/helpers/date'
-import type { NotificationItem as NotificationItemType } from '../../types/Notification'
+import type { NotificationItem as NotificationItemType } from '../../types/notification'
 
 interface Props {
   notification: NotificationItemType

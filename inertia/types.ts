@@ -1,11 +1,11 @@
-export * from './types/Education'
-export * from './types/ExerciseResult'
-export * from './types/Experience'
-export * from './types/JobType'
-export * from './types/Organization'
-export * from './types/PersonalityData'
-export * from './types/Skill'
-export * from './types/SupportPlanStep'
+export * from './types/education'
+export * from './types/exercise_result'
+export * from './types/experience'
+export * from './types/job_type'
+export * from './types/organization'
+export * from './types/personality_data'
+export * from './types/skill'
+export * from './types/support_plan_step'
 
 export const ExerciseType = {
   MOTIVATION: 'motivation',

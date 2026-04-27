@@ -1,6 +1,6 @@
 import { AlertTriangle, Lock, Users, X } from 'lucide-react'
 import { memo, useState, useCallback } from 'react'
-import type { Note, NoteVisibility } from '~/types/Note'
+import type { Note, NoteVisibility } from '~/types/note'
 import Button from './Button'
 import Card from './Card'
 

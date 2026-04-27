@@ -265,8 +265,8 @@ export async function generateResultPdf(result: ExerciseResult): Promise<Buffer>
       DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date)
     )
   }
-  if (result.duration != null) meta.push(`${result.duration} min`)
-  if (result.quantitativeScore != null) meta.push(`Score : ${result.quantitativeScore}`)
+  if (result.duration !== null) meta.push(`${result.duration} min`)
+  if (result.quantitativeScore !== null) meta.push(`Score : ${result.quantitativeScore}`)
   if (meta.length) {
     drawLine(meta.join('  ·  '), { color: COLORS.gray, size: SMALL_SIZE })
     y -= 12

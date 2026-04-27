@@ -5,7 +5,7 @@ import NotesSection from '~/components/dashboard/NotesSection'
 import StepDetailView from '~/components/dashboard/steps/StepDetailView'
 import LinkActions from '~/components/ui/LinkActions'
 import type { ExerciseResult, SupportPlanStep } from '~/types'
-import type { Note } from '~/types/Note'
+import type { Note } from '~/types/note'
 
 interface StepDetailProps {
   employeeId: string

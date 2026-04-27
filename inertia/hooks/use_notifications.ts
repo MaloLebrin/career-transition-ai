@@ -1,7 +1,7 @@
 import { Transmit } from '@adonisjs/transmit-client'
 import { router, usePage } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
-import type { NotificationItem } from '../types/Notification'
+import type { NotificationItem } from '../types/notification'
 import { useAuth } from './use_auth'
 
 export function useNotifications() {

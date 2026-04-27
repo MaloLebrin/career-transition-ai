@@ -1,4 +1,4 @@
-import type { AdvisorHomeStats } from '~/types/Employee';
+import type { AdvisorHomeStats } from '~/types/employee';
 import StatCard from '../../../../ui/StatCard';
 
 export function StatsRow({ stats }: { stats: AdvisorHomeStats }) {

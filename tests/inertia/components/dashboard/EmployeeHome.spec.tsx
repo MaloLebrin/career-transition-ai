@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 
 import EmployeeHome from '../../../../inertia/components/dashboard/EmployeeHome'
 import { stepCompletionFromProgress } from '../../../../inertia/components/dashboard/PlanStepsTimeline'
-import type { EmployeeData } from '../../../../inertia/types/Employee'
+import type { EmployeeData } from '../../../../inertia/types/employee'
 
 describe('stepCompletionFromProgress', () => {
   test('returns true when support step is already completed in DB', () => {
