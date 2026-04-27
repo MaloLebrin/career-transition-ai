@@ -91,3 +91,42 @@ export type EmployeeData = {
   }>
   // TODO: use model types to generate this type
 }
+
+export interface AccompanimentProgress {
+  employeeId: number
+  name: string
+  email: string
+  status: EmployeeStatus
+  onboarded: boolean
+  targetRole: string | null
+  completedSteps: number
+  totalSteps: number
+  progressPercent: number
+  nextAppointment: {
+    stepId: number
+    title: string | null
+    scheduledAt: string
+  } | null
+}
+
+export interface AdvisorHomeStats {
+  totalActive: number
+  pendingOnboarding: number
+  upcomingCount: number
+  completedStepsThisMonth: number
+}
+
+export interface UpcomingAppointment {
+  stepId: number
+  employeeId: number
+  employeeName: string
+  title: string | null
+  scheduledAt: string
+  locationOrLink: string | null
+}
+
+export interface AdvisorHomeProps {
+  stats: AdvisorHomeStats
+  accompaniments: AccompanimentProgress[]
+  upcomingAppointments: UpcomingAppointment[]
+}

@@ -1,7 +1,6 @@
-import { isAdvisorOrAdmin, isSuperAdmin } from '#shared/helpers/roles'
+import { isConseillerDashboardRole, isSuperAdmin } from '#shared/helpers/roles'
 import { Transmit } from '@adonisjs/transmit-client'
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/use_auth'
 import Layout from '../layout/Layout'
 import { AdvisorSidebar } from './AdvisorSidebar'
@@ -27,7 +26,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }
 
   const userRole = user.role || 'employee'
-  const isAdvisor = isAdvisorOrAdmin(userRole)
+  const isAdvisor = isConseillerDashboardRole(userRole)
   const superAdmin = isSuperAdmin(userRole)
   const showSidebar = isAdvisor && !hideSidebar
 
@@ -50,16 +49,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           setPdfJobStatuses((prev) => ({ ...prev, [id]: status }))
         })
       })
-      .catch(() => {})
+      .catch(() => { })
 
     return () => {
       if (unsubscribe) unsubscribe()
-      subscription.delete().catch(() => {})
+      subscription.delete().catch(() => { })
     }
   }, [showSidebar, user])
 
   return (
-    <Layout userRole={userRole} onRoleChange={() => {}} onLogout={logout} userName={user.name}>
+    <Layout userRole={userRole} onRoleChange={() => { }} onLogout={logout} userName={user.name}>
       {showSidebar ? (
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 flex-1 min-h-0">
           <AdvisorSidebar
@@ -70,7 +69,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             ).length}
           />
           <div className="lg:col-span-5">{children}</div>
-        </div>  
+        </div>
       ) : (
         <>{children}</>
       )}

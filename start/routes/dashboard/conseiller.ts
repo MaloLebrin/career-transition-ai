@@ -1,6 +1,7 @@
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
+const DashboardController = () => import('#controllers/dashboard_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const NotesController = () => import('#controllers/notes_controller')
@@ -12,7 +13,7 @@ router
     /**
      * General routes
      */
-    router.on('/').renderInertia('dashboard/conseiller/home/Home', {}) // TODO put in his controller
+    router.get('/', [DashboardController, 'advisorHome'])
     router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {}) // TODO put in his controller
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/pdf-exports', [PdfExportsController, 'index']).as('pdf_exports.index')

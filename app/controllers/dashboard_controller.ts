@@ -1,9 +1,12 @@
 import Employee from '#models/employee'
+import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import EmployeeTransformer from '#transformers/employee_transformer'
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 
 /**
  * Redirects authenticated user to the correct dashboard area based on role.
@@ -26,6 +29,110 @@ export default class DashboardController {
       default:
         return response.redirect('/dashboard/conseiller')
     }
+  }
+
+  /**
+   * Advisor/admin dashboard home (Inertia).
+   */
+  public async advisorHome({ inertia, auth, response }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const query = Employee.query().preload('supportPlanSteps', (q) =>
+      q.preload('exercises').orderBy('scheduled_at', 'asc')
+    )
+
+    if (user.role === USERS_ROLES.ADVISOR) {
+      query.where('advisorId', user.id)
+    } else {
+      query.where('organizationId', user.organizationId)
+    }
+
+    const employees = await query
+
+    const now = DateTime.now()
+    const startOfMonth = now.startOf('month')
+
+    let totalActive = 0
+    let pendingOnboarding = 0
+    let upcomingCount = 0
+    let completedStepsThisMonth = 0
+
+    const accompaniments: any[] = []
+    const upcomingAppointments: any[] = []
+
+    for (const employee of employees) {
+      if (employee.status === EMPLOYEES_STATUS.ACTIVE) totalActive++
+      if (!employee.onboarded) pendingOnboarding++
+
+      const steps = employee.supportPlanSteps ?? []
+      const totalSteps = steps.length
+      const completedSteps = steps.filter((s) => s.completed).length
+      const progressPercent =
+        totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0
+
+      for (const step of steps) {
+        if (step.completed && step.updatedAt.toMillis() >= startOfMonth.toMillis()) {
+          completedStepsThisMonth++
+        }
+        if (
+          step.status === APPOINTMENTS_STATUSES.SCHEDULED &&
+          step.scheduledAt &&
+          step.scheduledAt > now
+        ) {
+          upcomingCount++
+          upcomingAppointments.push({
+            stepId: step.id,
+            employeeId: employee.id,
+            employeeName: employee.name,
+            title: step.title,
+            scheduledAt: step.scheduledAt.toISO()!,
+            locationOrLink: step.locationOrLink,
+          })
+        }
+      }
+
+      const nextStep =
+        steps.find(
+          (s) =>
+            s.status === APPOINTMENTS_STATUSES.SCHEDULED && s.scheduledAt && s.scheduledAt > now
+        ) ?? null
+
+      accompaniments.push({
+        employeeId: employee.id,
+        name: employee.name,
+        email: employee.email,
+        status: employee.status,
+        onboarded: employee.onboarded,
+        targetRole: employee.targetRole,
+        completedSteps,
+        totalSteps,
+        progressPercent,
+        nextAppointment: nextStep
+          ? {
+              stepId: nextStep.id,
+              title: nextStep.title,
+              scheduledAt: nextStep.scheduledAt!.toISO()!,
+            }
+          : null,
+      })
+    }
+
+    upcomingAppointments.sort(
+      (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    )
+
+    accompaniments.sort((a, b) => {
+      if (a.status === EMPLOYEES_STATUS.ACTIVE && b.status !== EMPLOYEES_STATUS.ACTIVE) return -1
+      if (b.status === EMPLOYEES_STATUS.ACTIVE && a.status !== EMPLOYEES_STATUS.ACTIVE) return 1
+      return a.name.localeCompare(b.name, 'fr')
+    })
+
+    return (inertia as any).render('dashboard/conseiller/home/Home', {
+      stats: { totalActive, pendingOnboarding, upcomingCount, completedStepsThisMonth },
+      accompaniments,
+      upcomingAppointments: upcomingAppointments.slice(0, 10),
+    })
   }
 
   /**
