@@ -7,4 +7,3 @@ export const addEmployeeSkillValidator = vine.create(
     level: vine.number().in([1, 2, 3, 4, 5]),
   })
 )
-

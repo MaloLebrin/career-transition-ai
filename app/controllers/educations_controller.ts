@@ -11,7 +11,7 @@ export default class EducationsController {
   constructor(
     private educationService: EducationService,
     private employeesService: EmployeesService
-  ) { }
+  ) {}
 
   async store({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(createEducationValidator)

@@ -1,8 +1,6 @@
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
-import EmployeeSynthesis, {
-  EMPLOYEE_SYNTHESIS_SHARE_STATUSES,
-} from '#models/employee_synthesis'
+import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import ExerciseResult from '#models/exercise_result'
 
 export type EmployeeSynthesisPayload = {
@@ -80,10 +78,11 @@ export class EmployeeSynthesisService {
     }
   }
 
-  public async buildForCandidate(input: {
-    organizationId: number
-    employeeId: number
-  }): Promise<Omit<EmployeeSynthesisPayload, 'synthesis'> & { synthesis: Omit<EmployeeSynthesisPayload['synthesis'], 'expertNotesInternal'> }> {
+  public async buildForCandidate(input: { organizationId: number; employeeId: number }): Promise<
+    Omit<EmployeeSynthesisPayload, 'synthesis'> & {
+      synthesis: Omit<EmployeeSynthesisPayload['synthesis'], 'expertNotesInternal'>
+    }
+  > {
     const payload = await this.buildForAdvisor(input)
     return {
       ...payload,
@@ -96,4 +95,3 @@ export class EmployeeSynthesisService {
     }
   }
 }
-

@@ -194,9 +194,11 @@ test.group('EmployeeSynthesesController.generateShareablePdfAdvisor', (group) =>
     assert.equal(created!.organizationId, org.id)
     // Le statut doit être soit pending (pas encore traité) soit completed/failed (traité en sync)
     assert.isTrue(
-      [PDF_EXPORT_STATUSES.PENDING, PDF_EXPORT_STATUSES.COMPLETED, PDF_EXPORT_STATUSES.FAILED].includes(
-        created!.status
-      )
+      [
+        PDF_EXPORT_STATUSES.PENDING,
+        PDF_EXPORT_STATUSES.COMPLETED,
+        PDF_EXPORT_STATUSES.FAILED,
+      ].includes(created!.status)
     )
   })
 })
@@ -290,9 +292,11 @@ test.group('EmployeeSynthesesController.generateShareablePdfCandidate', (group) 
     assert.equal(created!.advisorUserId, advisorUser.id)
     // Le statut peut être pending ou completed/failed (job synchrone en test)
     assert.isTrue(
-      [PDF_EXPORT_STATUSES.PENDING, PDF_EXPORT_STATUSES.COMPLETED, PDF_EXPORT_STATUSES.FAILED].includes(
-        created!.status
-      )
+      [
+        PDF_EXPORT_STATUSES.PENDING,
+        PDF_EXPORT_STATUSES.COMPLETED,
+        PDF_EXPORT_STATUSES.FAILED,
+      ].includes(created!.status)
     )
   })
 })

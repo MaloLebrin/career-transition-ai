@@ -11,4 +11,3 @@ describe('shared/helpers/exercises', () => {
     expect(getExerciseTitle('unknown_type')).toBe('unknown_type')
   })
 })
-

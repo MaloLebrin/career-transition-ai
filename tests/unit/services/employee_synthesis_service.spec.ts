@@ -50,4 +50,3 @@ test.group('EmployeeSynthesisService', (group) => {
     assert.isUndefined((payload.synthesis as any).expertNotesInternal)
   })
 })
-

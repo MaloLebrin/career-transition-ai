@@ -41,7 +41,10 @@ test.group('ResendMailProvider', (group) => {
       { name: 'tag', value: 'onboarding' },
       { name: 'tag', value: 'test' },
     ])
-    assert.equal(sent[0].headers['X-Mail-Metadata'], JSON.stringify({ kind: 'onboarding', userId: 123 }))
+    assert.equal(
+      sent[0].headers['X-Mail-Metadata'],
+      JSON.stringify({ kind: 'onboarding', userId: 123 })
+    )
   })
 
   test('routes to Resend test recipient in dev mode', async ({ assert }) => {
@@ -105,16 +108,12 @@ test.group('ResendMailProvider', (group) => {
       },
     } as any)
 
-    await assert.rejects(
-      async () => {
-        await provider.send({
-          from: { email: 'from@example.com' },
-          to: { email: 'to@example.com' },
-          subject: 'Hello',
-        })
-      },
-      /at least one of: text, html/
-    )
+    await assert.rejects(async () => {
+      await provider.send({
+        from: { email: 'from@example.com' },
+        to: { email: 'to@example.com' },
+        subject: 'Hello',
+      })
+    }, /at least one of: text, html/)
   })
 })
-

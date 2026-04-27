@@ -54,9 +54,7 @@ export class NotificationService {
 
     transmit.broadcast(`users/${input.userId}/notifications`, serialize(notification) as any)
 
-    const { default: SendNotificationEmailJob } = await import(
-      '#jobs/send_notification_email_job'
-    )
+    const { default: SendNotificationEmailJob } = await import('#jobs/send_notification_email_job')
     await SendNotificationEmailJob.dispatch({ notificationId: notification.id }).toQueue('default')
 
     return notification

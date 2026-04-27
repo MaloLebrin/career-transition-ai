@@ -18,7 +18,9 @@ export function buildCompletedPlanPayload(
 ): Array<{ id: number; completed: boolean; lastUpdated?: string }> {
   return plan
     .map((step) =>
-      step.associatedExercises?.includes(type) ? { ...step, completed: true, lastUpdated: now } : step
+      step.associatedExercises?.includes(type)
+        ? { ...step, completed: true, lastUpdated: now }
+        : step
     )
     .map((step) => ({
       id: step.id,

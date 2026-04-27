@@ -19,7 +19,7 @@ type CreatePlatformUserInput = {
 
 @inject()
 export class SuperAdminUsersService {
-  constructor(private onboardingMailService: OnboardingMailService) { }
+  constructor(private onboardingMailService: OnboardingMailService) {}
 
   /**
    * Indique si le compte utilisateur est activé (`users.onboarding_completed_at` renseigné).

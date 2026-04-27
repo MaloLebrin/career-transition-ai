@@ -37,4 +37,3 @@ describe('disc scoring', () => {
     expect(computed.secondary).toBe('I')
   })
 })
-

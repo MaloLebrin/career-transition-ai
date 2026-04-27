@@ -46,7 +46,8 @@ export default class EmployeeSynthesesController {
             id: latestForEmployee.id,
             status: latestForEmployee.status,
             downloadUrl:
-              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED && latestForEmployee.filePath
+              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED &&
+              latestForEmployee.filePath
                 ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
                 : null,
           }
@@ -74,7 +75,9 @@ export default class EmployeeSynthesesController {
     })
 
     const expertNotesInternal = (ctx.request.input('expertNotesInternal') ?? null) as string | null
-    const expertCommentsShared = (ctx.request.input('expertCommentsShared') ?? null) as string | null
+    const expertCommentsShared = (ctx.request.input('expertCommentsShared') ?? null) as
+      | string
+      | null
     const executiveSummaryOverride = (ctx.request.input('executiveSummaryOverride') ?? null) as
       | string
       | null
@@ -196,7 +199,8 @@ export default class EmployeeSynthesesController {
             id: latestForEmployee.id,
             status: latestForEmployee.status,
             downloadUrl:
-              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED && latestForEmployee.filePath
+              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED &&
+              latestForEmployee.filePath
                 ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
                 : null,
           }
@@ -278,4 +282,3 @@ export default class EmployeeSynthesesController {
     return ctx.response.redirect().back()
   }
 }
-

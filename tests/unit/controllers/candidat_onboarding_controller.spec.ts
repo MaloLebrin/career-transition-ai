@@ -73,4 +73,3 @@ test.group('CandidatOnboardingController.complete', (group) => {
     assert.deepEqual(session.flashes, [['success', 'Onboarding terminé. Bienvenue !']])
   })
 })
-

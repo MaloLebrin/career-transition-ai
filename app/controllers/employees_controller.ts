@@ -14,7 +14,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EmployeesController {
-  constructor(private employeesService: EmployeesService) { }
+  constructor(private employeesService: EmployeesService) {}
 
   /**
    * Inertia form: resend onboarding link for an existing employee.
@@ -302,11 +302,11 @@ export default class EmployeesController {
     const exerciseResultId = results[0]?.id
     const notes = exerciseResultId
       ? await Note.query()
-        .where('employeeId', employeeId)
-        .where('exerciseResultId', exerciseResultId)
-        .whereNull('deletedAt')
-        .preload('author')
-        .orderBy('createdAt', 'desc')
+          .where('employeeId', employeeId)
+          .where('exerciseResultId', exerciseResultId)
+          .whereNull('deletedAt')
+          .preload('author')
+          .orderBy('createdAt', 'desc')
       : []
 
     return (ctx.inertia as any).render('dashboard/conseiller/employees/StepDetail', {

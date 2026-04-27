@@ -69,4 +69,3 @@ export default class EmployeeSynthesis extends BaseModel {
   @belongsTo(() => User, { foreignKey: 'sharedByUserId' })
   declare sharedByUser: BelongsTo<typeof User>
 }
-

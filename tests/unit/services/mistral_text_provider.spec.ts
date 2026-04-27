@@ -18,4 +18,3 @@ test.group('MistralTextProvider', () => {
     }
   })
 })
-

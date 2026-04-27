@@ -55,4 +55,3 @@ export default class ExerciseResult extends BaseModel {
 // Ré-export pour compatibilité des imports existants (#models/exercise_result)
 export { exerciceResultTypesValues }
 export type { ExerciceResultType }
-

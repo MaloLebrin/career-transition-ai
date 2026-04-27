@@ -1,4 +1,4 @@
-import type { DiscTrait } from './discQuestionnaire';
+import type { DiscTrait } from './discQuestionnaire'
 
 export type DiscSelection = { most: DiscTrait | ''; least: DiscTrait | '' }
 

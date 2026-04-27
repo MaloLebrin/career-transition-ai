@@ -11,7 +11,7 @@ export default class EmployeeSkillsController {
   constructor(
     private employeeSkillService: EmployeeSkillService,
     private employeesService: EmployeesService
-  ) { }
+  ) {}
 
   public async store({ auth, request, response }: HttpContext) {
     const payload = await request.validateUsing(addEmployeeSkillValidator)

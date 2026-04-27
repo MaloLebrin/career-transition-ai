@@ -125,9 +125,8 @@ export const mapSupportPlanStep = (step: SupportPlanStep): SupportPlanStepDto =>
     locationOrLink: step.locationOrLink ?? undefined,
     completed: step.completed,
     notes: step.notes ?? undefined,
-    associatedExercises: exercises.length > 0
-      ? exercises.map((e) => exerciceTypeToFront(e.exerciseType))
-      : undefined,
+    associatedExercises:
+      exercises.length > 0 ? exercises.map((e) => exerciceTypeToFront(e.exerciseType)) : undefined,
     lastUpdated: step.updatedAt.toISO() || undefined,
     isLocked: step.isLocked,
     sortOrder: step.sortOrder ?? undefined,

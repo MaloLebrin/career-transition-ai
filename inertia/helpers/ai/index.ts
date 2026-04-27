@@ -28,4 +28,3 @@ export async function extractCVData(base64File: string, mimeType: string) {
 
   return null
 }
-

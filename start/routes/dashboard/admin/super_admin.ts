@@ -16,9 +16,7 @@ router
     router.post('/users/:id/resend-onboarding', [SuperAdminController, 'resendUserOnboarding'])
     router.get('/exercises-usage', [SuperAdminController, 'exerciseUsage'])
     router.get('/exercises-usage/export', [SuperAdminController, 'exerciseUsageExport'])
-    router
-      .get('/pdf-exports', [PdfExportsController, 'index'])
-      .as('super_admin.pdf_exports')
+    router.get('/pdf-exports', [PdfExportsController, 'index']).as('super_admin.pdf_exports')
     router.on('/design-system').renderInertia('dashboard/admin/DesignSystem', {})
   })
   .prefix('/dashboard/super-admin')

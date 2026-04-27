@@ -50,7 +50,8 @@ export async function extractCvDataFromMarkdown(
       name: typeof data.name === 'string' ? data.name : '',
       email: typeof data.email === 'string' ? data.email : '',
       currentRole: typeof data.currentRole === 'string' ? data.currentRole : '',
-      suggestedTargetRole: typeof data.suggestedTargetRole === 'string' ? data.suggestedTargetRole : '',
+      suggestedTargetRole:
+        typeof data.suggestedTargetRole === 'string' ? data.suggestedTargetRole : '',
       summary: typeof data.summary === 'string' ? data.summary : '',
       experiences: experiences.map((exp: any) => ({
         ...exp,
@@ -84,4 +85,3 @@ export async function extractCvDataFromMarkdown(
     return null
   }
 }
-

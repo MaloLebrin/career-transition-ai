@@ -13,7 +13,7 @@ export default class AuthController {
   constructor(
     private authService: AuthService,
     private candidatProfileService: CandidatProfileService
-  ) { }
+  ) {}
 
   public async login({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)

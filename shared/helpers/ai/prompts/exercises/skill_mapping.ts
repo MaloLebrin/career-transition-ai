@@ -22,4 +22,3 @@ Contraintes de format:
   3) À renforcer (3 bullets max, avec exemples de quantification)
 - Longueur max: 900 caractères.`
 }
-

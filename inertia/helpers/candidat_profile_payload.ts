@@ -68,4 +68,3 @@ export function candidatProfileUpdatePayload(employee: Partial<Employee>): Recor
 
   return payload
 }
-

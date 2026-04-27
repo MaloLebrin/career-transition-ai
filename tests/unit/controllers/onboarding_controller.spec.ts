@@ -38,7 +38,9 @@ function makeResponse() {
 test.group('OnboardingController.submit', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('sets password, consumes token, logs in, and redirects to /dashboard', async ({ assert }) => {
+  test('sets password, consumes token, logs in, and redirects to /dashboard', async ({
+    assert,
+  }) => {
     const org = await Organization.create({
       name: 'Onboarding Org',
       slug: `onboarding-org-${Date.now()}`,
@@ -65,7 +67,10 @@ test.group('OnboardingController.submit', (group) => {
       params: { token: token.token },
       request: {
         validateUsing: () =>
-          Promise.resolve({ password: 'new-password-1234', password_confirmation: 'new-password-1234' }),
+          Promise.resolve({
+            password: 'new-password-1234',
+            password_confirmation: 'new-password-1234',
+          }),
       },
       response: response as any,
       auth: {
@@ -91,4 +96,3 @@ test.group('OnboardingController.submit', (group) => {
     assert.deepEqual(session.flashes, [['success', 'Mot de passe créé. Bienvenue !']])
   })
 })
-

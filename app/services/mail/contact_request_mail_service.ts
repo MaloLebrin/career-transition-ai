@@ -109,8 +109,8 @@ function buildConfirmationText(data: ContactRequestData, typeLabel: string): str
     'Récapitulatif de votre message :',
     data.message,
     '',
-    "À bientôt,",
-    'L\'équipe France Transition Carrière',
+    'À bientôt,',
+    "L'équipe France Transition Carrière",
   ].join('\n')
 }
 

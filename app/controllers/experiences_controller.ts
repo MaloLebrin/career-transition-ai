@@ -11,7 +11,7 @@ export default class ExperiencesController {
   constructor(
     private experienceService: ExperienceService,
     private employeesService: EmployeesService
-  ) { }
+  ) {}
 
   async store({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(experienceCreateValidator)

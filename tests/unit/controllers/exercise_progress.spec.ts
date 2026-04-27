@@ -21,7 +21,11 @@ test.group('exercise_progress helper', () => {
 
     const values = getExerciseProgress(EXERCICE_RESULTS_TYPES.VALUES, {
       selectedValues: ['A', 'B', 'C', 'D', 'E'],
-      peopleExercise: [{ name: 'X', values: 'Y' }, { name: '', values: '' }, { name: '', values: '' }],
+      peopleExercise: [
+        { name: 'X', values: 'Y' },
+        { name: '', values: '' },
+        { name: '', values: '' },
+      ],
     })
 
     assert.isAtLeast(lifeCurve, 0)
@@ -48,7 +52,14 @@ test.group('exercise_progress helper', () => {
       {
         type: EXERCICE_RESULTS_TYPES.MOTIVATION,
         status: 'draft',
-        data: { matrix: [[null, 0], [null, null]], currentI: 0, currentJ: 1 },
+        data: {
+          matrix: [
+            [null, 0],
+            [null, null],
+          ],
+          currentI: 0,
+          currentJ: 1,
+        },
         progressPercent: 40,
         date: null,
         updatedAt: { toISO: () => '2026-02-01T00:00:00.000Z' },
@@ -69,4 +80,3 @@ test.group('exercise_progress helper', () => {
     assert.equal(map.personality, 0)
   })
 })
-

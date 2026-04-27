@@ -170,7 +170,9 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
   test('on duplicate email sets error flash and redirects', async ({ assert }) => {
     const service = new FakeOrganizationsService()
     const advisorService = new FakeAdvisorService()
-    advisorService.inviteAdvisorError = new Error('Cet email est déjà utilisé par un compte existant.')
+    advisorService.inviteAdvisorError = new Error(
+      'Cet email est déjà utilisé par un compte existant.'
+    )
     const controller = new OrganizationsController(service as any, advisorService as any)
     const session = makeSession()
     const response = makeResponse()

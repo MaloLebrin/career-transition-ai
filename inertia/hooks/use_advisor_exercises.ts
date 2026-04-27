@@ -10,15 +10,15 @@ function inertiaPost(url: string, data: any, opts?: Parameters<typeof router.pos
     router.post(url, data, {
       ...opts,
       onSuccess: (...args: any[]) => {
-        ; (opts as any)?.onSuccess?.(...args)
+        ;(opts as any)?.onSuccess?.(...args)
         resolve()
       },
       onError: (errors: any) => {
-        ; (opts as any)?.onError?.(errors)
+        ;(opts as any)?.onError?.(errors)
         reject(Object.assign(new Error('Inertia post failed'), { errors }))
       },
       onFinish: (...args: any[]) => {
-        ; (opts as any)?.onFinish?.(...args)
+        ;(opts as any)?.onFinish?.(...args)
       },
     } as any)
   })

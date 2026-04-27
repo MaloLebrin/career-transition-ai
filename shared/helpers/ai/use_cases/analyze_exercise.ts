@@ -13,4 +13,3 @@ export async function analyzeExerciseResult(
     return "Erreur lors de la génération de l'analyse."
   }
 }
-

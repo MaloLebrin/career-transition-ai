@@ -225,7 +225,10 @@ test.group('EmployeesController.resendOnboardingLink', (group) => {
     const updated = await Employee.findOrFail(employee.id)
     assert.isNotNull(updated.userId)
 
-    const token = await OnboardingToken.query().where('userId', updated.userId!).orderBy('id', 'desc').first()
+    const token = await OnboardingToken.query()
+      .where('userId', updated.userId!)
+      .orderBy('id', 'desc')
+      .first()
     assert.isNotNull(token)
     assert.isNull(token!.usedAt)
   })

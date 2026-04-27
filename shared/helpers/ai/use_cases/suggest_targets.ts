@@ -21,4 +21,3 @@ export async function suggestTargets(
     return { companies: [], sectors: [] }
   }
 }
-

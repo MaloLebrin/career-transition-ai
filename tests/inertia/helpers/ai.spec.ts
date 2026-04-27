@@ -72,7 +72,9 @@ describe('shared/helpers/ai (use cases)', () => {
       provider: 'gemini',
       completeJson: async () => [{ mission: 'M1', activities: ['A1', 2] }] as any,
     })
-    expect(await suggestSkillMapping(client, 'Dev')).toEqual([{ mission: 'M1', activities: ['A1'] }])
+    expect(await suggestSkillMapping(client, 'Dev')).toEqual([
+      { mission: 'M1', activities: ['A1'] },
+    ])
   })
 
   test('extractSkillMappingFromText always returns mapping array', async () => {
@@ -100,7 +102,6 @@ describe('shared/helpers/ai (use cases)', () => {
         throw new Error('boom')
       },
     })
-    expect(await analyzeExerciseResult(client, 'x', {})).toContain("Erreur lors de la génération")
+    expect(await analyzeExerciseResult(client, 'x', {})).toContain('Erreur lors de la génération')
   })
 })
-

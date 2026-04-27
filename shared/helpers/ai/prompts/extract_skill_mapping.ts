@@ -5,4 +5,3 @@ Si tu identifies des résultats chiffrés ou des outils spécifiques, place-les 
 Réponds exclusivement en JSON avec cette structure:
 { "mapping": [ { "mission": "string", "activity": "string", "proof": "string" } ] }`
 }
-

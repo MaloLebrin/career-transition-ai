@@ -31,7 +31,9 @@ export class SuperAdminOrganizationsService {
     const ownerName = input.ownerName.trim()
     const ownerEmail = input.ownerEmail.trim()
 
-    const existingUser = await User.query().whereRaw('LOWER(email) = ?', [ownerEmail.toLowerCase()]).first()
+    const existingUser = await User.query()
+      .whereRaw('LOWER(email) = ?', [ownerEmail.toLowerCase()])
+      .first()
     if (existingUser) {
       throw new EmailAlreadyUsedException()
     }
@@ -92,4 +94,3 @@ export class SuperAdminOrganizationsService {
     return { organization, owner, token }
   }
 }
-

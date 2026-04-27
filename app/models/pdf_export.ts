@@ -55,4 +55,3 @@ export default class PdfExport extends BaseModel {
 
   static statuses = PDF_EXPORT_STATUSES
 }
-

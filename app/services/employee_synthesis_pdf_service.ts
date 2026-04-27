@@ -66,7 +66,9 @@ export class EmployeeSynthesisPdfService {
 
     drawTitle('Synthèse partagée')
     drawLabel('Identité')
-    drawBody(`${employee.name}\n${employee.currentRole}${employee.targetRole ? ` → ${employee.targetRole}` : ''}`)
+    drawBody(
+      `${employee.name}\n${employee.currentRole}${employee.targetRole ? ` → ${employee.targetRole}` : ''}`
+    )
 
     if (synthesis.executiveSummaryOverride) {
       drawLabel('Résumé')
@@ -93,8 +95,6 @@ export class EmployeeSynthesisPdfService {
 
     const out = await pdfDoc.save()
 
-    
     return out
   }
 }
-

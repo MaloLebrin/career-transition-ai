@@ -68,8 +68,7 @@ export default class DashboardController {
       const steps = employee.supportPlanSteps ?? []
       const totalSteps = steps.length
       const completedSteps = steps.filter((s) => s.completed).length
-      const progressPercent =
-        totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0
+      const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0
 
       for (const step of steps) {
         if (step.completed && step.updatedAt.toMillis() >= startOfMonth.toMillis()) {

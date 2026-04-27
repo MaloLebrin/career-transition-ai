@@ -11,7 +11,7 @@ import { randomBytes } from 'node:crypto'
 
 @inject()
 export class AdvisorService {
-  constructor(private onboardingMailService: OnboardingMailService) { }
+  constructor(private onboardingMailService: OnboardingMailService) {}
 
   public async inviteAdvisor(input: InviteAdvisorInput, baseUrl: string): Promise<AdvisorDto> {
     if (!baseUrl) {

@@ -66,4 +66,3 @@ test.group('candidatProfileUpdateValidator', () => {
     )
   })
 })
-

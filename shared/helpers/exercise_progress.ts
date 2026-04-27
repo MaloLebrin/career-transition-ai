@@ -35,8 +35,8 @@ function motivationProgress(data: any): number {
   const matrix = Array.isArray(data?.matrix) ? data.matrix : []
   const total = 231 // 22 * 21 / 2
   let answered = 0
-  for (let i = 0; i < matrix.length; i++) {
-    const row = Array.isArray(matrix[i]) ? matrix[i] : []
+  for (const [i, element] of matrix.entries()) {
+    const row = Array.isArray(element) ? element : []
     for (let j = i + 1; j < row.length; j++) {
       if (row[j] !== null && row[j] !== undefined) answered += 1
     }
@@ -45,7 +45,10 @@ function motivationProgress(data: any): number {
 
   const currentI = typeof data?.currentI === 'number' ? data.currentI : 0
   const currentJ = typeof data?.currentJ === 'number' ? data.currentJ : 1
-  const duelIndex = Math.max(0, (21 * currentI) - ((currentI - 1) * currentI) / 2 + (currentJ - currentI))
+  const duelIndex = Math.max(
+    0,
+    21 * currentI - ((currentI - 1) * currentI) / 2 + (currentJ - currentI)
+  )
   return ratioPercent(duelIndex, total)
 }
 
@@ -55,19 +58,29 @@ function valuesProgress(data: any): number {
   const people = Array.isArray(data?.peopleExercise) ? data.peopleExercise : []
   const peopleFields = people
     .slice(0, 3)
-    .reduce((acc: number, p: any) => acc + (isFilled(p?.name) ? 1 : 0) + (isFilled(p?.values) ? 1 : 0), 0)
+    .reduce(
+      (acc: number, p: any) => acc + (isFilled(p?.name) ? 1 : 0) + (isFilled(p?.values) ? 1 : 0),
+      0
+    )
   const peoplePart = peopleFields / 6
-  return clampPercent((valuesPart * 70) + (peoplePart * 30))
+  return clampPercent(valuesPart * 70 + peoplePart * 30)
 }
 
 function lifeCurveProgress(data: any): number {
   const points = Array.isArray(data?.points) ? data.points : []
   const pointsPart = Math.min(points.length, 5) / 5
   const reflection = data?.reflection ?? {}
-  const reflectionKeys = ['form', 'mostlySatisfied', 'amplitude', 'explanation', 'surprise', 'coherence']
+  const reflectionKeys = [
+    'form',
+    'mostlySatisfied',
+    'amplitude',
+    'explanation',
+    'surprise',
+    'coherence',
+  ]
   const reflectionDone = reflectionKeys.filter((k) => isFilled(reflection?.[k])).length
   const reflectionPart = reflectionDone / reflectionKeys.length
-  return clampPercent((pointsPart * 60) + (reflectionPart * 40))
+  return clampPercent(pointsPart * 60 + reflectionPart * 40)
 }
 
 function personalityProgress(data: any): number {
@@ -101,7 +114,11 @@ function discProgress(data: any): number {
 
 function skillMappingProgress(data: any): number {
   const narrativePart = isFilled(data?.narrative) ? 1 : 0
-  const rows = Array.isArray(data?.rows) ? data.rows : Array.isArray(data?.mapping) ? data.mapping : []
+  const rows = Array.isArray(data?.rows)
+    ? data.rows
+    : Array.isArray(data?.mapping)
+      ? data.mapping
+      : []
   const cappedRows = rows.slice(0, 5)
   let rowUnits = 0
   let rowTotal = 0
@@ -112,7 +129,7 @@ function skillMappingProgress(data: any): number {
     rowUnits += isFilled(row?.proof) ? 1 : 0
   }
   const rowPart = rowTotal > 0 ? rowUnits / rowTotal : 0
-  return clampPercent((narrativePart * 30) + (rowPart * 70))
+  return clampPercent(narrativePart * 30 + rowPart * 70)
 }
 
 function circleOfControlProgress(data: any): number {
@@ -174,4 +191,3 @@ export function getExerciseProgressByType(results: ResultLike[]): Record<string,
 
   return progressByType
 }
-

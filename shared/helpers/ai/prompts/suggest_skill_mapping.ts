@@ -6,4 +6,3 @@ Réponds exclusivement en JSON avec cette structure précise:
   { "mission": "Titre de la mission 1", "activities": ["Activité 1.1", "Activité 1.2"] }
 ]`
 }
-

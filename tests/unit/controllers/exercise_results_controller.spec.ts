@@ -78,7 +78,7 @@ function makeCtx(overrides: any = {}) {
 test.group('ExerciseResultsController.storeFromDashboard', () => {
   test('returns unauthorized when no auth user', async ({ assert }) => {
     const service = {
-      saveResult: async () => { },
+      saveResult: async () => {},
     } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx({ auth: { user: null } })
@@ -89,7 +89,7 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
   })
 
   test('calls service and flashes dynamic success message', async ({ assert }) => {
-    const saveResult = async () => { }
+    const saveResult = async () => {}
     const service = { saveResult } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
     const ctx = makeCtx()

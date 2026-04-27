@@ -323,7 +323,10 @@ test.group('AuthController.updateProfileCandidat', (group) => {
     assert.lengthOf(educations, 1)
     assert.equal(educations[0].degree, 'Master')
 
-    const skill = await Skill.query().where('organizationId', org.id).where('name', 'TypeScript').first()
+    const skill = await Skill.query()
+      .where('organizationId', org.id)
+      .where('name', 'TypeScript')
+      .first()
     assert.isNotNull(skill)
     const pivot = await EmployeeSkill.query()
       .where('employeeId', employee.id)

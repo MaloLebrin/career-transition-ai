@@ -58,4 +58,3 @@ export default class PdfExportDownloadsController {
     return ctx.response.stream(createReadStream(filePath))
   }
 }
-

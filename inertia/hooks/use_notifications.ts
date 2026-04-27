@@ -11,9 +11,7 @@ export function useNotifications() {
   }>()
   const { user } = useAuth()
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>(
-    props.notifications ?? []
-  )
+  const [notifications, setNotifications] = useState<NotificationItem[]>(props.notifications ?? [])
   const [unreadCount, setUnreadCount] = useState(props.unreadNotificationsCount ?? 0)
 
   useEffect(() => {

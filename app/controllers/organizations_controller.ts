@@ -11,7 +11,7 @@ export default class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private advisorService: AdvisorService
-  ) { }
+  ) {}
 
   /**
    * Inertia form: update current user's organization then redirect with flash.

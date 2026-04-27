@@ -29,4 +29,3 @@ export async function extractSkillMappingFromText(
     return { mapping: [] }
   }
 }
-

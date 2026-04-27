@@ -47,7 +47,10 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
   })
 
   test('throws when owner email already exists', async ({ assert }) => {
-    const org = await Organization.create({ name: 'Existing Org', slug: `existing-org-${Date.now()}` })
+    const org = await Organization.create({
+      name: 'Existing Org',
+      slug: `existing-org-${Date.now()}`,
+    })
     await User.create({
       organizationId: org.id,
       email: 'existing@example.com',
@@ -56,7 +59,9 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
       role: 'advisor',
     })
 
-    const service = new SuperAdminOrganizationsService({ sendSetPasswordLink: async () => {} } as any)
+    const service = new SuperAdminOrganizationsService({
+      sendSetPasswordLink: async () => {},
+    } as any)
 
     await assert.rejects(
       () =>
@@ -73,7 +78,9 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
 
   test('throws when organization name already exists', async ({ assert }) => {
     await Organization.create({ name: 'Dup Org', slug: `dup-org-${Date.now()}` })
-    const service = new SuperAdminOrganizationsService({ sendSetPasswordLink: async () => {} } as any)
+    const service = new SuperAdminOrganizationsService({
+      sendSetPasswordLink: async () => {},
+    } as any)
 
     await assert.rejects(
       () =>
@@ -88,4 +95,3 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
     )
   })
 })
-

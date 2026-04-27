@@ -234,9 +234,7 @@ export default class SuperAdminController {
     const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
 
     const [users, organizationRows] = await Promise.all([
-      User.query()
-        .where('organizationId', '!=', excludeOrgId)
-        .preload('organization'),
+      User.query().where('organizationId', '!=', excludeOrgId).preload('organization'),
       Organization.query()
         .where('id', '!=', excludeOrgId)
         .orderBy('name', 'asc')

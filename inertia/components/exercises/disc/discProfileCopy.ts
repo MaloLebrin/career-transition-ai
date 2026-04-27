@@ -24,15 +24,27 @@ export const DISC_PROFILE_COPY: Record<DiscTrait, DiscProfileCopy> = {
     },
     watchouts: {
       title: 'Points de vigilance',
-      bullets: ['Peut paraître brusque', 'Tolère mal la lenteur', 'Risque de minimiser les détails'],
+      bullets: [
+        'Peut paraître brusque',
+        'Tolère mal la lenteur',
+        'Risque de minimiser les détails',
+      ],
     },
     prefers: {
       title: 'Communication préférée',
-      bullets: ['Aller à l’essentiel', 'Parler objectifs, délais, impact', 'Proposer des options claires'],
+      bullets: [
+        'Aller à l’essentiel',
+        'Parler objectifs, délais, impact',
+        'Proposer des options claires',
+      ],
     },
     underStress: {
       title: 'Sous stress',
-      bullets: ['Se durcit / devient plus directif', 'Peut couper court aux échanges', 'Veut reprendre le contrôle'],
+      bullets: [
+        'Se durcit / devient plus directif',
+        'Peut couper court aux échanges',
+        'Veut reprendre le contrôle',
+      ],
     },
   },
   I: {
@@ -52,7 +64,11 @@ export const DISC_PROFILE_COPY: Record<DiscTrait, DiscProfileCopy> = {
     },
     underStress: {
       title: 'Sous stress',
-      bullets: ['Parle davantage pour convaincre', 'Peut éviter les sujets “froids”', 'Cherche du soutien social'],
+      bullets: [
+        'Parle davantage pour convaincre',
+        'Peut éviter les sujets “froids”',
+        'Cherche du soutien social',
+      ],
     },
   },
   S: {
@@ -64,15 +80,27 @@ export const DISC_PROFILE_COPY: Record<DiscTrait, DiscProfileCopy> = {
     },
     watchouts: {
       title: 'Points de vigilance',
-      bullets: ['Peut éviter le conflit', 'S’adapte lentement aux changements', 'Risque de s’effacer'],
+      bullets: [
+        'Peut éviter le conflit',
+        'S’adapte lentement aux changements',
+        'Risque de s’effacer',
+      ],
     },
     prefers: {
       title: 'Communication préférée',
-      bullets: ['Un ton posé et respectueux', 'Du temps pour réfléchir', 'De la clarté sur l’accompagnement'],
+      bullets: [
+        'Un ton posé et respectueux',
+        'Du temps pour réfléchir',
+        'De la clarté sur l’accompagnement',
+      ],
     },
     underStress: {
       title: 'Sous stress',
-      bullets: ['Se replie / se protège', 'Cherche à préserver l’harmonie', 'Peut résister passivement au changement'],
+      bullets: [
+        'Se replie / se protège',
+        'Cherche à préserver l’harmonie',
+        'Peut résister passivement au changement',
+      ],
     },
   },
   C: {
@@ -92,8 +120,11 @@ export const DISC_PROFILE_COPY: Record<DiscTrait, DiscProfileCopy> = {
     },
     underStress: {
       title: 'Sous stress',
-      bullets: ['Se rigidifie sur les règles', 'Cherche des preuves avant d’agir', 'Peut ralentir pour “sécuriser”'],
+      bullets: [
+        'Se rigidifie sur les règles',
+        'Cherche des preuves avant d’agir',
+        'Peut ralentir pour “sécuriser”',
+      ],
     },
   },
 }
-

@@ -7,14 +7,11 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
     'Compte talent : accès au parcours personnel et aux outils côté collaborateur.',
   [USERS_ROLES.ADVISOR]:
     'Accompagne les talents au quotidien et pilote les dossiers dans le cabinet.',
-  [USERS_ROLES.EXPERT]:
-    'Intervient en expertise sur des dossiers ; accès conseiller ciblé.',
-  [USERS_ROLES.ADMIN]:
-    'Gère les utilisateurs et les réglages de son organisation (cabinet).',
+  [USERS_ROLES.EXPERT]: 'Intervient en expertise sur des dossiers ; accès conseiller ciblé.',
+  [USERS_ROLES.ADMIN]: 'Gère les utilisateurs et les réglages de son organisation (cabinet).',
   [USERS_ROLES.SUPER_ADMIN]:
     'Administration globale de la plateforme (organisations, utilisateurs, supervision).',
 } as const
 
 /** Description de l’option « tous les rôles » dans un filtre. */
-export const ROLE_FILTER_ALL_DESCRIPTION =
-  'Affiche tous les comptes sans filtrer par type de rôle.'
+export const ROLE_FILTER_ALL_DESCRIPTION = 'Affiche tous les comptes sans filtrer par type de rôle.'

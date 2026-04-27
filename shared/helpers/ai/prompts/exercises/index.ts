@@ -42,4 +42,3 @@ export function buildQualitativePromptForExerciseType(
       return buildAnalyzeExercisePrompt(type, input.exerciseData)
   }
 }
-

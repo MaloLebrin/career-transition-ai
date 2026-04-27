@@ -16,4 +16,3 @@ Réponds exclusivement en JSON avec ce schéma:
 CV markdown OCR:
 ${markdown.slice(0, 120000)}`
 }
-

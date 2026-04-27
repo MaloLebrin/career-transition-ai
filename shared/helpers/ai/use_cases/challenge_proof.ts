@@ -3,7 +3,11 @@ import { buildChallengeProofPrompt } from '#shared/helpers/ai/prompts/challenge_
 
 const DEFAULT_QUESTION = "Pouvez-vous préciser l'impact ou l'outil utilisé ?"
 
-export async function challengeProof(client: AiClient, activity: string, proof: string): Promise<string> {
+export async function challengeProof(
+  client: AiClient,
+  activity: string,
+  proof: string
+): Promise<string> {
   const prompt = buildChallengeProofPrompt(activity, proof)
   try {
     return (await client.completeText(prompt, { temperature: 0.7 })) || DEFAULT_QUESTION
@@ -11,4 +15,3 @@ export async function challengeProof(client: AiClient, activity: string, proof: 
     return DEFAULT_QUESTION
   }
 }
-

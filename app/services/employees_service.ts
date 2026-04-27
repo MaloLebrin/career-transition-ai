@@ -20,7 +20,7 @@ function randomPassword(): string {
 
 @inject()
 export class EmployeesService {
-  constructor(private onboardingMailService: OnboardingMailService) { }
+  constructor(private onboardingMailService: OnboardingMailService) {}
 
   /**
    * (Re)sends the onboarding link for an existing employee.

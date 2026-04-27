@@ -62,4 +62,3 @@ test.group('shared/helpers/ai prompts per exercise', () => {
     assert.include(prompt, '"hello":"world"')
   })
 })
-

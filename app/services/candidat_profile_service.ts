@@ -51,7 +51,7 @@ type UpdateOptions = {
 
 @inject()
 export class CandidatProfileService {
-  constructor(private employeesService: EmployeesService) { }
+  constructor(private employeesService: EmployeesService) {}
 
   private parseLenientDate(raw?: string | null): DateTime | null {
     const value = (raw ?? '').trim()
@@ -108,9 +108,9 @@ export class CandidatProfileService {
 
     const effectivePayload: Payload = forceOnboarded
       ? {
-        ...payload,
-        onboarded: true,
-      }
+          ...payload,
+          onboarded: true,
+        }
       : payload
 
     const hasArrays =
@@ -153,9 +153,9 @@ export class CandidatProfileService {
       // Load employee
       const employee = trx
         ? await Employee.query({ client: trx })
-          .where('userId', user.id)
-          .where('organizationId', user.organizationId)
-          .firstOrFail()
+            .where('userId', user.id)
+            .where('organizationId', user.organizationId)
+            .firstOrFail()
         : await this.employeesService.getEmployeeForUser(user)
 
       this.employeesService.applyUpdate(employee, {
@@ -243,9 +243,9 @@ export class CandidatProfileService {
             const skill = existing
               ? existing
               : await Skill.create(
-                { organizationId: employee.organizationId, name, category: null },
-                { client: trx }
-              )
+                  { organizationId: employee.organizationId, name, category: null },
+                  { client: trx }
+                )
 
             await EmployeeSkill.create(
               {

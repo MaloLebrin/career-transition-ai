@@ -3,4 +3,3 @@ export function buildAnalyzeExercisePrompt(type: string, data: unknown): string 
 Produis une analyse courte (max 4 phrases), encourageante, vitaminée, avec un conseil concret basé sur les données reçues.
 Sois expert et bienveillant.`
 }
-

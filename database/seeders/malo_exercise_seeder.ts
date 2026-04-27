@@ -279,7 +279,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
         isLocked: false,
       },
       {
-        instructions: "Réfléchissez aux organismes de formation qui vous intéressent.",
+        instructions: 'Réfléchissez aux organismes de formation qui vous intéressent.',
         scheduledAt: DateTime.fromISO('2024-06-05T11:00:00'),
         endedAt: DateTime.fromISO('2024-06-05T12:00:00'),
         status: APPOINTMENTS_STATUSES.COMPLETED,
@@ -361,10 +361,10 @@ export default class MaloExercisesSeeder extends BaseSeeder {
 
       await SupportPlanStepExercise.query().where('supportPlanStepId', createdStep.id).delete()
 
-      for (let i = 0; i < exercises.length; i++) {
+      for (const [i, exercise] of exercises.entries()) {
         await SupportPlanStepExercise.create({
           supportPlanStepId: createdStep.id,
-          exerciseType: exercises[i],
+          exerciseType: exercise,
           sortOrder: i,
         })
       }

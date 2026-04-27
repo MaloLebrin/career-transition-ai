@@ -1,5 +1,5 @@
-import { router, usePage } from '@inertiajs/react';
-import type { UserSession } from '../types/auth';
+import { router, usePage } from '@inertiajs/react'
+import type { UserSession } from '../types/auth'
 
 export function useAuth() {
   const { props } = usePage<{ csrfToken?: string; user?: UserSession }>()

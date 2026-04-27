@@ -27,7 +27,7 @@ function resolveFromAddress(): MailAddress {
 
 @inject()
 export class OnboardingMailService {
-  constructor(private mail: MailService) { }
+  constructor(private mail: MailService) {}
 
   public async sendSetPasswordLink({
     user,

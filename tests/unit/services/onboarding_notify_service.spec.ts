@@ -27,4 +27,3 @@ test.group('sendOnboardingEmail', () => {
     assert.isTrue(true)
   })
 })
-
