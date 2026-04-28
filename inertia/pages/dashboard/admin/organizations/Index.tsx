@@ -61,7 +61,6 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
 
   const handleDeleteOrganization = (id: number) => {
     if (
-      // eslint-disable-next-line no-alert
       !window.confirm(
         'Voulez-vous vraiment supprimer cette organisation ? Cette action est potentiellement irréversible.'
       )

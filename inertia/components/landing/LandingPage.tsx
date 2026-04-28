@@ -114,7 +114,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div
-                    // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     className="w-10 h-10 rounded-full border-2 border-brand-ivory bg-brand-sage/20 overflow-hidden"
                   >
@@ -174,7 +173,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                       </div>
                   <div className="h-40 bg-brand-navy/5 rounded-[32px] p-6 flex items-end gap-2">
                     {[40, 70, 45, 90, 65, 80, 50, 85, 60, 75].map((h, i) => (
-                      // eslint-disable-next-line react/no-array-index-key
                       <div
                         key={i}
                         className="grow bg-brand-sage/30 rounded-t-lg"
@@ -187,7 +185,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     <div className="h-4 w-32 bg-brand-navy/5 rounded-full" />
                     <div className="grid grid-cols-1 gap-3">
                       {[1, 2].map((i) => (
-                        // eslint-disable-next-line react/no-array-index-key
                         <div
                           key={i}
                           className="flex items-center justify-between p-4 bg-brand-ivory/20 rounded-2xl border border-brand-navy/5"
