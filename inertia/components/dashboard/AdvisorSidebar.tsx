@@ -74,8 +74,8 @@ function AdvisorSidebarContent({
           <NavLink href="/dashboard/conseiller/settings" icon="settings" label="Réglages" />
           <NavLink
             href="/dashboard/conseiller/pdf-exports"
-            icon="target"
-            label="Tâches"
+            icon="pdf"
+            label="PDF Générés"
             badgeCount={activePdfJobsCount}
           />
 
@@ -111,16 +111,14 @@ function AdvisorSidebarContent({
                     <AppLink
                       key={emp.id}
                       href={`/dashboard/conseiller/employees/${emp.id}`}
-                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
-                        isActive
-                          ? 'bg-brand-sage/10 text-brand-sage'
-                          : 'text-brand-navy/60 hover:bg-brand-ivory'
-                      }`}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${isActive
+                        ? 'bg-brand-sage/10 text-brand-sage'
+                        : 'text-brand-navy/60 hover:bg-brand-ivory'
+                        }`}
                     >
                       <div
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform group-hover:scale-125 ${
-                          !emp.onboarded ? 'bg-brand-terracotta' : 'bg-brand-sage'
-                        }`}
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform group-hover:scale-125 ${!emp.onboarded ? 'bg-brand-terracotta' : 'bg-brand-sage'
+                          }`}
                       />
                       <span className="text-[11px] font-medium truncate">{emp.name}</span>
                     </AppLink>

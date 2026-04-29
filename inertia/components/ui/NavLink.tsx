@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react'
 import React, { memo } from 'react'
 
-export type NavLinkIcon = 'dashboard' | 'users' | 'settings' | 'palette' | 'building' | 'user' | 'target'
+export type NavLinkIcon = 'dashboard' | 'users' | 'settings' | 'palette' | 'building' | 'user' | 'target' | 'pdf'
 
 export interface NavLinkProps {
   'href': string
@@ -12,6 +12,7 @@ export interface NavLinkProps {
   'badgeCount'?: number
 }
 
+// TODO: use external Icons library
 const ICONS: Record<NavLinkIcon, React.ReactNode> = {
   dashboard: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -89,6 +90,16 @@ const ICONS: Record<NavLinkIcon, React.ReactNode> = {
       />
     </svg>
   ),
+  pdf: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+      />
+    </svg>
+  ),
 }
 
 const NavLink = memo(function NavLink({
@@ -110,25 +121,22 @@ const NavLink = memo(function NavLink({
   return (
     <Link
       href={href}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${
-        active
-          ? 'bg-brand-sage/10 text-brand-sage font-bold'
-          : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
-      }`}
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${active
+        ? 'bg-brand-sage/10 text-brand-sage font-bold'
+        : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
+        }`}
       aria-current={active ? 'page' : undefined}
       aria-label={ariaLabel ?? label}
     >
       <div
-        className={`transition-colors duration-200 ${
-          active ? 'text-brand-sage' : 'text-brand-navy/20 group-hover:text-brand-navy/40'
-        }`}
+        className={`transition-colors duration-200 ${active ? 'text-brand-sage' : 'text-brand-navy/20 group-hover:text-brand-navy/40'
+          }`}
       >
         {ICONS[icon]}
       </div>
       <span
-        className={`text-[11px] uppercase tracking-wider transition-colors duration-200 ${
-          active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
-        }`}
+        className={`text-[11px] uppercase tracking-wider transition-colors duration-200 ${active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
+          }`}
       >
         {label}
       </span>
