@@ -46,7 +46,7 @@ describe('AdvisorSidebar', () => {
 
     expect(screen.getByText('Navigation')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Bureau$/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /^Tâches$/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^PDF Générés/ })).toHaveAttribute(
       'href',
       '/dashboard/conseiller/pdf-exports'
     )

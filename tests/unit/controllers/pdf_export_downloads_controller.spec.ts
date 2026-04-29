@@ -24,6 +24,7 @@ function makeCtx(overrides: Partial<any> = {}) {
       notFound: () => ({ status: 404 }),
       header: () => {},
       stream: () => ({ status: 200 }),
+      attachment: (_path: string, _name?: string) => ({ status: 200 }),
     },
     ...overrides,
   }

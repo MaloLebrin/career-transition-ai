@@ -98,6 +98,7 @@
     "@headlessui/react": "^2.2.9",
     "@inertiajs/react": "^2.3.18",
     "@mistralai/mistralai": "^2.1.2",
+    "@react-pdf/renderer": "^4.5.1",
     "@vinejs/vine": "^4.3.0",
     "archiver": "^7.0.1",
     "date-fns": "^4.1.0",

@@ -1,11 +1,11 @@
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import {
+  hasErrors,
   validateLogin,
   validateRegister,
-  hasErrors,
   type LoginFields,
   type RegisterFields,
-} from '../../../inertia/lib/auth_validation'
+} from '../../../inertia/helpers/auth_validation'
 
 describe('authValidation', () => {
   describe('validateLogin', () => {

@@ -10,7 +10,6 @@ interface SuperAdminHomeProps {
 }
 
 export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
-  console.log(stats, 'SuperAdminHome')
   return (
     <>
       <Head title="Supervision Plateforme" />

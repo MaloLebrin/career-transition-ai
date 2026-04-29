@@ -8,12 +8,12 @@ interface VisualIdentityProps {
 
 export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
   return (
-    <Card className="p-10 text-center space-y-6">
+    <Card className="p-10 text-center space-y-6 opacity-60 cursor-not-allowed">
       <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">
         Identité Visuelle
       </h3>
       <div className="relative group mx-auto w-32 h-32">
-        <div className="w-32 h-32 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[32px] flex items-center justify-center text-slate-300 group-hover:border-indigo-300 group-hover:text-indigo-400 transition-all cursor-pointer overflow-hidden">
+        <div className="w-32 h-32 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[32px] flex items-center justify-center text-slate-300 group-hover:border-indigo-300 group-hover:text-indigo-400 transition-all overflow-hidden">
           {organization.logoUrl ? (
             <img src={organization.logoUrl} alt="Logo" className="w-full h-full object-contain" />
           ) : (
@@ -30,6 +30,7 @@ export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
         <Button
           size="sm"
           className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+          disabled
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
