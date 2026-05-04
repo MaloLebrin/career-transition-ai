@@ -1,4 +1,3 @@
-import type { EmployeeStatus } from '#shared/constants/employee'
 import Education from '#models/education'
 import Experience from '#models/experience'
 import File from '#models/file'
@@ -7,11 +6,12 @@ import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
+import type { EmployeeStatus } from '#shared/constants/employee'
 import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-import ExerciseResult from './exercise_result.js'
 import EmployeeSynthesis from './employee_synthesis.js'
+import ExerciseResult from './exercise_result.js'
 
 export default class Employee extends BaseModel {
   static table = 'employees'
@@ -72,10 +72,18 @@ export default class Employee extends BaseModel {
   @belongsTo(() => User, { foreignKey: 'userId' })
   declare user: BelongsTo<typeof User>
 
-  @hasMany(() => Experience)
+  @hasMany(() => Experience, {
+    onQuery: (query) => {
+      return query.orderBy('start_date', 'desc')
+    },
+  })
   declare experiences: HasMany<typeof Experience>
 
-  @hasMany(() => Education)
+  @hasMany(() => Education, {
+    onQuery: (query) => {
+      return query.orderBy('start_date', 'desc')
+    },
+  })
   declare educations: HasMany<typeof Education>
 
   @hasMany(() => ExerciseResult)
