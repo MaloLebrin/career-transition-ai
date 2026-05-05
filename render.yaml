@@ -1,0 +1,92 @@
+databases:
+  - name: career-transition-db
+    databaseName: career_transition_ai
+    user: adonis
+    plan: starter
+    region: frankfurt
+
+envVarGroups:
+  - name: adonis-shared-config
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Europe/Paris
+      - key: LOG_LEVEL
+        value: info
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: QUEUE_DRIVER
+        value: database
+
+      # sync: false indique à Render de te demander ces valeurs secrètes dans le dashboard
+      # Elles ne seront pas sauvegardées dans ce fichier Git.
+      - key: APP_KEY
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # Mail
+      - key: MAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        value: no-reply@career-transition-ai.fr
+      - key: MAIL_FROM_NAME
+        value: Career Transition AI
+      - key: MAIL_RESEND_TEST_MODE
+        value: "false"
+      - key: MAIL_RESEND_TEST_EVENT
+        value: delivered
+
+      # IA (Backend)
+      - key: AI_PROVIDER
+        value: mistral
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: MISTRAL_MODEL
+        value: mistral-small-latest
+
+services:
+  - type: web
+    name: career-transition-web
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    # preDeployCommand s'exécute après le build, avec DATABASE_URL disponible, avant le démarrage.
+    # --force est requis par AdonisJS quand NODE_ENV=production.
+    preDeployCommand: node build/bin/console.js migration:run --force
+    startCommand: node build/bin/server.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: career-transition-db
+          property: connectionString
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      # Variables VITE_* embarquées dans le bundle au moment du build — web uniquement
+      - key: VITE_AI_PROVIDER
+        value: mistral
+      - key: VITE_MISTRAL_API_KEY
+        sync: false
+    envVarGroups:
+      - adonis-shared-config
+
+  - type: worker
+    name: career-transition-worker
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    startCommand: node build/bin/console.js queue:work --queue=default,ai,pdfs,analytics
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: career-transition-db
+          property: connectionString
+    envVarGroups:
+      - adonis-shared-config
