@@ -12,6 +12,7 @@ const dbConfig = defineConfig({
         user: env.get('DB_USER'),
         password: env.get('DB_PASSWORD'),
         database: env.get('DB_DATABASE'),
+        connectionString: env.get('DB_URL'),
         ssl: {
           rejectUnauthorized: false,
         },
