@@ -10,6 +10,37 @@ services:
       - '5439:5432'
     volumes:
       - career_transition_ai_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U career_transition_ai']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    command: server
+    ports:
+      - '${PORT:-8080}:8080'
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: worker
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   career_transition_ai_pg_data:
