@@ -36,7 +36,7 @@ export default defineConfig({
   },
 
   /**
-   * Locations where job classes live.
+   * En dev : fichiers .ts source. En production : JS compilés dans build/.
    */
-  locations: ['./app/jobs/**/*.ts'],
+  locations: [env.get('NODE_ENV') === 'production' ? './build/app/jobs/**/*.js' : './app/jobs/**/*.ts'],
 })
