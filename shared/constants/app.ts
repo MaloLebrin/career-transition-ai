@@ -1,1 +1,1 @@
-export const APP_NAME = 'France Transition Carrière' as const
+export const APP_NAME = 'Career Transition AI' as const
