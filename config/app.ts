@@ -1,5 +1,5 @@
-import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/core/http'
+import app from '@adonisjs/core/services/app'
 
 /**
  * The configuration settings used by the HTTP server
@@ -21,7 +21,7 @@ export const http = defineConfig({
   cookie: {
     domain: '',
     path: '/',
-    maxAge: '2h',
+    maxAge: '2d',
     httpOnly: true,
     secure: app.inProduction,
     sameSite: 'lax',
