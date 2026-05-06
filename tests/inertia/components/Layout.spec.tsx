@@ -1,5 +1,6 @@
-import { describe, test, expect, vi } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { APP_NAME } from '#shared/constants/app'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, test, vi } from 'vitest'
 import Layout from '../../../inertia/components/layout/Layout'
 
 vi.mock('@inertiajs/react', () => ({
@@ -9,7 +10,7 @@ vi.mock('@inertiajs/react', () => ({
 describe('Layout', () => {
   const defaultProps = {
     userRole: 'advisor' as const,
-    onRoleChange: () => {},
+    onRoleChange: () => { },
     onLogout: vi.fn(),
     userName: 'Test User',
   }
@@ -21,7 +22,7 @@ describe('Layout', () => {
       </Layout>
     )
 
-    expect(screen.getByText('France Transition Carrière')).toBeInTheDocument()
+    expect(screen.getByText(APP_NAME)).toBeInTheDocument()
     expect(screen.getByText('Accompagnement Expert')).toBeInTheDocument()
     expect(screen.getByTestId('content')).toBeInTheDocument()
   })
@@ -33,7 +34,7 @@ describe('Layout', () => {
       </Layout>
     )
     expect(
-      screen.getByText(/France Transition Carrière .* Clarté Stratégique Humaine/)
+      screen.getByText(/Career Transition AI .* Clarté Stratégique Humaine/)
     ).toBeInTheDocument()
   })
 
