@@ -11,5 +11,6 @@ export default defineConfig({
    */
   ssr: {
     enabled: true,
+    bundle: 'build/ssr/ssr.js',
   },
 })
