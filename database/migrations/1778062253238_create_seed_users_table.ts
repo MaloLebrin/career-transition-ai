@@ -2,7 +2,9 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { BaseSchema } from '@adonisjs/lucid/schema'
-import { PLATFORM_ADMIN_EMAIL, PLATFORM_ORG_SLUG } from '../seeders/admin_seeder'
+
+const PLATFORM_ORG_SLUG = 'ai-transition-carriere'
+const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
 
 export default class extends BaseSchema {
   async up() {
