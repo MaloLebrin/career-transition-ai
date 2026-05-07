@@ -1,4 +1,4 @@
-import type { MailMessage } from '#services/mail/types';
+import type { MailMessage } from '#services/mail/types'
 
 export function toResendAddress(addr: { email: string; name?: string }): string {
   return addr.name ? `${addr.name} <${addr.email}>` : addr.email
