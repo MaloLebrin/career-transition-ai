@@ -1,4 +1,11 @@
 import type { MailMessage, MailProvider } from '#services/mail/types'
+import {
+  resolveDevTestFrom,
+  resolveDevTestMode,
+  resolveDevTestTo,
+  resolveResendApiKey,
+  toResendAddress,
+} from '#utils/mail/resend'
 import Logger from '@adonisjs/core/services/logger'
 import { Resend } from 'resend'
 
@@ -6,72 +13,6 @@ type ResendClient = {
   emails: {
     send: (payload: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>
   }
-}
-
-function toResendAddress(addr: { email: string; name?: string }): string {
-  return addr.name ? `${addr.name} <${addr.email}>` : addr.email
-}
-
-type TestEvent = 'delivered' | 'bounced' | 'complained' | 'suppressed'
-
-function resolveDevTestMode(): boolean {
-  const raw = String(process.env.MAIL_RESEND_TEST_MODE ?? '')
-    .trim()
-    .toLowerCase()
-  if (raw === 'true') return true
-  if (raw === 'false') return false
-  // Safe default outside production: avoid accidental real sends in dev/test
-  return process.env.NODE_ENV !== 'production'
-}
-
-function resolveDevTestEvent(): TestEvent {
-  const raw = String(process.env.MAIL_RESEND_TEST_EVENT ?? 'delivered')
-    .trim()
-    .toLowerCase()
-  switch (raw) {
-    case 'bounced':
-      return 'bounced'
-    case 'complained':
-      return 'complained'
-    case 'suppressed':
-      return 'suppressed'
-    case 'delivered':
-    default:
-      return 'delivered'
-  }
-}
-
-function resolveDevTestTo(message: MailMessage): string {
-  const explicit = String(process.env.MAIL_RESEND_TEST_TO ?? '')
-    .trim()
-    .toLowerCase()
-  if (explicit) return explicit
-
-  const event = resolveDevTestEvent()
-  if (event === 'suppressed') {
-    return 'suppressed@resend.dev'
-  }
-
-  const kind =
-    typeof message.metadata?.kind === 'string' ? message.metadata.kind.trim().toLowerCase() : 'mail'
-  const safeLabel = kind.replace(/[^a-z0-9-]/g, '').slice(0, 40) || 'mail'
-  return `${event}+${safeLabel}@resend.dev`
-}
-
-function resolveDevTestFrom(): string {
-  const explicit = String(process.env.MAIL_RESEND_TEST_FROM ?? '')
-    .trim()
-    .toLowerCase()
-  if (explicit) return explicit
-  return 'onboarding@resend.dev'
-}
-
-function resolveResendApiKey(): string {
-  const key = String(process.env.RESEND_API_KEY ?? '').trim()
-  if (!key) {
-    throw new Error('RESEND_API_KEY is required when MAIL_PROVIDER=resend.')
-  }
-  return key
 }
 
 export class ResendMailProvider implements MailProvider {
@@ -85,7 +26,9 @@ export class ResendMailProvider implements MailProvider {
     const toList = Array.isArray(message.to) ? message.to : [message.to]
     const isDevTestMode = process.env.NODE_ENV !== 'production' && resolveDevTestMode()
     const resolvedTo = isDevTestMode ? [resolveDevTestTo(message)] : toList.map(toResendAddress)
-    const resolvedFrom = isDevTestMode ? resolveDevTestFrom() : toResendAddress(message.from)
+    const resolvedFrom = isDevTestMode
+      ? resolveDevTestFrom()
+      : 'Contact <contact@careertransition.fr>'
 
     if (isDevTestMode) {
       Logger.info(
