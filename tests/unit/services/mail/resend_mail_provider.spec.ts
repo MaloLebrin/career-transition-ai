@@ -1,5 +1,5 @@
-import { test } from '@japa/runner'
 import { ResendMailProvider } from '#services/mail/providers/resend_mail_provider'
+import { test } from '@japa/runner'
 
 test.group('ResendMailProvider', (group) => {
   group.each.teardown(() => {
@@ -33,7 +33,7 @@ test.group('ResendMailProvider', (group) => {
     })
 
     assert.equal(sent.length, 1)
-    assert.equal(sent[0].from, 'From <from@example.com>')
+    assert.equal(sent[0].from, 'Contact <contact@careertransition.fr>')
     assert.deepEqual(sent[0].to, ['To <to@example.com>'])
     assert.equal(sent[0].subject, 'Hello')
     assert.equal(sent[0].text, 'Body')
