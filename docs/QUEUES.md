@@ -16,7 +16,7 @@ Objectifs :
 - **Config** : `config/queue.ts`
   - `default: env.get('QUEUE_DRIVER', 'database')`
   - `adapters.database.connectionName` : `postgres` (en test, `QUEUE_DRIVER=sync` : l'adaptateur database n'est pas utilisé)
-  - `locations: ['./app/jobs/**/*.ts']`
+  - `locations: [app.makePath(app.inProduction ? 'app/jobs/**/*.js' : 'app/jobs/**/*.ts')]` — motif **absolu**, résolu depuis la racine de l'app (`build/` en production) : `@boringnode/queue` globbe relativement au `cwd`, le worker doit donc trouver ses jobs qu'il soit lancé depuis la racine ou depuis `build/`
   - `worker.concurrency = 5`, `idleDelay = '2s'`, `gracefulShutdown = true`
 - **Env** : `.env`
 

@@ -1,4 +1,5 @@
 import env from '#start/env'
+import app from '@adonisjs/core/services/app'
 import { defineConfig, drivers } from '@adonisjs/queue'
 
 export default defineConfig({
@@ -36,9 +37,14 @@ export default defineConfig({
   },
 
   /**
-   * En dev : fichiers .ts source. En production : JS compilés dans build/.
+   * En dev/test : fichiers .ts source. En production : JS compilés.
+   *
+   * `@boringnode/queue` globbe ces motifs relativement au `cwd` du process :
+   * un chemin relatif ne fonctionne que si le worker est lancé depuis la
+   * racine du dépôt (`node build/bin/console.js …`) et casse depuis `build/`
+   * (`cd build && node bin/console.js …`) — aucun job enregistré, avertissement
+   * « No jobs found for locations ». On résout donc le motif en absolu par
+   * rapport à la racine de l'app (qui est `build/` en production).
    */
-  locations: [
-    env.get('NODE_ENV') === 'production' ? './build/app/jobs/**/*.js' : './app/jobs/**/*.ts',
-  ],
+  locations: [app.makePath(app.inProduction ? 'app/jobs/**/*.js' : 'app/jobs/**/*.ts')],
 })
