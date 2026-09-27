@@ -1,3 +1,4 @@
+import { throttleOnboarding } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 const OnboardingController = () => import('#controllers/onboarding_controller')
 
@@ -5,6 +6,6 @@ const OnboardingController = () => import('#controllers/onboarding_controller')
 router
   .group(() => {
     router.get('/:token', [OnboardingController, 'show'])
-    router.post('/:token', [OnboardingController, 'submit'])
+    router.post('/:token', [OnboardingController, 'submit']).use(throttleOnboarding)
   })
   .prefix('/onboarding')

@@ -1,4 +1,5 @@
 import { middleware } from '#start/kernel'
+import { throttleContactRequests } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const ContactRequestsController = () => import('#controllers/contact_requests_controller')
@@ -18,7 +19,7 @@ router
   })
   .use([middleware.guest()])
 
-router.post('/contact-requests', [ContactRequestsController, 'store'])
+router.post('/contact-requests', [ContactRequestsController, 'store']).use(throttleContactRequests)
 
 // Hors du groupe `guest` : sondé sans session par Docker, Render, UptimeRobot…
 router.get('/health', [HealthChecksController])

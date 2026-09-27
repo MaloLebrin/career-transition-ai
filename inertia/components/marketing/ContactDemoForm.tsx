@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react'
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import React from 'react'
+import { rateLimitError } from '#shared/helpers/rate_limit'
 import Button from '~/components/ui/Button'
 
 export type ContactDemoFormVariant = 'contact' | 'demo'
@@ -51,6 +52,8 @@ export function ContactDemoForm({
     e.preventDefault()
     post('/contact-requests', { preserveScroll: true, onSuccess: () => reset() })
   }
+
+  const throttled = rateLimitError(errors)
 
   if (wasSuccessful) {
     return (
@@ -138,6 +141,12 @@ export function ContactDemoForm({
             placeholder={messagePlaceholder}
           />
         </FormField>
+
+        {throttled && (
+          <p role="alert" className="text-sm text-rose-500 font-medium">
+            {throttled}
+          </p>
+        )}
 
         <div className="pt-2 flex flex-col sm:flex-row items-start gap-3">
           <Button
