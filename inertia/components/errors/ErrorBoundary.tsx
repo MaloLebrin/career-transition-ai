@@ -47,6 +47,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               Recharger la page
             </button>
             <a
+              // eslint-disable-next-line no-restricted-syntax -- rechargement complet voulu : après un crash React, l'état client n'est plus fiable
               href="/"
               className="rounded-2xl border-2 border-brand-navy/10 bg-white px-6 py-3 text-sm font-bold text-brand-navy hover:border-brand-navy"
             >
