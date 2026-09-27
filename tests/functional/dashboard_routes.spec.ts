@@ -1,138 +1,88 @@
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { AuthService } from '#services/auth_service'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
-import env from '#start/env'
+import { createAdvisor } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
-import app from '@adonisjs/core/services/app'
 import { test } from '@japa/runner'
 
-function baseUrl(): string {
-  return `http://${env.get('HOST')}:${env.get('PORT')}`
-}
-
+/**
+ * Mutations du dashboard conseiller (candidats, organisation, invitations) :
+ * refus anonyme en JSON (401) et chemin nominal pour un conseiller connecté.
+ *
+ * `loginAs()` écrit directement dans la session (store mémoire en test) : plus
+ * besoin de rejouer le formulaire de login ni de recopier les cookies.
+ */
 test.group('Dashboard routes (functional)', (group) => {
   // Pas de transaction globale ici : les handlers HTTP passent par d'autres
   // connexions du pool Postgres et ne la verraient pas (cf. tests/bootstrap.ts).
   group.each.setup(() => truncateDb())
+
   test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({
     assert,
+    client,
   }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ name: 'Test', email: 'test@example.com' }),
-    })
-    assert.equal(res.status, 401)
+    const response = await client
+      .post('/dashboard/conseiller/employees')
+      .header('Accept', 'application/json')
+      .json({ name: 'Test', email: 'test@example.com' })
+      .redirects(0)
+
+    response.assertStatus(401)
+    assert.isNull(await Employee.findBy('email', 'test@example.com'))
   })
 
   test('POST /dashboard/conseiller/employees creates employee and redirects when authenticated', async ({
     assert,
+    client,
   }) => {
-    await app.boot()
-    const authService = new AuthService()
-    const email = `functional-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const password = 'secret123'
-    await authService.register({
-      email,
-      password,
-      name: 'Advisor Test',
-      role: USERS_ROLES.ADVISOR,
-      organizationName: `Org ${Date.now()}`,
-    })
+    const advisor = await createAdvisor()
+    const candidateEmail = 'new.candidate@example.com'
 
-    const loginRes = await fetch(`${baseUrl()}/auth/login`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    const setCookies =
-      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
-    const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
+    const response = await client
+      .post('/dashboard/conseiller/employees')
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+      .json({ name: 'New Candidate', email: candidateEmail })
+      .redirects(0)
 
-    const candidateEmail = `candidate-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/employees`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Cookie': cookieHeader,
-      },
-      body: JSON.stringify({ name: 'New Candidate', email: candidateEmail }),
-    })
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/conseiller/employees')
 
-    assert.equal(res.status, 302)
-    const location = res.headers.get('location') ?? ''
-    assert.isTrue(
-      location.includes('/dashboard/conseiller/employees'),
-      `Expected redirect to /dashboard/conseiller/employees, got ${location}`
-    )
-
-    const count = await Employee.query().where('email', candidateEmail).count('* as total')
-    assert.equal(Number((count[0] as any).$extras.total), 1)
+    const employees = await Employee.query().where('email', candidateEmail)
+    assert.lengthOf(employees, 1)
+    assert.equal(employees[0].advisorId, advisor.id)
+    assert.equal(employees[0].organizationId, advisor.organizationId)
   })
 
   test('PUT /dashboard/conseiller/settings/organization returns 401 when unauthenticated', async ({
-    assert,
+    client,
   }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization`, {
-      method: 'PUT',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ name: 'My Org', slug: 'my-org' }),
-    })
-    assert.equal(res.status, 401)
+    const response = await client
+      .put('/dashboard/conseiller/settings/organization')
+      .header('Accept', 'application/json')
+      .json({ name: 'My Org', slug: 'my-org' })
+      .redirects(0)
+
+    response.assertStatus(401)
   })
 
   test('PUT /dashboard/conseiller/settings/organization updates org and redirects when authenticated', async ({
     assert,
+    client,
   }) => {
-    await app.boot()
-    const authService = new AuthService()
-    const email = `settings-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    await authService.register({
-      email,
-      password: 'secret123',
-      name: 'Settings User',
-      role: USERS_ROLES.ADVISOR,
-      organizationName: `Settings Org ${Date.now()}`,
-    })
+    const advisor = await createAdvisor()
+    const org = await Organization.findOrFail(advisor.organizationId)
+    const newName = 'Updated Org'
 
-    const loginRes = await fetch(`${baseUrl()}/auth/login`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password: 'secret123' }),
-    })
-    const setCookies =
-      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
-    const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
+    const response = await client
+      .put('/dashboard/conseiller/settings/organization')
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+      .json({ name: newName, slug: org.slug })
+      .redirects(0)
 
-    const user = await User.query().where('email', email).firstOrFail()
-    const org = await Organization.findOrFail(user.organizationId)
-    const newName = `Updated Org ${Date.now()}`
-
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization`, {
-      method: 'PUT',
-      redirect: 'manual',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Cookie': cookieHeader,
-      },
-      body: JSON.stringify({ name: newName, slug: org.slug }),
-    })
-
-    assert.equal(res.status, 302)
-    const location = res.headers.get('location') ?? ''
-    assert.isTrue(
-      location.includes('/dashboard/conseiller/settings'),
-      `Expected redirect to /dashboard/conseiller/settings, got ${location}`
-    )
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/conseiller/settings')
 
     await org.refresh()
     assert.equal(org.name, newName)
@@ -140,69 +90,38 @@ test.group('Dashboard routes (functional)', (group) => {
 
   test('POST /dashboard/conseiller/settings/organization/advisors returns 401 when unauthenticated', async ({
     assert,
+    client,
   }) => {
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization/advisors`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        name: 'New Advisor',
-        email: 'advisor@example.com',
-        role: 'consultant',
-      }),
-    })
-    assert.equal(res.status, 401)
+    const response = await client
+      .post('/dashboard/conseiller/settings/organization/advisors')
+      .header('Accept', 'application/json')
+      .json({ name: 'New Advisor', email: 'advisor@example.com', role: 'consultant' })
+      .redirects(0)
+
+    response.assertStatus(401)
+    assert.isNull(await User.findBy('email', 'advisor@example.com'))
   })
 
   test('POST /dashboard/conseiller/settings/organization/advisors invites advisor and redirects when authenticated', async ({
     assert,
+    client,
   }) => {
-    await app.boot()
-    const authService = new AuthService()
-    const email = `advisor-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    await authService.register({
-      email,
-      password: 'secret123',
-      name: 'Owner',
-      role: USERS_ROLES.ADVISOR,
-      organizationName: `Owner Org ${Date.now()}`,
-    })
+    const advisor = await createAdvisor()
+    const invitedEmail = 'invited.advisor@example.com'
 
-    const loginRes = await fetch(`${baseUrl()}/auth/login`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password: 'secret123' }),
-    })
-    const setCookies =
-      loginRes.headers.getSetCookie?.() ?? [loginRes.headers.get('set-cookie')].filter(Boolean)
-    const cookieHeader = setCookies.map((c: string) => c.split(';')[0].trim()).join('; ')
+    const response = await client
+      .post('/dashboard/conseiller/settings/organization/advisors')
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+      .json({ name: 'Invited Advisor', email: invitedEmail, role: 'consultant' })
+      .redirects(0)
 
-    const invitedEmail = `invited-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const res = await fetch(`${baseUrl()}/dashboard/conseiller/settings/organization/advisors`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Cookie': cookieHeader,
-      },
-      body: JSON.stringify({
-        name: 'Invited Advisor',
-        email: invitedEmail,
-        role: 'consultant',
-      }),
-    })
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/conseiller/settings')
 
-    assert.equal(res.status, 302)
-    const location = res.headers.get('location') ?? ''
-    assert.isTrue(
-      location.includes('/dashboard/conseiller/settings'),
-      `Expected redirect to /dashboard/conseiller/settings, got ${location}`
-    )
-
-    const invitedUser = await User.query().where('email', invitedEmail).first()
+    const invitedUser = await User.findBy('email', invitedEmail)
     assert.isNotNull(invitedUser)
     assert.equal(invitedUser!.name, 'Invited Advisor')
+    assert.equal(invitedUser!.organizationId, advisor.organizationId)
   })
 })
