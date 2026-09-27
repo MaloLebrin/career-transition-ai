@@ -3,6 +3,11 @@ import app from '@adonisjs/core/services/app'
 import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import testUtils from '@adonisjs/core/services/test_utils'
+import { dbAssertions } from '@adonisjs/lucid/plugins/db'
+import { apiClient } from '@japa/api-client'
+import { authApiClient } from '@adonisjs/auth/plugins/api_client'
+import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
+import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client'
 import env from '#start/env'
 
 /**
@@ -13,7 +18,20 @@ import env from '#start/env'
  * Configure Japa plugins in the plugins array.
  * Learn more - https://japa.dev/docs/runner-config#plugins-optional
  */
-export const plugins: Config['plugins'] = [assert(), pluginAdonisJS(app)]
+export const plugins: Config['plugins'] = [
+  assert(),
+  pluginAdonisJS(app),
+  dbAssertions(app),
+  // Client HTTP des suites `functional` : `client.get(...).loginAs(user)`
+  // (session web), `.withInertia()` et `response.assertInertiaComponent(...)`.
+  // Remplace les `fetch` + recopie manuelle des cookies de session.
+  apiClient({
+    baseURL: `http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || '3333'}`,
+  }),
+  sessionApiClient(app),
+  authApiClient(app),
+  inertiaApiClient(app),
+]
 
 /**
  * Configure lifecycle function to run before and after all the

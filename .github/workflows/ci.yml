@@ -107,7 +107,7 @@ jobs:
           HOST: localhost
           APP_KEY: tests-only-app-key
           LOG_LEVEL: error
-          SESSION_DRIVER: cookie
+          SESSION_DRIVER: memory
           QUEUE_DRIVER: sync
           DB_HOST: localhost
           DB_PORT: 5432

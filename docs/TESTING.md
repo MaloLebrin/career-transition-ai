@@ -64,6 +64,58 @@ l'écriture risquée dans sa propre transaction (`db.transaction(...)`, qui devi
 `withGlobalTransaction()`), sans quoi le repli échoue dès qu'il s'exécute dans une transaction — en
 test comme chez un futur appelant transactionnel.
 
+## Organisation des specs (calquée sur boat-management)
+
+| Où                                       | Quoi                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------- |
+| `tests/unit/<miroir de app/>`            | logique pure : validateurs, middlewares (faux contexte), mappers, DTOs  |
+| `tests/unit/shared/`                     | helpers de `shared/` côté serveur (prompts IA, cas d'usage…)            |
+| `tests/integration/{services,jobs,…}/`   | services, jobs, modèles qui touchent la base                            |
+| `tests/functional/<domaine>/<ressource>` | routes HTTP de bout en bout : un fichier par ressource, un dossier par domaine (`auth`, `candidat`, `conseiller`, `admin`, `access`…) |
+| `tests/inertia/`                         | composants, pages, hooks et helpers React (Vitest)                      |
+| `tests/support/`                         | helpers partagés des suites Japa (ci-dessous)                           |
+
+### Client HTTP des tests `functional`
+
+`tests/bootstrap.ts` branche `@japa/api-client` et les plugins `session`, `auth` et `inertia`
+d'AdonisJS. En test, `SESSION_DRIVER=memory` : `loginAs()` écrit directement dans la session,
+sans rejouer le formulaire de login.
+
+```ts
+test('le conseiller voit sa liste', async ({ client, assert }) => {
+  const advisor = await createAdvisor()
+  const response = await client.get('/dashboard/conseiller/employees').loginAs(advisor).withInertia()
+  assertPage(assert, response, 'dashboard/conseiller/employees/Index', ['employees'])
+})
+```
+
+- **Toujours épingler le composant** (`assertPage` / `assertInertiaComponent`) : superagent suit
+  les redirections, et un GET protégé renvoyé vers `/auth/login` répond… 200 sur la page de login.
+- `.redirects(0)` pour inspecter une redirection elle-même (`assertRedirectsTo`).
+- Erreurs de validation : `assertFieldErrors()` / `assertNoFieldErrors()` lisent le flash
+  `inputErrorsBag` — la macro `assertHasValidationError()` du plugin lit `errors` et ne voit rien.
+
+### `tests/support/`
+
+| Fichier           | Rôle                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `actors.ts`       | `createAdvisor()`, `createAdmin()`, `createSuperAdmin()`, `createCandidate()`… — rôle toujours explicite (la factory en tire un au hasard) |
+| `inertia_page.ts` | `assertPage()` : composant épinglé + présence des props attendues                      |
+| `validation.ts`   | `assertFieldErrors()`, `assertNoFieldErrors()`                                          |
+| `http_context.ts` | `makeCtx()` / `makeNext()` : faux `HttpContext` qui **enregistre** redirections, refus et appels d'auth, pour les specs unit de middleware |
+
+Les journaux de `makeCtx()` sont des références vivantes (tableaux, objets compteurs), jamais
+des accesseurs : un spec qui les déstructure figerait sinon la valeur d'un getter.
+
+### Lancer plusieurs suites en parallèle en local
+
+Les variables d'environnement du process priment sur `.env.test` : pour faire tourner deux
+suites en même temps sans qu'elles se tronquent mutuellement, donner à chacune sa base et son port.
+
+```bash
+DB_DATABASE=test_a PORT=3401 node ace test functional --files=tests/functional/auth/login.spec.ts
+```
+
 ## CI — shards générés depuis l'arborescence
 
 Le job `test-backend` tourne en shards parallèles, chacun avec son propre conteneur Postgres
