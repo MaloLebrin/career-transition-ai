@@ -27,7 +27,8 @@
     "knip:inertia": "knip -c knip.json --tsConfig tsconfig.inertia.json --include files",
     "knip:inertia:exports": "knip -c knip.json --tsConfig tsconfig.inertia.json --include exports,types,enumMembers",
     "knip:server:exports": "knip -c knip.server.json --tsConfig tsconfig.json --include exports,types,enumMembers",
-    "knip:exports": "pnpm run knip:inertia:exports && pnpm run knip:server:exports"
+    "knip:exports": "pnpm run knip:inertia:exports && pnpm run knip:server:exports",
+    "prepare": "husky || true"
   },
   "imports": {
     "#generated/*": "./.adonisjs/server/*.js",
@@ -81,8 +82,10 @@
     "c8": "^10.1.3",
     "eslint": "^9.39.4",
     "hot-hook": "^0.4.0",
+    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "knip": "^6.2.0",
+    "lint-staged": "^17.6.0",
     "pino-pretty": "^13.1.3",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",
@@ -149,5 +152,8 @@
       "protobufjs"
     ]
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "lint-staged": {
+    "*.{ts,tsx,js,json,css,edge,md}": "prettier --write"
+  }
 }

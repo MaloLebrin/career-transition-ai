@@ -330,6 +330,37 @@ test.group('Conseiller — notes : modification et suppression', (group) => {
     assert.isNull(note.deletedAt)
   })
 
+  test("en requête Inertia, le refus d'un non-auteur est flashé avec redirection", async ({
+    client,
+    assert,
+  }) => {
+    const author = await createAdvisor()
+    const employee = await createEmployeeFor(author)
+    const colleague = await createAdvisor(await Organization.findOrFail(author.organizationId))
+    const note = await NoteFactory.merge({
+      organizationId: author.organizationId,
+      employeeId: employee.id,
+      authorId: author.id,
+      content: 'Original',
+    }).create()
+
+    // Erreur métier (`NoteForbiddenError`) rendue par le handler : pas de JSON
+    // brut qu'Inertia afficherait dans une modale.
+    const response = await client
+      .put(`/dashboard/conseiller/notes/${note.id}`)
+      .header('referer', referer(employee.id))
+      .form({ content: 'Piraté' })
+      .loginAs(colleague)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(303)
+    response.assertHeader('location', referer(employee.id))
+    assert.equal(response.flashMessage('error'), 'Only the author can edit this note')
+    await note.refresh()
+    assert.equal(note.content, 'Original')
+  })
+
   test("un conseiller d'une autre organisation reçoit 404", async ({ client, assert }) => {
     const author = await createAdvisor()
     const employee = await createEmployeeFor(author)
