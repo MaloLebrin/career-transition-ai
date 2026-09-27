@@ -74,4 +74,16 @@ export default await Env.create(new URL('../', import.meta.url), {
   AI_PROVIDER: Env.schema.enum.optional(['mistral', 'none'] as const),
   MISTRAL_API_KEY: Env.schema.string.optional(),
   MISTRAL_MODEL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Suivi des erreurs — voir config/error_tracking.ts
+  |----------------------------------------------------------
+  | Sans `SENTRY_DSN`, rien n'est envoyé. `RENDER_GIT_COMMIT` est
+  | injecté par Render et sert de release par défaut.
+  */
+  SENTRY_DSN: Env.schema.string.optional(),
+  SENTRY_ENVIRONMENT: Env.schema.string.optional(),
+  SENTRY_RELEASE: Env.schema.string.optional(),
+  RENDER_GIT_COMMIT: Env.schema.string.optional(),
 })

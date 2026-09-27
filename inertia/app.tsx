@@ -1,6 +1,7 @@
 /// <reference path="../adonisrc.ts" />
 /// <reference path="../config/inertia.ts" />
 
+import { ErrorBoundary } from '~/components/errors/ErrorBoundary'
 import { APP_NAME } from '#shared/constants/app'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 import { createInertiaApp } from '@inertiajs/react'
@@ -19,6 +20,11 @@ createInertiaApp({
   },
 
   setup({ el, App, props }) {
-    hydrateRoot(el, <App {...props} />)
+    hydrateRoot(
+      el,
+      <ErrorBoundary>
+        <App {...props} />
+      </ErrorBoundary>
+    )
   },
 })

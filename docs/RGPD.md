@@ -23,6 +23,7 @@ Contact pour l'exercice des droits : `contact@francetransitioncarriere.fr`
       `SUBPROCESSORS` (`shared/constants/legal.ts`) et dans `SecurityPage.tsx`.
 - [ ] **Resend** : vérifier la région du compte (UE ou États-Unis) et mettre à
       jour la localisation dans `SUBPROCESSORS`.
+- [ ] **Sentry** (si `SENTRY_DSN` est défini) : organisation créée en **région EU**, stockage des IP désactivé — voir [DEPLOYMENT.md](DEPLOYMENT.md#suivi-des-erreurs-sentry).
 - [ ] Mentions légales (`LegalNoticePage.tsx`) : éditeur, hébergeur.
 
 ## 2. Sous-traitants et flux de données
@@ -34,6 +35,7 @@ Contact pour l'exercice des droits : `contact@francetransitioncarriere.fr`
 | **Mistral AI** (France) | Récit libre (cartographie), compétences et poste visé (ciblage) | Serveur : `POST /dashboard/ai/skill-mapping`, `/dashboard/ai/targets` | Récit **pseudonymisé** avec l'identité de l'utilisateur connecté (`pseudonymizeForAi`) ; le ciblage n'envoie aucune donnée identifiante. |
 | **Resend** | Nom, e-mail du destinataire, contenu des e-mails (invitation, notifications, formulaire de contact) | Serveur (`app/services/mail/`) | `MAIL_PROVIDER=console` en dev/test. |
 | **Hébergeur** (UE, à choisir) | Toute la base PostgreSQL, PDF générés (`tmp/exports`) | — | Voir [hosting.md](hosting.md). |
+| **Sentry** (région EU) | Message et pile d'appels des erreurs 5xx et des jobs en échec, méthode et route, **id** de l'utilisateur | Serveur et worker (`#services/error_tracking_service`) | Actif seulement avec `SENTRY_DSN`. `scrubEvent` retire nom, e-mail, IP, cookies, corps de requête et query string ; le payload des jobs n'est jamais envoyé. |
 | **Google Fonts** | Adresse IP du visiteur | Navigateur | Auto-héberger les polices supprimerait ce transfert. |
 
 Règle de code : **aucun nom ni e-mail de candidat dans un prompt IA**. Tout
