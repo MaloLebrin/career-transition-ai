@@ -32,6 +32,33 @@ QUEUE_DRIVER=database
 - **Tables SQL** : migration `1773043557052_create_queue_tables.ts`
   - crée `queue_jobs` et `queue_schedules`.
 
+### Rétention des jobs terminés
+
+`defaultJobOptions` de `config/queue.ts` (constante `QUEUE_JOB_RETENTION`) :
+
+| Statut | `removeOn…` | Conservation |
+|---|---|---|
+| `completed` | `removeOnComplete` | 7 jours, 1 000 jobs max **par queue** |
+| `failed` | `removeOnFail` | 30 jours, 1 000 jobs max **par queue** (colonne `error` : message de l'échec) |
+
+- Sans cette option, `@boringnode/queue` supprime un job dès qu'il se termine
+  (`true` par défaut) : aucune trace d'un échec. `false` garderait tout,
+  indéfiniment — à ne jamais utiliser (quota Neon, polling du worker).
+- L'élagage est fait par l'adaptateur **à la fin de chaque job de la même
+  queue** (âge puis nombre) : une queue inactive garde son historique jusqu'au
+  job suivant, dans la limite des 1 000 lignes. Pas de tâche planifiée.
+- Priorité : `static options` du job > `queues.<nom>.defaultJobOptions` >
+  global. Aucun job ne surcharge la rétention aujourd'hui.
+- Borne : au plus `4 queues × 2 statuts × 1 000` lignes terminées.
+- Test : `tests/unit/hygiene/queue_retention.spec.ts` (vrai adaptateur Knex
+  sur PostgreSQL).
+
+```sql
+-- Derniers échecs, pour diagnostic
+SELECT queue, error, to_timestamp(finished_at / 1000) AS finished
+FROM queue_jobs WHERE status = 'failed' ORDER BY finished_at DESC LIMIT 20;
+```
+
 ## Exemples de jobs
 
 ### Job “analytics” (export usage exercices)
