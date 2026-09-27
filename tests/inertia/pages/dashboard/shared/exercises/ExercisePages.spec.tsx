@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
 import type { ComponentType } from 'react'
 import type { ExerciseDraft } from '~/types'
 
@@ -88,6 +88,13 @@ vi.mock('~/components/exercises/SkillMappingTool', async () => stubTool(await im
 vi.mock('~/components/exercises/TargetingTool', async () => stubTool(await import('react'), 'TargetingTool'))
 vi.mock('~/components/exercises/ValuesTool', async () => stubTool(await import('react'), 'ValuesTool'))
 
+/** Monte la page puis laisse l'outil factice résoudre son brouillon initial (asynchrone). */
+async function renderPage(ui: React.ReactElement) {
+  const utils = renderWithUser(ui)
+  await act(async () => {})
+  return utils
+}
+
 type PageCase = {
   name: string
   Page: ComponentType<{ employeeId?: string; initialDraftsByType?: Record<string, ExerciseDraft | null> }>
@@ -119,8 +126,8 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
     hook.calls.length = 0
   })
 
-  test('côté conseiller : lien retour vers la fiche accompagné et outil affiché', () => {
-    renderWithUser(<Page employeeId="5" initialDraftsByType={{}} />)
+  test('côté conseiller : lien retour vers la fiche accompagné et outil affiché', async () => {
+    await renderPage(<Page employeeId="5" initialDraftsByType={{}} />)
     expect(screen.getByTestId('tool')).toHaveAttribute('data-tool', tool)
     expect(screen.getByTestId('layout')).toHaveAttribute('data-employee', '5')
     expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute('href', '/dashboard/conseiller/employees/5')
@@ -129,29 +136,29 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
     })
   })
 
-  test('côté candidat : chemins /dashboard/candidat', () => {
-    renderWithUser(<Page />)
+  test('côté candidat : chemins /dashboard/candidat', async () => {
+    await renderPage(<Page />)
     expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute('href', '/dashboard/candidat')
     expect(hook.calls.at(-1)![2]).toMatchObject({ exercisesBasePath: '/dashboard/candidat/exercises' })
   })
 
   test('enregistrer le résultat transmet le type, les données, le score 10 et la durée', async () => {
-    const { user } = renderWithUser(<Page employeeId="5" />)
+    const { user } = await renderPage(<Page employeeId="5" />)
     await user.click(screen.getByRole('button', { name: 'stub-save' }))
     expect(hook.saveResult).toHaveBeenCalledWith(type, { from: tool }, 10, 42)
   })
 
   test('après enregistrement, redirige vers le lien retour', async () => {
-    renderWithUser(<Page employeeId="5" />)
+    await renderPage(<Page employeeId="5" />)
     const onComplete = hook.calls.at(-1)![1] as () => Promise<void>
     await onComplete()
     expect(routerSpies.visit).toHaveBeenCalledWith('/dashboard/conseiller/employees/5')
   })
 
-  test('indicateurs d’analyse IA et de sauvegarde automatique', () => {
+  test('indicateurs d’analyse IA et de sauvegarde automatique', async () => {
     hook.state.isAnalyzing = true
     hook.state.isSavingDraft = true
-    renderWithUser(<Page employeeId="5" />)
+    await renderPage(<Page employeeId="5" />)
     expect(screen.getByText(/IA en action/)).toBeInTheDocument()
     if (hasDraft) expect(screen.getByText('Sauvegarde auto...')).toBeInTheDocument()
   })
@@ -159,7 +166,7 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
   if (hasDraft) {
     test('brouillon : l’outil reçoit le brouillon du type et sauvegarde les brouillons', async () => {
       const draft = { employeeId: '5', type, lastUpdated: '2024-01-01', data: { step: 2 } } as ExerciseDraft
-      const { user } = renderWithUser(
+      const { user } = await renderPage(
         <Page employeeId="5" initialDraftsByType={{ [type]: draft, autre: { ...draft, data: 'x' } }} />
       )
       expect(await screen.findByText('{"step":2}')).toBeInTheDocument()
@@ -169,15 +176,15 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
     })
 
     test('sans brouillon pour ce type : brouillon initial nul', async () => {
-      renderWithUser(<Page employeeId="5" />)
+      await renderPage(<Page employeeId="5" />)
       expect(await screen.findByText('null')).toBeInTheDocument()
     })
   }
 
   if (requiresUser) {
-    test('sans utilisateur connecté : chargement puis redirection vers la connexion', () => {
+    test('sans utilisateur connecté : chargement puis redirection vers la connexion', async () => {
       setPageProps({})
-      renderWithUser(<Page employeeId="5" />)
+      await renderPage(<Page employeeId="5" />)
       expect(screen.queryByTestId('tool')).not.toBeInTheDocument()
       expect(routerSpies.visit).toHaveBeenCalledWith('/auth/login')
     })
