@@ -14,6 +14,10 @@ import { truncateDb } from '#tests/utils/db'
  * `POST` ajoute une compétence par son **nom** : la `Skill` est retrouvée ou
  * créée dans l'organisation du candidat, puis le niveau est posé sur le pivot
  * `employee_skills` (upsert sur `employeeId` + `skillId`).
+ *
+ * `PUT` modifie le niveau d'une ligne pivot désignée par son `id`
+ * (`employee_skills.id`), limitée au candidat connecté : la ligne d'un autre
+ * candidat, ou une ligne inexistante, répond 404.
  */
 
 const URL = '/dashboard/candidat/skills'
@@ -164,24 +168,85 @@ test.group('Candidat — compétences : ajout (POST)', (group) => {
 test.group('Candidat — compétences : modification (PUT)', (group) => {
   group.each.setup(() => truncateDb())
 
+  test('met à jour le niveau de la ligne pivot désignée, sans en créer', async ({
+    client,
+    assert,
+  }) => {
+    // Non-régression : l'id du pivot était passé comme `skillId`. Avec un pivot
+    // {id: n, skillId: autre} et une Skill d'id n, une nouvelle ligne était créée.
+    const { user, employee } = await createCandidate()
+    const s1 = await SkillFactory.merge({ organizationId: employee.organizationId }).create()
+    const s2 = await SkillFactory.merge({ organizationId: employee.organizationId }).create()
+    // Pivot dont l'id coïncide avec celui de s1, mais qui lie s2.
+    const link = await EmployeeSkill.create({
+      id: s1.id,
+      employeeId: employee.id,
+      skillId: s2.id,
+      level: 2,
+    })
+
+    const response = await client
+      .put(URL)
+      .loginAs(user)
+      .json({ id: link.id, level: 5 })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', PROFILE)
+    assertNoFieldErrors(assert, response)
+
+    const links = await EmployeeSkill.query().where('employeeId', employee.id)
+    assert.lengthOf(links, 1)
+    assert.equal(links[0].id, link.id)
+    assert.equal(links[0].skillId, s2.id)
+    assert.equal(links[0].level, 5)
+  })
+
+  test("refuse (404) la ligne pivot d'un autre candidat et ne la modifie pas", async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    const other = await createCandidate()
+    const skill = await SkillFactory.merge({
+      organizationId: other.employee.organizationId,
+    }).create()
+    const foreign = await EmployeeSkill.create({
+      employeeId: other.employee.id,
+      skillId: skill.id,
+      level: 2,
+    })
+
+    const response = await client
+      .put(URL)
+      .loginAs(user)
+      .json({ id: foreign.id, level: 5 })
+      .redirects(0)
+
+    response.assertStatus(404)
+    await foreign.refresh()
+    assert.equal(foreign.level, 2)
+    assert.lengthOf(await EmployeeSkill.query().where('employeeId', employee.id), 0)
+  })
+
   test('refuse un payload vide', async ({ client, assert }) => {
     const { user } = await createCandidate()
 
     const response = await client.put(URL).loginAs(user).json({}).redirects(0)
 
-    assertFieldErrors(assert, response, ['id', 'level', 'employeeSkillId'])
+    assertFieldErrors(assert, response, ['id', 'level'])
   })
 
-  test('refuse des identifiants de pivot inexistants', async ({ client, assert }) => {
+  test('répond 404 pour un identifiant de pivot inexistant', async ({ client, assert }) => {
     const { user } = await createCandidate()
 
     const response = await client
       .put(URL)
       .loginAs(user)
-      .json({ id: 999_999, level: 3, employeeSkillId: 999_999 })
+      .json({ id: 999_999, level: 3 })
       .redirects(0)
 
-    assertFieldErrors(assert, response, ['id', 'employeeSkillId'])
+    response.assertStatus(404)
     assert.lengthOf(await EmployeeSkill.all(), 0)
   })
 
@@ -197,7 +262,7 @@ test.group('Candidat — compétences : modification (PUT)', (group) => {
     const response = await client
       .put(URL)
       .loginAs(user)
-      .json({ id: link.id, level: 0, employeeSkillId: link.id })
+      .json({ id: link.id, level: 0 })
       .redirects(0)
 
     assertFieldErrors(assert, response, ['level'])
@@ -208,11 +273,7 @@ test.group('Candidat — compétences : modification (PUT)', (group) => {
   test('un conseiller est refusé (403) par le middleware candidat', async ({ client }) => {
     const advisor = await createAdvisor()
 
-    const response = await client
-      .put(URL)
-      .loginAs(advisor)
-      .json({ id: 1, level: 3, employeeSkillId: 1 })
-      .redirects(0)
+    const response = await client.put(URL).loginAs(advisor).json({ id: 1, level: 3 }).redirects(0)
 
     response.assertStatus(403)
   })

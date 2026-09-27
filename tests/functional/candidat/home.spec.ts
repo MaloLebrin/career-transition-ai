@@ -75,10 +75,13 @@ test.group('Candidat — accueil (GET /dashboard/candidat)', (group) => {
     const props = assertPage(assert, response, PAGE)
     assert.equal(props.completedExercises, 2)
     assert.equal(props.exerciseCompletionPercent, Math.round((2 / EXERCISE_LIST.length) * 100))
-    // `exerciseProgressByType` n'est pas asserté ici : `getExerciseProgressByType`
-    // étale (`{ ...result }`) des instances Lucid, dont les colonnes vivent dans
-    // `$attributes` — `progressPercent` y est perdu et la carte reste à 0
-    // (bug signalé, non épinglé).
+    // Non-régression : `getExerciseProgressByType` étalait (`{ ...result }`) les
+    // instances Lucid, perdant `progressPercent` — la carte restait à 0.
+    const progress = props.exerciseProgressByType as Record<string, number>
+    assert.equal(progress[EXERCICE_RESULTS_TYPES.MOTIVATION], 100)
+    assert.equal(progress[EXERCICE_RESULTS_TYPES.VALUES], 100)
+    assert.equal(progress[EXERCICE_RESULTS_TYPES.DISC], 40)
+    assert.equal(progress[EXERCICE_RESULTS_TYPES.TARGETING], 0)
   })
 
   test("n'expose que la fiche du candidat connecté", async ({ client, assert }) => {

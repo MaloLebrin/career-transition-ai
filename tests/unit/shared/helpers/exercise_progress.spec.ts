@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { EXERCISE_LIST, EXERCICE_RESULTS_TYPES as T } from '#shared/constants/exercises'
 import { getExerciseProgress, getExerciseProgressByType } from '#shared/helpers/exercise_progress'
+import ExerciseResult from '#models/exercise_result'
 
 test.group('getExerciseProgress — règles par exercice', () => {
   test('un exercice terminé vaut 100 % quelles que soient ses données', ({ assert }) => {
@@ -148,5 +149,25 @@ test.group('getExerciseProgressByType', () => {
     assert.equal(map[T.DISC], 100)
     assert.equal(map[T.VALUES], 40)
     assert.equal(map[T.TARGETING], 0)
+  })
+
+  test('lit progressPercent sur des instances Lucid chargées depuis la base', ({ assert }) => {
+    // Non-régression : `{ ...result }` sur une instance Lucid hydratée perd les
+    // colonnes (lues dans `$attributes` via le proxy) et la carte retombait à 0.
+    // `$createFromAdapterResult` hydrate le modèle comme le fait une requête.
+    const older = ExerciseResult.$createFromAdapterResult({
+      type: T.DISC,
+      progress_percent: 10,
+      date: new Date('2026-01-01T00:00:00Z'),
+    })!
+    const latest = ExerciseResult.$createFromAdapterResult({
+      type: T.DISC,
+      progress_percent: 60,
+      date: new Date('2026-02-01T00:00:00Z'),
+    })!
+
+    const map = getExerciseProgressByType([older, latest])
+
+    assert.equal(map[T.DISC], 60)
   })
 })

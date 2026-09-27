@@ -15,13 +15,20 @@ import type {
 
 type ExerciseModelType = ExerciseResult['type']
 
+/**
+ * Niveau (1..5) d'une compétence chargée via la relation `employee.skills`.
+ * Lucid expose les colonnes pivot préfixées : `pivotColumns(['level'])` → `$extras.pivot_level`.
+ * Repli à 3 si le pivot n'a pas été chargé.
+ */
+export const skillPivotLevel = (skill: Skill): number => {
+  const level = Number(skill.$extras.pivot_level ?? 3)
+  return Number.isNaN(level) ? 3 : Math.min(5, Math.max(1, level))
+}
+
 const mapSkill = (skill: Skill): SkillDto => {
-  const rawLevel = (skill as unknown as { $extras?: { level?: number } }).$extras?.level
-  const level = Number(rawLevel ?? 3)
-  const bounded = Number.isNaN(level) ? 3 : Math.min(5, Math.max(1, level))
   return {
     name: skill.name,
-    level: bounded,
+    level: skillPivotLevel(skill),
   }
 }
 

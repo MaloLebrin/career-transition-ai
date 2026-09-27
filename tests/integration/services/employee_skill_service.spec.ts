@@ -93,3 +93,42 @@ test.group('EmployeeSkillService', () => {
     assert.equal(rows[0].level, 2)
   })
 })
+
+test.group('EmployeeSkillService.updateOwnEmployeeSkillLevel', () => {
+  test('met à jour le niveau de la ligne pivot du candidat', async ({ assert }) => {
+    const { employee } = await createCandidate()
+    const skill = await SkillFactory.create()
+    const row = await EmployeeSkill.create({ employeeId: employee.id, skillId: skill.id, level: 2 })
+
+    await new EmployeeSkillService().updateOwnEmployeeSkillLevel({
+      employeeId: employee.id,
+      employeeSkillId: row.id,
+      level: 5,
+    })
+
+    await row.refresh()
+    assert.equal(row.level, 5)
+    assert.equal(row.skillId, skill.id)
+  })
+
+  test("refuse la ligne pivot d'un autre candidat", async ({ assert }) => {
+    const { employee } = await createCandidate()
+    const other = await createCandidate()
+    const skill = await SkillFactory.create()
+    const foreign = await EmployeeSkill.create({
+      employeeId: other.employee.id,
+      skillId: skill.id,
+      level: 2,
+    })
+
+    await assert.rejects(() =>
+      new EmployeeSkillService().updateOwnEmployeeSkillLevel({
+        employeeId: employee.id,
+        employeeSkillId: foreign.id,
+        level: 5,
+      })
+    )
+    await foreign.refresh()
+    assert.equal(foreign.level, 2)
+  })
+})
