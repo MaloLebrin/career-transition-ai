@@ -2,8 +2,8 @@ import PdfExport from '#models/pdf_export'
 import Employee from '#models/employee'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { PDF_MIME_TYPE, attachmentDisposition, readPdfStream } from '#services/pdf_storage_service'
 import type { HttpContext } from '@adonisjs/core/http'
-import { access } from 'node:fs/promises'
 
 export default class PdfExportDownloadsController {
   /**
@@ -42,19 +42,22 @@ export default class PdfExportDownloadsController {
       }
     }
 
-    const filePath = String(pdfExport.filePath || '')
+    const key = String(pdfExport.filePath || '')
     const fileName = String(pdfExport.fileName || `pdf_export_${pdfExport.id}.pdf`)
 
-    if (!filePath) {
+    if (!key) {
       return ctx.response.notFound()
     }
 
-    try {
-      await access(filePath)
-    } catch {
+    // Lu depuis le disque Drive (local ou S3) : le fichier a pu être écrit par
+    // le worker sur une autre machine.
+    const stream = await readPdfStream(key)
+    if (!stream) {
       return ctx.response.notFound('Le fichier PDF est introuvable sur le serveur.')
     }
 
-    return ctx.response.attachment(filePath, fileName)
+    ctx.response.header('Content-Type', pdfExport.mimeType || PDF_MIME_TYPE)
+    ctx.response.header('Content-Disposition', attachmentDisposition(fileName))
+    return ctx.response.stream(stream)
   }
 }

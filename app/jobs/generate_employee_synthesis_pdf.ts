@@ -4,6 +4,7 @@ import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_se
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { broadcastPdfExportUpdatedToUsers } from '#services/pdf_export_events_service'
 import { NotificationService } from '#services/notification_service'
+import { PDF_MIME_TYPE, pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { QUEUE_NAMES } from '#utils/queues/queue_names'
@@ -11,8 +12,6 @@ import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
 import { DateTime } from 'luxon'
-import { mkdir, stat, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 
 type GenerateEmployeeSynthesisPdfPayload = {
   pdfExportId: number
@@ -51,19 +50,16 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       const pdfService = new EmployeeSynthesisPdfService()
       const bytes = await pdfService.generateShareablePdf({ payload })
 
-      const exportsDir = path.join(process.cwd(), 'tmp', 'exports')
-      await mkdir(exportsDir, { recursive: true })
-
       const fileName = `Synthese_${employee.name.replace(/\s+/g, '_')}_${pdfExport.id}.pdf`
-      const filePath = path.join(exportsDir, fileName)
-      await writeFile(filePath, Buffer.from(bytes))
+      // Clé relative sur le disque Drive (local ou S3) : lisible par le web
+      // même quand le worker tourne sur une autre machine.
+      const key = pdfExportKey(pdfExport.id)
+      const size = await storePdf(key, bytes)
 
-      const s = await stat(filePath)
-
-      pdfExport.filePath = filePath
+      pdfExport.filePath = key
       pdfExport.fileName = fileName
-      pdfExport.mimeType = 'application/pdf'
-      pdfExport.size = s.size
+      pdfExport.mimeType = PDF_MIME_TYPE
+      pdfExport.size = size
       pdfExport.status = PDF_EXPORT_STATUSES.COMPLETED
       pdfExport.finishedAt = DateTime.now()
       await pdfExport.save()

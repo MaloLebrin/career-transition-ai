@@ -86,4 +86,19 @@ export default await Env.create(new URL('../', import.meta.url), {
   SENTRY_ENVIRONMENT: Env.schema.string.optional(),
   SENTRY_RELEASE: Env.schema.string.optional(),
   RENDER_GIT_COMMIT: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Stockage des fichiers (exports PDF) — voir config/drive.ts
+  |----------------------------------------------------------
+  | `fs` (défaut) : disque local `storage/`. `s3` : bucket S3
+  | compatible (Cloudflare R2) quand web et worker ne partagent
+  | pas de disque ; `S3_*` alors requises (vérifié par config/drive.ts).
+  */
+  DRIVE_DISK: Env.schema.enum.optional(['fs', 's3'] as const),
+  S3_BUCKET: Env.schema.string.optional(),
+  S3_ACCESS_KEY_ID: Env.schema.string.optional(),
+  S3_SECRET_ACCESS_KEY: Env.schema.string.optional(),
+  S3_ENDPOINT: Env.schema.string.optional(),
+  S3_REGION: Env.schema.string.optional(),
 })

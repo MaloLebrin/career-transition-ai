@@ -62,5 +62,6 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: 'Durée du contrat avec le cabinet, puis 3 ans',
   },
   { data: 'Demandes de contact et prospection B2B', duration: '3 ans après le dernier contact' },
+  { data: 'Exports PDF générés (synthèses)', duration: '30 jours, puis régénérables' },
   { data: 'Journaux techniques et de sécurité', duration: '1 an' },
 ]

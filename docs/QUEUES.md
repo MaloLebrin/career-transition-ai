@@ -81,8 +81,8 @@ Job : `app/jobs/generate_employee_synthesis_pdf.ts`
 - **Entrées** :
   - Ligne `pdf_exports` : `employee_id`, `user_id`, `organization_id`, `advisor_user_id`, etc.
 - **Sorties** :
-  - Écrit un fichier PDF dans `tmp/exports/…pdf` (MVP)
-  - Met à jour `pdf_exports` (`file_path`, `file_name`, `mime_type`, `size`)
+  - Écrit le PDF sur le disque Drive (`#services/pdf_storage_service`, local ou S3 selon `DRIVE_DISK`)
+  - Met à jour `pdf_exports` (`file_path` = clé relative `exports/pdf_export_<id>.pdf`, `file_name`, `mime_type`, `size`)
   - Met à jour `pdf_exports.status` : `pending → processing → completed/failed`
 - **Suivi temps réel** :
   - Des événements sont diffusés via Transmit (SSE) sur les channels `users/{id}/pdf-exports` et `organizations/{orgId}/pdf-exports`
@@ -142,7 +142,11 @@ Options utiles :
 
 ## Scheduler (tâches planifiées)
 
-Le fichier `start/scheduler.ts` est préchargé (env `web`) et sert à définir les jobs récurrents.
+Le fichier `start/scheduler.ts` est préchargé (env `web`) et sert à définir les jobs récurrents. Chaque planification a un id fixe (`.id(...)`) : l'enregistrement dans `queue_schedules` est un upsert rejoué à chaque démarrage, et c'est le **worker** qui déclenche les jobs dus.
+
+Planifications en place :
+
+- `purge-expired-pdf-exports` : `PurgeExpiredPdfExportsJob` (queue `pdfs`), chaque nuit à 3 h (Europe/Paris), supprime les PDF générés il y a plus de `PDF_EXPORT_RETENTION_DAYS` (30) jours.
 
 Exemples d’API (selon la doc AdonisJS queue) :
 

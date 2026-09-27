@@ -8,7 +8,9 @@ import { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
+import { pdfExportKey } from '#services/pdf_storage_service'
 import testUtils from '@adonisjs/core/services/test_utils'
+import drive from '@adonisjs/drive/services/main'
 import { test } from '@japa/runner'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -79,6 +81,10 @@ async function createPendingExport(
 
 test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('passe en COMPLETED avec filePath et fileName definis', async ({ assert }) => {
     const { org, advisor, employee } = await seedFullScenario('job-ok')
@@ -100,6 +106,23 @@ test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
     assert.isNotNull(updated.startedAt)
     assert.isNotNull(updated.finishedAt)
     assert.isNull(updated.errorMessage)
+  })
+
+  test('écrit le PDF sur le disque Drive sous une clé relative (issue #21)', async ({ assert }) => {
+    const disk = drive.fake()
+    const { org, advisor, employee } = await seedFullScenario('job-drive')
+    const pdfExport = await createPendingExport(advisor.id, org.id, employee.id, advisor.id)
+
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    const updated = await PdfExport.findOrFail(pdfExport.id)
+    assert.equal(updated.status, PDF_EXPORT_STATUSES.COMPLETED)
+    assert.equal(updated.filePath, pdfExportKey(pdfExport.id))
+    assert.notInclude(updated.filePath!, employee.name)
+    disk.assertExists(updated.filePath!)
+    const bytes = await disk.getBytes(updated.filePath!)
+    assert.equal(Buffer.from(bytes.subarray(0, 5)).toString(), '%PDF-')
+    assert.equal(updated.size, bytes.byteLength)
   })
 
   test('supporte les caracteres non WinAnsi (ex: fleche) via sanitation', async ({ assert }) => {
@@ -140,6 +163,10 @@ test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
 
 test.group('GenerateEmployeeSynthesisPdf job — transitions detat', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('startedAt et finishedAt sont definis apres execution', async ({ assert }) => {
     const { org, advisor, employee } = await seedFullScenario('job-dates')
@@ -166,6 +193,10 @@ test.group('GenerateEmployeeSynthesisPdf job — transitions detat', (group) => 
 
 test.group('GenerateEmployeeSynthesisPdf job — echec', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('passe en FAILED avec errorMessage quand le service PDF echoue', async ({ assert }) => {
     const { org, advisor, employee } = await seedFullScenario('job-fail')

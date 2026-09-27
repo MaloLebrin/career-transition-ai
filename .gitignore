@@ -26,3 +26,6 @@ yarn-error.log
 
 # Test coverage reports
 coverage/
+
+# Fichiers générés (exports PDF, disque `fs` de config/drive.ts)
+storage

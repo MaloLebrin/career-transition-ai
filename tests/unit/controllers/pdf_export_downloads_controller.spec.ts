@@ -5,10 +5,11 @@ import PdfExport from '#models/pdf_export'
 import User from '#models/user'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
+import drive from '@adonisjs/drive/services/main'
+import type { Readable } from 'node:stream'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,19 +24,30 @@ function makeCtx(overrides: Partial<any> = {}) {
       badRequest: (_msg?: string) => ({ status: 400 }),
       notFound: () => ({ status: 404 }),
       header: () => {},
-      stream: () => ({ status: 200 }),
+      // Consomme le flux avant que le disque factice soit nettoyé.
+      stream: async (stream: Readable) => {
+        await drain(stream)
+        return { status: 200 }
+      },
       attachment: (_path: string, _name?: string) => ({ status: 200 }),
     },
     ...overrides,
   }
 }
 
-async function createFakePdfFile(name: string): Promise<string> {
-  const dir = path.join(process.cwd(), 'tmp', 'exports')
-  await mkdir(dir, { recursive: true })
-  const filePath = path.join(dir, `${name}_${Date.now()}.pdf`)
-  await writeFile(filePath, Buffer.from('%PDF-1.4 fake'))
-  return filePath
+let pdfCounter = 0
+
+async function drain(stream: Readable): Promise<string> {
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk))
+  return Buffer.concat(chunks).toString()
+}
+
+/** PDF déposé sur le disque Drive factice ; renvoie sa clé. */
+async function createFakePdfFile(): Promise<string> {
+  const key = pdfExportKey(1_000_000 + ++pdfCounter)
+  await storePdf(key, new TextEncoder().encode('%PDF-1.4 fake'))
+  return key
 }
 
 async function seedOrg(prefix: string) {
@@ -94,13 +106,17 @@ async function seedCompletedExport(
 
 test.group('PdfExportDownloadsController.show — acces non authentifie', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('retourne 401 si aucun utilisateur authentifie', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
     const org = await seedOrg('dl-unauth')
     const user = await seedUser(org, USERS_ROLES.EMPLOYEE, 'cand')
     const emp = await seedEmployee(org, user, 'cand')
-    const filePath = await createFakePdfFile('unauth')
+    const filePath = await createFakePdfFile()
     const pdfExport = await seedCompletedExport(user.id, org.id, emp.id, filePath)
 
     const ctx = makeCtx({ auth: { user: null }, params: { id: String(pdfExport.id) } })
@@ -113,6 +129,10 @@ test.group('PdfExportDownloadsController.show — acces non authentifie', (group
 
 test.group('PdfExportDownloadsController.show — export non complete', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('retourne 400 si le statut est pending', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
@@ -158,6 +178,10 @@ test.group('PdfExportDownloadsController.show — export non complete', (group) 
 
 test.group('PdfExportDownloadsController.show — acces admin', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('admin de la meme orga peut telecharger', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
@@ -165,7 +189,7 @@ test.group('PdfExportDownloadsController.show — acces admin', (group) => {
     const adminUser = await seedUser(org, USERS_ROLES.ADMIN, 'admin')
     const candidateUser = await seedUser(org, USERS_ROLES.EMPLOYEE, 'cand')
     const emp = await seedEmployee(org, candidateUser, 'cand')
-    const filePath = await createFakePdfFile('admin-ok')
+    const filePath = await createFakePdfFile()
     const pdfExport = await seedCompletedExport(candidateUser.id, org.id, emp.id, filePath)
 
     const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
@@ -180,7 +204,7 @@ test.group('PdfExportDownloadsController.show — acces admin', (group) => {
     const adminB = await seedUser(orgB, USERS_ROLES.ADMIN, 'adminB')
     const candidateA = await seedUser(orgA, USERS_ROLES.EMPLOYEE, 'candA')
     const empA = await seedEmployee(orgA, candidateA, 'candA')
-    const filePath = await createFakePdfFile('admin-403')
+    const filePath = await createFakePdfFile()
     const pdfExport = await seedCompletedExport(candidateA.id, orgA.id, empA.id, filePath)
 
     const ctx = makeCtx({ auth: { user: adminB }, params: { id: String(pdfExport.id) } })
@@ -193,6 +217,10 @@ test.group('PdfExportDownloadsController.show — acces admin', (group) => {
 
 test.group('PdfExportDownloadsController.show — acces super admin', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('super admin peut telecharger nimporte quel export', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
@@ -201,7 +229,7 @@ test.group('PdfExportDownloadsController.show — acces super admin', (group) =>
     const superAdmin = await seedUser(platformOrg, USERS_ROLES.SUPER_ADMIN, 'superadmin')
     const candidateA = await seedUser(orgA, USERS_ROLES.EMPLOYEE, 'candA')
     const empA = await seedEmployee(orgA, candidateA, 'candA')
-    const filePath = await createFakePdfFile('sa')
+    const filePath = await createFakePdfFile()
     const pdfExport = await seedCompletedExport(candidateA.id, orgA.id, empA.id, filePath)
 
     const ctx = makeCtx({ auth: { user: superAdmin }, params: { id: String(pdfExport.id) } })
@@ -214,13 +242,17 @@ test.group('PdfExportDownloadsController.show — acces super admin', (group) =>
 
 test.group('PdfExportDownloadsController.show — acces candidat', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
 
   test('candidat peut telecharger son propre export', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
     const org = await seedOrg('dl-cand-own')
     const candidateUser = await seedUser(org, USERS_ROLES.EMPLOYEE, 'cand')
     const emp = await seedEmployee(org, candidateUser, 'cand')
-    const filePath = await createFakePdfFile('cand-own')
+    const filePath = await createFakePdfFile()
     const pdfExport = await seedCompletedExport(candidateUser.id, org.id, emp.id, filePath)
 
     const ctx = makeCtx({ auth: { user: candidateUser }, params: { id: String(pdfExport.id) } })
@@ -243,6 +275,68 @@ test.group('PdfExportDownloadsController.show — acces candidat', (group) => {
       fileName: 'Synthese.pdf',
       mimeType: 'application/pdf',
     })
+
+    const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
+    const result = await controller.show(ctx as any)
+    assert.equal(result.status, 404)
+  })
+})
+
+// ─── tests : lecture depuis le stockage Drive (issue #21) ─────────────────────
+
+test.group('PdfExportDownloadsController.show — stockage', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
+
+  async function adminWithExport(prefix: string, filePath: string) {
+    const org = await seedOrg(prefix)
+    const adminUser = await seedUser(org, USERS_ROLES.ADMIN, 'admin')
+    const emp = await seedEmployee(org, adminUser, 'admin')
+    const pdfExport = await seedCompletedExport(adminUser.id, org.id, emp.id, filePath)
+    return { adminUser, pdfExport }
+  }
+
+  test('diffuse le PDF avec type et nom de fichier', async ({ assert }) => {
+    const controller = new PdfExportDownloadsController()
+    const { adminUser, pdfExport } = await adminWithExport('dl-stream', await createFakePdfFile())
+    pdfExport.fileName = 'Synthèse_Élise.pdf'
+    await pdfExport.save()
+
+    const headers: Record<string, string> = {}
+    let body = ''
+    const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
+    ctx.response.header = (name: string, value: string) => {
+      headers[name] = value
+    }
+    ctx.response.stream = async (stream: Readable) => {
+      body = await drain(stream)
+      return { status: 200 }
+    }
+
+    const result = await controller.show(ctx as any)
+
+    assert.equal(result.status, 200)
+    assert.equal(body, '%PDF-1.4 fake')
+    assert.equal(headers['Content-Type'], 'application/pdf')
+    assert.include(headers['Content-Disposition'], 'filename="Synthese_Elise.pdf"')
+    assert.include(headers['Content-Disposition'], "filename*=UTF-8''Synth%C3%A8se_%C3%89lise.pdf")
+  })
+
+  test('clé absente du stockage : 404', async ({ assert }) => {
+    const controller = new PdfExportDownloadsController()
+    const { adminUser, pdfExport } = await adminWithExport('dl-missing', pdfExportKey(987_654))
+
+    const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
+    const result = await controller.show(ctx as any)
+    assert.equal(result.status, 404)
+  })
+
+  test('ancien chemin absolu : 404, jamais lu hors du préfixe', async ({ assert }) => {
+    const controller = new PdfExportDownloadsController()
+    const { adminUser, pdfExport } = await adminWithExport('dl-legacy', '/etc/passwd')
 
     const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
     const result = await controller.show(ctx as any)
