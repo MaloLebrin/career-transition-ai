@@ -253,7 +253,7 @@ test.group('Candidat — formations : suppression (DELETE)', (group) => {
 test.group('Candidat — formations : rôle', (group) => {
   group.each.setup(() => truncateDb())
 
-  test('un conseiller sans fiche candidat ne peut pas créer de formation', async ({
+  test('un conseiller est refusé (403) par le middleware candidate()', async ({
     client,
     assert,
   }) => {
@@ -261,7 +261,85 @@ test.group('Candidat — formations : rôle', (group) => {
 
     const response = await client.post(URL).loginAs(advisor).json(validPayload()).redirects(0)
 
-    assert.notEqual(response.status(), 302)
+    // Non-régression : la route n'avait que `auth()`, le conseiller tombait sur
+    // un 500 (« Profil candidat introuvable. ») au lieu d'un refus.
+    response.assertStatus(403)
     assert.lengthOf(await Education.all(), 0)
+  })
+
+  test("un conseiller d'une autre organisation ne peut pas supprimer une formation", async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createCandidate()
+    const education = await EducationFactory.merge({ employeeId: employee.id }).create()
+    const advisor = await createAdvisor()
+
+    const response = await client
+      .delete(URL)
+      .loginAs(advisor)
+      .json({ id: education.id })
+      .redirects(0)
+
+    response.assertStatus(403)
+    assert.isNotNull(await Education.find(education.id))
+  })
+
+  test("un candidat pas encore onboardé est renvoyé vers l'onboarding", async ({
+    client,
+    assert,
+  }) => {
+    const { user } = await createCandidate({ onboarded: false })
+
+    const response = await client.post(URL).loginAs(user).json(validPayload()).redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/candidat/onboarding')
+    assert.lengthOf(await Education.all(), 0)
+  })
+})
+
+/**
+ * Non-régression IDOR : l'`id` voyage dans le corps de la requête. Avant le
+ * correctif, `EducationService.update/delete` faisaient un `findOrFail(id)`
+ * sans filtre — n'importe quel candidat modifiait ou supprimait la formation
+ * d'un autre. Une formation étrangère doit être introuvable (404), et intacte.
+ */
+test.group('Candidat — formations : isolation entre candidats', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test("ne modifie pas la formation d'un autre candidat (404)", async ({ client, assert }) => {
+    const { user: attacker } = await createCandidate()
+    const { employee: victim } = await createCandidate()
+    const education = await EducationFactory.merge({
+      employeeId: victim.id,
+      degree: 'Licence',
+    }).create()
+
+    const response = await client
+      .put(URL)
+      .loginAs(attacker)
+      .json(validPayload({ id: education.id, degree: 'HACK' }))
+      .redirects(0)
+
+    response.assertStatus(404)
+    await education.refresh()
+    assert.equal(education.degree, 'Licence')
+    assert.equal(education.employeeId, victim.id)
+  })
+
+  test("ne supprime pas la formation d'un autre candidat (404)", async ({ client, assert }) => {
+    const { user: attacker } = await createCandidate()
+    const { employee: victim } = await createCandidate()
+    const education = await EducationFactory.merge({ employeeId: victim.id }).create()
+
+    const response = await client
+      .delete(URL)
+      .loginAs(attacker)
+      .json({ id: education.id })
+      .redirects(0)
+
+    response.assertStatus(404)
+    assert.isNotNull(await Education.find(education.id))
   })
 })

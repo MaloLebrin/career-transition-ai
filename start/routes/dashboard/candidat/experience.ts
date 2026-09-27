@@ -9,5 +9,5 @@ router
     router.put('/', [ExperienceController, 'update']).as('experiences.update')
     router.delete('/', [ExperienceController, 'delete']).as('experiences.delete')
   })
-  .use(middleware.auth())
+  .use([middleware.auth(), middleware.candidate(), middleware.checkOnboarding()])
   .prefix('/dashboard/candidat/experiences')

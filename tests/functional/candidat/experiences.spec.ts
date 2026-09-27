@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import { ExperienceFactory } from '#database/factories/experience_factory'
 import Experience from '#models/experience'
 import { EXPERIENCES_TYPES } from '#shared/constants/experience'
-import { createCandidate } from '#tests/support/actors'
+import { createAdvisor, createCandidate } from '#tests/support/actors'
 import { assertFieldErrors, assertNoFieldErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
 
@@ -261,6 +261,83 @@ test.group('Candidat — expériences : suppression (DELETE)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/auth/login')
+    assert.isNotNull(await Experience.find(experience.id))
+  })
+})
+
+test.group('Candidat — expériences : rôle', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('un conseiller est refusé (403) par le middleware candidate()', async ({
+    client,
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+
+    const response = await client.post(URL).loginAs(advisor).json(validPayload()).redirects(0)
+
+    response.assertStatus(403)
+    assert.lengthOf(await Experience.all(), 0)
+  })
+
+  test("un conseiller d'une autre organisation ne peut pas supprimer une expérience", async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createCandidate()
+    const experience = await ExperienceFactory.merge({ employeeId: employee.id }).create()
+    const advisor = await createAdvisor()
+
+    const response = await client
+      .delete(URL)
+      .loginAs(advisor)
+      .json({ id: experience.id })
+      .redirects(0)
+
+    response.assertStatus(403)
+    assert.isNotNull(await Experience.find(experience.id))
+  })
+})
+
+/**
+ * Non-régression IDOR : cf. `educations.spec.ts`. Une expérience d'un autre
+ * candidat doit être introuvable (404), et rester intacte.
+ */
+test.group('Candidat — expériences : isolation entre candidats', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test("ne modifie pas l'expérience d'un autre candidat (404)", async ({ client, assert }) => {
+    const { user: attacker } = await createCandidate()
+    const { employee: victim } = await createCandidate()
+    const experience = await ExperienceFactory.merge({
+      employeeId: victim.id,
+      title: 'Comptable',
+    }).create()
+
+    const response = await client
+      .put(URL)
+      .loginAs(attacker)
+      .json(validPayload({ id: experience.id, title: 'HACK' }))
+      .redirects(0)
+
+    response.assertStatus(404)
+    await experience.refresh()
+    assert.equal(experience.title, 'Comptable')
+    assert.equal(experience.employeeId, victim.id)
+  })
+
+  test("ne supprime pas l'expérience d'un autre candidat (404)", async ({ client, assert }) => {
+    const { user: attacker } = await createCandidate()
+    const { employee: victim } = await createCandidate()
+    const experience = await ExperienceFactory.merge({ employeeId: victim.id }).create()
+
+    const response = await client
+      .delete(URL)
+      .loginAs(attacker)
+      .json({ id: experience.id })
+      .redirects(0)
+
+    response.assertStatus(404)
     assert.isNotNull(await Experience.find(experience.id))
   })
 })

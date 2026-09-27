@@ -9,5 +9,5 @@ router
     router.put('/', [EducationController, 'update']).as('educations.update')
     router.delete('/', [EducationController, 'delete']).as('educations.delete')
   })
-  .use(middleware.auth())
+  .use([middleware.auth(), middleware.candidate(), middleware.checkOnboarding()])
   .prefix('/dashboard/candidat/educations')

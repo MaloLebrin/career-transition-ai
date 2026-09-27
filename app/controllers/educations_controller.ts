@@ -26,19 +26,22 @@ export default class EducationsController {
     return response.redirect('/dashboard/candidat/profile')
   }
 
-  async update({ request, response }: HttpContext) {
+  async update({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(updateEducationValidator)
-    await this.educationService.update(data.id, {
-      ...data,
-      description: data.description || null,
-      isCurrent: data.isCurrent || false,
+    const employee = await this.employeesService.getEmployeeForUser(auth.user!)
+    const { id, ...fields } = data
+    await this.educationService.update(employee.id, id, {
+      ...fields,
+      description: fields.description || null,
+      isCurrent: fields.isCurrent || false,
     })
     return response.redirect('/dashboard/candidat/profile')
   }
 
-  async delete({ request, response }: HttpContext) {
+  async delete({ request, response, auth }: HttpContext) {
     const { id } = await request.validateUsing(idEntityValidator)
-    await this.educationService.delete(id)
+    const employee = await this.employeesService.getEmployeeForUser(auth.user!)
+    await this.educationService.delete(employee.id, id)
     return response.redirect('/dashboard/candidat/profile')
   }
 }

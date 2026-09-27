@@ -25,18 +25,21 @@ export default class ExperiencesController {
     return response.redirect('/dashboard/candidat/profile')
   }
 
-  async update({ request, response }: HttpContext) {
+  async update({ request, response, auth }: HttpContext) {
     const data = await request.validateUsing(experienceUpdateValidator)
-    await this.experienceService.update(data.id, {
-      ...data,
-      isCurrent: data.isCurrent || false,
+    const employee = await this.employeesService.getEmployeeForUser(auth.user!)
+    const { id, ...fields } = data
+    await this.experienceService.update(employee.id, id, {
+      ...fields,
+      isCurrent: fields.isCurrent || false,
     })
     return response.redirect('/dashboard/candidat/profile')
   }
 
-  async delete({ request, response }: HttpContext) {
+  async delete({ request, response, auth }: HttpContext) {
     const { id } = await request.validateUsing(idEntityValidator)
-    await this.experienceService.delete(id)
+    const employee = await this.employeesService.getEmployeeForUser(auth.user!)
+    await this.experienceService.delete(employee.id, id)
     return response.redirect('/dashboard/candidat/profile')
   }
 }
