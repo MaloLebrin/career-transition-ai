@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import EmployeeHome from '../../../../inertia/components/dashboard/EmployeeHome'
 import { stepCompletionFromProgress } from '../../../../inertia/components/dashboard/PlanStepsTimeline'
 import type { EmployeeData } from '../../../../inertia/types/employee'
+import { makeEmployee } from '../../support/factories'
 
 describe('stepCompletionFromProgress', () => {
   test('returns true when support step is already completed in DB', () => {
@@ -103,5 +104,63 @@ describe('EmployeeHome roadmap', () => {
     expect(screen.getByText('✓')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /life curve/i })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /voir le résultat/i })).toBeInTheDocument()
+  })
+})
+
+describe('EmployeeHome — contenu', () => {
+  const baseProps = {
+    completedExercises: 3,
+    totalExercises: 8,
+    exerciseCompletionPercent: 38,
+    exerciseProgressByType: {},
+  }
+
+  test('affiche un loader sans accompagné', () => {
+    const { container } = render(<EmployeeHome {...baseProps} employee={null as unknown as EmployeeData} />)
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument()
+  })
+
+  test('salue par le prénom, affiche la cible, la progression, les conseils et 5 compétences max', () => {
+    render(
+      <EmployeeHome
+        {...baseProps}
+        employee={makeEmployee({
+          name: 'Camille Martin',
+          targetRole: 'UX designer',
+          advisorNotes: 'Mets en avant ta reconversion',
+          skills: Array.from({ length: 6 }, (_, i) => ({
+            id: i,
+            name: `Compétence ${i + 1}`,
+            category: null,
+            level: (i % 5) + 1,
+          })),
+        })}
+      />
+    )
+
+    expect(screen.getByRole('heading', { name: /Hello, Camille/ })).toBeInTheDocument()
+    expect(screen.getByText('UX designer')).toBeInTheDocument()
+    expect(screen.getByText(/Progression exercices: 38% \(3\/\s*8\)/)).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Progression des exercices' })).toHaveAttribute(
+      'aria-valuenow',
+      '38'
+    )
+    expect(screen.getByText('Conseils Expert')).toBeInTheDocument()
+    expect(screen.getByText(/Mets en avant ta reconversion/)).toBeInTheDocument()
+    expect(screen.getByText('Compétence 5')).toBeInTheDocument()
+    expect(screen.queryByText('Compétence 6')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Voir tous les exercices/ })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/exercises'
+    )
+    expect(screen.getByRole('link', { name: /Mon Profil Vitaminé/ })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/profile'
+    )
+  })
+
+  test('masque le bloc conseils sans note du conseiller', () => {
+    render(<EmployeeHome {...baseProps} employee={makeEmployee({ advisorNotes: null })} />)
+    expect(screen.queryByText('Conseils Expert')).not.toBeInTheDocument()
   })
 })
