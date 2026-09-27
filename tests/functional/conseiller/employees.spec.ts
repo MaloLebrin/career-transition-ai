@@ -1,3 +1,4 @@
+import { EMPLOYEE_ALREADY_EXISTS_MESSAGES } from '#exceptions/employee_already_exists_exception'
 import { EmployeeFactory } from '#database/factories/employee_factory'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { NoteFactory } from '#database/factories/note_factory'
@@ -141,20 +142,56 @@ test.group('Conseiller — candidats : création', (group) => {
     const org = await Organization.findOrFail(advisor.organizationId)
     const { user } = await createCandidate({ organization: org, advisor, onboarded: true })
 
-    // Le statut n'est volontairement pas asserté : le contrôleur ne reconnaît
-    // pas le message du service (« possède déjà un compte actif » vs le filtre
-    // `includes('existe déjà')`) et laisse l'erreur remonter en 500 au lieu du
-    // flash + redirect back attendu — anomalie remontée hors tests.
-    await client
+    // Non-régression : le contrôleur filtrait sur `includes('existe déjà')`, que
+    // le message du service ne contenait pas → 500 au lieu du flash + retour.
+    const response = await client
       .post(BASE)
-      .header('referer', BASE)
-      .header('Accept', 'application/json')
+      .header('referer', `${BASE}/new`)
       .json({ name: 'Doublon', email: user.email })
       .loginAs(advisor)
+      .withInertia()
       .redirects(0)
 
+    response.assertStatus(302)
+    response.assertHeader('location', `${BASE}/new`)
+    assert.equal(response.flashMessage('error'), EMPLOYEE_ALREADY_EXISTS_MESSAGES.ACTIVE)
     const count = await Employee.query().where('email', user.email).count('* as total')
     assert.equal(Number(count[0].$extras.total), 1)
+    assert.deepEqual(mails.sent, [])
+  })
+
+  test('un candidat existant non onboardé est refusé sans doublon ni email', async ({
+    client,
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const org = await Organization.findOrFail(advisor.organizationId)
+    const { user, employee } = await createCandidate({
+      organization: org,
+      advisor,
+      onboarded: false,
+    })
+
+    // Non-régression : la création réutilisait `user.id` pour une seconde fiche,
+    // violant l'unicité de `employees.user_id` (500) après avoir envoyé l'email.
+    const response = await client
+      .post(BASE)
+      .header('referer', `${BASE}/new`)
+      .json({ name: 'Doublon', email: user.email })
+      .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', `${BASE}/new`)
+    assert.equal(response.flashMessage('error'), EMPLOYEE_ALREADY_EXISTS_MESSAGES.PENDING)
+    const employees = await Employee.query().where('email', user.email)
+    assert.deepEqual(
+      employees.map((e) => e.id),
+      [employee.id]
+    )
+    const tokens = await OnboardingToken.query().where('userId', user.id)
+    assert.lengthOf(tokens, 0)
     assert.deepEqual(mails.sent, [])
   })
 
@@ -165,8 +202,6 @@ test.group('Conseiller — candidats : création', (group) => {
     const advisor = await createAdvisor()
     const org = await Organization.findOrFail(advisor.organizationId)
     // Compte `employee` orphelin (fiche supprimée, `user_id` remis à NULL).
-    // NB : si le compte est encore lié à une fiche non onboardée, la création
-    // viole l'unicité de `employees.user_id` (500) — anomalie remontée hors tests.
     const user = await createUser(USERS_ROLES.EMPLOYEE, org)
 
     const response = await client

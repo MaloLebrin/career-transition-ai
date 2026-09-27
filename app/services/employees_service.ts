@@ -1,5 +1,6 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
+import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
@@ -7,6 +8,7 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
+import db from '@adonisjs/lucid/services/db'
 
 type CreateEmployeeOptions = {
   /** When set, a User account is created and an onboarding link is sent (e.g. by email). */
@@ -72,68 +74,74 @@ export class EmployeesService {
     input: CreateEmployeeInput,
     options?: CreateEmployeeOptions
   ): Promise<EmployeeDto> {
-    let userId: number | null = null
+    const baseUrl = options?.baseUrl
 
-    if (options?.baseUrl) {
-      const existingUser = await User.query()
+    let existingUser: User | null = null
+    if (baseUrl) {
+      existingUser = await User.query()
         .where('organizationId', input.organizationId)
         .where('email', input.email)
         .first()
 
       if (existingUser) {
-        // Vérifier si un employé déjà onboardé est lié à cet utilisateur dans l'organisation.
-        const onboardedEmployee = await Employee.query()
+        // Une fiche existe déjà pour ce compte (ou cet email) dans l'organisation :
+        // on n'en crée pas une seconde (`employees.user_id` est unique). Si le
+        // candidat n'a pas fini son onboarding, le conseiller renvoie le lien
+        // depuis sa fiche (`resendOnboardingLink`).
+        const userId = existingUser.id
+        const existingEmployee = await Employee.query()
           .where('organizationId', input.organizationId)
-          .where('email', input.email)
-          .andWhere('onboarded', true)
+          .where((q) => q.where('userId', userId).orWhere('email', input.email))
           .first()
 
-        if (onboardedEmployee) {
-          throw new Error(
-            'Un utilisateur avec cet email possède déjà un compte actif dans cette organisation.'
-          )
+        if (existingEmployee) {
+          throw new EmployeeAlreadyExistsException({ onboarded: existingEmployee.onboarded })
         }
-
-        // Utilisateur existant mais pas encore totalement onboardé : on recrée un token et on renvoie le lien.
-        userId = existingUser.id
-        const token = await OnboardingToken.createForUser(existingUser.id)
-        await this.onboardingMailService.sendSetPasswordLink({
-          user: existingUser,
-          token,
-          baseUrl: options.baseUrl,
-        })
-      } else {
-        // Aucun utilisateur encore existant : on crée le compte et le token.
-        const temporaryPassword = randomPassword()
-        const user = await User.create({
-          organizationId: input.organizationId,
-          email: input.email,
-          name: input.name,
-          password: temporaryPassword,
-          role: USERS_ROLES.EMPLOYEE,
-        })
-        userId = user.id
-        const token = await OnboardingToken.createForUser(user.id)
-        await this.onboardingMailService.sendSetPasswordLink({
-          user,
-          token,
-          baseUrl: options.baseUrl,
-        })
       }
     }
 
-    const employee = await Employee.create({
-      organizationId: input.organizationId,
-      advisorId: input.advisorId ?? null,
-      userId,
-      name: input.name,
-      email: input.email,
-      currentRole: input.currentRole ?? '',
-      targetRole: input.targetRole ?? null,
-      summary: input.summary ?? null,
-      advisorNotes: null,
-      onboarded: false,
+    // Compte + fiche en une transaction ; le lien d'onboarding n'est envoyé
+    // qu'une fois la fiche enregistrée, jamais pour une création avortée.
+    const { employee, user } = await db.transaction(async (trx) => {
+      let account: User | null = existingUser
+      if (baseUrl && !account) {
+        // Aucun utilisateur encore existant : on crée le compte.
+        account = await User.create(
+          {
+            organizationId: input.organizationId,
+            email: input.email,
+            name: input.name,
+            password: randomPassword(),
+            role: USERS_ROLES.EMPLOYEE,
+          },
+          { client: trx }
+        )
+      }
+
+      const created = await Employee.create(
+        {
+          organizationId: input.organizationId,
+          advisorId: input.advisorId ?? null,
+          userId: account?.id ?? null,
+          name: input.name,
+          email: input.email,
+          currentRole: input.currentRole ?? '',
+          targetRole: input.targetRole ?? null,
+          summary: input.summary ?? null,
+          advisorNotes: null,
+          onboarded: false,
+        },
+        { client: trx }
+      )
+
+      return { employee: created, user: account }
     })
+
+    if (baseUrl && user) {
+      // Compte neuf, ou compte existant sans fiche candidat : nouveau token + lien.
+      const token = await OnboardingToken.createForUser(user.id)
+      await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl })
+    }
 
     await employee.load('skills', (q) => q.pivotColumns(['level']))
     await employee.load('experiences')
@@ -145,11 +153,12 @@ export class EmployeesService {
   }
 
   /**
-   * Get the employee record linked to the given user (candidate self-service).
+   * Find the employee record linked to the given user, or null when the user has none
+   * (e.g. an advisor or admin).
    */
-  public async getEmployeeForUser(user: User): Promise<Employee> {
+  public async findEmployeeForUser(user: User): Promise<Employee | null> {
     // TODO: optimise this function
-    const employee = await Employee.query()
+    return Employee.query()
       .where('userId', user.id)
       .where('organizationId', user.organizationId)
       .preload('skills', (q) => q.pivotColumns(['level']))
@@ -158,6 +167,13 @@ export class EmployeesService {
       .preload('exerciseResults')
       .preload('supportPlanSteps', (q) => q.preload('exercises'))
       .first()
+  }
+
+  /**
+   * Get the employee record linked to the given user (candidate self-service).
+   */
+  public async getEmployeeForUser(user: User): Promise<Employee> {
+    const employee = await this.findEmployeeForUser(user)
 
     if (!employee) {
       throw new Error('Profil candidat introuvable.')

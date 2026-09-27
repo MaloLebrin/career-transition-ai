@@ -342,3 +342,40 @@ test.group('Conseiller — exercices : isolation entre organisations', (group) =
     assert.lengthOf(await Notification.query().where('userId', advisor.id), 0)
   })
 })
+
+test.group(
+  'Conseiller — exercices sans candidat (/dashboard/conseiller/exercises/:type)',
+  (group) => {
+    group.each.setup(() => truncateDb())
+
+    // Non-régression : la route passait par `getEmployeeForUser`, qui lève pour
+    // tout utilisateur sans fiche candidat — donc pour tout conseiller (500).
+    test('un conseiller sans fiche candidat obtient la page de l’exercice, sans brouillon', async ({
+      client,
+      assert,
+    }) => {
+      const advisor = await createAdvisor()
+
+      const response = await client
+        .get(`/dashboard/conseiller/exercises/${EXERCICE_RESULTS_TYPES.VALUES}`)
+        .loginAs(advisor)
+        .withInertia()
+
+      const props = assertPage(assert, response, 'dashboard/shared/exercises/Values', [
+        'initialDraftsByType',
+      ])
+      assert.deepEqual(props.initialDraftsByType, {})
+    })
+
+    test('un type sans page dédiée renvoie 404', async ({ client }) => {
+      const advisor = await createAdvisor()
+
+      const response = await client
+        .get(`/dashboard/conseiller/exercises/${EXERCICE_RESULTS_TYPES.CV_ANALYSIS}`)
+        .loginAs(advisor)
+        .withInertia()
+
+      response.assertStatus(404)
+    })
+  }
+)

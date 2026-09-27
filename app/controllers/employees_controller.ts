@@ -1,3 +1,4 @@
+import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import { mapEmployee, mapExerciseResult, mapSupportPlanStep } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
@@ -61,8 +62,8 @@ export default class EmployeesController {
         },
         { baseUrl }
       )
-    } catch (err: any) {
-      if (err.message?.includes('existe déjà')) {
+    } catch (err) {
+      if (err instanceof EmployeeAlreadyExistsException) {
         session.flash('error', err.message)
         return response.redirect().back()
       }

@@ -347,8 +347,17 @@ export default class ExerciseResultsController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const typeParam = String(params.type).toLowerCase()
+    const employee = await this.employeesService.findEmployeeForUser(auth.user)
+    if (!employee) {
+      // Conseiller sans fiche candidat (cas normal) : l'exercice s'affiche en
+      // découverte, sans brouillon à reprendre ni employé à qui l'enregistrer.
+      const exercisePage = EXERCISE_TYPE_TO_PAGE[typeParam]
+      if (!exercisePage) {
+        return response.notFound()
+      }
+      return (inertia as any).render(exercisePage, { initialDraftsByType: {} })
+    }
     const draftTypes = [
       EXERCICE_RESULTS_TYPES.MOTIVATION,
       EXERCICE_RESULTS_TYPES.VALUES,
