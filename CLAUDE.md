@@ -60,7 +60,7 @@ node ace make:job <name>
 #jobs/*          → app/jobs/*.js
 #shared/*        → shared/*.js
 #database/*      → database/*.js
-#commands/*      → commands/*.js
+#commands/*      → app/commands/*.js
 ```
 
 ### Arborescence clé
@@ -127,7 +127,7 @@ Ordre standard : `auth()` → middleware de rôle.
 
 Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding` (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
 
-RGPD (`docs/RGPD.md`) : aucun nom ni e-mail de candidat dans un prompt IA — passer les données par `pseudonymizeForAi` (`#shared/helpers/ai/exercise_profile`). Sous-traitants, durées de conservation et contact : `shared/constants/legal.ts` (source des pages `/confidentialite` et `/securite`). Droits d'accès/effacement : `node ace candidate:export <id>` / `node ace candidate:purge <id>` (`commands/`, `#services/candidate_data_service`).
+RGPD (`docs/RGPD.md`) : aucun nom ni e-mail de candidat dans un prompt IA — passer les données par `pseudonymizeForAi` (`#shared/helpers/ai/exercise_profile`). Sous-traitants, durées de conservation et contact : `shared/constants/legal.ts` (source des pages `/confidentialite` et `/securite`). Droits d'accès/effacement : `node ace candidate:export <id>` / `node ace candidate:purge <id>` (`app/commands/`, enregistrées via `app/commands/main.ts` dans `adonisrc.ts` — jamais dans `./commands`, cf. commentaire du fichier ; `#services/candidate_data_service`).
 
 ---
 
