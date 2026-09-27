@@ -92,6 +92,7 @@ tests/
   utils/          # helpers de test (truncateDb…)
 scripts/
   ci_test_shards.mjs  # génère la matrice de shards du job test-backend (CI)
+  smoke_prod_build.mjs  # test de fumée du build de prod (job smoke-prod-build, CI)
 start/
   routes/         # fichiers de routes par domaine
   kernel.ts       # middlewares nommés
