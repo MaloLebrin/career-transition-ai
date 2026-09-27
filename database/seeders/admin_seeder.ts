@@ -6,7 +6,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 /** Slug stable de l’organisation plateforme (recherche idempotente). */
 export const PLATFORM_ORG_SLUG = 'ai-transition-carriere'
 /** Email du compte super admin créé par ce seeder. */
-export const PLATFORM_ADMIN_EMAIL = 'malo@ai-transition-carriere.fr'
+export const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
 
 export default class AdminSeeder extends BaseSeeder {
   async run() {
