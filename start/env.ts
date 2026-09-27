@@ -50,6 +50,14 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
+  | Inscription publique (/auth/register) — voir config/registration.ts
+  |----------------------------------------------------------
+  | Défaut : `false` en production (beta fermée), `true` ailleurs.
+  */
+  REGISTRATION_ENABLED: Env.schema.boolean.optional(),
+
+  /*
+  |----------------------------------------------------------
   | IA serveur (jobs d’analyse — Mistral ou none)
   |----------------------------------------------------------
   */

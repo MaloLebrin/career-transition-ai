@@ -53,4 +53,5 @@ export const middleware = router.named({
   candidate: () => import('#middleware/candidate_middleware'),
   checkOnboarding: () => import('#middleware/check_onboarding_middleware'),
   superAdmin: () => import('#middleware/super_admin_middleware'),
+  registrationOpen: () => import('#middleware/registration_open_middleware'),
 })

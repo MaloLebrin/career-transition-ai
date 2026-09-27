@@ -120,6 +120,7 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 | `middleware.advisorOrAdmin()` | Advisor, admin ou super admin |
 | `middleware.candidate()` | Candidat |
 | `middleware.checkOnboarding()` | Vérification onboarding |
+| `middleware.registrationOpen()` | Inscription publique ouverte (`REGISTRATION_ENABLED`, fermée par défaut en prod) |
 
 Ordre standard : `auth()` → middleware de rôle.
 

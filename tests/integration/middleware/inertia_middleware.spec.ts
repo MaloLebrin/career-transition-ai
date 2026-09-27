@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import config from '@adonisjs/core/services/config'
 import InertiaMiddleware from '#middleware/inertia_middleware'
 import type { HttpContext } from '@adonisjs/core/http'
 import { EmployeeFactory } from '#database/factories/employee_factory'
@@ -68,6 +69,19 @@ test.group('InertiaMiddleware.share', () => {
     assert.deepEqual(props.flash, { error: 'Oups', success: 'Bravo' })
     // Seul le premier message de chaque champ est exposé aux formulaires.
     assert.deepEqual(props.errors, { email: 'Email requis' })
+  })
+
+  test('registrationEnabled reflète config/registration.ts', async ({ assert, cleanup }) => {
+    const previous = config.get<boolean>('registration.enabled')
+    cleanup(() => config.set('registration.enabled', previous))
+
+    config.set('registration.enabled', true)
+    const open = await share(makeShareCtx())
+    assert.isTrue(open.registrationEnabled)
+
+    config.set('registration.enabled', false)
+    const closed = await share(makeShareCtx())
+    assert.isFalse(closed.registrationEnabled)
   })
 
   test('sans session : flash vide et aucune erreur', async ({ assert }) => {

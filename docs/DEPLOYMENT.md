@@ -622,6 +622,7 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `QUEUE_DRIVER` | oui | `sync` (mono-process) ou `database` (worker) |
 | `AI_PROVIDER` | non | `mistral` ou `none` |
 | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | si `mistral` | clé ; `mistral-small-latest` |
+| `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
 
 Lues hors schéma (pas d'erreur au boot si absentes) :
 

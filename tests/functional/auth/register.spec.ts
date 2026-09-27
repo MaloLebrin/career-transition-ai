@@ -6,6 +6,8 @@ import { createAdvisor, createOrganization } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { assertFieldErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
+import { REGISTRATION_CLOSED_MESSAGE } from '#middleware/registration_open_middleware'
+import config from '@adonisjs/core/services/config'
 import hash from '@adonisjs/core/services/hash'
 import { test } from '@japa/runner'
 
@@ -32,6 +34,13 @@ test.group('Auth — inscription (functional)', (group) => {
     const response = await client.get('/auth/register').withInertia()
 
     assertPage(assert, response, 'Register', ['errors', 'flash'])
+  })
+
+  test('la page de connexion reçoit registrationEnabled=true', async ({ assert, client }) => {
+    const response = await client.get('/auth/login').withInertia()
+
+    const props = assertPage(assert, response, 'Login', ['registrationEnabled'])
+    assert.isTrue(props.registrationEnabled)
   })
 
   test('GET /auth/register redirige un utilisateur connecté vers /dashboard', async ({
@@ -161,5 +170,63 @@ test.group('Auth — inscription (functional)', (group) => {
     response.assertStatus(409)
     response.assertBody({ message: 'Une organisation avec ce nom existe déjà.' })
     assert.isNull(await User.findBy('email', 'nouveau.conseiller@example.com'))
+  })
+})
+
+/**
+ * Beta fermée (`REGISTRATION_ENABLED=false`, défaut en production) : aucun
+ * compte ne se crée hors de l'UI super admin et de l'onboarding sur invitation.
+ */
+test.group('Auth — inscription fermée (functional)', (group) => {
+  group.each.setup(async () => {
+    await truncateDb()
+    const previous = config.get<boolean>('registration.enabled')
+    config.set('registration.enabled', false)
+    return () => config.set('registration.enabled', previous)
+  })
+
+  test('GET /auth/register ne sert plus la page : redirection vers /auth/login avec un message', async ({
+    client,
+  }) => {
+    const response = await client.get('/auth/register').withInertia().redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/auth/login')
+    response.assertFlashMessage('error', REGISTRATION_CLOSED_MESSAGE)
+  })
+
+  test('POST /auth/register renvoie 403 sans créer ni compte ni organisation', async ({
+    assert,
+    client,
+  }) => {
+    const response = await client
+      .post('/auth/register')
+      .withInertia()
+      .form(validPayload())
+      .redirects(0)
+
+    response.assertStatus(403)
+    assert.lengthOf(await User.all(), 0)
+    assert.lengthOf(await Organization.all(), 0)
+    assert.isUndefined(response.session(SESSION_KEY))
+  })
+
+  test('la page de connexion reçoit registrationEnabled=false (lien d’inscription masqué)', async ({
+    assert,
+    client,
+  }) => {
+    const response = await client.get('/auth/login').withInertia()
+
+    const props = assertPage(assert, response, 'Login', ['registrationEnabled'])
+    assert.isFalse(props.registrationEnabled)
+  })
+
+  test('un utilisateur connecté reste redirigé vers /dashboard par guest()', async ({ client }) => {
+    const advisor = await createAdvisor()
+
+    const response = await client.get('/auth/register').loginAs(advisor).redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard')
   })
 })

@@ -30,6 +30,12 @@ describe('LoginPage', () => {
     expect(defaultProps.onGoToRegister).toHaveBeenCalledTimes(1)
   })
 
+  test('hides the register link when onGoToRegister is not provided (registration closed)', () => {
+    render(<LoginPage {...defaultProps} onGoToRegister={undefined} />)
+    expect(screen.queryByRole('button', { name: /inscrire gratuitement/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/pas encore de compte/)).not.toBeInTheDocument()
+  })
+
   test('shows validation errors when email is empty and does not submit', async () => {
     render(<LoginPage {...defaultProps} />)
     fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))

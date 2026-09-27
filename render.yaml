@@ -26,6 +26,10 @@ envVarGroups:
       - key: ADMIN_PASSWORD
         sync: false
 
+      # Beta fermée : pas d'inscription publique (comptes créés par le super admin)
+      - key: REGISTRATION_ENABLED
+        value: "false"
+
       # Mail
       - key: MAIL_PROVIDER
         value: resend

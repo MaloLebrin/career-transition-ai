@@ -3,6 +3,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import Employee from '#models/employee'
 import { NotificationService } from '#services/notification_service'
+import config from '@adonisjs/core/services/config'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
   async share(ctx: HttpContext) {
@@ -50,6 +51,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       csrfToken: request.csrfToken,
       notifications: ctx.inertia.always(notifications),
       unreadNotificationsCount: ctx.inertia.always(unreadNotificationsCount),
+      // Masque le lien d'inscription quand /auth/register est fermé.
+      registrationEnabled: config.get<boolean>('registration.enabled'),
     }
   }
 
