@@ -87,7 +87,9 @@ export default class extends BaseSchema {
 }
 ```
 
-Le super admin est créé par `admin_seeder.ts` (idempotent, lit `ADMIN_PASSWORD`). Le second compte en dur (« Pleiade Consulting ») se crée depuis l'UI super admin, pas par migration.
+Le super admin est créé par `admin_seeder.ts` (idempotent, lit `ADMIN_PASSWORD`) : `node build/bin/console.js db:seed --files database/seeders/admin_seeder`. Le second compte en dur (« Pleiade Consulting ») se crée depuis l'UI super admin, pas par migration.
+
+> ✅ Appliqué (issue #10).
 
 ### 0.4 Chemin des jobs de queue indépendant du `cwd`
 

@@ -1,63 +1,19 @@
-import Organization from '#models/organization'
-import User from '#models/user'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
-const PLATFORM_ORG_SLUG = 'ai-transition-carriere'
-const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
-
+/**
+ * Migration volontairement vide (issue #10).
+ *
+ * Elle créait, en production, des organisations et des comptes en dur avec
+ * `ADMIN_PASSWORD` : `migration:run` échouait sans ce secret, et une migration
+ * ne doit contenir ni secret ni données personnelles. Le fichier est conservé
+ * car il est déjà enregistré dans les bases existantes.
+ *
+ * Le super admin est créé/mis à jour par `database/seeders/admin_seeder.ts` :
+ *   node build/bin/console.js db:seed --files database/seeders/admin_seeder
+ * Les autres organisations et comptes se créent depuis l'UI super admin.
+ */
 export default class extends BaseSchema {
-  async up() {
-    // Seed users only in production
-    if (process.env.NODE_ENV !== 'production') {
-      return
-    }
+  async up() {}
 
-    const password = process.env.ADMIN_PASSWORD?.trim()
-    if (!password) {
-      throw new Error(
-        'ADMIN_PASSWORD est requis pour exécuter AdminSeeder (définir la variable d’environnement).'
-      )
-    }
-
-    const adminOrganizationData = {
-      name: 'AI transition carrière',
-      slug: PLATFORM_ORG_SLUG,
-      logoUrl: null as string | null,
-    }
-
-    const organization = await Organization.updateOrCreate(
-      { slug: PLATFORM_ORG_SLUG },
-      adminOrganizationData
-    )
-
-    await User.updateOrCreate(
-      { organizationId: organization.id, email: PLATFORM_ADMIN_EMAIL },
-      {
-        organizationId: organization.id,
-        email: PLATFORM_ADMIN_EMAIL,
-        password,
-        name: 'Malo Lebrin',
-        role: USERS_ROLES.SUPER_ADMIN,
-      }
-    )
-
-    const organization2 = await Organization.updateOrCreate(
-      { slug: 'pleiade-consulting' },
-      { name: 'Pleiade Consulting', slug: 'pleiade-consulting', logoUrl: null }
-    )
-
-    const emailAddressUser2 = 'clara.lengline4@gmail.com'
-
-    await User.updateOrCreate(
-      { organizationId: organization2.id, email: emailAddressUser2 },
-      {
-        organizationId: organization2.id,
-        email: emailAddressUser2,
-        password,
-        name: 'Clara Lengline',
-        role: USERS_ROLES.ADMIN,
-      }
-    )
-  }
+  async down() {}
 }

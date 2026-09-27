@@ -5,6 +5,7 @@ import AdminSeeder, {
 import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import db from '@adonisjs/lucid/services/db'
 import { test } from '@japa/runner'
@@ -55,6 +56,27 @@ test.group('AdminSeeder', (group) => {
       assert.lengthOf(users, 1)
       assert.equal(users[0].role, USERS_ROLES.SUPER_ADMIN)
       assert.equal(users[0].organizationId, orgs[0].id)
+    } finally {
+      if (prev === undefined) {
+        delete process.env.ADMIN_PASSWORD
+      } else {
+        process.env.ADMIN_PASSWORD = prev
+      }
+    }
+  })
+
+  test('a new ADMIN_PASSWORD rotates the super admin password', async ({ assert }) => {
+    const prev = process.env.ADMIN_PASSWORD
+    try {
+      const client = db.connection()
+      process.env.ADMIN_PASSWORD = 'first-admin-seeder-password'
+      await new AdminSeeder(client).run()
+      process.env.ADMIN_PASSWORD = 'rotated-admin-seeder-password'
+      await new AdminSeeder(client).run()
+
+      const user = await User.findByOrFail('email', PLATFORM_ADMIN_EMAIL)
+      assert.isTrue(await hash.verify(user.password, 'rotated-admin-seeder-password'))
+      assert.isFalse(await hash.verify(user.password, 'first-admin-seeder-password'))
     } finally {
       if (prev === undefined) {
         delete process.env.ADMIN_PASSWORD
