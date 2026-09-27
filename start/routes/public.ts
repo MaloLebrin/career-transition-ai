@@ -2,6 +2,7 @@ import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
 
 const ContactRequestsController = () => import('#controllers/contact_requests_controller')
+const HealthChecksController = () => import('#controllers/health_checks_controller')
 
 router
   .group(() => {
@@ -18,3 +19,6 @@ router
   .use([middleware.guest()])
 
 router.post('/contact-requests', [ContactRequestsController, 'store'])
+
+// Hors du groupe `guest` : sondé sans session par Docker, Render, UptimeRobot…
+router.get('/health', [HealthChecksController])
