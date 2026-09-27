@@ -131,43 +131,43 @@ Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de 
 
 `@adonisjs/limiter` (issue #23), limites définies dans `start/limiter.ts` :
 
-| Route | Limite | Clé |
-|---|---|---|
-| `POST /auth/login` | 5 / minute | IP + e-mail (normalisé) |
-| `POST /auth/register` | 3 / heure | IP |
-| `POST /contact-requests` | 3 / heure (2 e-mails Resend par demande) | IP |
-| `POST /onboarding/:token` | 10 / minute | IP |
+| Route                     | Limite                                   | Clé                     |
+| ------------------------- | ---------------------------------------- | ----------------------- |
+| `POST /auth/login`        | 5 / minute                               | IP + e-mail (normalisé) |
+| `POST /auth/register`     | 3 / heure                                | IP                      |
+| `POST /contact-requests`  | 3 / heure (2 e-mails Resend par demande) | IP                      |
+| `POST /onboarding/:token` | 10 / minute                              | IP                      |
 
 Au-delà : 429 avec `Retry-After` et `X-RateLimit-*`. Une requête Inertia reçoit à la place un redirect back (303) avec `flash.error` et `errors.rateLimit` (`app/exceptions/handler.ts`). Store `memory` (`config/limiter.ts`) : les compteurs sont propres au process web et repartent à zéro au redémarrage. Avec plusieurs instances web, passer au store `database`.
 
 ### 0.7 Dockerfile et entrypoint (scénario 2)
 
-`Dockerfile`, stage `runner`, après `WORKDIR /app` :
+> ✅ Appliqué (issue #14) : image construite et démarrée à chaque PR par le job CI `docker-image` (`migrate` → `seed` → `server`, `/health` 200, utilisateur `node`, HEALTHCHECK `healthy`) ; garde statique `tests/unit/hygiene/dockerfile.spec.ts`.
 
-```dockerfile
-ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080
-# …
-RUN chown -R node:node /app
-USER node
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
+`Dockerfile` : stage `builder` (`pnpm install` complet + `node ace build`), puis stage `runner` qui ne contient que `build/` — il embarque son `package.json` et son `pnpm-lock.yaml` — et ses dépendances de production, dans `/app` (même installation que le job `smoke-prod-build`). Le stage `runner` fixe `NODE_ENV=production HOST=0.0.0.0 PORT=8080`, tourne en `USER node` et déclare un `HEALTHCHECK` (`wget` sur `/health`, `start-period` 40 s). Le build Alpine passe sans outillage natif : plus aucune dépendance à compiler (`better-sqlite3` a disparu, `@google/genai`, inutilisé, est retiré).
+
+`docker/entrypoint.sh` — quatre modes, tous en `exec` (node est le PID 1 et reçoit `SIGTERM`) :
+
+| Mode              | Commande                                                    | Usage                                                      |
+| ----------------- | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| `server` (défaut) | `node bin/server.js`                                        | web, **sans migration**                                    |
+| `worker`          | `node ace.js queue:work --queue=default,ai,pdfs,analytics`  | worker de queues                                           |
+| `migrate`         | `node ace.js migration:run --force`                         | one-shot, avant `server`/`worker`                          |
+| `seed`            | `node ace.js db:seed --files database/seeders/admin_seeder` | one-shot, super admin (idempotent, exige `ADMIN_PASSWORD`) |
+
+Les migrations ne tournent plus à chaque boot du web : elles deviennent une étape explicite (`migrate`) de la procédure de mise à jour. Pour une autre commande ace (rollback…), contourner l'entrypoint : `docker run --rm --entrypoint node <image> ace.js <commande>`.
+
+Vérification locale (Postgres accessible, fichier `.env` de prod) :
+
+```bash
+docker build -t career-transition-ai .
+docker run --rm --network host --env-file .env career-transition-ai migrate
+docker run --rm --network host --env-file .env career-transition-ai seed
+docker run -d --name cta --network host --env-file .env career-transition-ai   # server
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/health         # 200
+docker exec cta id -un                                                         # node
+docker inspect -f '{{.State.Health.Status}}' cta                               # healthy (~30 s)
 ```
-
-`docker/entrypoint.sh` — remplacer le `case` :
-
-```sh
-case "$MODE" in
-  server)  exec node build/bin/server.js ;;
-  worker)  exec node build/bin/console.js queue:work --queue=default,ai,pdfs,analytics ;;
-  migrate) exec node build/bin/console.js migration:run --force ;;
-  seed)    exec node build/bin/console.js db:seed --files database/seeders/admin_seeder ;;
-  *) echo "Unknown mode: $MODE (server|worker|migrate|seed)"; exit 1 ;;
-esac
-```
-
-Les migrations ne tournent plus à chaque boot du web : elles deviennent une étape explicite (`migrate`) de la procédure de mise à jour.
-
-Premier `docker build` à faire **en local ou en CI** avant tout déploiement : si `better-sqlite3` (devDependency native) échoue à compiler sur Alpine, ajouter `RUN apk add --no-cache python3 make g++` dans le stage `builder`, ou passer les deux stages sur `node:24-slim`.
 
 ### 0.8 CI : publier l'image sur GHCR (scénario 2)
 
@@ -233,7 +233,7 @@ openssl rand -base64 24      # → ADMIN_PASSWORD
 ### 1.2 Créer la base Neon
 
 1. <https://console.neon.tech> → **New project** : nom `career-transition-ai`, région **Frankfurt (eu-central-1)**, Postgres 17.
-2. Onglet **Connection details** → cocher *Pooled connection* désactivé (prendre la connexion **directe** : plus simple pour les migrations) → copier l'URL, forme :
+2. Onglet **Connection details** → cocher _Pooled connection_ désactivé (prendre la connexion **directe** : plus simple pour les migrations) → copier l'URL, forme :
    `postgresql://<user>:<password>@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`
 3. Laisser l'autosuspend par défaut (5 min) : c'est ce qui rend le plan gratuit tenable.
 
@@ -245,33 +245,33 @@ openssl rand -base64 24      # → ADMIN_PASSWORD
    ```bash
    npm install -g pnpm@10.18.3 && pnpm install --frozen-lockfile && pnpm build
    ```
-4. **Start command** (le plan Free n'a ni *pre-deploy command* ni shell : migrations et seed s'exécutent au démarrage, ils sont idempotents) :
+4. **Start command** (le plan Free n'a ni _pre-deploy command_ ni shell : migrations et seed s'exécutent au démarrage, ils sont idempotents) :
    ```bash
    node build/bin/console.js migration:run --force && node build/bin/console.js db:seed --files database/seeders/admin_seeder && node build/bin/server.js
    ```
 5. **Health check path** : `/health`.
 6. **Environment variables** (onglet Environment) :
 
-   | Clé | Valeur |
-   |---|---|
-   | `NODE_ENV` | `production` |
-   | `HOST` | `0.0.0.0` |
-   | `PORT` | `10000` |
-   | `TZ` | `Europe/Paris` |
-   | `LOG_LEVEL` | `info` |
-   | `APP_KEY` | *(généré en 1.1)* |
-   | `SESSION_DRIVER` | `cookie` |
-   | `DB_URL` | *(URL Neon, avec `?sslmode=require`)* |
-   | `DB_SSL` | `true` |
-   | `QUEUE_DRIVER` | `sync` |
-   | `AI_PROVIDER` | `mistral` |
-   | `MISTRAL_API_KEY` | *(clé plan Experiment, console Mistral)* |
-   | `MISTRAL_MODEL` | `mistral-small-latest` |
-   | `MAIL_PROVIDER` | `console` *(ou `resend` : les e-mails n'arriveront qu'à l'adresse de ton compte Resend, faute de domaine vérifié)* |
-   | `MAIL_FROM_EMAIL` | `onboarding@resend.dev` *(requis en prod même en mode console)* |
-   | `MAIL_FROM_NAME` | `Career Transition AI` |
-   | `ADMIN_PASSWORD` | *(généré en 1.1)* |
-   | `NODE_OPTIONS` | `--max-old-space-size=384` |
+   | Clé               | Valeur                                                                                                             |
+   | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+   | `NODE_ENV`        | `production`                                                                                                       |
+   | `HOST`            | `0.0.0.0`                                                                                                          |
+   | `PORT`            | `10000`                                                                                                            |
+   | `TZ`              | `Europe/Paris`                                                                                                     |
+   | `LOG_LEVEL`       | `info`                                                                                                             |
+   | `APP_KEY`         | _(généré en 1.1)_                                                                                                  |
+   | `SESSION_DRIVER`  | `cookie`                                                                                                           |
+   | `DB_URL`          | _(URL Neon, avec `?sslmode=require`)_                                                                              |
+   | `DB_SSL`          | `true`                                                                                                             |
+   | `QUEUE_DRIVER`    | `sync`                                                                                                             |
+   | `AI_PROVIDER`     | `mistral`                                                                                                          |
+   | `MISTRAL_API_KEY` | _(clé plan Experiment, console Mistral)_                                                                           |
+   | `MISTRAL_MODEL`   | `mistral-small-latest`                                                                                             |
+   | `MAIL_PROVIDER`   | `console` _(ou `resend` : les e-mails n'arriveront qu'à l'adresse de ton compte Resend, faute de domaine vérifié)_ |
+   | `MAIL_FROM_EMAIL` | `onboarding@resend.dev` _(requis en prod même en mode console)_                                                    |
+   | `MAIL_FROM_NAME`  | `Career Transition AI`                                                                                             |
+   | `ADMIN_PASSWORD`  | _(généré en 1.1)_                                                                                                  |
+   | `NODE_OPTIONS`    | `--max-old-space-size=384`                                                                                         |
 
    L'OCR des CV et les suggestions passent par le serveur (`/dashboard/ai/*`) avec cette même clé : aucune variable `VITE_*` n'est nécessaire pour l'IA.
 
@@ -292,8 +292,8 @@ Puis dans le navigateur : connexion `malolebrin@gmail.com` / `ADMIN_PASSWORD` (c
 
 - **Cold start** ≈ 1 min après 15 min sans requête (Render) + ≈ 1 s (Neon). Normal.
 - **PDF** : avec le disque local par défaut (`DRIVE_DISK=fs`), perdus à chaque redémarrage (disque éphémère) et illisibles si web et worker sont deux services ; passer à `DRIVE_DISK=s3` (Cloudflare R2), voir [§ stockage des PDF](#stockage-des-pdf).
-- **Mise à jour** = push sur `main` (auto-deploy). Migrations au démarrage. Rollback : Render → *Rollback* sur le déploiement précédent (les migrations déjà appliquées restent : écrire des migrations rétro-compatibles).
-- **Neon** : suivre *Usage* (CU-hours < 100/mois, stockage < 0,5 Go). Sauvegarde : `pg_dump "$DB_URL" | gzip > backup-$(date +%F).sql.gz` depuis ton poste, une fois par semaine ou avant chaque migration risquée.
+- **Mise à jour** = push sur `main` (auto-deploy). Migrations au démarrage. Rollback : Render → _Rollback_ sur le déploiement précédent (les migrations déjà appliquées restent : écrire des migrations rétro-compatibles).
+- **Neon** : suivre _Usage_ (CU-hours < 100/mois, stockage < 0,5 Go). Sauvegarde : `pg_dump "$DB_URL" | gzip > backup-$(date +%F).sql.gz` depuis ton poste, une fois par semaine ou avant chaque migration risquée.
 
 ---
 
@@ -385,7 +385,7 @@ services:
     environment:
       NODE_OPTIONS: --max-old-space-size=384
     volumes:
-      - exports:/app/storage      # PDF générés par le worker, servis par le web (DRIVE_DISK=fs)
+      - exports:/app/storage # PDF générés par le worker, servis par le web (DRIVE_DISK=fs)
     depends_on:
       postgres:
         condition: service_healthy
@@ -568,11 +568,11 @@ docker image prune -f
 sed -i 's#^APP_IMAGE=.*#APP_IMAGE=ghcr.io/malolebrin/career-transition-ai:sha-<précédent>#' .env
 docker compose up -d app worker
 # 2. si la migration livrée doit être annulée (et seulement si elle est réversible)
-docker compose run --rm app node build/bin/console.js migration:rollback --force --batch=<n-1>
+docker compose run --rm --entrypoint node app ace.js migration:rollback --force --batch=<n-1>
 # 3. sinon : restaurer la sauvegarde faite en 3.1
 ```
 
-Scénario 1 : bouton *Rollback* dans Render ; pas de rollback de schéma → écrire des migrations additives.
+Scénario 1 : bouton _Rollback_ dans Render ; pas de rollback de schéma → écrire des migrations additives.
 
 ### 3.3 Rotation des secrets
 
@@ -600,23 +600,23 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 
 ## 4. Incidents courants
 
-| Symptôme | Cause probable | Action |
-|---|---|---|
-| 500 sur toutes les pages, log `ERR_MODULE_NOT_FOUND …/build/build/ssr/ssr.js` | §0.1 non appliqué | Corriger `config/inertia.ts` / `config/vite.ts`, rebuild. |
-| Boot : `E_MISSING_ENV` / `Missing environment variable` | variable vide ou absente (une valeur vide compte comme absente) | Comparer avec §5. |
-| `The server does not support SSL connections` | `DB_SSL` absent/`true` face à un Postgres sans TLS | `DB_SSL=false` (compose). |
-| `ADMIN_PASSWORD est requis…` pendant `migration:run` | §0.3 non appliqué | Vider la migration de seed ; définir `ADMIN_PASSWORD` pour le seeder. |
-| Worker : `No jobs found for locations` | glob relatif au `cwd` (§0.4) ou image lancée depuis `build/` | Appliquer §0.4 ; lancer `node build/bin/console.js …` depuis `/app`. |
-| Export PDF `completed` mais téléchargement « fichier introuvable » | web et worker ne partagent pas `/app/storage` (`DRIVE_DISK=fs`) | Volume `exports` monté sur les deux services ; sur PaaS multi-services, `DRIVE_DISK=s3` ([§ stockage des PDF](#stockage-des-pdf)). |
-| Exports PDF ne passent jamais en `completed` | pas de worker (ou `QUEUE_DRIVER=database` sans `queue:work`) | `docker compose ps worker`, logs ; en mono-process utiliser `QUEUE_DRIVER=sync`. |
-| Lien d'onboarding en `http://` | `trustProxy` par défaut (`loopback`) | §0.6. |
-| SSE coupés toutes les ~60–100 s, reconnexions en boucle | proxy qui bufferise / pas de keep-alive | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6). |
-| Analyse IA vide avec message d'erreur | rate-limit plan Experiment / clé absente | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois. |
-| E-mail non reçu par un testeur (Resend) | pas de domaine vérifié : envoi restreint à ton adresse | Domaine + vérification DNS, ou `MAIL_PROVIDER=console`. |
-| Neon : `compute time quota exceeded` | worker qui polle en continu | Scénario 1 = `QUEUE_DRIVER=sync`, jamais de worker permanent sur Neon Free. |
-| Oracle : instance disparue | récupération « idle » Always Free | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG. |
-| Render : page « service unavailable » ~1 min | cold start | Attendu sur le plan Free. |
-| OOM / redémarrages | pas de plafond V8 sur 512 Mo | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker). |
+| Symptôme                                                                      | Cause probable                                                  | Action                                                                                                                             |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 500 sur toutes les pages, log `ERR_MODULE_NOT_FOUND …/build/build/ssr/ssr.js` | §0.1 non appliqué                                               | Corriger `config/inertia.ts` / `config/vite.ts`, rebuild.                                                                          |
+| Boot : `E_MISSING_ENV` / `Missing environment variable`                       | variable vide ou absente (une valeur vide compte comme absente) | Comparer avec §5.                                                                                                                  |
+| `The server does not support SSL connections`                                 | `DB_SSL` absent/`true` face à un Postgres sans TLS              | `DB_SSL=false` (compose).                                                                                                          |
+| `ADMIN_PASSWORD est requis…` pendant `migration:run`                          | §0.3 non appliqué                                               | Vider la migration de seed ; définir `ADMIN_PASSWORD` pour le seeder.                                                              |
+| Worker : `No jobs found for locations`                                        | glob relatif au `cwd` (§0.4) ou image lancée depuis `build/`    | Appliquer §0.4 ; en Docker, passer par l'entrypoint (`worker`) ou `--entrypoint node … ace.js` depuis `/app`.                      |
+| Export PDF `completed` mais téléchargement « fichier introuvable »            | web et worker ne partagent pas `/app/storage` (`DRIVE_DISK=fs`) | Volume `exports` monté sur les deux services ; sur PaaS multi-services, `DRIVE_DISK=s3` ([§ stockage des PDF](#stockage-des-pdf)). |
+| Exports PDF ne passent jamais en `completed`                                  | pas de worker (ou `QUEUE_DRIVER=database` sans `queue:work`)    | `docker compose ps worker`, logs ; en mono-process utiliser `QUEUE_DRIVER=sync`.                                                   |
+| Lien d'onboarding en `http://`                                                | `trustProxy` par défaut (`loopback`)                            | §0.6.                                                                                                                              |
+| SSE coupés toutes les ~60–100 s, reconnexions en boucle                       | proxy qui bufferise / pas de keep-alive                         | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6).                                                                         |
+| Analyse IA vide avec message d'erreur                                         | rate-limit plan Experiment / clé absente                        | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois.                                               |
+| E-mail non reçu par un testeur (Resend)                                       | pas de domaine vérifié : envoi restreint à ton adresse          | Domaine + vérification DNS, ou `MAIL_PROVIDER=console`.                                                                            |
+| Neon : `compute time quota exceeded`                                          | worker qui polle en continu                                     | Scénario 1 = `QUEUE_DRIVER=sync`, jamais de worker permanent sur Neon Free.                                                        |
+| Oracle : instance disparue                                                    | récupération « idle » Always Free                               | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG.                                                            |
+| Render : page « service unavailable » ~1 min                                  | cold start                                                      | Attendu sur le plan Free.                                                                                                          |
+| OOM / redémarrages                                                            | pas de plafond V8 sur 512 Mo                                    | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker).                                                                     |
 
 ---
 
@@ -624,27 +624,27 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 
 Modèle à copier : [`.env.production.example`](../.env.production.example) (le développement local part de `.env.example`, qui démarre tel quel). Toutes les variables lues par le serveur sont déclarées et validées au boot par `start/env_schema.ts` : une valeur invalide (`QUEUE_DRIVER=redis`, `MAIL_PROVIDER=smtp`…) empêche le démarrage. Les deux fichiers d'exemple sont validés contre ce schéma par `tests/unit/config/env_schema.spec.ts`.
 
-| Variable | Obligatoire | Valeur prod |
-|---|---|---|
-| `NODE_ENV` | oui | `production` |
-| `HOST` / `PORT` | oui | `0.0.0.0` / port du conteneur ou de la plateforme |
-| `APP_KEY` | oui | `node ace generate:key` |
-| `LOG_LEVEL` | oui | `info` |
-| `SESSION_DRIVER` | oui | `cookie` |
-| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux) | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres` |
-| `DB_SSL` | non (défaut `true`) | `false` seulement pour un Postgres sans TLS |
-| `QUEUE_DRIVER` | oui | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter) |
-| `AI_PROVIDER` | non | `mistral` ou `none` |
-| `MISTRAL_API_KEY`, `MISTRAL_MODEL` | si `mistral` | clé ; `mistral-small-latest` |
-| `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
-| `SEO_INDEXING` | non (défaut `false`) | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`) |
-| `GOOGLE_SITE_VERIFICATION` | non | jeton Google Search Console ; la balise n'est rendue que s'il est défini |
-| `DRIVE_DISK` | non (défaut `fs`) | stockage des PDF générés (`config/drive.ts`) : `fs` = dossier `storage/` local (mono-machine ou volume partagé), `s3` = bucket S3/R2 (web et worker séparés). Voir [§ stockage des PDF](#stockage-des-pdf) |
-| `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | si `DRIVE_DISK=s3` | bucket **privé** ; le serveur refuse de démarrer s'il en manque une |
-| `S3_REGION` | non (défaut `auto`) | `auto` pour R2, région AWS sinon |
-| `SENTRY_DSN` | non (recommandé) | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry) |
-| `SENTRY_ENVIRONMENT` | non (défaut `NODE_ENV`) | `production`, `staging`… pour séparer les environnements dans Sentry |
-| `SENTRY_RELEASE` | non (défaut `RENDER_GIT_COMMIT`) | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`) |
+| Variable                                                                  | Obligatoire                                         | Valeur prod                                                                                                                                                                                                |
+| ------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                                | oui                                                 | `production`                                                                                                                                                                                               |
+| `HOST` / `PORT`                                                           | oui                                                 | `0.0.0.0` / port du conteneur ou de la plateforme                                                                                                                                                          |
+| `APP_KEY`                                                                 | oui                                                 | `node ace generate:key`                                                                                                                                                                                    |
+| `LOG_LEVEL`                                                               | oui                                                 | `info`                                                                                                                                                                                                     |
+| `SESSION_DRIVER`                                                          | oui                                                 | `cookie`                                                                                                                                                                                                   |
+| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                               |
+| `DB_SSL`                                                                  | non (défaut `true`)                                 | `false` seulement pour un Postgres sans TLS                                                                                                                                                                |
+| `QUEUE_DRIVER`                                                            | oui                                                 | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter)                                                                                                                              |
+| `AI_PROVIDER`                                                             | non                                                 | `mistral` ou `none`                                                                                                                                                                                        |
+| `MISTRAL_API_KEY`, `MISTRAL_MODEL`                                        | si `mistral`                                        | clé ; `mistral-small-latest`                                                                                                                                                                               |
+| `REGISTRATION_ENABLED`                                                    | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin         |
+| `SEO_INDEXING`                                                            | non (défaut `false`)                                | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`)                                         |
+| `GOOGLE_SITE_VERIFICATION`                                                | non                                                 | jeton Google Search Console ; la balise n'est rendue que s'il est défini                                                                                                                                   |
+| `DRIVE_DISK`                                                              | non (défaut `fs`)                                   | stockage des PDF générés (`config/drive.ts`) : `fs` = dossier `storage/` local (mono-machine ou volume partagé), `s3` = bucket S3/R2 (web et worker séparés). Voir [§ stockage des PDF](#stockage-des-pdf) |
+| `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`    | si `DRIVE_DISK=s3`                                  | bucket **privé** ; le serveur refuse de démarrer s'il en manque une                                                                                                                                        |
+| `S3_REGION`                                                               | non (défaut `auto`)                                 | `auto` pour R2, région AWS sinon                                                                                                                                                                           |
+| `SENTRY_DSN`                                                              | non (recommandé)                                    | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry)                                    |
+| `SENTRY_ENVIRONMENT`                                                      | non (défaut `NODE_ENV`)                             | `production`, `staging`… pour séparer les environnements dans Sentry                                                                                                                                       |
+| `SENTRY_RELEASE`                                                          | non (défaut `RENDER_GIT_COMMIT`)                    | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`)                                                                                                                       |
 
 | `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié ; `console` écrit les e-mails dans les logs |
 | `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console`) | adresse du domaine vérifié |
@@ -657,11 +657,11 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 
 Hors schéma (lues par Node ou l'hébergeur) :
 
-| Variable | Rôle |
-|---|---|
-| `TZ` | `Europe/Paris` (nom IANA ; `UTC+2` en notation POSIX signifie UTC−2) |
-| `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo |
-| `RENDER_GIT_COMMIT` | injectée par Render, release Sentry par défaut |
+| Variable            | Rôle                                                                 |
+| ------------------- | -------------------------------------------------------------------- |
+| `TZ`                | `Europe/Paris` (nom IANA ; `UTC+2` en notation POSIX signifie UTC−2) |
+| `NODE_OPTIONS`      | `--max-old-space-size=384` recommandé sur 512 Mo                     |
+| `RENDER_GIT_COMMIT` | injectée par Render, release Sentry par défaut                       |
 
 Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.
 
@@ -676,15 +676,15 @@ les servir, **après** le contrôle d'accès de
 base, `pdf_exports.file_path` ne contient qu'une clé relative
 (`exports/pdf_export_<id>.pdf`), sans le nom du candidat.
 
-| `DRIVE_DISK` | Où | Quand |
-|---|---|---|
+| `DRIVE_DISK`  | Où                                     | Quand                                                                                     |
+| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `fs` (défaut) | `storage/` dans le répertoire de l'app | dev, VM docker-compose (volume `exports` monté sur `/app/storage` pour web **et** worker) |
-| `s3` | bucket S3 compatible | web et worker sur deux services sans disque commun (Render : `render.yaml`) |
+| `s3`          | bucket S3 compatible                   | web et worker sur deux services sans disque commun (Render : `render.yaml`)               |
 
 Mise en place de Cloudflare R2 (10 Go gratuits) :
 
-1. *R2 → Create bucket* : juridiction **EU**, accès public désactivé.
-2. *R2 → Manage API tokens* : jeton *Object Read & Write* limité au bucket.
+1. _R2 → Create bucket_ : juridiction **EU**, accès public désactivé.
+2. _R2 → Manage API tokens_ : jeton _Object Read & Write_ limité au bucket.
 3. Renseigner `DRIVE_DISK=s3`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
    `S3_SECRET_ACCESS_KEY` et `S3_ENDPOINT`
    (`https://<account-id>.eu.r2.cloudflarestorage.com`) sur le web **et** le
@@ -692,7 +692,7 @@ Mise en place de Cloudflare R2 (10 Go gratuits) :
 4. Ajouter Cloudflare aux sous-traitants (`SUBPROCESSORS`, `shared/constants/legal.ts`).
 
 Vérification : générer un export depuis la synthèse d'un candidat, puis le
-télécharger depuis la page *Tâches*.
+télécharger depuis la page _Tâches_.
 
 Rétention : chaque nuit à 3 h (heure de Paris), `PurgeExpiredPdfExportsJob`
 (planifié par `start/scheduler.ts`, exécuté par le worker) supprime les PDF de
@@ -708,11 +708,11 @@ de téléchargement ; il suffit de le régénérer. Les anciens chemins absolus
 Actif dès que `SENTRY_DSN` est défini, sur le serveur **et** le worker
 (`start/error_tracking.ts`, `#services/error_tracking_service`) :
 
-| Envoyé | Non envoyé |
-|---|---|
-| Erreurs HTTP **5xx** (`HttpExceptionHandler.report()`), avec méthode et route (`/dashboard/employees/:id`) | 4xx, erreurs métier (`ignoreCodes`), 404 |
-| Jobs en **échec définitif** (retries épuisés), avec queue, nom du job, id et nombre de tentatives | tentatives rejouées, **payload** du job |
-| Utilisateur réduit à son **id** | nom, e-mail, IP, cookies, corps de requête, query string (`scrubEvent`) |
+| Envoyé                                                                                                     | Non envoyé                                                              |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Erreurs HTTP **5xx** (`HttpExceptionHandler.report()`), avec méthode et route (`/dashboard/employees/:id`) | 4xx, erreurs métier (`ignoreCodes`), 404                                |
+| Jobs en **échec définitif** (retries épuisés), avec queue, nom du job, id et nombre de tentatives          | tentatives rejouées, **payload** du job                                 |
+| Utilisateur réduit à son **id**                                                                            | nom, e-mail, IP, cookies, corps de requête, query string (`scrubEvent`) |
 
 Pas de traces de performance (`tracesSampleRate: 0`) : le quota gratuit
 (5 000 événements/mois) reste pour les erreurs. Côté navigateur, une erreur de
@@ -722,18 +722,19 @@ blanche ; elle n'est pas envoyée à Sentry.
 Mise en place :
 
 1. Créer un compte Sentry en **région EU** (choix à la création de
-   l'organisation, non modifiable), puis un projet *Node.js*.
+   l'organisation, non modifiable), puis un projet _Node.js_.
 2. Copier le DSN dans `SENTRY_DSN` (web et worker ; groupe partagé sur Render).
-3. Dans *Settings → Security & Privacy* : laisser **Data Scrubber** actif et
+3. Dans _Settings → Security & Privacy_ : laisser **Data Scrubber** actif et
    cocher **Prevent Storing of IP Addresses**.
-4. Créer une alerte e-mail « nouvelle issue » (*Alerts → Create alert → Issues*).
+4. Créer une alerte e-mail « nouvelle issue » (_Alerts → Create alert → Issues_).
 5. Vérifier après déploiement, depuis le Shell du service web ou worker :
 
    ```bash
    node build/bin/console.js error-tracking:test
+   # image Docker (scénario 2) :
+   docker compose run --rm --entrypoint node app ace.js error-tracking:test
    ```
 
    L'erreur « Test du suivi des erreurs (error-tracking:test) » doit apparaître
    dans Sentry avec sa stack, l'environnement et la release. Sans DSN, la
    commande échoue avec « SENTRY_DSN non défini ».
-
