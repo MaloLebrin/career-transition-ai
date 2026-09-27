@@ -43,6 +43,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_ORGANIZATION_NAME_ALREADY_USED',
     'E_INVALID_CREDENTIALS',
     'E_DOMAIN_ERROR',
+    'E_NOTE_NOT_FOUND',
+    'E_NOTE_FORBIDDEN',
+    'E_NOTE_LINKED_RESOURCE_NOT_FOUND',
   ]
 
   /**

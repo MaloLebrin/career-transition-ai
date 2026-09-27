@@ -11,7 +11,8 @@ export default class OnboardingToken extends BaseModel {
   @column()
   declare userId: number
 
-  @column()
+  /** Secret du lien d'onboarding : jamais sérialisé (lu via `.token` pour l'e-mail). */
+  @column({ serializeAs: null })
   declare token: string
 
   @column.dateTime()
