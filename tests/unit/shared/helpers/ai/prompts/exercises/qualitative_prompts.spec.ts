@@ -4,7 +4,6 @@ import type { EmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
 import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompts/exercises/index'
 
 const profile: EmployeeAiProfile = {
-  name: 'Marie Martin',
   currentRole: 'Développeuse',
   targetRole: 'Lead Tech',
   summary: 'Profil produit.',

@@ -4,7 +4,6 @@ import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompt
 import { test } from '@japa/runner'
 
 const baseProfile: EmployeeAiProfile = {
-  name: 'Marie Martin',
   currentRole: 'Développeuse',
   targetRole: 'Lead Tech',
   summary: 'Profil orienté produit et collaboration.',

@@ -1,6 +1,10 @@
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
-import { buildEmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
+import {
+  AI_PSEUDONYM,
+  buildEmployeeAiProfile,
+  pseudonymizeForAi,
+} from '#shared/helpers/ai/exercise_profile'
 
 /**
  * `buildEmployeeAiProfile` ne lit que des propriétés : un littéral suffit, sans
@@ -42,7 +46,6 @@ test.group('buildEmployeeAiProfile', () => {
     })
 
     assert.deepEqual(profile, {
-      name: 'Marie',
       currentRole: 'Dev',
       targetRole: 'Lead',
       summary: 'Résumé',
@@ -75,7 +78,6 @@ test.group('buildEmployeeAiProfile', () => {
     const profile = profileOf({ name: null, currentRole: 3, targetRole: undefined })
 
     assert.deepEqual(profile, {
-      name: '',
       currentRole: '',
       targetRole: '',
       summary: '',
@@ -121,5 +123,66 @@ test.group('buildEmployeeAiProfile', () => {
     assert.deepEqual(profile.skills, [])
     assert.deepEqual(profile.experiences, [])
     assert.deepEqual(profile.educations, [])
+  })
+})
+
+test.group('buildEmployeeAiProfile | RGPD', () => {
+  test("n'expose ni le nom ni l'e-mail du candidat", ({ assert }) => {
+    const profile = profileOf({ name: 'Marie Martin', email: 'marie@example.com' })
+    assert.notProperty(profile, 'name')
+    assert.notProperty(profile, 'email')
+    assert.notInclude(JSON.stringify(profile), 'Marie')
+  })
+})
+
+test.group('pseudonymizeForAi', () => {
+  const identity = { name: 'Hélène Martin-Dupont', email: 'helene.md@example.com' }
+
+  test('remplace nom complet, fragments et e-mail dans toutes les chaînes', ({ assert }) => {
+    const data = {
+      summary: 'Hélène Martin-Dupont, cheffe de projet. Contact : helene.md@example.com',
+      answers: [{ text: 'Mon manager appelait toujours Hélène en réunion.' }, 42, null],
+      nested: { note: 'Madame DUPONT a quitté le poste', flag: true },
+    }
+
+    assert.deepEqual(pseudonymizeForAi(data, identity), {
+      summary: `${AI_PSEUDONYM}, cheffe de projet. Contact : ${AI_PSEUDONYM}`,
+      answers: [{ text: `Mon manager appelait toujours ${AI_PSEUDONYM} en réunion.` }, 42, null],
+      nested: { note: `Madame ${AI_PSEUDONYM} a quitté le poste`, flag: true },
+    })
+  })
+
+  test('ne remplace pas un fragment inclus dans un autre mot', ({ assert }) => {
+    const result = pseudonymizeForAi(
+      { text: 'Martinez, Dupontel et Hélènerie restent intacts' },
+      identity
+    )
+    assert.equal(result.text, 'Martinez, Dupontel et Hélènerie restent intacts')
+  })
+
+  test('ignore les fragments trop courts et les particules', ({ assert }) => {
+    const result = pseudonymizeForAi(
+      { text: 'Li habite à Lille, près de la gare des Van' },
+      { name: 'Li de Van' }
+    )
+    assert.equal(result.text, 'Li habite à Lille, près de la gare des Van')
+  })
+
+  test('laisse la valeur intacte sans identité connue', ({ assert }) => {
+    const data = { text: 'Hélène' }
+    assert.strictEqual(pseudonymizeForAi(data, { name: '', email: null }), data)
+  })
+
+  test("masque l'e-mail entier même s'il contient le prénom", ({ assert }) => {
+    const result = pseudonymizeForAi('Écrire à marie@ex.io', {
+      name: 'Marie',
+      email: 'marie@ex.io',
+    })
+    assert.equal(result, `Écrire à ${AI_PSEUDONYM}`)
+  })
+
+  test('échappe les caractères spéciaux des identifiants', ({ assert }) => {
+    const result = pseudonymizeForAi(['a.b+c@x.io', 'aXb+c@x.io'], { email: 'a.b+c@x.io' })
+    assert.deepEqual(result, [AI_PSEUDONYM, 'aXb+c@x.io'])
   })
 })

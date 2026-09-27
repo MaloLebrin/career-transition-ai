@@ -102,6 +102,8 @@ Sommaire :
 | Paiement | **Aucun** (pas de Stripe/webhook). | — | Pas d'URL publique requise pour des webhooks. |
 | Google Fonts | `resources/views/inertia_layout.edge` | gratuit | Côté navigateur uniquement. |
 
+RGPD (opt-out d'entraînement Mistral, pseudonymisation des prompts, sous-traitants, procédures d'accès et d'effacement) : voir [RGPD.md](RGPD.md).
+
 ### 1.6 Existant CI/CD
 
 | Élément | État |

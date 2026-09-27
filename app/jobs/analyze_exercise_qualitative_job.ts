@@ -4,7 +4,7 @@ import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_pr
 import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
-import { buildEmployeeAiProfile } from '#shared/helpers/ai/exercise_profile'
+import { buildEmployeeAiProfile, pseudonymizeForAi } from '#shared/helpers/ai/exercise_profile'
 import { buildQualitativePromptForExerciseType } from '#shared/helpers/ai/prompts/exercises/index'
 import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import logger from '@adonisjs/core/services/logger'
@@ -56,10 +56,12 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
     }
 
     const provider = resolveAiTextCompletionProvider()
-    const profile = buildEmployeeAiProfile(employee as any)
+    // Données pseudonymisées avant envoi au fournisseur IA (RGPD, docs/RGPD.md) :
+    // ni nom ni e-mail du candidat dans le prompt, y compris dans le texte libre.
+    const identity = { name: employee.name, email: employee.email }
     const prompt = buildQualitativePromptForExerciseType(result.type, {
-      profile,
-      exerciseData: result.data,
+      profile: pseudonymizeForAi(buildEmployeeAiProfile(employee as any), identity),
+      exerciseData: pseudonymizeForAi(result.data, identity),
     })
 
     try {

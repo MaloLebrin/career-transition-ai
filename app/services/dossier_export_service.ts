@@ -2,11 +2,20 @@ import type Employee from '#models/employee'
 import archiver from 'archiver'
 import { generateProfilPdf, generateResultPdf } from '#services/dossier_pdf_service'
 
+/** Fichier supplémentaire ajouté à l'archive (ex. `donnees.json` de l'export RGPD). */
+export interface DossierExtraEntry {
+  name: string
+  content: string | Buffer
+}
+
 /**
  * Builds a ZIP archive (readable stream) containing profil.pdf and resultats/<type>.pdf.
  * The caller should await this and then pipe the result to the response.
  */
-export async function buildDossierArchive(employee: Employee): Promise<archiver.Archiver> {
+export async function buildDossierArchive(
+  employee: Employee,
+  extraEntries: DossierExtraEntry[] = []
+): Promise<archiver.Archiver> {
   const archive = archiver('zip', { zlib: { level: 9 } })
 
   const profilPdf = await generateProfilPdf(employee)
@@ -16,6 +25,10 @@ export async function buildDossierArchive(employee: Employee): Promise<archiver.
   for (const result of results) {
     const pdfBuffer = await generateResultPdf(result)
     archive.append(pdfBuffer, { name: `resultats/${result.type}.pdf` })
+  }
+
+  for (const entry of extraEntries) {
+    archive.append(entry.content, { name: entry.name })
   }
 
   archive.finalize()

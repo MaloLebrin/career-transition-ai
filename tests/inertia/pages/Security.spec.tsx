@@ -31,5 +31,13 @@ describe('Security page', () => {
     expect(screen.getAllByText(/Contrôle d’accès/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/Gestion des incidents/i)).toBeInTheDocument()
   })
-})
 
+  test('décrit l’hébergement UE et le traitement pseudonymisé par l’IA', () => {
+    render(<Security />)
+
+    expect(screen.getByRole('heading', { name: /Intelligence artificielle/i })).toBeInTheDocument()
+    expect(screen.getByText(/Mistral AI/)).toBeInTheDocument()
+    expect(screen.getByText(/nom et l.e-mail du candidat sont retirés/i)).toBeInTheDocument()
+    expect(screen.getByText(/hébergées dans l.Union européenne/i)).toBeInTheDocument()
+  })
+})

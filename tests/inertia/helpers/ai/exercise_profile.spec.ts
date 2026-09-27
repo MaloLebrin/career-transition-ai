@@ -41,8 +41,8 @@ describe('buildEmployeeAiProfile', () => {
       ],
     } as never)
 
+    expect(profile).not.toHaveProperty('name')
     expect(profile).toEqual({
-      name: 'Camille',
       currentRole: 'Comptable',
       targetRole: '',
       summary: '',
