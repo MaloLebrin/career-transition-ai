@@ -292,3 +292,53 @@ test.group('Conseiller — exercices : enregistrement', (group) => {
     await db.assertEmpty('exercise_results')
   })
 })
+
+/**
+ * Non-régression : `saveDraftFromDashboard` / `storeFromDashboard` prenaient
+ * l'id du candidat dans l'URL sans filtre d'organisation. Un conseiller de
+ * l'organisation B écrivait un résultat sur le candidat de A — et déclenchait
+ * l'analyse IA, la notification du conseiller de A et le recalcul des étapes.
+ */
+test.group('Conseiller — exercices : isolation entre organisations', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test("n'enregistre pas de brouillon sur le candidat d'une autre organisation (404)", async ({
+    client,
+    assert,
+  }) => {
+    const employee = await createEmployeeFor(await createAdvisor())
+    const intruder = await createAdvisor()
+
+    const response = await client
+      .post(`${exercisesUrl(employee.id)}/${EXERCICE_RESULTS_TYPES.VALUES}/draft`)
+      .loginAs(intruder)
+      .json({
+        employeeId: String(employee.id),
+        type: EXERCICE_RESULTS_TYPES.VALUES,
+        data: { step: 1 },
+      })
+      .redirects(0)
+
+    response.assertStatus(404)
+    assert.lengthOf(await ExerciseResult.query().where('employeeId', employee.id), 0)
+  })
+
+  test("n'enregistre pas de résultat sur le candidat d'une autre organisation (404)", async ({
+    client,
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    const intruder = await createAdvisor()
+
+    const response = await client
+      .post(`${exercisesUrl(employee.id)}/${EXERCICE_RESULTS_TYPES.VALUES}/result`)
+      .loginAs(intruder)
+      .json({ type: EXERCICE_RESULTS_TYPES.VALUES, status: 'completed', data: {}, plan: [] })
+      .redirects(0)
+
+    response.assertStatus(404)
+    assert.lengthOf(await ExerciseResult.query().where('employeeId', employee.id), 0)
+    assert.lengthOf(await Notification.query().where('userId', advisor.id), 0)
+  })
+})

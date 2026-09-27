@@ -31,6 +31,21 @@ export default class ExerciseResultsController {
   ) {}
 
   /**
+   * L'id du candidat vient de l'URL : il doit appartenir à l'organisation du
+   * conseiller connecté, sinon 404. Sans ce filtre, un conseiller de n'importe
+   * quelle organisation écrivait des résultats (et déclenchait l'analyse IA et
+   * les notifications) sur le candidat d'une autre.
+   */
+  private async employeeIdInOrganization(user: { organizationId: number }, id: string) {
+    const employee = await Employee.query()
+      .select('id')
+      .where('id', Number(id))
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
+    return employee.id
+  }
+
+  /**
    * Inertia form: save draft then redirect back.
    */
   public async saveDraftFromDashboard({ auth, params, request, response }: HttpContext) {
@@ -38,7 +53,7 @@ export default class ExerciseResultsController {
       return response.unauthorized()
     }
 
-    const employeeId = Number(params.id)
+    const employeeId = await this.employeeIdInOrganization(auth.user, params.id)
     const payload = await request.validateUsing(saveExerciseDraftValidator)
 
     await this.service.saveDraft({
@@ -58,7 +73,7 @@ export default class ExerciseResultsController {
       return response.unauthorized()
     }
 
-    const employeeId = Number(params.id)
+    const employeeId = await this.employeeIdInOrganization(auth.user, params.id)
     const payload = await request.validateUsing(saveExerciseResultValidator)
 
     await this.service.saveResult({
