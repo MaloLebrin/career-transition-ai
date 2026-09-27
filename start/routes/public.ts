@@ -4,6 +4,7 @@ import router from '@adonisjs/core/services/router'
 
 const ContactRequestsController = () => import('#controllers/contact_requests_controller')
 const HealthChecksController = () => import('#controllers/health_checks_controller')
+const RobotsController = () => import('#controllers/robots_controller')
 
 router
   .group(() => {
@@ -23,3 +24,7 @@ router.post('/contact-requests', [ContactRequestsController, 'store']).use(throt
 
 // Hors du groupe `guest` : sondé sans session par Docker, Render, UptimeRobot…
 router.get('/health', [HealthChecksController])
+
+// Hors du groupe `guest` : un robot n'a pas de session, et le fichier ne doit
+// jamais rediriger. Pas de `public/robots.txt` : il ne suivrait pas SEO_INDEXING.
+router.get('/robots.txt', [RobotsController])

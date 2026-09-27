@@ -58,6 +58,16 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
+  | Référencement — voir config/seo.ts
+  |----------------------------------------------------------
+  | `SEO_INDEXING` : `false` par défaut (noindex), `true` sur le
+  | domaine final uniquement.
+  */
+  SEO_INDEXING: Env.schema.boolean.optional(),
+  GOOGLE_SITE_VERIFICATION: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
   | IA serveur (jobs d’analyse — Mistral ou none)
   |----------------------------------------------------------
   */
