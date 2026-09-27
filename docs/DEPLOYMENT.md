@@ -49,7 +49,6 @@ DB_USER: Env.schema.string.optional(),
 DB_PASSWORD: Env.schema.string.optional(),
 DB_DATABASE: Env.schema.string.optional(),
 DB_SSL: Env.schema.boolean.optional(),
-SQLITE_DB_PATH: Env.schema.string.optional(),
 ```
 
 `config/database.ts` — connexion `postgres` :
@@ -216,7 +215,7 @@ jobs:
 
 ### 0.9 Métadonnées de version
 
-`package.json` : ajouter `"packageManager": "pnpm@10.18.3"` et `"engines": { "node": ">=24" }`. Compléter `.env.example` (voir §5) et corriger `TZ=Europe/Paris`.
+Fait : `package.json` porte `"packageManager": "pnpm@10.18.3"` et `"engines": { "node": ">=24.0.0" }` ; `.env.example` est complet et démarre tel quel (`TZ=Europe/Paris`), `.env.production.example` sert de modèle de prod (voir §5).
 
 ---
 
@@ -623,7 +622,7 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 
 ## 5. Référence : variables d'environnement de production
 
-Validées au boot par `start/env.ts` (après §0.2) :
+Modèle à copier : [`.env.production.example`](../.env.production.example) (le développement local part de `.env.example`, qui démarre tel quel). Toutes les variables lues par le serveur sont déclarées et validées au boot par `start/env_schema.ts` : une valeur invalide (`QUEUE_DRIVER=redis`, `MAIL_PROVIDER=smtp`…) empêche le démarrage. Les deux fichiers d'exemple sont validés contre ce schéma par `tests/unit/config/env_schema.spec.ts`.
 
 | Variable | Obligatoire | Valeur prod |
 |---|---|---|
@@ -634,7 +633,7 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `SESSION_DRIVER` | oui | `cookie` |
 | `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux) | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres` |
 | `DB_SSL` | non (défaut `true`) | `false` seulement pour un Postgres sans TLS |
-| `QUEUE_DRIVER` | oui | `sync` (mono-process) ou `database` (worker) |
+| `QUEUE_DRIVER` | oui | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter) |
 | `AI_PROVIDER` | non | `mistral` ou `none` |
 | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | si `mistral` | clé ; `mistral-small-latest` |
 | `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
@@ -647,17 +646,22 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `SENTRY_ENVIRONMENT` | non (défaut `NODE_ENV`) | `production`, `staging`… pour séparer les environnements dans Sentry |
 | `SENTRY_RELEASE` | non (défaut `RENDER_GIT_COMMIT`) | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`) |
 
-Lues hors schéma (pas d'erreur au boot si absentes) :
+| `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié ; `console` écrit les e-mails dans les logs |
+| `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console`) | adresse du domaine vérifié |
+| `MAIL_FROM_NAME` | non | nom d'expéditeur |
+| `RESEND_API_KEY` | si `MAIL_PROVIDER=resend` | clé Resend |
+| `ADMIN_CONTACT_EMAIL` | non | destinataire des demandes de contact / démo |
+| `MAIL_RESEND_TEST_MODE`, `MAIL_RESEND_TEST_EVENT`, `MAIL_RESEND_TEST_TO`, `MAIL_RESEND_TEST_FROM` | non (ignorées en production) | boîtes de test Resend hors production, voir `docs/MAIL.md` |
+| `ADMIN_PASSWORD` | pour le seed seulement | requis par `admin_seeder` (création/rotation du super admin) |
+| `APP_NAME` | non | nom du logger |
+
+Hors schéma (lues par Node ou l'hébergeur) :
 
 | Variable | Rôle |
 |---|---|
-| `MAIL_PROVIDER` | `console` (défaut) ou `resend` |
-| `MAIL_FROM_EMAIL` | **requis en production** pour tout envoi, même en `console` |
-| `MAIL_FROM_NAME`, `ADMIN_CONTACT_EMAIL`, `RESEND_API_KEY` | mail |
-| `ADMIN_PASSWORD` | requis par `admin_seeder` (création/rotation du super admin) |
-| `TZ` | `Europe/Paris` |
-| `APP_NAME` | nom du logger (optionnel) |
+| `TZ` | `Europe/Paris` (nom IANA ; `UTC+2` en notation POSIX signifie UTC−2) |
 | `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo |
+| `RENDER_GIT_COMMIT` | injectée par Render, release Sentry par défaut |
 
 Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.
 

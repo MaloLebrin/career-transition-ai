@@ -1,17 +1,10 @@
 import { ResendMailProvider } from '#services/mail/providers/resend_mail_provider'
+import { overrideEnv } from '#tests/utils/env'
 import { test } from '@japa/runner'
 
-test.group('ResendMailProvider', (group) => {
-  group.each.teardown(() => {
-    delete process.env.NODE_ENV
-    delete process.env.MAIL_RESEND_TEST_MODE
-    delete process.env.MAIL_RESEND_TEST_EVENT
-    delete process.env.MAIL_RESEND_TEST_TO
-  })
-
-  test('maps MailMessage to Resend payload', async ({ assert }) => {
-    process.env.NODE_ENV = 'test'
-    process.env.MAIL_RESEND_TEST_MODE = 'false'
+test.group('ResendMailProvider', () => {
+  test('maps MailMessage to Resend payload', async ({ assert, cleanup }) => {
+    cleanup(overrideEnv({ MAIL_RESEND_TEST_MODE: 'false' }))
 
     const sent: any[] = []
     const provider = new ResendMailProvider({
@@ -47,10 +40,14 @@ test.group('ResendMailProvider', (group) => {
     )
   })
 
-  test('routes to Resend test recipient in dev mode', async ({ assert }) => {
-    process.env.NODE_ENV = 'development'
-    process.env.MAIL_RESEND_TEST_MODE = 'true'
-    process.env.MAIL_RESEND_TEST_EVENT = 'bounced'
+  test('routes to Resend test recipient in dev mode', async ({ assert, cleanup }) => {
+    cleanup(
+      overrideEnv({
+        MAIL_RESEND_TEST_MODE: 'true',
+        MAIL_RESEND_TEST_EVENT: 'bounced',
+        MAIL_RESEND_TEST_TO: undefined,
+      })
+    )
 
     const sent: any[] = []
     const provider = new ResendMailProvider({
@@ -75,10 +72,13 @@ test.group('ResendMailProvider', (group) => {
     assert.deepEqual(sent[0].to, ['bounced+onboarding@resend.dev'])
   })
 
-  test('uses explicit test recipient when configured', async ({ assert }) => {
-    process.env.NODE_ENV = 'development'
-    process.env.MAIL_RESEND_TEST_MODE = 'true'
-    process.env.MAIL_RESEND_TEST_TO = 'delivered+manual@resend.dev'
+  test('uses explicit test recipient when configured', async ({ assert, cleanup }) => {
+    cleanup(
+      overrideEnv({
+        MAIL_RESEND_TEST_MODE: 'true',
+        MAIL_RESEND_TEST_TO: 'delivered+manual@resend.dev',
+      })
+    )
 
     const sent: any[] = []
     const provider = new ResendMailProvider({

@@ -44,7 +44,7 @@ Sommaire :
 
 | Besoin | Constat |
 |---|---|
-| Redis / cache | **Aucun.** Sessions en cookie (`SESSION_DRIVER=cookie`), queue en Postgres, Transmit sans transport (`config/transmit.ts` → `transport: null`). `QUEUE_DRIVER` accepte `redis` dans le schéma d'env mais **aucun adapter redis n'est configuré** dans `config/queue.ts` → crash si utilisé. |
+| Redis / cache | **Aucun.** Sessions en cookie (`SESSION_DRIVER=cookie`), queue en Postgres, Transmit sans transport (`config/transmit.ts` → `transport: null`). `QUEUE_DRIVER` n'accepte que `database` et `sync` (seuls adapters de `config/queue.ts`). |
 | Disque persistant | **Plus requis depuis l'issue #21** : les PDF passent par Drive (`config/drive.ts`) — `DRIVE_DISK=fs` (dossier `storage/`, volume partagé en compose) ou `DRIVE_DISK=s3` (R2) pour web et worker séparés ; `file_path` ne contient qu'une clé relative. Constat initial : **Oui, partiellement.** Le job PDF (`app/jobs/generate_employee_synthesis_pdf.ts`) écrit dans `<cwd>/tmp/exports/*.pdf` sur le disque **du worker**, stocke le chemin absolu dans `pdf_exports.file_path`, et le **web** le sert via `response.attachment(filePath)` (`pdf_export_downloads_controller.ts`). Conséquences : web et worker doivent **partager le même système de fichiers** (même machine ou volume partagé), et un disque éphémère (PaaS) perd les PDF au redéploiement (404 « fichier introuvable »). Le modèle `File` porte un `TODO: configure the file driver` : pas de Drive/S3. L'export ZIP dossier (`dossier_export_service.ts`, `archiver`) est **streamé**, sans disque. |
 | Stockage objet (S3…) | Non utilisé. |
 | Binaires système | **Aucun.** PDF = `@react-pdf/renderer` / `pdf-lib` / `jspdf` (pur JS), pas de ffmpeg/ghostscript/Chromium. Alpine suffit. Seul point natif : `better-sqlite3` (devDependency, tests) compilé/prébuilt à l'install du stage builder. |
@@ -53,44 +53,30 @@ Sommaire :
 
 ### 1.4 Variables d'environnement
 
-**Source de vérité = `start/env.ts`** (validées au boot ; une valeur vide compte comme absente) :
+**Source de vérité = `start/env_schema.ts`** (chargé par `start/env.ts`, validé au boot ; une valeur vide compte comme absente). Toutes les variables lues par le serveur y sont déclarées et lues via `env.get` : plus aucun `process.env` dans `app/`, `config/`, `database/` et `start/` (garde : `tests/unit/hygiene/env_access.spec.ts`). Référence complète, valeurs de prod comprises : [DEPLOYMENT.md §5](DEPLOYMENT.md#5-référence--variables-denvironnement-de-production).
 
 | Variable | Contrainte | Notes |
 |---|---|---|
-| `NODE_ENV` | `development` \| `production` \| `test` | `test` force SQLite. `production` active cookies `secure`, logs JSON stdout, chemin jobs `./build/app/jobs/**/*.js`. |
+| `NODE_ENV` | `development` \| `production` \| `test` | `production` active cookies `secure`, logs JSON stdout. |
 | `PORT`, `HOST` | requis | `HOST=0.0.0.0` en conteneur. |
 | `APP_KEY` | requis | `node ace generate:key`. |
 | `LOG_LEVEL` | requis (non vide) | `info` en prod. |
 | `SESSION_DRIVER` | `cookie` \| `memory` | `cookie` en prod. |
-| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_DATABASE` | **requis** | même avec une connection string (voir 1.2). |
-| `DB_PASSWORD`, `SQLITE_DB_PATH` | optionnels | |
-| `QUEUE_DRIVER` | `redis` \| `database` \| `sync` | `redis` non câblé. |
-| `AI_PROVIDER` | optionnel `mistral` \| `none` | |
-| `MISTRAL_API_KEY`, `MISTRAL_MODEL` | optionnels | requis si `AI_PROVIDER=mistral` (défaut modèle `mistral-small-latest`). |
+| `DB_URL` **ou** `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_DATABASE` (+ `DB_PASSWORD`) | l'un des deux | complétude vérifiée par `config/database.ts`. `DB_SSL` : `true` par défaut. |
+| `QUEUE_DRIVER` | `database` \| `sync` | `redis` retiré (aucun adapter dans `config/queue.ts`). |
+| `AI_PROVIDER`, `MISTRAL_API_KEY`, `MISTRAL_MODEL` | optionnels | clé requise si `AI_PROVIDER=mistral`. |
+| `MAIL_PROVIDER` | optionnel `console` \| `resend` | `console` par défaut. |
+| `MAIL_FROM_EMAIL` | optionnel au boot | **requis en production** à l'envoi (exception sinon). |
+| `MAIL_FROM_NAME`, `ADMIN_CONTACT_EMAIL`, `RESEND_API_KEY`, `MAIL_RESEND_TEST_*` | optionnels | `RESEND_API_KEY` requis si `resend` ; `MAIL_RESEND_TEST_*` ignorées en prod. |
+| `ADMIN_PASSWORD` | optionnel | requis par `admin_seeder` uniquement (plus par les migrations). |
+| `APP_NAME` | optionnel | nom du logger. |
+| `DRIVE_DISK`, `S3_*`, `SENTRY_*`, `REGISTRATION_ENABLED`, `SEO_INDEXING`, `GOOGLE_SITE_VERIFICATION` | optionnels | voir DEPLOYMENT.md §5. |
 
-**Lues hors schéma** (`process.env` / `env.get` non validé — aucune erreur au boot si absentes) :
-
-| Variable | Où | Effet |
-|---|---|---|
-| `DB_URL` | `config/database.ts` | connection string (jamais injectée par les configs existantes). |
-| `MAIL_PROVIDER` | `services/mail/mail_service.ts` | `console` (défaut) \| `resend`. |
-| `RESEND_API_KEY` | `utils/mail/resend.ts` | requis si `resend`. |
-| `MAIL_FROM_EMAIL` | `onboarding_mail_service.ts`, `notification_mail_service.ts`, `contact_request_mail_service.ts` | **requis en production** pour envoyer (sinon exception à l'envoi). |
-| `MAIL_FROM_NAME`, `ADMIN_CONTACT_EMAIL` | mail | optionnels (défauts en dur `@francetransitioncarriere.fr`). |
-| `MAIL_RESEND_TEST_MODE/EVENT/TO/FROM` | resend | mode test hors prod. |
-| `ADMIN_PASSWORD` | migration `1778062253238` (prod) + `admin_seeder.ts` | **requis pour migrer en prod**. |
-| `APP_NAME` | `config/logger.ts` | nom du logger. |
-| `QUEUE_WORKER_QUEUES` / `QUEUE_NAMES` / `QUEUE_WORKER_CONCURRENCY` | `bin/dev-with-worker.mjs` | dev uniquement. |
-| `TZ` | Node | fuseau du process. |
+**Hors schéma** : `TZ` (Node, `Europe/Paris`), `NODE_OPTIONS`, `RENDER_GIT_COMMIT` (injectée par Render), et côté scripts de dev `QUEUE_WORKER_QUEUES` / `QUEUE_NAMES` / `QUEUE_WORKER_CONCURRENCY` (`bin/dev-with-worker.mjs`).
 
 **Variables de build (Vite, embarquées dans le bundle navigateur)** : `VITE_APP_NAME` seulement (`inertia/app.tsx`), présente **au moment de `node ace build`**. Aucune clé API : l'OCR des CV et les suggestions passent par `/dashboard/ai/*` avec `MISTRAL_API_KEY` côté serveur (anciennement `VITE_MISTRAL_API_KEY`, exposée en clair dans le JS public — corrigé, issue #18).
 
-**Écarts `.env.example` ↔ code** :
-
-- Manquent : `MISTRAL_MODEL`, `MAIL_RESEND_*`, `ADMIN_CONTACT_EMAIL`, `APP_NAME`, `VITE_APP_NAME`, `DB_URL`, `SQLITE_DB_PATH`.
-- `TZ=UTC+2` : en notation POSIX, `UTC+2` signifie **UTC−2**. Utiliser `Europe/Paris`.
-- Copié tel quel, `.env.example` **ne boote pas** (`APP_KEY`, `LOG_LEVEL`, `SESSION_DRIVER`, `DB_*`, `QUEUE_DRIVER` vides).
-- `.env.test` est complet et sert de référence pour la CI.
+**Fichiers d'exemple** (issue #17, corrigé) : `cp .env.example .env` démarre en local avec le Postgres du compose (`TZ=Europe/Paris`, toutes les variables documentées, optionnelles commentées) ; `.env.production.example` sert de modèle pour la prod. Les deux sont validés contre le schéma par `tests/unit/config/env_schema.spec.ts`. `.env.test` reste la référence de la CI.
 
 ### 1.5 Services externes
 
@@ -209,9 +195,9 @@ Nécessaires pour un hébergement sain :
 10. **`docker-compose.prod.yml`** — image depuis le registre (pas `build:`), service `caddy` (TLS sslip.io), volume `exports` monté dans `app` et `worker`, `restart: unless-stopped`, `healthcheck` sur `/health`, migrations en service one-shot (`command: migrate`) plutôt qu'à chaque boot, `mem_limit`, service `backup` (`pg_dump` cron → R2/B2). Ajouter un mode `migrate` à `docker/entrypoint.sh`.
 11. **Dockerfile** — `ENV NODE_ENV=production HOST=0.0.0.0`, `USER node`, `HEALTHCHECK`, `--ignore-scripts` ou `pnpm install --frozen-lockfile --config.confirmModulesPurge=false` avec `python3 make g++` dans le stage builder si `better-sqlite3` n'a pas de prebuilt musl (à valider par un premier build, ou passer sur `node:24-slim`). Retirer `@google/genai` (inutilisé) pour alléger.
 12. **CI de build d'image** — job GitHub Actions `docker/build-push-action` vers **GHCR** (gratuit pour un repo public ; 500 Mo de stockage pour un privé sur le plan Free), tags `sha` + `latest`, multi-arch `linux/amd64,linux/arm64` (Oracle A1, Raspberry Pi). Le VPS/Koyeb ne fait alors que `docker compose pull && up -d`.
-13. **Env** — compléter `.env.example` (cf. 1.4), corriger `TZ`, ajouter `.env.production.example`, ajouter `packageManager: "pnpm@10.18.3"` et `engines.node: ">=24"` dans `package.json`.
+13. ~~**Env**~~ (fait, issue #17) — `.env.example` complet et bootable, `TZ=Europe/Paris`, `.env.production.example`, `packageManager`/`engines` dans `package.json`, variables mail/admin déclarées dans le schéma.
 14. ~~**Clé Mistral côté client**~~ (fait, issue #18) — supprimer `VITE_MISTRAL_API_KEY` et faire passer OCR/suggestions par des endpoints serveur (la clé reste secrète, le quota est protégé, le rate-limit est géré au même endroit que le job).
-15. **`QUEUE_DRIVER=redis`** — retirer de l'enum (ou ajouter l'adapter) pour éviter un crash silencieux.
+15. ~~**`QUEUE_DRIVER=redis`**~~ (fait, issue #17) — retiré de l'enum.
 16. **E-mail sans domaine** — décider : domaine (~7 €/an) + Resend, ou provider SMTP (`nodemailer`, Brevo 300/j ou Gmail 500/j), ou `console` documenté comme mode beta.
 17. **Docs** — mettre à jour `docs/clever-cloud.md` (workflow/script/`POSTGRESQL_ADDON_*` inexistants) ou la retirer, corriger les liens morts de `docs/README.md`, aligner `render.yaml` (plans free) ou le retirer.
 

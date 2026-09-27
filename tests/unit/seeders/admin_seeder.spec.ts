@@ -5,6 +5,7 @@ import AdminSeeder, {
 import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { overrideEnv } from '#tests/utils/env'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import db from '@adonisjs/lucid/services/db'
@@ -13,76 +14,41 @@ import { test } from '@japa/runner'
 test.group('AdminSeeder', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('throws when ADMIN_PASSWORD is missing', async ({ assert }) => {
-    const prev = process.env.ADMIN_PASSWORD
-    delete process.env.ADMIN_PASSWORD
-    try {
-      await assert.rejects(() => new AdminSeeder(db.connection()).run(), /ADMIN_PASSWORD/)
-    } finally {
-      if (prev === undefined) {
-        delete process.env.ADMIN_PASSWORD
-      } else {
-        process.env.ADMIN_PASSWORD = prev
-      }
-    }
+  test('throws when ADMIN_PASSWORD is missing', async ({ assert, cleanup }) => {
+    cleanup(overrideEnv({ ADMIN_PASSWORD: undefined }))
+    await assert.rejects(() => new AdminSeeder(db.connection()).run(), /ADMIN_PASSWORD/)
   })
 
-  test('throws when ADMIN_PASSWORD is only whitespace', async ({ assert }) => {
-    const prev = process.env.ADMIN_PASSWORD
-    process.env.ADMIN_PASSWORD = '   \t  '
-    try {
-      await assert.rejects(() => new AdminSeeder(db.connection()).run(), /ADMIN_PASSWORD/)
-    } finally {
-      if (prev === undefined) {
-        delete process.env.ADMIN_PASSWORD
-      } else {
-        process.env.ADMIN_PASSWORD = prev
-      }
-    }
+  test('throws when ADMIN_PASSWORD is only whitespace', async ({ assert, cleanup }) => {
+    cleanup(overrideEnv({ ADMIN_PASSWORD: '   \t  ' }))
+    await assert.rejects(() => new AdminSeeder(db.connection()).run(), /ADMIN_PASSWORD/)
   })
 
-  test('second run does not duplicate organization or user', async ({ assert }) => {
-    const prev = process.env.ADMIN_PASSWORD
-    process.env.ADMIN_PASSWORD = 'test-seed-password-for-admin-seeder-spec'
-    try {
-      const client = db.connection()
-      await new AdminSeeder(client).run()
-      await new AdminSeeder(client).run()
+  test('second run does not duplicate organization or user', async ({ assert, cleanup }) => {
+    cleanup(overrideEnv({ ADMIN_PASSWORD: 'test-seed-password-for-admin-seeder-spec' }))
+    const client = db.connection()
+    await new AdminSeeder(client).run()
+    await new AdminSeeder(client).run()
 
-      const orgs = await Organization.query().where('slug', PLATFORM_ORG_SLUG)
-      assert.lengthOf(orgs, 1)
+    const orgs = await Organization.query().where('slug', PLATFORM_ORG_SLUG)
+    assert.lengthOf(orgs, 1)
 
-      const users = await User.query().where('email', PLATFORM_ADMIN_EMAIL)
-      assert.lengthOf(users, 1)
-      assert.equal(users[0].role, USERS_ROLES.SUPER_ADMIN)
-      assert.equal(users[0].organizationId, orgs[0].id)
-    } finally {
-      if (prev === undefined) {
-        delete process.env.ADMIN_PASSWORD
-      } else {
-        process.env.ADMIN_PASSWORD = prev
-      }
-    }
+    const users = await User.query().where('email', PLATFORM_ADMIN_EMAIL)
+    assert.lengthOf(users, 1)
+    assert.equal(users[0].role, USERS_ROLES.SUPER_ADMIN)
+    assert.equal(users[0].organizationId, orgs[0].id)
   })
 
-  test('a new ADMIN_PASSWORD rotates the super admin password', async ({ assert }) => {
-    const prev = process.env.ADMIN_PASSWORD
-    try {
-      const client = db.connection()
-      process.env.ADMIN_PASSWORD = 'first-admin-seeder-password'
-      await new AdminSeeder(client).run()
-      process.env.ADMIN_PASSWORD = 'rotated-admin-seeder-password'
-      await new AdminSeeder(client).run()
+  test('a new ADMIN_PASSWORD rotates the super admin password', async ({ assert, cleanup }) => {
+    const client = db.connection()
+    cleanup(overrideEnv({ ADMIN_PASSWORD: 'first-admin-seeder-password' }))
+    await new AdminSeeder(client).run()
+    // Le cleanup ci-dessus restaure la valeur d'origine
+    overrideEnv({ ADMIN_PASSWORD: 'rotated-admin-seeder-password' })
+    await new AdminSeeder(client).run()
 
-      const user = await User.findByOrFail('email', PLATFORM_ADMIN_EMAIL)
-      assert.isTrue(await hash.verify(user.password, 'rotated-admin-seeder-password'))
-      assert.isFalse(await hash.verify(user.password, 'first-admin-seeder-password'))
-    } finally {
-      if (prev === undefined) {
-        delete process.env.ADMIN_PASSWORD
-      } else {
-        process.env.ADMIN_PASSWORD = prev
-      }
-    }
+    const user = await User.findByOrFail('email', PLATFORM_ADMIN_EMAIL)
+    assert.isTrue(await hash.verify(user.password, 'rotated-admin-seeder-password'))
+    assert.isFalse(await hash.verify(user.password, 'first-admin-seeder-password'))
   })
 })

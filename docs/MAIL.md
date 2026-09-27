@@ -21,6 +21,8 @@ Ce projet utilise une couche d’abstraction pour l’envoi d’emails, afin de 
 
 ## Env / configuration
 
+Toutes ces variables sont déclarées dans `start/env_schema.ts` et lues via `env.get` : une valeur hors enum (`MAIL_PROVIDER=smtp`, `MAIL_RESEND_TEST_EVENT=foo`) empêche le serveur de démarrer. Elles sont listées (commentées) dans `.env.example`.
+
 ### `MAIL_PROVIDER`
 
 - Valeurs supportées actuellement : `console`, `resend`
@@ -51,6 +53,14 @@ MAIL_FROM_NAME="Career Transition AI"
 ```
 
 Mode **test-first** (sans domaine vérifié) : si `MAIL_FROM_EMAIL` est absent et que `NODE_ENV != production`, l’app utilise un expéditeur de test (`onboarding@resend.dev`). En production, `MAIL_FROM_EMAIL` est requis.
+
+### `ADMIN_CONTACT_EMAIL`
+
+Destinataire des demandes de contact et de démo (formulaire public). Défaut : `contact@francetransitioncarriere.fr`. Lue à chaque envoi, comme `MAIL_FROM_*`.
+
+```bash
+ADMIN_CONTACT_EMAIL="contact@ton-domaine.fr"
+```
 
 ---
 

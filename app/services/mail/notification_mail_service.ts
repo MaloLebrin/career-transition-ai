@@ -3,17 +3,19 @@ import type User from '#models/user'
 import { MailService } from '#services/mail/mail_service'
 import type { MailAddress } from '#services/mail/types'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
+import env from '#start/env'
 import { inject } from '@adonisjs/core'
+import app from '@adonisjs/core/services/app'
 
 function resolveFromAddress(): MailAddress {
-  const email = String(process.env.MAIL_FROM_EMAIL ?? '').trim()
-  const name = String(process.env.MAIL_FROM_NAME ?? '').trim()
+  const email = String(env.get('MAIL_FROM_EMAIL') ?? '').trim()
+  const name = String(env.get('MAIL_FROM_NAME') ?? '').trim()
 
   if (email) {
     return { email, name: name || undefined }
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!app.inProduction) {
     return { email: 'notifications@resend.dev', name: 'Notifications' }
   }
 

@@ -6,6 +6,7 @@ import {
   resolveResendApiKey,
   toResendAddress,
 } from '#utils/mail/resend'
+import app from '@adonisjs/core/services/app'
 import Logger from '@adonisjs/core/services/logger'
 import { Resend } from 'resend'
 
@@ -24,7 +25,7 @@ export class ResendMailProvider implements MailProvider {
 
   async send(message: MailMessage): Promise<void> {
     const toList = Array.isArray(message.to) ? message.to : [message.to]
-    const isDevTestMode = process.env.NODE_ENV !== 'production' && resolveDevTestMode()
+    const isDevTestMode = !app.inProduction && resolveDevTestMode()
     const resolvedTo = isDevTestMode ? [resolveDevTestTo(message)] : toList.map(toResendAddress)
     const resolvedFrom = isDevTestMode
       ? resolveDevTestFrom()

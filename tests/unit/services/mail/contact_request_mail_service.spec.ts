@@ -1,7 +1,13 @@
 import { test } from '@japa/runner'
-import { ContactRequestMailService } from '#services/mail/contact_request_mail_service'
+import {
+  ContactRequestMailService,
+  DEFAULT_ADMIN_CONTACT_EMAIL,
+  DEFAULT_CONTACT_FROM_EMAIL,
+} from '#services/mail/contact_request_mail_service'
 import { MailService } from '#services/mail/mail_service'
 import type { MailMessage, MailProvider } from '#services/mail/types'
+import env from '#start/env'
+import { withEnv } from '#tests/utils/env'
 
 /** Fournisseur factice : enregistre les messages au lieu de les envoyer. */
 function makeService() {
@@ -14,9 +20,9 @@ function makeService() {
   return { service: new ContactRequestMailService(MailService.withProvider(provider)), sent }
 }
 
-// Valeurs lues par le service au chargement du module (défauts si non définies).
-const ADMIN_EMAIL = process.env.ADMIN_CONTACT_EMAIL ?? 'contact@francetransitioncarriere.fr'
-const FROM_EMAIL = process.env.MAIL_FROM_EMAIL ?? 'noreply@francetransitioncarriere.fr'
+// Valeurs de l'env de test (défauts si non définies).
+const ADMIN_EMAIL = env.get('ADMIN_CONTACT_EMAIL') || DEFAULT_ADMIN_CONTACT_EMAIL
+const FROM_EMAIL = env.get('MAIL_FROM_EMAIL') || DEFAULT_CONTACT_FROM_EMAIL
 
 const demo = {
   name: 'Jeanne Dupont',
@@ -123,5 +129,26 @@ test.group('ContactRequestMailService.sendConfirmationToRequester', () => {
     assert.include(mail.html!, 'a &lt; b')
     // Le texte brut n'est pas échappé.
     assert.include(mail.text!, 'Bonjour <i>Paul</i>,')
+  })
+})
+
+test.group('ContactRequestMailService — configuration', () => {
+  test("lit ADMIN_CONTACT_EMAIL et MAIL_FROM_* à l'envoi, pas au chargement du module", async ({
+    assert,
+  }) => {
+    const { service, sent } = makeService()
+
+    await withEnv(
+      {
+        ADMIN_CONTACT_EMAIL: 'equipe@example.com',
+        MAIL_FROM_EMAIL: 'ne-pas-repondre@example.com',
+        MAIL_FROM_NAME: 'Équipe test',
+      },
+      () => service.sendAdminNotification(demo)
+    )
+
+    assert.lengthOf(sent, 1)
+    assert.deepEqual(sent[0].from, { email: 'ne-pas-repondre@example.com', name: 'Équipe test' })
+    assert.deepInclude(sent[0].to, { email: 'equipe@example.com' })
   })
 })

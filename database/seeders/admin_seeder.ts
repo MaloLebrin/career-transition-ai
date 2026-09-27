@@ -1,6 +1,7 @@
 import Organization from '#models/organization'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import env from '#start/env'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
 /** Slug stable de l’organisation plateforme (recherche idempotente). */
@@ -10,7 +11,7 @@ export const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
 
 export default class AdminSeeder extends BaseSeeder {
   async run() {
-    const password = process.env.ADMIN_PASSWORD?.trim()
+    const password = env.get('ADMIN_PASSWORD')?.trim()
     if (!password) {
       throw new Error(
         'ADMIN_PASSWORD est requis pour exécuter AdminSeeder (définir la variable d’environnement).'
