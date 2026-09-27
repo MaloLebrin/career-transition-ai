@@ -201,4 +201,6 @@ Jobs existants :
 - `generate_employee_synthesis_pdf.ts` → queue `pdfs`
 - `log_exercise_usage_export.ts` → queue `analytics`
 
+Rétention de `queue_jobs` : `QUEUE_JOB_RETENTION` (`config/queue.ts`, 7 j succès / 30 j échecs, 1 000 par queue) — jamais `removeOnComplete: false`.
+
 Nouveau job → constantes de statut + contrainte CHECK + factory + seeder si visible en UI.

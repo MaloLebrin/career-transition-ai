@@ -2,6 +2,20 @@ import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 import { defineConfig, drivers } from '@adonisjs/queue'
 
+/**
+ * Rétention des jobs terminés dans `queue_jobs` (issue #28).
+ *
+ * Par défaut, `@boringnode/queue` supprime un job dès qu'il se termine, succès
+ * comme échec : la table reste petite mais un job en échec ne laisse aucune
+ * trace (message d'erreur compris). On garde un historique borné, par queue,
+ * en âge **et** en nombre, pour tenir dans le quota Neon (docs/hosting.md) :
+ * l'élagage a lieu à chaque fin de job de la même queue.
+ */
+export const QUEUE_JOB_RETENTION = {
+  completed: { age: '7d', count: 1000 },
+  failed: { age: '30d', count: 1000 },
+} as const
+
 export default defineConfig({
   /**
    * Default adapter used for dispatching jobs.
@@ -24,6 +38,14 @@ export default defineConfig({
      * when you want jobs to run inline without a separate worker.
      */
     sync: drivers.sync(),
+  },
+
+  /**
+   * Options par défaut de tous les jobs (priorité : job > queue > global).
+   */
+  defaultJobOptions: {
+    removeOnComplete: QUEUE_JOB_RETENTION.completed,
+    removeOnFail: QUEUE_JOB_RETENTION.failed,
   },
 
   /**
