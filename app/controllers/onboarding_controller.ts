@@ -4,7 +4,6 @@ import { isConseillerDashboardRole } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { onboardingSetPasswordValidator } from '#validators/auth/onboarding_set_password_validator'
 import type { HttpContext } from '@adonisjs/core/http'
-import hash from '@adonisjs/core/services/hash'
 import { DateTime } from 'luxon'
 
 export default class OnboardingController {
@@ -54,7 +53,9 @@ export default class OnboardingController {
     const payload = await request.validateUsing(onboardingSetPasswordValidator)
 
     const user = tokenRecord.user as User
-    user.password = await hash.make(payload.password)
+    // En clair : le hook `beforeSave` de `withAuthFinder` le hashe. Un `hash.make()`
+    // ici le faisait hasher deux fois — le mot de passe choisi ne fonctionnait pas.
+    user.password = payload.password
     user.onboardingCompletedAt = DateTime.now()
     await user.save()
 

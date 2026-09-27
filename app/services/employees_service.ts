@@ -7,7 +7,6 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
-import hash from '@adonisjs/core/services/hash'
 
 type CreateEmployeeOptions = {
   /** When set, a User account is created and an onboarding link is sent (e.g. by email). */
@@ -50,7 +49,7 @@ export class EmployeesService {
     }
 
     if (!user) {
-      const temporaryPassword = await hash.make(randomPassword())
+      const temporaryPassword = randomPassword()
       user = await User.create({
         organizationId: employee.organizationId,
         email: employee.email,
@@ -105,7 +104,7 @@ export class EmployeesService {
         })
       } else {
         // Aucun utilisateur encore existant : on crée le compte et le token.
-        const temporaryPassword = await hash.make(randomPassword())
+        const temporaryPassword = randomPassword()
         const user = await User.create({
           organizationId: input.organizationId,
           email: input.email,

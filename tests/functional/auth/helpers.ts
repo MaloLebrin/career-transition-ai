@@ -7,12 +7,9 @@ export const SESSION_KEY = 'auth_web'
 export const PASSWORD = 'secret-password'
 
 /**
- * Pose un mot de passe **en clair** sur un acteur, hashé une seule fois par les
- * hooks du modèle — comme à l'inscription.
- *
- * Le hash pré-calculé de `UserFactory` (`hash.make('password')`) est re-hashé
- * par le hook `beforeSave` du mixin `withAuthFinder` : un acteur de la factory
- * ne peut donc pas se connecter avec `password`.
+ * Pose un mot de passe **en clair** connu sur un acteur, hashé une seule fois
+ * par le hook `beforeSave` de `withAuthFinder` — comme à l'inscription. Ne
+ * jamais y affecter un `hash.make(...)` : il serait hashé une seconde fois.
  */
 export async function withPassword(user: User, password: string = PASSWORD): Promise<User> {
   user.password = password

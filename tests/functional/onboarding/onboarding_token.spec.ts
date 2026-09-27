@@ -209,6 +209,28 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     assert.isNotNull(user.onboardingCompletedAt)
   })
 
+  test('le mot de passe choisi permet ensuite de se connecter', async ({ assert, client }) => {
+    // Non-régression : le contrôleur faisait `hash.make()` avant `save()`, et le
+    // hook `beforeSave` de `withAuthFinder` hashait une seconde fois — le compte
+    // devenait inaccessible avec le mot de passe tout juste choisi.
+    const { user } = await createCandidate({ onboarded: false })
+    const token = await tokenFor(user)
+
+    await client
+      .post(`/onboarding/${token.token}`)
+      .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
+      .redirects(0)
+
+    const login = await client
+      .post('/auth/login')
+      .json({ email: user.email, password: NEW_PASSWORD })
+      .redirects(0)
+
+    assert.oneOf(login.status(), [302, 303])
+    login.assertHeader('location', '/dashboard')
+    assert.equal(login.session(SESSION_KEY), user.id)
+  })
+
   test('le jeton consommé ne peut plus servir : un second POST est refusé', async ({
     assert,
     client,
