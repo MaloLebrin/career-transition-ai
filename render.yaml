@@ -72,11 +72,6 @@ services:
         value: 0.0.0.0
       - key: PORT
         value: 10000
-      # Variables VITE_* embarquées dans le bundle au moment du build — web uniquement
-      - key: VITE_AI_PROVIDER
-        value: mistral
-      - key: VITE_MISTRAL_API_KEY
-        sync: false
     envVarGroups:
       - adonis-shared-config
 

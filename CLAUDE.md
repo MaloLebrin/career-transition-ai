@@ -129,6 +129,8 @@ Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `thro
 
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 
+IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.
+
 RGPD (`docs/RGPD.md`) : aucun nom ni e-mail de candidat dans un prompt IA — passer les données par `pseudonymizeForAi` (`#shared/helpers/ai/exercise_profile`). Sous-traitants, durées de conservation et contact : `shared/constants/legal.ts` (source des pages `/confidentialite` et `/securite`). Droits d'accès/effacement : `node ace candidate:export <id>` / `node ace candidate:purge <id>` (`app/commands/`, enregistrées via `app/commands/main.ts` dans `adonisrc.ts` — jamais dans `./commands`, cf. commentaire du fichier ; `#services/candidate_data_service`).
 
 ---

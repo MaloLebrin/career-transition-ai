@@ -63,3 +63,15 @@ export const throttleOnboarding = limiter.define('onboarding', ({ request }: Htt
     .usingKey(clientIp(request))
     .limitExceeded(frenchMessage)
 })
+
+/**
+ * Appels au fournisseur IA (quota et facturation) : 20/min par utilisateur.
+ * Appliqué après `auth()`, d'où la clé sur l'identifiant du compte.
+ */
+export const throttleAi = limiter.define('ai', ({ auth, request }: HttpContext) => {
+  return limiter
+    .allowRequests(20)
+    .every('1 minute')
+    .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+    .limitExceeded(frenchMessage)
+})

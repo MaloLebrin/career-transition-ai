@@ -274,7 +274,7 @@ openssl rand -base64 24      # → ADMIN_PASSWORD
    | `ADMIN_PASSWORD` | *(généré en 1.1)* |
    | `NODE_OPTIONS` | `--max-old-space-size=384` |
 
-   Ne **pas** définir `VITE_MISTRAL_API_KEY` (clé exposée dans le bundle public). Les fonctions IA côté client (OCR CV, suggestions) restent désactivées tant qu'elles ne passent pas par le serveur (hosting.md §3.2-14).
+   L'OCR des CV et les suggestions passent par le serveur (`/dashboard/ai/*`) avec cette même clé : aucune variable `VITE_*` n'est nécessaire pour l'IA.
 
 7. **Create Web Service**. Premier build ≈ 5–8 min (0,1 CPU). L'URL est `https://<nom>.onrender.com`.
 
@@ -653,4 +653,4 @@ Lues hors schéma (pas d'erreur au boot si absentes) :
 | `APP_NAME` | nom du logger (optionnel) |
 | `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo |
 
-Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Ne pas définir `VITE_MISTRAL_API_KEY` en production.
+Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.

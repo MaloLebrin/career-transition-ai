@@ -22,26 +22,21 @@ export const OnBoardingStep2 = ({
 
     setSelectedFileName(file.name)
     setIsExtracting(true)
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const base64 = reader.result as string
-      const extracted = await extractCVData(base64, file.type)
-      if (extracted) {
-        setFormData((prev: { name: any; }) => ({
-          ...prev,
-          name: extracted.name || prev.name,
-          currentRole: extracted.currentRole || '',
-          targetRole: extracted.suggestedTargetRole || '',
-          skills: extracted.skills || [],
-          summary: extracted.summary || '',
-          experiences: extracted.experiences || [],
-          educations: extracted.educations || [],
-        }))
-        onNext()
-      }
-      setIsExtracting(false)
+    const extracted = await extractCVData(file)
+    if (extracted) {
+      setFormData((prev: { name: any; }) => ({
+        ...prev,
+        name: extracted.name || prev.name,
+        currentRole: extracted.currentRole || '',
+        targetRole: extracted.suggestedTargetRole || '',
+        skills: extracted.skills || [],
+        summary: extracted.summary || '',
+        experiences: extracted.experiences || [],
+        educations: extracted.educations || [],
+      }))
+      onNext()
     }
-    reader.readAsDataURL(file)
+    setIsExtracting(false)
   }, [setFormData, onNext])
 
   return (

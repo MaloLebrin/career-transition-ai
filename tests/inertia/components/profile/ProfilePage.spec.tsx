@@ -281,7 +281,7 @@ describe('ProfilePage', () => {
     await user.upload(fileInput, new File(['%PDF'], 'cv.pdf', { type: 'application/pdf' }))
 
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Nom complet' })).toHaveValue('Camille M.'))
-    expect(extractCVData).toHaveBeenCalledWith(expect.stringContaining('base64'), 'application/pdf')
+    expect(extractCVData).toHaveBeenCalledWith(expect.any(File))
     expect(screen.getByText('Mettre à jour par CV')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Sauvegarder' }))
