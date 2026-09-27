@@ -8,7 +8,7 @@ router.get('/auth', ({ response }) => response.redirect('/auth/login'))
 router
   .group(() => {
     router.post('/login', [AuthController, 'login'])
-    router.post('/register', [AuthController, 'register'])
+    router.post('/register', [AuthController, 'register']).use(middleware.registrationOpen())
     router.post('/logout', [AuthController, 'logout'])
     router
       .group(() => {

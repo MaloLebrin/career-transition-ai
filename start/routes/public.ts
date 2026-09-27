@@ -14,7 +14,7 @@ router
     router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
     router.on('/securite').renderInertia('Security', {})
     router.on('/auth/login').renderInertia('Login', {})
-    router.on('/auth/register').renderInertia('Register', {})
+    router.on('/auth/register').renderInertia('Register', {}).use(middleware.registrationOpen())
   })
   .use([middleware.guest()])
 

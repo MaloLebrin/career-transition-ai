@@ -26,6 +26,8 @@ export interface FakeCtxOptions {
   defaultGuard?: string
   /** Erreur levée par `auth.authenticateUsing()`. */
   authenticateError?: Error
+  /** Verbe HTTP renvoyé par `ctx.request.method()`. */
+  method?: string
 }
 
 export interface FakeRedirect {
@@ -50,6 +52,8 @@ export interface FakeCtx {
   authenticateCalls: Array<{ guards: unknown; options: unknown }>
   /** Compteur d'appels à `auth.check()` — objet mutable, pas un nombre figé. */
   authChecks: { count: number }
+  /** Messages passés à `session.flash(key, value)`, dans l'ordre. */
+  flashed: Array<{ key: string; value: unknown }>
 }
 
 export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
@@ -60,8 +64,17 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
   const checkedGuards: Array<string | undefined> = []
   const authenticateCalls: Array<{ guards: unknown; options: unknown }> = []
   const authChecks = { count: 0 }
+  const flashed: Array<{ key: string; value: unknown }> = []
 
   const ctx = {
+    request: {
+      method: () => options.method ?? 'GET',
+    },
+    session: {
+      flash: (key: string, value: unknown) => {
+        flashed.push({ key, value })
+      },
+    },
     auth: {
       defaultGuard: options.defaultGuard ?? 'web',
       user: options.user,
@@ -102,6 +115,7 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
     checkedGuards,
     authenticateCalls,
     authChecks,
+    flashed,
   }
 }
 

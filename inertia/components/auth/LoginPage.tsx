@@ -10,7 +10,8 @@ interface LoginPageProps {
   csrfToken?: string
   error: string | null
   onBackToLanding: () => void
-  onGoToRegister: () => void
+  /** Absent quand l'inscription publique est fermée : le lien est masqué. */
+  onGoToRegister?: () => void
 }
 
 export default function LoginPage({
@@ -142,18 +143,20 @@ export default function LoginPage({
             </Button>
           </form>
 
-          <div className="mt-10 pt-8 border-t border-brand-sage/20 text-center">
-            <p className="text-sm text-brand-navy/60 font-medium">
-              Vous n’avez pas encore de compte ?{' '}
-              <button
-                type="submit"
-                onClick={onGoToRegister}
-                className="ml-2 text-brand-sage font-bold uppercase text-[10px] tracking-widest hover:underline"
-              >
-                S’inscrire gratuitement
-              </button>
-            </p>
-          </div>
+          {onGoToRegister && (
+            <div className="mt-10 pt-8 border-t border-brand-sage/20 text-center">
+              <p className="text-sm text-brand-navy/60 font-medium">
+                Vous n’avez pas encore de compte ?{' '}
+                <button
+                  type="submit"
+                  onClick={onGoToRegister}
+                  className="ml-2 text-brand-sage font-bold uppercase text-[10px] tracking-widest hover:underline"
+                >
+                  S’inscrire gratuitement
+                </button>
+              </p>
+            </div>
+          )}
         </Card>
       </div>
     </PublicLayout>
