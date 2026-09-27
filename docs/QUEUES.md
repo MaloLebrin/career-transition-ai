@@ -111,6 +111,7 @@ Options utiles :
 
 - En production, il faut **un process worker en plus** du serveur HTTP (ou `CC_WORKER_COMMAND` sur Clever Cloud, voir `docs/clever-cloud.md`).
 - Plusieurs workers peuvent consommer la même queue en parallèle (à dimensionner selon charge et DB).
+- **Temps réel (Transmit / SSE) depuis le worker** : `config/transmit.ts` est en `transport: null`, donc un `transmit.broadcast()` n'est diffusé qu'aux clients SSE connectés au **même process**. Les broadcasts émis depuis le **worker** (`pdf_export_events_service.ts` via `generate_employee_synthesis_pdf.ts`, `notification_service.ts` depuis un job…) n'atteignent **jamais** le navigateur, qui est connecté au process web : seuls les broadcasts du process web (ou tout en un seul process avec `QUEUE_DRIVER=sync`) sont temps réel. Pour un déploiement web + worker séparés, brancher le transport Redis de Transmit (`transport: { driver: redis(...) }`) ; sinon la page se met à jour au prochain rechargement.
 
 ## Scheduler (tâches planifiées)
 
