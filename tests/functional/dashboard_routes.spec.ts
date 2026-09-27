@@ -4,8 +4,8 @@ import User from '#models/user'
 import { AuthService } from '#services/auth_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import env from '#start/env'
+import { truncateDb } from '#tests/utils/db'
 import app from '@adonisjs/core/services/app'
-import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
 function baseUrl(): string {
@@ -13,7 +13,9 @@ function baseUrl(): string {
 }
 
 test.group('Dashboard routes (functional)', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  // Pas de transaction globale ici : les handlers HTTP passent par d'autres
+  // connexions du pool Postgres et ne la verraient pas (cf. tests/bootstrap.ts).
+  group.each.setup(() => truncateDb())
   test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({
     assert,
   }) => {

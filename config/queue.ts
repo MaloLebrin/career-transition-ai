@@ -16,7 +16,7 @@ export default defineConfig({
       /**
        * Uses the primary Lucid connection.
        */
-      connectionName: env.get('NODE_ENV') === 'test' ? 'sqlite' : 'postgres',
+      connectionName: 'postgres',
     }),
     /**
      * Sync adapter: useful for local development or simple scripts

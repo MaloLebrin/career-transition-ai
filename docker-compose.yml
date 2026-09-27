@@ -16,6 +16,28 @@ services:
       timeout: 5s
       retries: 5
 
+  # Base de test — `pnpm test:db:up` / `pnpm test:db:down`.
+  # Profil `test` : ne démarre pas avec `docker compose up`. Données en tmpfs :
+  # rien à nettoyer, chaque démarrage repart d'une base vide. Identifiants et
+  # port alignés sur `.env.test` et sur le bloc `env:` des jobs de tests de la CI.
+  postgres_test:
+    profiles: [test]
+    image: postgres:16-alpine
+    container_name: career-transition-ai-db-test
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - '5432:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test -d test']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   app:
     build: .
     command: server

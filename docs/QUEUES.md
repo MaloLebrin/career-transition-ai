@@ -15,7 +15,7 @@ Objectifs :
 - **Package** : `@adonisjs/queue` (et sa dépendance `@boringnode/queue`).
 - **Config** : `config/queue.ts`
   - `default: env.get('QUEUE_DRIVER', 'database')`
-  - `adapters.database.connectionName` : `postgres` (ou `sqlite` en test)
+  - `adapters.database.connectionName` : `postgres` (en test, `QUEUE_DRIVER=sync` : l'adaptateur database n'est pas utilisé)
   - `locations: ['./app/jobs/**/*.ts']`
   - `worker.concurrency = 5`, `idleDelay = '2s'`, `gracefulShutdown = true`
 - **Env** : `.env`

@@ -29,4 +29,5 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 ## Qualité
 
+- **[Tests automatisés](TESTING.md)** — suites Japa (Postgres) et Vitest, base de test, shards de CI, couverture.
 - **[Plan de tests manuels](MANUAL_TESTS.md)** — checklist de recette.
