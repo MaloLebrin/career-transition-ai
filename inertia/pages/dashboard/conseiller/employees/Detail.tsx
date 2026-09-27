@@ -32,12 +32,19 @@ export default function DashboardEmployeeDetail({
   const [editingStep, setEditingStep] = useState<SupportPlanStep | undefined>(undefined)
   const [deletingStepId, setDeletingStepId] = useState<number | null>(null)
 
-  const handleToggleLock = useCallback((step: SupportPlanStep) => {
-    const action = step.isLocked ? 'unlock' : 'lock'
-    router.post(`/dashboard/conseiller/employees/${employeeId}/steps/${step.id}/${action}`, {}, {
-      preserveScroll: true,
-    })
-  }, [employeeId])
+  const handleToggleLock = useCallback(
+    (step: SupportPlanStep) => {
+      const action = step.isLocked ? 'unlock' : 'lock'
+      router.post(
+        `/dashboard/conseiller/employees/${employeeId}/steps/${step.id}/${action}`,
+        {},
+        {
+          preserveScroll: true,
+        }
+      )
+    },
+    [employeeId]
+  )
 
   const completedExercises = useMemo(() => {
     return selectedEmployee?.exercises.map((e) => e.type.toLowerCase() as ExerciseType) ?? []
@@ -62,17 +69,24 @@ export default function DashboardEmployeeDetail({
     setEditingStep(undefined)
   }, [])
 
-  const getResultsForStep = useCallback((step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
-    const stepTypes = step.associatedExercises.map(normalizeExerciseType)
-    return selectedEmployee.exercises.filter(
-      (res) => stepTypes.includes(normalizeExerciseType(res.type))
-    )
-  }, [selectedEmployee])
+  const getResultsForStep = useCallback(
+    (step: SupportPlanStep) => {
+      if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0)
+        return []
+      const stepTypes = step.associatedExercises.map(normalizeExerciseType)
+      return selectedEmployee.exercises.filter((res) =>
+        stepTypes.includes(normalizeExerciseType(res.type))
+      )
+    },
+    [selectedEmployee]
+  )
 
-  const hasAnyResultForStep = useCallback((step: SupportPlanStep): boolean => {
-    return getResultsForStep(step).length > 0
-  }, [getResultsForStep])
+  const hasAnyResultForStep = useCallback(
+    (step: SupportPlanStep): boolean => {
+      return getResultsForStep(step).length > 0
+    },
+    [getResultsForStep]
+  )
 
   const handleDownloadPDF = useCallback(async () => {
     if (!selectedEmployee) return
@@ -129,6 +143,7 @@ export default function DashboardEmployeeDetail({
                 </Button>
               </AppLink>
               <a
+                // eslint-disable-next-line no-restricted-syntax -- téléchargement du dossier (binaire), pas une page Inertia
                 href={`/dashboard/conseiller/employees/${employeeId}/dossier`}
                 className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"
               >
@@ -182,7 +197,9 @@ export default function DashboardEmployeeDetail({
                   defaultValue={selectedEmployee.advisorNotes || ''}
                   onBlur={(e) => {
                     const value = e.target.value
-                    router.put(`/dashboard/conseiller/employees/${employeeId}`, { advisorNotes: value })
+                    router.put(`/dashboard/conseiller/employees/${employeeId}`, {
+                      advisorNotes: value,
+                    })
                   }}
                 />
               </div>
@@ -196,8 +213,18 @@ export default function DashboardEmployeeDetail({
                     size="sm"
                     onClick={() => setIsStepEditorOpen(true)}
                     icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                     }
                   >
@@ -228,12 +255,32 @@ export default function DashboardEmployeeDetail({
                             title={step.isLocked ? 'Déverrouiller' : 'Verrouiller'}
                           >
                             {step.isLocked ? (
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                />
                               </svg>
                             ) : (
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+                                />
                               </svg>
                             )}
                           </button>
@@ -246,8 +293,18 @@ export default function DashboardEmployeeDetail({
                             className="p-2 rounded-xl bg-brand-navy/5 text-brand-navy/60 hover:bg-brand-navy/10 transition-colors"
                             title="Modifier"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </button>
                           <button
@@ -259,8 +316,18 @@ export default function DashboardEmployeeDetail({
                             className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
                             title="Supprimer"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -277,8 +344,18 @@ export default function DashboardEmployeeDetail({
                             </div>
                             {step.isLocked && (
                               <div className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-amber-100 text-amber-600 flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                  />
                                 </svg>
                                 Verrouillée
                               </div>
@@ -297,7 +374,9 @@ export default function DashboardEmployeeDetail({
                               )
                             })()}
                           {step.instructions && (
-                            <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">{step.instructions}</p>
+                            <p className="text-sm text-brand-navy/60 mt-1 line-clamp-2">
+                              {step.instructions}
+                            </p>
                           )}
                         </div>
                         {hasResults ? (
@@ -312,7 +391,8 @@ export default function DashboardEmployeeDetail({
                         ) : exerciseCount > 0 ? (
                           <div className="pt-4 border-t border-brand-navy/5">
                             <span className="text-[10px] font-bold text-brand-navy/60 uppercase tracking-widest mb-2 block">
-                              {exerciseCount} exercice{exerciseCount > 1 ? 's' : ''} associé{exerciseCount > 1 ? 's' : ''}
+                              {exerciseCount} exercice{exerciseCount > 1 ? 's' : ''} associé
+                              {exerciseCount > 1 ? 's' : ''}
                             </span>
                             <div className="flex flex-wrap gap-2">
                               {step.associatedExercises?.map((exerciseType) => {
@@ -352,11 +432,14 @@ export default function DashboardEmployeeDetail({
                     </p>
                   ) : (
                     (() => {
-                      const byType = new Map<string, typeof selectedEmployee.exercises[0]>()
+                      const byType = new Map<string, (typeof selectedEmployee.exercises)[0]>()
                       for (const res of selectedEmployee.exercises) {
                         const key = (res.type as string).toLowerCase()
                         const existing = byType.get(key)
-                        if (!existing || (res.date && (!existing.date || res.date > existing.date))) {
+                        if (
+                          !existing ||
+                          (res.date && (!existing.date || res.date > existing.date))
+                        ) {
                           byType.set(key, res)
                         }
                       }
@@ -368,7 +451,8 @@ export default function DashboardEmployeeDetail({
                               EXERCISE_SLUGS[res.type as keyof typeof EXERCISE_SLUGS] ??
                               (res.type as string).toLowerCase()
                             const title =
-                              EXERCISE_LIST.find((e) => e.slug === slug)?.title ?? (res.type as string)
+                              EXERCISE_LIST.find((e) => e.slug === slug)?.title ??
+                              (res.type as string)
                             const dateStr = res.date
                               ? new Date(res.date).toLocaleDateString('fr-FR', {
                                   day: 'numeric',
@@ -383,7 +467,11 @@ export default function DashboardEmployeeDetail({
                                 href={`/dashboard/conseiller/employees/${employeeId}/exercises/results/${slug}`}
                                 className={`block p-4 rounded-2xl border hover:shadow-md transition-all ${colors ? `${colors.bg} ${colors.border}` : 'bg-brand-ivory/30 border-brand-navy/5 hover:bg-white hover:border-brand-sage/30'}`}
                               >
-                                <h4 className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}>{title}</h4>
+                                <h4
+                                  className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}
+                                >
+                                  {title}
+                                </h4>
                                 <p className="text-brand-navy/50 text-xs mt-1">
                                   Complété le {dateStr}
                                 </p>
@@ -437,7 +525,7 @@ export default function DashboardEmployeeDetail({
           <StepEditorModal
             employeeId={selectedEmployee.id}
             step={editingStep}
-            stepNumber={editingStep ? undefined : (selectedEmployee.plan.length + 1)}
+            stepNumber={editingStep ? undefined : selectedEmployee.plan.length + 1}
             onClose={closeStepEditor}
             completedExercises={completedExercises}
           />

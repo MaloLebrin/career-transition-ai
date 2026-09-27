@@ -34,3 +34,8 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 - **[Tests automatisés](TESTING.md)** — suites Japa (Postgres) et Vitest, base de test, shards de CI, couverture.
 - **[Plan de tests manuels](MANUAL_TESTS.md)** — checklist de recette.
+
+## Process
+
+- **[Checklist de PR](process/pr-checklist.md)** — ce que l'auteur et le reviewer vérifient.
+- **[Changelog](changelog/README.md)** — un fichier par modification (`YYYY-MM-DD-HHMM-slug.md`).
