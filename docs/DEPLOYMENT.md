@@ -118,6 +118,8 @@ router.get('/health', async ({ response }) => {
 })
 ```
 
+> ✅ Appliqué (issue #12) : `start/health.ts` + `HealthChecksController`. La réponse est filtrée (`app/utils/health_report.ts`) : `isHealthy`, `status`, `finishedAt` et le nom/statut de chaque check — ni `debugInfo`, ni message d'erreur `pg` (loggé côté serveur en cas de 503).
+
 ### 0.6 Reverse proxy, SSE keep-alive
 
 `config/app.ts` (objet `http`) : `trustProxy: () => true` — l'app n'est jamais exposée sans proxy dans les deux scénarios ; les liens d'onboarding passent alors en `https://`.

@@ -14,6 +14,7 @@ export const controllers = {
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
+  HealthChecks: () => import('#controllers/health_checks_controller'),
   Notes: () => import('#controllers/notes_controller'),
   Notifications: () => import('#controllers/notifications_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
