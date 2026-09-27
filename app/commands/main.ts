@@ -2,6 +2,7 @@ import { ListLoader } from '@adonisjs/core/ace'
 import type { CommandMetaData } from '@adonisjs/core/types/ace'
 import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
+import ErrorTrackingTest from '#commands/error_tracking_test'
 
 /**
  * Commandes ace de l'application, enregistrées dans `adonisrc.ts` comme
@@ -14,7 +15,7 @@ import CandidatePurge from '#commands/candidate_purge'
  * boot du kernel ace échoue, y compris pour `migration:run` lancé par les
  * tests. Le `ListLoader` ne passe pas par cette validation.
  */
-const loader = new ListLoader([CandidateExport, CandidatePurge])
+const loader = new ListLoader([CandidateExport, CandidatePurge, ErrorTrackingTest])
 
 export function getMetaData() {
   return loader.getMetaData()

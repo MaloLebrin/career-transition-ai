@@ -640,6 +640,9 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
 | `SEO_INDEXING` | non (défaut `false`) | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`) |
 | `GOOGLE_SITE_VERIFICATION` | non | jeton Google Search Console ; la balise n'est rendue que s'il est défini |
+| `SENTRY_DSN` | non (recommandé) | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry) |
+| `SENTRY_ENVIRONMENT` | non (défaut `NODE_ENV`) | `production`, `staging`… pour séparer les environnements dans Sentry |
+| `SENTRY_RELEASE` | non (défaut `RENDER_GIT_COMMIT`) | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`) |
 
 Lues hors schéma (pas d'erreur au boot si absentes) :
 
@@ -654,3 +657,40 @@ Lues hors schéma (pas d'erreur au boot si absentes) :
 | `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo |
 
 Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.
+
+---
+
+## Suivi des erreurs (Sentry)
+
+Actif dès que `SENTRY_DSN` est défini, sur le serveur **et** le worker
+(`start/error_tracking.ts`, `#services/error_tracking_service`) :
+
+| Envoyé | Non envoyé |
+|---|---|
+| Erreurs HTTP **5xx** (`HttpExceptionHandler.report()`), avec méthode et route (`/dashboard/employees/:id`) | 4xx, erreurs métier (`ignoreCodes`), 404 |
+| Jobs en **échec définitif** (retries épuisés), avec queue, nom du job, id et nombre de tentatives | tentatives rejouées, **payload** du job |
+| Utilisateur réduit à son **id** | nom, e-mail, IP, cookies, corps de requête, query string (`scrubEvent`) |
+
+Pas de traces de performance (`tracesSampleRate: 0`) : le quota gratuit
+(5 000 événements/mois) reste pour les erreurs. Côté navigateur, une erreur de
+rendu React affiche une page de secours (`ErrorBoundary`) au lieu d'une page
+blanche ; elle n'est pas envoyée à Sentry.
+
+Mise en place :
+
+1. Créer un compte Sentry en **région EU** (choix à la création de
+   l'organisation, non modifiable), puis un projet *Node.js*.
+2. Copier le DSN dans `SENTRY_DSN` (web et worker ; groupe partagé sur Render).
+3. Dans *Settings → Security & Privacy* : laisser **Data Scrubber** actif et
+   cocher **Prevent Storing of IP Addresses**.
+4. Créer une alerte e-mail « nouvelle issue » (*Alerts → Create alert → Issues*).
+5. Vérifier après déploiement, depuis le Shell du service web ou worker :
+
+   ```bash
+   node build/bin/console.js error-tracking:test
+   ```
+
+   L'erreur « Test du suivi des erreurs (error-tracking:test) » doit apparaître
+   dans Sentry avec sa stack, l'environnement et la release. Sans DSN, la
+   commande échoue avec « SENTRY_DSN non défini ».
+

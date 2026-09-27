@@ -52,6 +52,10 @@ envVarGroups:
       - key: MISTRAL_MODEL
         value: mistral-small-latest
 
+      # Suivi des erreurs (Sentry, région EU). Release = RENDER_GIT_COMMIT (fourni par Render).
+      - key: SENTRY_DSN
+        sync: false
+
 services:
   - type: web
     name: career-transition-web
