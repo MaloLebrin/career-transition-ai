@@ -31,6 +31,21 @@ export default class ExerciseResultsController {
   ) {}
 
   /**
+   * L'id du candidat vient de l'URL : il doit appartenir à l'organisation du
+   * conseiller connecté, sinon 404. Sans ce filtre, un conseiller de n'importe
+   * quelle organisation écrivait des résultats (et déclenchait l'analyse IA et
+   * les notifications) sur le candidat d'une autre.
+   */
+  private async employeeIdInOrganization(user: { organizationId: number }, id: string) {
+    const employee = await Employee.query()
+      .select('id')
+      .where('id', Number(id))
+      .where('organizationId', user.organizationId)
+      .firstOrFail()
+    return employee.id
+  }
+
+  /**
    * Inertia form: save draft then redirect back.
    */
   public async saveDraftFromDashboard({ auth, params, request, response }: HttpContext) {
@@ -38,7 +53,7 @@ export default class ExerciseResultsController {
       return response.unauthorized()
     }
 
-    const employeeId = Number(params.id)
+    const employeeId = await this.employeeIdInOrganization(auth.user, params.id)
     const payload = await request.validateUsing(saveExerciseDraftValidator)
 
     await this.service.saveDraft({
@@ -58,7 +73,7 @@ export default class ExerciseResultsController {
       return response.unauthorized()
     }
 
-    const employeeId = Number(params.id)
+    const employeeId = await this.employeeIdInOrganization(auth.user, params.id)
     const payload = await request.validateUsing(saveExerciseResultValidator)
 
     await this.service.saveResult({
@@ -332,8 +347,17 @@ export default class ExerciseResultsController {
     if (!auth.user) {
       return response.unauthorized()
     }
-    const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const typeParam = String(params.type).toLowerCase()
+    const employee = await this.employeesService.findEmployeeForUser(auth.user)
+    if (!employee) {
+      // Conseiller sans fiche candidat (cas normal) : l'exercice s'affiche en
+      // découverte, sans brouillon à reprendre ni employé à qui l'enregistrer.
+      const exercisePage = EXERCISE_TYPE_TO_PAGE[typeParam]
+      if (!exercisePage) {
+        return response.notFound()
+      }
+      return (inertia as any).render(exercisePage, { initialDraftsByType: {} })
+    }
     const draftTypes = [
       EXERCICE_RESULTS_TYPES.MOTIVATION,
       EXERCICE_RESULTS_TYPES.VALUES,

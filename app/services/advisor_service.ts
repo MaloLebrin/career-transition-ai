@@ -6,7 +6,6 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { userToAdvisorDto } from '#shared/helpers/advisor/mappers'
 import type { InviteAdvisorInput } from '#shared/types/advisor/invite_advisor'
 import { inject } from '@adonisjs/core'
-import hash from '@adonisjs/core/services/hash'
 import { randomBytes } from 'node:crypto'
 
 @inject()
@@ -33,7 +32,7 @@ export class AdvisorService {
       organizationId: input.organizationId,
       email: input.email,
       name: input.name,
-      password: await hash.make(tempPassword),
+      password: tempPassword,
       role: backendRole,
     })
 

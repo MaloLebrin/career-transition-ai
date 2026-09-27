@@ -40,6 +40,21 @@ if (!('IntersectionObserver' in globalThis)) {
   globalThis.IntersectionObserver = IntersectionObserverStub
 }
 
+// Headless UI (Combobox…) observe la taille des éléments ancrés
+if (!('ResizeObserver' in globalThis)) {
+  class ResizeObserverStub {
+    constructor(_callback: any) {}
+
+    observe() {}
+
+    unobserve() {}
+
+    disconnect() {}
+  }
+
+  globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+}
+
 // Transmit client uses EventSource for SSE
 if (!('EventSource' in globalThis)) {
   class EventSourceStub {

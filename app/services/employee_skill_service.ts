@@ -23,6 +23,30 @@ export class EmployeeSkillService {
     return employeeSkill
   }
 
+  /**
+   * Modifie le niveau d'une ligne pivot `employee_skills` désignée par son id,
+   * uniquement si elle appartient au candidat `employeeId` (404 sinon).
+   */
+  async updateOwnEmployeeSkillLevel({
+    employeeId,
+    employeeSkillId,
+    level,
+  }: {
+    employeeId: number
+    employeeSkillId: number
+    level: number
+  }) {
+    const employeeSkill = await EmployeeSkill.query()
+      .where('id', employeeSkillId)
+      .where('employeeId', employeeId)
+      .firstOrFail()
+
+    employeeSkill.level = level
+    await employeeSkill.save()
+
+    return employeeSkill
+  }
+
   async syncSkills(employeeId: number, skills: { skillId: number; level: number }[]) {
     for (const skill of skills) {
       await this.updateEmployeeSkillLevel({

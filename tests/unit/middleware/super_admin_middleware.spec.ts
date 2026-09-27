@@ -1,59 +1,45 @@
 import { test } from '@japa/runner'
 import SuperAdminMiddleware from '#middleware/super_admin_middleware'
+import { makeCtx, makeNext } from '#tests/support/http_context'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 
-function makeCtx(authUser: { id: number; role: string } | null) {
-  let nextCalled = false
-  const response = {
-    forbiddenPayload: null as any,
-    forbidden(payload: any) {
-      this.forbiddenPayload = payload
-      return this
-    },
-  }
-  return {
-    auth: { user: authUser },
-    response,
-    async next() {
-      nextCalled = true
-    },
-    get nextCalled() {
-      return nextCalled
-    },
-  } as any
-}
+const FORBIDDEN = { message: 'Accès réservé aux super administrateurs.' }
 
 test.group('SuperAdminMiddleware', () => {
-  test('calls next when user is super_admin', async ({ assert }) => {
-    const middleware = new SuperAdminMiddleware()
-    const ctx = makeCtx({ id: 1, role: 'super_admin' })
+  test('laisse passer un super administrateur', async ({ assert }) => {
+    const { ctx, forbidden } = makeCtx({ user: { id: 1, role: USERS_ROLES.SUPER_ADMIN } })
+    const { next, calls } = makeNext()
 
-    await middleware.handle(ctx, ctx.next)
+    await new SuperAdminMiddleware().handle(ctx, next)
 
-    assert.isTrue(ctx.nextCalled)
-    assert.isNull(ctx.response.forbiddenPayload)
+    assert.equal(calls.count, 1)
+    assert.deepEqual(forbidden, [])
   })
 
-  test('returns forbidden when user is missing', async ({ assert }) => {
-    const middleware = new SuperAdminMiddleware()
-    const ctx = makeCtx(null)
+  test('refuse une requête sans utilisateur', async ({ assert }) => {
+    const { ctx, forbidden } = makeCtx()
+    const { next, calls } = makeNext()
 
-    await middleware.handle(ctx, ctx.next)
+    await new SuperAdminMiddleware().handle(ctx, next)
 
-    assert.isFalse(ctx.nextCalled)
-    assert.deepEqual(ctx.response.forbiddenPayload, {
-      message: 'Accès réservé aux super administrateurs.',
+    assert.equal(calls.count, 0)
+    assert.deepEqual(forbidden, [FORBIDDEN])
+  })
+
+  for (const role of [
+    USERS_ROLES.ADMIN,
+    USERS_ROLES.ADVISOR,
+    USERS_ROLES.EXPERT,
+    USERS_ROLES.EMPLOYEE,
+  ]) {
+    test(`refuse le rôle ${role}`, async ({ assert }) => {
+      const { ctx, forbidden } = makeCtx({ user: { id: 1, role } })
+      const { next, calls } = makeNext()
+
+      await new SuperAdminMiddleware().handle(ctx, next)
+
+      assert.equal(calls.count, 0)
+      assert.deepEqual(forbidden, [FORBIDDEN])
     })
-  })
-
-  test('returns forbidden when user is not super_admin', async ({ assert }) => {
-    const middleware = new SuperAdminMiddleware()
-    const ctx = makeCtx({ id: 1, role: 'admin' })
-
-    await middleware.handle(ctx, ctx.next)
-
-    assert.isFalse(ctx.nextCalled)
-    assert.deepEqual(ctx.response.forbiddenPayload, {
-      message: 'Accès réservé aux super administrateurs.',
-    })
-  })
+  }
 })

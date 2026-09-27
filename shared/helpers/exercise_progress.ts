@@ -169,24 +169,24 @@ export function getExerciseProgress(type: string, data: any, status?: string | n
 }
 
 export function getExerciseProgressByType(results: ResultLike[]): Record<string, number> {
-  const latestByType = new Map<string, ResultLike & { ts: string }>()
+  // On garde la référence au résultat sans l'étaler : `{ ...result }` sur une
+  // instance Lucid perd les colonnes (getters sur `$attributes`).
+  const latestByType = new Map<string, { result: ResultLike; ts: string }>()
 
   for (const result of results || []) {
     const type = String(result.type).toLowerCase()
     const ts = result.date?.toISO?.() ?? result.updatedAt?.toISO?.() ?? ''
     const current = latestByType.get(type)
     if (!current || ts > current.ts) {
-      latestByType.set(type, { ...result, ts })
+      latestByType.set(type, { result, ts })
     }
   }
 
   const progressByType: Record<string, number> = {}
   for (const exercise of EXERCISE_LIST) {
-    const latest = latestByType.get(exercise.slug)
+    const progressPercent = latestByType.get(exercise.slug)?.result.progressPercent
     progressByType[exercise.slug] =
-      latest && typeof latest.progressPercent === 'number'
-        ? clampPercent(latest.progressPercent)
-        : 0
+      typeof progressPercent === 'number' ? clampPercent(progressPercent) : 0
   }
 
   return progressByType

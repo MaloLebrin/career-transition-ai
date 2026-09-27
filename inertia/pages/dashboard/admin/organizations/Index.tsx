@@ -11,6 +11,8 @@ interface OrganizationItem {
   id: number
   name: string
   slug: string
+  /** Premier admin de l'organisation : cible de l'impersonation et du reset mot de passe. */
+  ownerId: number | null
   usersCount: number
   employeesCount: number
   createdAt: string | null
@@ -164,8 +166,9 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                           size="xs"
                           variant="outline"
                           className="text-[11px]"
+                          disabled={org.ownerId === null}
                           onClick={() =>
-                            router.post('/auth/impersonate/' + org.id, undefined, {
+                            router.post('/auth/impersonate/' + org.ownerId, undefined, {
                               preserveScroll: true,
                             })
                           }
@@ -177,8 +180,9 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                           size="xs"
                           variant="outline"
                           className="text-[11px]"
+                          disabled={org.ownerId === null}
                           onClick={() =>
-                            router.post('/auth/reset-password/' + org.id, undefined, {
+                            router.post('/auth/reset-password/' + org.ownerId, undefined, {
                               preserveScroll: true,
                             })
                           }

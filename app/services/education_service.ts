@@ -10,8 +10,12 @@ export class EducationService {
     return Education.create(data)
   }
 
-  async update(id: number, data: Omit<CreateEducationData, 'employeeId'>) {
-    const education = await Education.findOrFail(id)
+  /**
+   * Toujours restreint au profil `employeeId` : l'identifiant vient du corps de
+   * la requête, une formation d'un autre candidat doit rester introuvable (404).
+   */
+  async update(employeeId: number, id: number, data: Omit<CreateEducationData, 'employeeId'>) {
+    const education = await this.findOwned(employeeId, id)
 
     education.merge(data)
     await education.save()
@@ -19,16 +23,16 @@ export class EducationService {
     return education
   }
 
-  async delete(id: number) {
-    const education = await Education.findOrFail(id)
+  async delete(employeeId: number, id: number) {
+    const education = await this.findOwned(employeeId, id)
     await education.delete()
+  }
+
+  private findOwned(employeeId: number, id: number) {
+    return Education.query().where('id', id).where('employeeId', employeeId).firstOrFail()
   }
 
   async findById(id: number) {
     return Education.findOrFail(id)
-  }
-
-  async findAllByUserId(userId: number) {
-    return Education.query().where('user_id', userId).orderBy('start_date', 'desc')
   }
 }

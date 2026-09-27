@@ -17,8 +17,12 @@ export class ExperienceService {
     return Experience.create(data)
   }
 
-  async update(id: number, data: Omit<TempExperience, 'employeeId'> & { employeeId?: number }) {
-    const experience = await Experience.findOrFail(id)
+  /**
+   * Toujours restreint au profil `employeeId` : l'identifiant vient du corps de
+   * la requête, une expérience d'un autre candidat doit rester introuvable (404).
+   */
+  async update(employeeId: number, id: number, data: Omit<TempExperience, 'employeeId'>) {
+    const experience = await this.findOwned(employeeId, id)
 
     experience.merge(data)
     await experience.save()
@@ -26,16 +30,16 @@ export class ExperienceService {
     return experience
   }
 
-  async delete(id: number) {
-    const experience = await Experience.findOrFail(id)
+  async delete(employeeId: number, id: number) {
+    const experience = await this.findOwned(employeeId, id)
     await experience.delete()
+  }
+
+  private findOwned(employeeId: number, id: number) {
+    return Experience.query().where('id', id).where('employeeId', employeeId).firstOrFail()
   }
 
   async findById(id: number) {
     return Experience.findOrFail(id)
-  }
-
-  async findAllByUserId(userId: number) {
-    return Experience.query().where('user_id', userId).orderBy('start_date', 'desc')
   }
 }

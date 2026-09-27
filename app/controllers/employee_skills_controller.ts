@@ -40,18 +40,14 @@ export default class EmployeeSkillsController {
   }
 
   public async update({ auth, request, response }: HttpContext) {
-    const skill = await request.validateUsing(updateEmployeeSkillValidator)
-    const user = auth.user!
-    const employee = await this.employeesService.getEmployeeForUser(user)
+    const payload = await request.validateUsing(updateEmployeeSkillValidator)
+    const employee = await this.employeesService.getEmployeeForUser(auth.user!)
 
-    if (!skill) {
-      return response.badRequest({ message: 'Invalid skills data' })
-    }
-
-    await this.employeeSkillService.updateEmployeeSkillLevel({
+    // `id` désigne la ligne pivot `employee_skills` : limitée au candidat connecté.
+    await this.employeeSkillService.updateOwnEmployeeSkillLevel({
       employeeId: employee.id,
-      skillId: skill.id,
-      level: skill.level,
+      employeeSkillId: payload.id,
+      level: payload.level,
     })
 
     return response.redirect('/dashboard/candidat/profile')

@@ -1,6 +1,7 @@
 import type Employee from '#models/employee'
 import type ExerciseResult from '#models/exercise_result'
 import { DateTime } from 'luxon'
+import { skillPivotLevel } from '#mappers/employee_mapper'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 const MARGIN = 48
@@ -57,12 +58,8 @@ function wrapText(
   return lines
 }
 
-function getSkills(employee: Employee): Array<{ name: string; level: number }> {
-  return (employee.skills || []).map((s) => {
-    const level = Number((s as unknown as { $extras?: { level?: number } }).$extras?.level) || 3
-    const bounded = Number.isNaN(level) ? 3 : Math.min(5, Math.max(1, level))
-    return { name: s.name, level: bounded }
-  })
+export function getSkills(employee: Employee): Array<{ name: string; level: number }> {
+  return (employee.skills || []).map((s) => ({ name: s.name, level: skillPivotLevel(s) }))
 }
 
 export async function generateProfilPdf(employee: Employee): Promise<Buffer> {

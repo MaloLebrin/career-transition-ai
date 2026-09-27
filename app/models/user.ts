@@ -4,7 +4,7 @@ import type { UserRole } from '#shared/types/advisor/roles'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { compose } from '@adonisjs/core/helpers'
 import hash from '@adonisjs/core/services/hash'
-import { BaseModel, beforeSave, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
@@ -13,7 +13,6 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   passwordColumnName: 'password',
 })
 
-// @ts-expect-error AuthFinder mixin expects hashPassword generic signature; our concrete override is correct at runtime
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
   declare id: number
@@ -26,22 +25,6 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column({ serializeAs: null })
   declare password: string
-
-  @beforeSave()
-  static async hashPassword(this: typeof User, user: User) {
-    if (!user.$dirty.password) return
-    const p = user.password
-    const alreadyHashed =
-      typeof p === 'string' &&
-      (p.startsWith('$argon2') ||
-        p.startsWith('$scrypt') ||
-        p.startsWith('$2a$') ||
-        p.startsWith('$2b$') ||
-        p.startsWith('$2y$'))
-    if (!alreadyHashed) {
-      user.password = await hash.make(user.password)
-    }
-  }
 
   @column()
   declare name: string

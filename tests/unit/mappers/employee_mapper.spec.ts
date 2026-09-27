@@ -133,8 +133,8 @@ test.group('Employee mapper', (group) => {
 
     assert.lengthOf(dto.skills, 1)
     assert.equal(dto.skills[0].name, 'React')
-    assert.isNumber(dto.skills[0].level)
-    assert.isTrue(dto.skills[0].level >= 1 && dto.skills[0].level <= 5)
+    // Le niveau vient du pivot (`$extras.pivot_level`), pas du repli à 3.
+    assert.equal(dto.skills[0].level, 4)
 
     assert.lengthOf(dto.experiences, 1)
     assert.equal(dto.experiences[0].type, 'CDI')

@@ -118,65 +118,105 @@ test.group('AuthController.updateFromDashboard', (group) => {
   })
 })
 
+/**
+ * Accès (401/403) porté par les middlewares de route `auth()` + `superAdmin()`
+ * (cf. tests/functional/auth/super_admin_actions.spec.ts) : on ne teste ici que
+ * le comportement du contrôleur une fois l'accès accordé.
+ */
 test.group('AuthController super admin actions', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  test('impersonate returns 401 when not authenticated', async ({ assert }) => {
-    const controller = new AuthController({} as any)
+
+  async function createTarget() {
+    const org = await Organization.create({ name: 'Org', slug: `org-${Date.now()}` })
+    return User.create({
+      organizationId: org.id,
+      email: `target-${Date.now()}@example.com`,
+      name: 'Target',
+      password: 'secret123',
+      role: 'advisor',
+    })
+  }
+
+  test('impersonate logs in as the target user', async ({ assert }) => {
+    const target = await createTarget()
+    const loggedIn: User[] = []
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
+    const session = makeSession()
 
     // @ts-expect-error minimal context
     await controller.impersonate({
-      auth: { user: null },
-      params: { id: 1 },
+      auth: { use: () => ({ login: async (user: User) => loggedIn.push(user) }) },
+      params: { id: target.id },
       response: response as any,
-      session: makeSession() as any,
+      session: session as any,
     })
 
-    assert.isTrue(response.unauthorizedCalled)
+    assert.deepEqual(
+      loggedIn.map((u) => u.id),
+      [target.id]
+    )
+    assert.equal(response.redirectUrl, '/dashboard')
+    assert.deepEqual(session.flashes, [
+      ['success', 'Vous êtes maintenant connecté en tant que Target.'],
+    ])
   })
 
-  test('impersonate returns 403 when not super admin', async ({ assert }) => {
-    const org = await Organization.create({
-      name: 'Org',
-      slug: `org-${Date.now()}`,
-    })
-
-    const user = await User.create({
-      organizationId: org.id,
-      email: 'user@example.com',
-      name: 'User',
-      password: await hash.make('secret123'),
-      role: 'advisor',
-    })
-
-    const controller = new AuthController({} as any)
+  test('impersonate flashes an error for an unknown user', async ({ assert }) => {
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
+    const session = makeSession()
 
     // @ts-expect-error minimal context
-    const result = await controller.impersonate({
-      auth: { user },
-      params: { id: 999 },
+    await controller.impersonate({
+      auth: { use: () => assert.fail('ne doit pas ouvrir de session') },
+      params: { id: 999999 },
       response: response as any,
-      session: makeSession() as any,
+      session: session as any,
     })
 
-    assert.isTrue(response.forbiddenCalled)
-    assert.equal(response.statusCode, 403)
+    assert.equal(response.redirectUrl, '/dashboard/super-admin')
+    assert.deepEqual(session.flashes, [['error', "Utilisateur introuvable pour l'impersonation."]])
   })
 
-  test('resetPassword returns 401 when not authenticated', async ({ assert }) => {
-    const controller = new AuthController({} as any)
+  test('resetPassword sets a temporary password and flashes it', async ({ assert }) => {
+    const target = await createTarget()
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
+    const session = makeSession()
 
     // @ts-expect-error minimal context
     await controller.resetPassword({
-      auth: { user: null },
-      params: { id: 1 },
+      params: { id: target.id },
       response: response as any,
-      session: makeSession() as any,
+      session: session as any,
     })
 
-    assert.isTrue(response.unauthorizedCalled)
+    assert.equal(response.redirectUrl, '/dashboard/super-admin')
+    assert.lengthOf(session.flashes, 1)
+    const [key, message] = session.flashes[0]
+    assert.equal(key, 'success')
+    const temporaryPassword = message.split('Nouveau mot de passe temporaire: ')[1]
+    await target.refresh()
+    assert.isTrue(await hash.verify(target.password, temporaryPassword))
+  })
+
+  test('resetPassword flashes an error for an unknown user', async ({ assert }) => {
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
+    const response = makeResponse()
+    const session = makeSession()
+
+    // @ts-expect-error minimal context
+    await controller.resetPassword({
+      params: { id: 999999 },
+      response: response as any,
+      session: session as any,
+    })
+
+    assert.equal(response.redirectUrl, '/dashboard/super-admin')
+    assert.deepEqual(session.flashes, [
+      ['error', 'Utilisateur introuvable pour la réinitialisation.'],
+    ])
   })
 })
 
