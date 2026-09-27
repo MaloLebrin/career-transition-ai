@@ -638,6 +638,8 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `AI_PROVIDER` | non | `mistral` ou `none` |
 | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | si `mistral` | clé ; `mistral-small-latest` |
 | `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
+| `SEO_INDEXING` | non (défaut `false`) | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`) |
+| `GOOGLE_SITE_VERIFICATION` | non | jeton Google Search Console ; la balise n'est rendue que s'il est défini |
 
 Lues hors schéma (pas d'erreur au boot si absentes) :
 
