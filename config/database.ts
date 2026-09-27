@@ -1,4 +1,5 @@
 import env from '#start/env'
+import { buildPostgresConnection } from '#utils/database_connection'
 import { defineConfig } from '@adonisjs/lucid'
 
 /**
@@ -14,17 +15,17 @@ const dbConfig = defineConfig({
   connections: {
     postgres: {
       client: 'pg',
-      connection: {
-        host: env.get('DB_HOST'),
-        port: env.get('DB_PORT'),
-        user: env.get('DB_USER'),
-        password: env.get('DB_PASSWORD'),
-        database: env.get('DB_DATABASE'),
-        connectionString: env.get('DB_URL'),
-        // Le Postgres de test (compose local, service GitHub Actions) ne parle
-        // pas TLS ; hors test, on conserve le réglage historique.
-        ssl: env.get('NODE_ENV') === 'test' ? false : { rejectUnauthorized: false },
-      },
+      // `DB_URL` ou le jeu `DB_*` ; `DB_SSL=false` pour un Postgres sans TLS
+      // (compose local, base de test). Voir app/utils/database_connection.ts.
+      connection: buildPostgresConnection({
+        DB_URL: env.get('DB_URL'),
+        DB_HOST: env.get('DB_HOST'),
+        DB_PORT: env.get('DB_PORT'),
+        DB_USER: env.get('DB_USER'),
+        DB_PASSWORD: env.get('DB_PASSWORD'),
+        DB_DATABASE: env.get('DB_DATABASE'),
+        DB_SSL: env.get('DB_SSL'),
+      }),
       migrations: {
         naturalSort: true,
         paths: ['database/migrations'],

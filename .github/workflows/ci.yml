@@ -114,6 +114,7 @@ jobs:
           DB_USER: test
           DB_PASSWORD: test
           DB_DATABASE: test
+          DB_SSL: false
           AI_PROVIDER: none
 
   # Job d'agrégation : l'unique check `test-backend` à exiger dans la

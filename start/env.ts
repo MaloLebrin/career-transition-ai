@@ -29,12 +29,17 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   | Variables for configuring database connection
   |----------------------------------------------------------
+  | `DB_URL` ou le jeu `DB_HOST/DB_PORT/DB_USER/DB_DATABASE` : la
+  | complétude est vérifiée dans config/database.ts. `DB_SSL` vaut
+  | `true` par défaut ; `false` pour un Postgres sans TLS.
   */
-  DB_HOST: Env.schema.string({ format: 'host' }),
-  DB_PORT: Env.schema.number(),
-  DB_USER: Env.schema.string(),
+  DB_URL: Env.schema.string.optional(),
+  DB_HOST: Env.schema.string.optional({ format: 'host' }),
+  DB_PORT: Env.schema.number.optional(),
+  DB_USER: Env.schema.string.optional(),
   DB_PASSWORD: Env.schema.string.optional(),
-  DB_DATABASE: Env.schema.string(),
+  DB_DATABASE: Env.schema.string.optional(),
+  DB_SSL: Env.schema.boolean.optional(),
 
   /*
   |----------------------------------------------------------

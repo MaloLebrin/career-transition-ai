@@ -55,12 +55,12 @@ services:
     plan: starter
     region: frankfurt
     buildCommand: npm install -g pnpm && pnpm install && pnpm build
-    # preDeployCommand s'exécute après le build, avec DATABASE_URL disponible, avant le démarrage.
+    # preDeployCommand s'exécute après le build, avec DB_URL disponible, avant le démarrage.
     # --force est requis par AdonisJS quand NODE_ENV=production.
     preDeployCommand: node build/bin/console.js migration:run --force
     startCommand: node build/bin/server.js
     envVars:
-      - key: DATABASE_URL
+      - key: DB_URL
         fromDatabase:
           name: career-transition-db
           property: connectionString
@@ -84,7 +84,7 @@ services:
     buildCommand: npm install -g pnpm && pnpm install && pnpm build
     startCommand: node build/bin/console.js queue:work --queue=default,ai,pdfs,analytics
     envVars:
-      - key: DATABASE_URL
+      - key: DB_URL
         fromDatabase:
           name: career-transition-db
           property: connectionString
