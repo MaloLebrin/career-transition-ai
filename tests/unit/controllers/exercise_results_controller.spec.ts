@@ -1,6 +1,8 @@
 import ExerciseResultsController from '#controllers/exercise_results_controller'
 import { ExerciseResultsService } from '#services/exercise_results_service'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
+import { createAdvisor, createEmployeeFor } from '#tests/support/actors'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
 const fakeEmployeesService = {
@@ -75,7 +77,24 @@ function makeCtx(overrides: any = {}) {
   } as any
 }
 
-test.group('ExerciseResultsController.storeFromDashboard', () => {
+/**
+ * Le contrôleur résout le candidat dans l'organisation du conseiller connecté
+ * (404 sinon) : il faut une vraie fiche en base, rattachée à cette organisation.
+ */
+async function ownEmployeeCtx(overrides: any = {}) {
+  const advisor = await createAdvisor()
+  const employee = await createEmployeeFor(advisor)
+  const ctx = makeCtx({
+    auth: { user: { id: advisor.id, organizationId: advisor.organizationId } },
+    params: { id: String(employee.id), type: EXERCICE_RESULTS_TYPES.MOTIVATION },
+    ...overrides,
+  })
+  return { ctx, employee }
+}
+
+test.group('ExerciseResultsController.storeFromDashboard', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
   test('returns unauthorized when no auth user', async ({ assert }) => {
     const service = {
       saveResult: async () => {},
@@ -92,12 +111,28 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     const saveResult = async () => {}
     const service = { saveResult } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
-    const ctx = makeCtx()
+    const { ctx, employee } = await ownEmployeeCtx()
 
     await controller.storeFromDashboard(ctx)
 
-    assert.equal(ctx.response.redirectUrl, '/dashboard/conseiller/employees/1')
+    assert.equal(ctx.response.redirectUrl, `/dashboard/conseiller/employees/${employee.id}`)
     assert.equal(ctx.flashes.success, 'Exercice Motivation enregistré.')
+  })
+
+  test("refuse (404) un candidat d'une autre organisation sans appeler le service", async ({
+    assert,
+  }) => {
+    const calls: unknown[] = []
+    const service = {
+      saveResult: async (input: unknown) => calls.push(input),
+    } as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const { ctx } = await ownEmployeeCtx()
+    const intruder = await createAdvisor()
+    ctx.auth.user = { id: intruder.id, organizationId: intruder.organizationId }
+
+    await assert.rejects(() => controller.storeFromDashboard(ctx), /Row not found/)
+    assert.lengthOf(calls, 0)
   })
 
   test('uses correct label for different exercise types', async ({ assert }) => {
@@ -110,11 +145,11 @@ test.group('ExerciseResultsController.storeFromDashboard', () => {
     } as unknown as ExerciseResultsService
     const controller = new ExerciseResultsController(service, fakeEmployeesService)
 
-    const motivationCtx = makeCtx()
+    const { ctx: motivationCtx } = await ownEmployeeCtx()
     await controller.storeFromDashboard(motivationCtx)
     assert.equal(motivationCtx.flashes.success, 'Exercice Motivation enregistré.')
 
-    const valuesCtx = makeCtx({
+    const { ctx: valuesCtx } = await ownEmployeeCtx({
       request: {
         validateUsing: async () => ({
           type: EXERCICE_RESULTS_TYPES.VALUES,
