@@ -87,7 +87,9 @@ export default class extends BaseSchema {
 }
 ```
 
-Le super admin est créé par `admin_seeder.ts` (idempotent, lit `ADMIN_PASSWORD`). Le second compte en dur (« Pleiade Consulting ») se crée depuis l'UI super admin, pas par migration.
+Le super admin est créé par `admin_seeder.ts` (idempotent, lit `ADMIN_PASSWORD`) : `node build/bin/console.js db:seed --files database/seeders/admin_seeder`. Le second compte en dur (« Pleiade Consulting ») se crée depuis l'UI super admin, pas par migration.
+
+> ✅ Appliqué (issue #10).
 
 ### 0.4 Chemin des jobs de queue indépendant du `cwd`
 
@@ -268,7 +270,7 @@ curl -s $URL/ | grep -c '<div id="app"'                      # 1, et le HTML con
 curl -s -o /dev/null -w "%{http_code}\n" $URL/assets/app-XXXX.js  # 200 (chemin visible dans le source de /)
 ```
 
-Puis dans le navigateur : connexion `malo@ai-transition-carriere.fr` / `ADMIN_PASSWORD` (compte créé par `admin_seeder`), création d'une organisation et d'un conseiller, lecture du lien d'onboarding dans **Logs** Render (mode `console`), activation, exercice → analyse IA (inline, la requête dure quelques secondes), export PDF → téléchargement immédiat (même process). Dérouler la checklist de [hosting.md §3.3](hosting.md#33-checklist-post-déploiement).
+Puis dans le navigateur : connexion `malolebrin@gmail.com` / `ADMIN_PASSWORD` (compte créé par `admin_seeder`), création d'une organisation et d'un conseiller, lecture du lien d'onboarding dans **Logs** Render (mode `console`), activation, exercice → analyse IA (inline, la requête dure quelques secondes), export PDF → téléchargement immédiat (même process). Dérouler la checklist de [hosting.md §3.3](hosting.md#33-checklist-post-déploiement).
 
 ### 1.5 Ce qu'il faut savoir en exploitation
 

@@ -25,6 +25,16 @@ L'avantage de cette méthode est que toute la configuration est lue directement 
    - `VITE_MISTRAL_API_KEY`
 7. Clique sur **Apply** et laisse Render créer la base de données, les serveurs et déployer le code !
 
+### Créer (ou mettre à jour) le super admin
+
+Les migrations ne créent **aucun compte** et ne lisent pas `ADMIN_PASSWORD` : `migration:run --force` passe sans ce secret. Le super admin est créé par le seeder dédié, idempotent, depuis le **Shell** du service web :
+
+```bash
+node build/bin/console.js db:seed --files database/seeders/admin_seeder
+```
+
+Il lit `ADMIN_PASSWORD` : relancer la commande après avoir changé la variable fait tourner le mot de passe. Les autres organisations et comptes se créent depuis l'UI super admin.
+
 ## 🔄 2. Déploiements Suivants (Mises à jour)
 
 Grâce à cette configuration, tu n'as **plus rien à faire**.
