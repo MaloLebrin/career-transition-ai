@@ -110,7 +110,7 @@ jobs:
       - name: Test de fumée (serveur, pages SSR, assets, worker)
         run: node scripts/smoke_prod_build.mjs --app-dir="$RUNNER_TEMP/app"
 
-  # Image Docker (issue #14) : construit le Dockerfile tel qu'il serait déployé,
+  # Image Docker (issues #14 et #16) : construit le Dockerfile tel qu'il serait déployé,
   # puis déroule les modes de l'entrypoint dans l'ordre d'un déploiement —
   # `migrate`, `seed`, `server` — et échoue si `/health` ne répond pas 200, si
   # le conteneur ne tourne pas en `node` ou si son HEALTHCHECK n'est pas
@@ -176,6 +176,12 @@ jobs:
           if docker logs web 2>&1 | grep -qi 'migrat'; then
             echo 'le mode server ne doit pas lancer de migration'; exit 1
           fi
+          docker rm -f web
+      # Compose de production (deploy/, issue #16) avec la même image : Caddy
+      # TLS, migrate/seed one-shot, bucket S3 partagé par app et worker (aucun
+      # volume), backup.sh. Voir scripts/smoke_compose_prod.sh.
+      - name: Compose de production (deploy/)
+        run: APP_IMAGE=career-transition-ai:ci scripts/smoke_compose_prod.sh
 
   # La matrice n'est pas écrite à la main : `scripts/ci_test_shards.mjs` la
   # dérive de `tests/functional/` et équilibre les specs au fichier près. Un

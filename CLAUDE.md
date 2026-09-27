@@ -97,6 +97,8 @@ tests/
 scripts/
   ci_test_shards.mjs  # génère la matrice de shards du job test-backend (CI)
   smoke_prod_build.mjs  # test de fumée du build de prod (job smoke-prod-build, CI)
+  smoke_compose_prod.sh # test de fumée du compose de prod (job docker-image, CI)
+deploy/           # compose de production (Caddy, migrate/seed, backup.sh) — PDF sur S3/R2, aucun volume app/worker
 start/
   routes/         # fichiers de routes par domaine
   kernel.ts       # middlewares nommés

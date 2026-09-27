@@ -19,6 +19,10 @@ type Rule = (key: string, value?: string) => unknown
 
 /** Variables hors schéma, lues par Node, Vite ou l'hébergeur. */
 const OUTSIDE_SCHEMA = ['TZ', 'NODE_OPTIONS', 'VITE_APP_NAME']
+/** Variables lues par docker compose (deploy/compose.yml), pas par l'application. */
+const COMPOSE_ONLY: Record<string, string[]> = {
+  'deploy/.env.example': ['APP_IMAGE', 'APP_DOMAIN'],
+}
 /** Variables du schéma injectées par l'hébergeur, absentes des exemples. */
 const HOST_INJECTED: EnvKey[] = ['RENDER_GIT_COMMIT']
 
@@ -49,7 +53,7 @@ function validate(values: Record<string, string>): {
   return { errors, parsed }
 }
 
-for (const file of ['.env.example', '.env.production.example']) {
+for (const file of ['.env.example', '.env.production.example', 'deploy/.env.example']) {
   test.group(`Env — ${file}`, () => {
     test('passe la validation du schéma', async ({ assert }) => {
       const { errors } = validate(await parseEnvFile(file))
@@ -66,7 +70,8 @@ for (const file of ['.env.example', '.env.production.example']) {
 
     test('ne contient que des variables connues', async ({ assert }) => {
       const keys = await documentedKeys(file)
-      const unknown = keys.filter((key) => !(key in envSchema) && !OUTSIDE_SCHEMA.includes(key))
+      const allowed = [...OUTSIDE_SCHEMA, ...(COMPOSE_ONLY[file] ?? [])]
+      const unknown = keys.filter((key) => !(key in envSchema) && !allowed.includes(key))
       assert.deepEqual(unknown, [], 'variables inconnues du schéma (start/env_schema.ts)')
     })
 
@@ -87,13 +92,25 @@ test.group('Env — .env.example', () => {
   })
 })
 
-test.group('Env — .env.production.example', () => {
-  test('cible la production avec expéditeur et inscription fermée', async ({ assert }) => {
-    const { parsed } = validate(await parseEnvFile('.env.production.example'))
-    assert.equal(parsed.NODE_ENV, 'production')
-    assert.equal(parsed.REGISTRATION_ENABLED, false)
-    assert.isString(parsed.MAIL_FROM_EMAIL)
-    assert.isNotEmpty(parsed.MAIL_FROM_EMAIL)
+for (const file of ['.env.production.example', 'deploy/.env.example']) {
+  test.group(`Env — ${file} (production)`, () => {
+    test('cible la production avec expéditeur et inscription fermée', async ({ assert }) => {
+      const { parsed } = validate(await parseEnvFile(file))
+      assert.equal(parsed.NODE_ENV, 'production')
+      assert.equal(parsed.REGISTRATION_ENABLED, false)
+      assert.isString(parsed.MAIL_FROM_EMAIL)
+      assert.isNotEmpty(parsed.MAIL_FROM_EMAIL)
+    })
+  })
+}
+
+test.group('Env — deploy/.env.example (compose)', () => {
+  test('Postgres du compose sans TLS, PDF sur S3 (aucun volume)', async ({ assert }) => {
+    const { parsed } = validate(await parseEnvFile('deploy/.env.example'))
+    assert.equal(parsed.DB_HOST, 'postgres')
+    assert.equal(parsed.DB_SSL, false)
+    assert.equal(parsed.DRIVE_DISK, 's3')
+    assert.equal(parsed.QUEUE_DRIVER, 'database')
   })
 })
 

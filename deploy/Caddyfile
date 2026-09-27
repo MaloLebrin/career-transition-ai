@@ -1,0 +1,10 @@
+# Reverse proxy TLS devant `app` (deploy/compose.yml). APP_DOMAIN vient de
+# `.env` : `<ip-avec-tirets>.sslip.io` (certificat Let's Encrypt, repli
+# ZeroSSL) ou un vrai domaine ; `localhost` utilise la CA interne de Caddy.
+{$APP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:8080 {
+		# SSE (Transmit) : pas de buffering
+		flush_interval -1
+	}
+}

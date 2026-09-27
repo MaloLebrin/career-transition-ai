@@ -1,3 +1,7 @@
+# Compose de développement : Postgres local (`postgres`, port 5439) et base de
+# test (`postgres_test`, profil `test`). L'application tourne hors conteneur
+# (`pnpm dev`). La pile de production (image, worker, Caddy) est dans
+# `deploy/compose.yml`.
 services:
   postgres:
     image: postgres:16-alpine
@@ -37,36 +41,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-
-  app:
-    build: .
-    command: server
-    ports:
-      - '${PORT:-8080}:8080'
-    env_file: .env
-    environment:
-      HOST: 0.0.0.0
-      PORT: 8080
-      DB_HOST: postgres
-      DB_PORT: 5432
-      # Le postgres:16-alpine du compose ne parle pas TLS
-      DB_SSL: 'false'
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  worker:
-    build: .
-    command: worker
-    env_file: .env
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      # Le postgres:16-alpine du compose ne parle pas TLS
-      DB_SSL: 'false'
-    depends_on:
-      postgres:
-        condition: service_healthy
 
 volumes:
   career_transition_ai_pg_data:
