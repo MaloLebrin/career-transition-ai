@@ -4,6 +4,7 @@
 
 Application SaaS de transition de carrière. Stack :
 - **Backend** : AdonisJS v6 (TypeScript, Lucid ORM, Japa tests)
+- **Base de données** : PostgreSQL via Lucid (PostgreSQL aussi en test — service `postgres_test` du `docker-compose.yml`, jamais SQLite)
 - **Frontend** : React 19 via Inertia.js (TypeScript, Vitest + Testing Library)
 - **Queue** : `@adonisjs/queue` — workers : `default`, `ai`, `pdfs`, `analytics`
 - **Package manager** : **pnpm** (ne jamais utiliser `npm` ou `yarn`)
@@ -18,9 +19,13 @@ pnpm dev                        # serveur AdonisJS avec HMR
 pnpm dev:worker:all             # tous les workers de queue
 pnpm dev:with-worker            # serveur + workers
 
-# Tests
-node ace test                   # tests backend (Japa)
+# Tests (voir docs/TESTING.md)
+pnpm test:db:up                 # démarre la base de test Postgres (profil `test` du compose)
+pnpm test                       # tests backend (Japa) — suites unit, integration, functional
 pnpm test:inertia               # tests frontend (Vitest)
+pnpm test:db:down               # arrête la base de test
+pnpm test:coverage              # couverture backend (c8) → coverage/backend
+pnpm test:inertia:coverage      # couverture frontend → coverage/frontend
 
 # Build / lint
 pnpm build
@@ -80,9 +85,13 @@ database/
   factories/
   seeders/
 tests/
-  unit/           # backend — node ace test (suite unit)
-  functional/     # backend — node ace test (suite functional)
+  unit/           # backend — pnpm test (suite unit, isolation par groupe via withGlobalTransaction)
+  integration/    # backend — pnpm test (suite integration, transaction globale sur toute la suite)
+  functional/     # backend — pnpm test (suite functional, serveur HTTP + truncateDb() entre les tests)
   inertia/        # frontend — pnpm test:inertia (Vitest)
+  utils/          # helpers de test (truncateDb…)
+scripts/
+  ci_test_shards.mjs  # génère la matrice de shards du job test-backend (CI)
 start/
   routes/         # fichiers de routes par domaine
   kernel.ts       # middlewares nommés
@@ -125,6 +134,10 @@ Toujours `pnpm`, jamais `npm run` ou `yarn`.
 - Tout nouveau/modifié composant/page → test dans `tests/inertia/`.
 - Tout nouveau/modifié model/service/controller → test dans `tests/unit/`.
 - Tâche non terminée tant que les tests ne passent pas.
+- Les tests backend tournent sur **PostgreSQL** (`pnpm test:db:up` avant `pnpm test`), jamais SQLite.
+- Tests HTTP (`tests/functional/`) : isolation par `truncateDb()` (`#tests/utils/db`), pas de transaction globale (invisible aux handlers).
+- `.env.test`, le service `postgres_test` du compose et le bloc `env:` de `.github/workflows/ci.yml` doivent rester alignés.
+- La matrice de shards de la CI est générée (`scripts/ci_test_shards.mjs`) : ne jamais écrire de filtre `--files` à la main dans le workflow.
 
 ### Enums & constantes
 ```ts

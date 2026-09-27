@@ -9,6 +9,7 @@ import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
+import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 
 type SaveResultInput = {
@@ -223,17 +224,28 @@ export class ExerciseResultsService {
 
     // Otherwise create a draft. Under concurrency, two requests can race here.
     // If the unique draft index triggers, fallback to updating the winning draft.
+    //
+    // L'insert tourne dans sa propre transaction : sur Postgres, une requête en
+    // erreur invalide toute la transaction englobante (« current transaction is
+    // aborted »). Sans ce point de sauvegarde, le repli ci-dessous échouerait
+    // dès que `saveDraft` est appelé depuis une transaction ouverte (tests sous
+    // `withGlobalTransaction()`, ou un futur appelant transactionnel).
     try {
-      await ExerciseResult.create({
-        employeeId: employee.id,
-        type: input.type,
-        status: 'draft',
-        date: null,
-        duration: null,
-        progressPercent,
-        data: input.data,
-        quantitativeScore: null,
-        qualitativeAnalysis: null,
+      await db.transaction(async (trx) => {
+        await ExerciseResult.create(
+          {
+            employeeId: employee.id,
+            type: input.type,
+            status: 'draft',
+            date: null,
+            duration: null,
+            progressPercent,
+            data: input.data,
+            quantitativeScore: null,
+            qualitativeAnalysis: null,
+          },
+          { client: trx }
+        )
       })
     } catch (err: any) {
       const msg = String(err?.message ?? '')

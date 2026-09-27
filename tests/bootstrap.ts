@@ -4,8 +4,6 @@ import type { Config } from '@japa/runner/types'
 import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import testUtils from '@adonisjs/core/services/test_utils'
 import env from '#start/env'
-import { mkdir } from 'node:fs/promises'
-import { dirname } from 'node:path'
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file
@@ -27,16 +25,14 @@ export const plugins: Config['plugins'] = [assert(), pluginAdonisJS(app)]
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   setup: [
     () => {
+      // Garde-fou : la suite tronque des tables (`truncateDb()`), elle ne doit
+      // jamais tourner sur une base qui n'est pas celle de `.env.test`.
       if (env.get('NODE_ENV') !== 'test') {
         throw new Error(`Refusing to run tests with NODE_ENV=${env.get('NODE_ENV')}`)
       }
     },
-    async () => {
-      const sqlitePath = env.get('SQLITE_DB_PATH')
-      if (sqlitePath && sqlitePath !== ':memory:') {
-        await mkdir(dirname(sqlitePath), { recursive: true })
-      }
-    },
+    // Les migrations sont jouées une fois pour toute la session de tests ; le
+    // rollback rendu par `migrate()` est exécuté au teardown.
     () => testUtils.db().migrate(),
   ],
   teardown: [],
@@ -48,6 +44,13 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
  */
 export const configureSuite: Config['configureSuite'] = (suite) => {
   if (['browser', 'functional', 'e2e'].includes(suite.name)) {
-    return suite.setup(() => testUtils.httpServer().start())
+    // Tests HTTP : le serveur tourne dans le même process, mais ses handlers
+    // passent par des connexions du pool distinctes de celle du test — une
+    // transaction globale leur serait invisible. Isolation par `truncateDb()`
+    // (tests/utils/db.ts) dans chaque groupe.
+    suite.setup(() => testUtils.httpServer().start())
+  } else if (suite.name === 'integration') {
+    suite.setup(() => testUtils.db().withGlobalTransaction())
   }
+  // unit : chaque groupe pose sa propre isolation (`withGlobalTransaction()`)
 }

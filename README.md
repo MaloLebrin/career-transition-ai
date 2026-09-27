@@ -5,7 +5,28 @@ Application d’accompagnement à la transition de carrière (conseillers, candi
 ## Documentation
 
 - **[Workflow d'onboarding candidat](docs/ONBOARDING.md)** — Invitation par email, création du mot de passe via lien unique, accès au dashboard.
+- **[Tests](docs/TESTING.md)** — Suites Japa/Vitest, base de test Postgres, shards de CI, couverture.
 - **[TODO mise en production](docs/README.md#todo--mise-en-production)** — Checklist des points à traiter pour la prod.
+
+## Tests
+
+Les tests backend tournent sur PostgreSQL (service `postgres_test` du `docker-compose.yml`, profil `test`) :
+
+```bash
+# Démarrer la base de test
+pnpm test:db:up
+
+# Tests backend (Japa) — suites unit, integration, functional
+pnpm test
+
+# Tests frontend (Vitest)
+pnpm test:inertia
+
+# Arrêter la base de test
+pnpm test:db:down
+```
+
+Détails (isolation, shards de CI, couverture) dans [docs/TESTING.md](docs/TESTING.md).
 
 ## TODO — Pages marketing (public)
 
