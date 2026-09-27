@@ -1,0 +1,268 @@
+# Hébergement à coût minimal (usage perso & beta fermée)
+
+> Analyse faite sur le code du dépôt (branche `main`, septembre 2026), pas sur les docs existantes.
+> Tarifs et limites des hébergeurs : relevés fin septembre 2026, à re-vérifier avant de s'engager (ils bougent souvent).
+
+Sommaire :
+
+1. [Phase 1 — Besoins réels de l'application](#phase-1--besoins-réels-de-lapplication)
+2. [Phase 2 — Solutions d'hébergement](#phase-2--solutions-dhébergement)
+3. [Phase 3 — Recommandations, travail préparatoire, checklist](#phase-3--recommandations-travail-préparatoire-checklist)
+
+---
+
+## Phase 1 — Besoins réels de l'application
+
+### 1.1 Runtime et process
+
+| Point | Constat (source) |
+|---|---|
+| Langage / runtime | TypeScript compilé par `node ace build` → JS ESM. **Node 24** (`.node-version`, `Dockerfile` `node:24-alpine`, CI `node-version: 24`). Pas de champ `engines` ni `packageManager` dans `package.json`. |
+| Package manager | pnpm 10 (Dockerfile épingle `10.18.3`, CI prend `10` latest, `pnpm-workspace.yaml` à la racine). |
+| Framework | AdonisJS v6 (`@adonisjs/core` 7.x) + Inertia/React 19, **SSR activé** (`config/inertia.ts` → `ssr.enabled: true`). Le SSR tourne **dans le process HTTP** (bundle `ssr/ssr.js` chargé par le middleware Inertia) : pas de serveur SSR séparé. |
+| Process 1 — web | `node build/bin/server.js`. Sert HTTP, Inertia SSR, assets statiques (`@adonisjs/static`) et les SSE Transmit. Le preload `start/scheduler.ts` est chargé en env `web` mais **vide** : aucun cron à ce jour. |
+| Process 2 — worker | `node build/bin/console.js queue:work --queue=default,ai,pdfs,analytics`. Obligatoire pour traiter les 4 jobs (`app/jobs/`) **sauf** si `QUEUE_DRIVER=sync` (jobs exécutés inline dans la requête HTTP). Le worker **polle Postgres toutes les 2 s** quand il est inactif (`config/queue.ts` → `idleDelay: '2s'`, voir `@boringnode/queue`). |
+| Scheduler / cron | Aucun (voir ci-dessus). Le package `@adonisjs/queue` sait en faire, mais rien n'est défini. |
+| Ports | Un seul port HTTP : `PORT` (validé dans `start/env.ts`). Dev `3333`, Dockerfile `EXPOSE 8080`, `render.yaml` `10000`. `HOST` doit valoir `0.0.0.0` en conteneur/PaaS. |
+| Mémoire mesurée (build de prod, SQLite, 1 utilisateur) | ~160 Mo RSS au boot ; ~275 Mo RSS après 8 pages SSR avec `--max-old-space-size=192` (aucun OOM) ; jusqu'à ~400 Mo RSS sans limite de tas (V8 ne compacte pas). Conclusion : **512 Mo confortable, 256 Mo possible uniquement avec `NODE_OPTIONS=--max-old-space-size=160`**. |
+| Premier rendu SSR | ~2,2 s (chargement du bundle SSR), puis 10–20 ms par page. |
+| Taille artefacts | `build/` = 7,9 Mo. `node_modules` prod ≈ 715 Mo (dont `@swc/core` gnu + musl ≈ 60 Mo, `lucide-react` 43 Mo, `date-fns` 33 Mo, `jspdf` 29 Mo). Image Docker attendue ≈ 800 Mo. |
+
+### 1.2 Base de données
+
+| Point | Constat |
+|---|---|
+| Moteur | **PostgreSQL** via `pg` + Lucid (`config/database.ts`). `docker-compose.yml` utilise `postgres:16-alpine`. En test (`NODE_ENV=test`), SQLite (`better-sqlite3`, devDependency) est **forcé**. |
+| Version minimale | Aucune fonctionnalité exotique : `jsonb`, contraintes `CHECK`, index partiels uniques (`schema.raw`). Aucun `CREATE EXTENSION`. **N'importe quel Postgres ≥ 12** convient (Neon, Supabase, Postgres 16/17 en conteneur…). |
+| Migrations | **32 fichiers** dans `database/migrations/`, 19 tables (`database/schema.ts`), dont `queue_jobs` / `queue_schedules` (adapter database de la queue). |
+| Lancement au déploiement | Trois mécanismes **différents et non cohérents** : (1) `docker/entrypoint.sh` mode `server` → `migration:run --force` à **chaque** démarrage du web ; (2) `render.yaml` → `preDeployCommand` ; (3) `docs/clever-cloud.md` → manuel via SSH. |
+| ⚠️ Migration qui seed des comptes | `1778062253238_create_seed_users_table.ts` crée en **production uniquement** 2 organisations et 2 comptes (super admin + admin, e-mails en dur, **même mot de passe** `ADMIN_PASSWORD`). Elle **échoue si `ADMIN_PASSWORD` est absent** → `migration:run` casse en prod sans cette variable. |
+| ⚠️ SSL forcé | `ssl: { rejectUnauthorized: false }` est **toujours** passé à `pg`. Face à un Postgres sans TLS (le `postgres:16-alpine` de `docker-compose.yml`, un Postgres local/VPS par défaut), `pg` lève `The server does not support SSL connections` → **le compose actuel ne peut pas se connecter**. Neon/Supabase/Render (TLS) fonctionnent. |
+| ⚠️ Connection string | `config/database.ts` lit `env.get('DB_URL')` (clé **absente** du schéma `start/env.ts`), alors que `render.yaml` injecte `DATABASE_URL`. Et `DB_HOST/DB_PORT/DB_USER/DB_DATABASE` sont **obligatoires** dans le schéma → le blueprint Render échoue à la validation d'env au boot. |
+
+### 1.3 Dépendances d'infrastructure
+
+| Besoin | Constat |
+|---|---|
+| Redis / cache | **Aucun.** Sessions en cookie (`SESSION_DRIVER=cookie`), queue en Postgres, Transmit sans transport (`config/transmit.ts` → `transport: null`). `QUEUE_DRIVER` accepte `redis` dans le schéma d'env mais **aucun adapter redis n'est configuré** dans `config/queue.ts` → crash si utilisé. |
+| Disque persistant | **Oui, partiellement.** Le job PDF (`app/jobs/generate_employee_synthesis_pdf.ts`) écrit dans `<cwd>/tmp/exports/*.pdf` sur le disque **du worker**, stocke le chemin absolu dans `pdf_exports.file_path`, et le **web** le sert via `response.attachment(filePath)` (`pdf_export_downloads_controller.ts`). Conséquences : web et worker doivent **partager le même système de fichiers** (même machine ou volume partagé), et un disque éphémère (PaaS) perd les PDF au redéploiement (404 « fichier introuvable »). Le modèle `File` porte un `TODO: configure the file driver` : pas de Drive/S3. L'export ZIP dossier (`dossier_export_service.ts`, `archiver`) est **streamé**, sans disque. |
+| Stockage objet (S3…) | Non utilisé. |
+| Binaires système | **Aucun.** PDF = `@react-pdf/renderer` / `pdf-lib` / `jspdf` (pur JS), pas de ffmpeg/ghostscript/Chromium. Alpine suffit. Seul point natif : `better-sqlite3` (devDependency, tests) compilé/prébuilt à l'install du stage builder. |
+| Websockets / SSE | **SSE via `@adonisjs/transmit`** (`start/transmit.ts`, `start/routes/transmit.ts`, hook `inertia/hooks/use_notifications.ts`). Connexions longues sur `/__transmit/events` derrière `auth`. Contraintes : proxy sans buffering, timeouts idle (`pingInterval: false` → aucun keep-alive, un proxy coupe la connexion au bout de ~60–100 s ; le client Transmit se reconnecte). **Scale horizontal impossible** sans transport Redis. **Bug latent multi-process** : les `transmit.broadcast()` émis depuis le **worker** (fin de job PDF, notifications créées par un job) ne partent d'aucun process qui tient des connexions SSE → ils ne parviennent jamais au navigateur. Les données restent visibles au rechargement (props Inertia). Seul `QUEUE_DRIVER=sync` (job dans le process web) rend ces événements temps réel. |
+| Reverse proxy | `trustProxy` n'est pas défini dans `config/app.ts` → défaut AdonisJS `loopback`. Derrière un PaaS/tunnel, `request.protocol()` renvoie `http` : les liens d'onboarding construits avec `${request.protocol()}://${request.hostname()}` (`employees_controller.ts`, `super_admin_controller.ts`, `organizations_controller.ts`) seront en **`http://`**. HSTS est activé par Shield (`config/shield.ts`). |
+
+### 1.4 Variables d'environnement
+
+**Source de vérité = `start/env.ts`** (validées au boot ; une valeur vide compte comme absente) :
+
+| Variable | Contrainte | Notes |
+|---|---|---|
+| `NODE_ENV` | `development` \| `production` \| `test` | `test` force SQLite. `production` active cookies `secure`, logs JSON stdout, chemin jobs `./build/app/jobs/**/*.js`. |
+| `PORT`, `HOST` | requis | `HOST=0.0.0.0` en conteneur. |
+| `APP_KEY` | requis | `node ace generate:key`. |
+| `LOG_LEVEL` | requis (non vide) | `info` en prod. |
+| `SESSION_DRIVER` | `cookie` \| `memory` | `cookie` en prod. |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_DATABASE` | **requis** | même avec une connection string (voir 1.2). |
+| `DB_PASSWORD`, `SQLITE_DB_PATH` | optionnels | |
+| `QUEUE_DRIVER` | `redis` \| `database` \| `sync` | `redis` non câblé. |
+| `AI_PROVIDER` | optionnel `mistral` \| `none` | |
+| `MISTRAL_API_KEY`, `MISTRAL_MODEL` | optionnels | requis si `AI_PROVIDER=mistral` (défaut modèle `mistral-small-latest`). |
+
+**Lues hors schéma** (`process.env` / `env.get` non validé — aucune erreur au boot si absentes) :
+
+| Variable | Où | Effet |
+|---|---|---|
+| `DB_URL` | `config/database.ts` | connection string (jamais injectée par les configs existantes). |
+| `MAIL_PROVIDER` | `services/mail/mail_service.ts` | `console` (défaut) \| `resend`. |
+| `RESEND_API_KEY` | `utils/mail/resend.ts` | requis si `resend`. |
+| `MAIL_FROM_EMAIL` | `onboarding_mail_service.ts`, `notification_mail_service.ts`, `contact_request_mail_service.ts` | **requis en production** pour envoyer (sinon exception à l'envoi). |
+| `MAIL_FROM_NAME`, `ADMIN_CONTACT_EMAIL` | mail | optionnels (défauts en dur `@francetransitioncarriere.fr`). |
+| `MAIL_RESEND_TEST_MODE/EVENT/TO/FROM` | resend | mode test hors prod. |
+| `ADMIN_PASSWORD` | migration `1778062253238` (prod) + `admin_seeder.ts` | **requis pour migrer en prod**. |
+| `APP_NAME` | `config/logger.ts` | nom du logger. |
+| `QUEUE_WORKER_QUEUES` / `QUEUE_NAMES` / `QUEUE_WORKER_CONCURRENCY` | `bin/dev-with-worker.mjs` | dev uniquement. |
+| `TZ` | Node | fuseau du process. |
+
+**Variables de build (Vite, embarquées dans le bundle navigateur)** : `VITE_AI_PROVIDER`, `VITE_MISTRAL_API_KEY`, `VITE_APP_NAME` (`inertia/helpers/ai/front_ai_client.ts`, `inertia/app.tsx`). Elles doivent être présentes **au moment de `node ace build`**, pas au runtime. ⚠️ `VITE_MISTRAL_API_KEY` expose la clé Mistral **en clair dans le JS public** (OCR d'import CV et suggestions de ciblage côté client) : n'importe qui peut l'extraire et consommer le quota. Les fallbacks `import.meta.env.AI_PROVIDER` / `AI_API_KEY` sont morts (Vite n'expose que le préfixe `VITE_`).
+
+**Écarts `.env.example` ↔ code** :
+
+- Manquent : `MISTRAL_MODEL`, `MAIL_RESEND_*`, `ADMIN_CONTACT_EMAIL`, `APP_NAME`, `VITE_APP_NAME`, `DB_URL`, `SQLITE_DB_PATH`.
+- `TZ=UTC+2` : en notation POSIX, `UTC+2` signifie **UTC−2**. Utiliser `Europe/Paris`.
+- Copié tel quel, `.env.example` **ne boote pas** (`APP_KEY`, `LOG_LEVEL`, `SESSION_DRIVER`, `DB_*`, `QUEUE_DRIVER` vides).
+- `.env.test` est complet et sert de référence pour la CI.
+
+### 1.5 Services externes
+
+| Service | Usage dans le code | Free tier | Impact hébergement |
+|---|---|---|---|
+| **Mistral** (`@mistralai/mistralai`) | Serveur : job `analyze_exercise_qualitative_job` (queue `ai`). Client : OCR CV (`mistral-ocr-latest`), suggestions (`mistral-small-latest`) via `VITE_MISTRAL_API_KEY`. | Plan **Experiment** gratuit (rate-limité, ~1 Md tokens/mois, limites exactes dans la console, vérification téléphone) — [source](https://pricepertoken.com/endpoints/mistral/free). | Sortie HTTPS uniquement. Aucun webhook. Le job a `maxRetries: 2`, utile face au rate-limit. |
+| `@google/genai` | **Dépendance non utilisée** (aucun import). | — | À retirer. |
+| **Resend** (`resend`) | Onboarding, notifications, formulaire contact. Provider `console` en repli (lien d'activation dans les logs). | 3 000 e-mails/mois, 100/jour, **1 domaine vérifié** — [source](https://nuntly.com/resend-pricing). | ⚠️ **Sans nom de domaine vérifié, Resend n'autorise l'envoi qu'à l'adresse de ton propre compte** (expéditeur `onboarding@resend.dev`). Pour inviter des testeurs par e-mail il faut soit un domaine (~5–10 €/an), soit un autre provider (ex. SMTP Brevo/Gmail via `nodemailer`, à implémenter : l'interface `MailProvider` est minimale), soit `MAIL_PROVIDER=console` et copier le lien depuis les logs. |
+| Paiement | **Aucun** (pas de Stripe/webhook). | — | Pas d'URL publique requise pour des webhooks. |
+| Google Fonts | `resources/views/inertia_layout.edge` | gratuit | Côté navigateur uniquement. |
+
+### 1.6 Existant CI/CD
+
+| Élément | État |
+|---|---|
+| `.github/workflows/ci.yml` | Lint + typecheck + Japa (SQLite) + Vitest. **Aucun job de build d'image ni de déploiement.** |
+| `Dockerfile` | Multi-stage `node:24-alpine`, entrypoint `server` (migrations puis serveur) / `worker`. **Jamais construit en CI**, aucune image sur un registre. Points faibles : pas de `HEALTHCHECK`, pas de `NODE_ENV`, tourne en root, stage builder installe les devDeps (dont `better-sqlite3` natif sur musl : à valider). |
+| `docker-compose.yml` | Postgres 16 + app + worker construits depuis les sources. Non fonctionnel en l'état (SSL forcé, cf. 1.2 ; pas de volume partagé `tmp/` entre web et worker ; pas de reverse proxy TLS ; pas de `restart:`). |
+| `render.yaml` | Blueprint web + worker + Postgres en plan **starter (payant)**. Cassé : `DATABASE_URL` non lu, `DB_*` requis manquants, chemin SSR (cf. 3.2). |
+| `clevercloud/post-build.sh` + `docs/clever-cloud.md` | Doc obsolète : référence un workflow `clever-cloud-deploy.yml` et un script `pnpm run clever:postbuild` **inexistants**, et une prise en charge `POSTGRESQL_ADDON_*` **absente du code**. |
+| `docs/README.md` | Liens vers `GETTING_STARTED.md`, `CONFIGURATION.md`, `ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `USER_FLOWS.md`, `RUNBOOK.md` **inexistants**. |
+
+### 1.7 Bug bloquant découvert : le build de prod ne rend aucune page
+
+Vérifié en lançant `build/bin/server.js` : **toutes les pages répondent 500** (`ERR_MODULE_NOT_FOUND …/build/build/ssr/ssr.js`).
+
+Cause : `config/inertia.ts` déclare `bundle: 'build/ssr/ssr.js'` et `config/vite.ts` `manifestFile: 'build/public/assets/.vite/manifest.json'`. Ces chemins sont résolus **relativement à la racine de l'app**, qui en prod **est `build/`** → `build/build/…`. Les défauts des packages sont `ssr/ssr.js` et `public/assets/.vite/manifest.json`. Avec ces valeurs, les mêmes pages répondent 200 (testé). Aucune des configs de déploiement existantes (Docker, Render, Clever) ne peut donc fonctionner aujourd'hui. Correctif en 3.2.
+
+Même famille de problème : `config/queue.ts` → `locations: ['./build/app/jobs/**/*.js']` est globbé **relativement au `cwd`** (`node:fs/promises` `glob`). OK pour `node build/bin/server.js` lancé depuis la racine (Dockerfile, Render), **KO** pour `cd build && node bin/server.js` (doc Clever Cloud) : aucun job enregistré.
+
+---
+
+## Phase 2 — Solutions d'hébergement
+
+Rappels de cadrage :
+
+- Pas de nom de domaine → sous-domaines de plateforme, `*.ts.net` (Tailscale Funnel), ou `*.sslip.io` / `*.nip.io` (DNS gratuit qui résout `1-2-3-4.sslip.io` vers `1.2.3.4`, compatible Let's Encrypt via Caddy) pour un VPS.
+- Deux processus (web + worker) + Postgres, **ou** un seul process avec `QUEUE_DRIVER=sync` (jobs inline : la requête « exercice terminé » attend Mistral quelques secondes ; PDF généré dans la requête). Le mode `sync` est le **seul** qui rend les événements SSE des jobs fonctionnels sans Redis (cf. 1.3).
+- Web + worker doivent partager `tmp/exports` (PDF) → sur PaaS à services séparés, prévoir S3-compatible (Cloudflare R2 10 Go gratuits) ou rester mono-machine.
+- Le worker polle Postgres toutes les 2 s → **il empêche l'autosuspend** d'un Postgres serverless et **consomme le quota** (Neon Free : 100 CU-h/mois ≈ 400 h à 0,25 CU < 720 h/mois ; Koyeb DB free : 5 h/mois). Avec un Postgres serverless gratuit, **pas de worker permanent** → `sync`.
+
+### A. 100 % gratuit, cold starts acceptés (usage perso)
+
+| Option | Coût | Cold start | Notes |
+|---|---|---|---|
+| **Render Free web** (512 Mo, 0,1 CPU) + **Neon Free** (0,5 Go, 100 CU-h/mois) | 0 € | ~1 min (spin-down après 15 min d'inactivité) + ~1 s réveil Neon | Build natif Node depuis le repo (lit `.node-version`). Pas de worker gratuit → `QUEUE_DRIVER=sync`. Disque éphémère : PDF perdus au spin-down (re-générer). SSE OK. ⚠️ Ne **pas** utiliser le Postgres free de Render : **supprimé après 30 jours** (+14 j de grâce) — [source](https://render.com/articles/platforms-with-a-real-free-tier-for-developers-in-2026). Pas de CB. |
+| **Koyeb Free** (1 web service 512 Mo, 0,1 vCPU, 2 Go SSD, Francfort) + **Neon Free** | 0 € | Scale-to-zero après 1 h sans trafic, réveil quelques secondes | Déploie l'image Docker du repo ou build natif. Pas de CB. Le Postgres free Koyeb (1 Go, **5 h de compute/mois**) est trop juste → Neon. `sync` obligatoire (mono-service). |
+| **Google Cloud Run** (min-instances 0) + Neon | 0 € dans le quota (2 M req, 180 000 vCPU-s, 360 000 GiB-s/mois) | 2–5 s (boot ~1 s + bundle SSR ~2 s) | Le plus rapide des gratuits, 1 vCPU pendant les requêtes. Nécessite compte GCP + CB + Artifact Registry. ⚠️ Une connexion SSE ouverte est une requête facturée en continu : un onglet dashboard ouvert 8 h/jour ≈ 240 vCPU-h/mois > 50 h gratuites. Pour un usage ponctuel c'est dans le quota ; sinon désactiver Transmit. |
+| Supabase Free Postgres (500 Mo) | 0 € | Projet **mis en pause après 7 jours d'inactivité**, reprise **manuelle** dans le dashboard | Alternative à Neon si tu veux aussi le dashboard/backup ; moins adapté à un usage sporadique à cause de la pause. |
+| Vercel / Netlify / Cloudflare Workers | — | — | **Exclus** : serverless sans process long (worker, SSE), pas de runtime Node complet pour le SSR AdonisJS. |
+| Fly.io | ≈ 2 $/mois (shared-cpu-1x 256 Mo) + volume | 1–3 s (auto-stop/start) | **Plus de free tier** pour les nouveaux comptes (essai 7 j / 2 h VM) → catégorie C. |
+
+### B. Gratuit et toujours allumé (beta fermée)
+
+| Option | Coût | Cold start | Notes |
+|---|---|---|---|
+| **Oracle Cloud Always Free — VM Ampere A1** (depuis le 15/06/2026 : **2 OCPU / 12 Go RAM** pour les comptes Free ; 4/24 pour PAYG) + `docker-compose` (Postgres + web + worker + Caddy) | 0 € | Aucun | Tout sur une machine : PDF partagés, SSE fonctionnels (web), Postgres local avec backups `pg_dump`. TLS : Caddy + `x-x-x-x.sslip.io` (Let's Encrypt), ou Tailscale Funnel. Risques réels : « Out of capacity » à la création (parfois des semaines), **récupération des instances idle** (< 20 % CPU/RAM/réseau pendant 7 j, cf. [docs Oracle](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)), CB requise. Passer le compte en PAYG (0 € si on reste dans le Free) supprime la récupération idle et garde 4/24. |
+| **Self-host maison** (Raspberry Pi 4/5 4 Go, mini-PC, vieux laptop, NAS) + `docker-compose` + **Tailscale Funnel** | ≈ 1–3 €/mois d'électricité | Aucun | Funnel : HTTPS auto sur `machine.tailnet.ts.net`, ports **443/8443/10000** uniquement, bande passante limitée (non chiffrée publiquement), plan Personal gratuit (3 utilisateurs, 100 appareils). Débit montant de ta box = débit des testeurs. Coupures maison = coupures beta. Image ARM64 à builder (`node:24-alpine` multi-arch OK). |
+| **Beta 100 % privée sur le tailnet** (mêmes machines, `tailscale serve` au lieu de Funnel) | 0 € | Aucun | Les testeurs installent Tailscale et rejoignent ton tailnet (Personal = **3 utilisateurs max**, donc toi + 2 testeurs ; au-delà plan payant ou Funnel). Zéro exposition publique, HTTPS `*.ts.net`, MagicDNS. Idéal pour 2 testeurs de confiance. |
+| Cloudflare Tunnel | 0 € | Aucun | **Nécessite un domaine dans Cloudflare** pour un tunnel nommé ; les *quick tunnels* `*.trycloudflare.com` changent d'URL à chaque redémarrage (non prod). À retenir seulement si tu prends un domaine. |
+| ngrok Free | 0 € | Aucun | 1 domaine statique gratuit, mais **page interstitielle** sur tout le trafic HTML (cookie 7 j) et 1 Go/mois : gênant pour des testeurs. |
+
+### C. Quasi-gratuit sans compromis (VPS ≈ 2–6 €/mois, docker-compose complet)
+
+| Option | Coût | Cold start | Notes |
+|---|---|---|---|
+| **netcup VPS** (2 vCPU / 2 Go / 64 Go) | ≈ 3,35 €/mois (offres « lite » dès ≈ 1,34 €) | Aucun | Le meilleur rapport prix/RAM en 2026 pour ce profil (web ≈ 300 Mo + worker ≈ 200 Mo + Postgres ≈ 100 Mo + Caddy) — [comparatif](https://sliplane.io/blog/top-5-cheap-vps-providers). Ajouter 1 Go de swap. |
+| **Hetzner Cloud** (CX23 2 vCPU / 4 Go ≈ 5,49 €/mois IPv4 incluse ; CAX11 ARM ≈ 5,99 €) | ≈ 5,5–6 €/mois | Aucun | Référence fiabilité/UX (snapshots, firewall, backups +20 %). Hausses de prix avril + juin 2026, CAX11 souvent indisponible — [source](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/). |
+| IONOS VPS XS (1 vCPU / 1 Go) | 1 €/mois (+ 10 € de setup) | Aucun | Trop juste pour web + worker + Postgres (1 Go) : possible seulement en mode `sync` + swap. |
+| Contabo / OVH VPS | ≈ 4,5 €/mois (4 vCPU / 6 Go) | Aucun | Beaucoup de ressources, réputation réseau/support plus variable. |
+| Fly.io (2 machines shared-cpu-1x + volume 1 Go) | ≈ 4–5 $/mois | Aucun si pas d'auto-stop | Postgres à héberger toi-même (Fly Postgres non managé) ou Neon. Plus cher qu'un VPS pour le même résultat. |
+
+Stack VPS type : Caddy (TLS Let's Encrypt sur `IP.sslip.io`, `proxy_buffering` inutile — Caddy streame les SSE nativement) → `app:8080` ; `worker` ; `postgres:16` avec volume ; volume partagé `exports` monté dans `app` et `worker` ; `pg_dump` nocturne vers Cloudflare R2 / Backblaze B2 (10 Go gratuits).
+
+### D. Options loufoques mais fonctionnelles
+
+| Option | Coût | Cold start | Notes |
+|---|---|---|---|
+| **Monolithe SQLite** : `NODE_ENV=production` + SQLite + `QUEUE_DRIVER=sync` dans **un seul conteneur** | 0 € (Koyeb/Render free) ou ≈ 2 $ (Fly + volume) | selon PaaS | Le code sait déjà tourner sur SQLite (toute la suite de tests, 32 migrations et la queue passent dessus). Il faut : passer `better-sqlite3` en `dependencies`, et rendre le choix de connexion configurable (aujourd'hui `NODE_ENV=test` est le seul déclencheur). Zéro Postgres à héberger, backup = copier un fichier. Sérieusement viable pour l'usage perso. |
+| **Vieux smartphone Android** + Termux (Node 24, Postgres) + Tailscale Funnel | 0 € | Aucun | Toujours branché, UPS intégré (batterie), ARM64. Termux limite les process en arrière-plan (désactiver l'optimisation batterie). Plus solide qu'il n'y paraît pour 5 testeurs. |
+| **GitHub Codespaces** (120 core-h/mois gratuites) + port forwarding public | 0 € | Se suspend après 30 min | Postgres en service devcontainer. Adapté à des démos ponctuelles, pas à une beta. |
+| **Synology/QNAP NAS** Container Manager + Funnel | 0 € si tu as déjà le NAS | Aucun | Idem self-host maison, avec snapshots Btrfs pour Postgres. |
+| **Oracle Always Free en PAYG** | 0 € tant qu'on reste dans le Free | Aucun | Variante « pro » de B : plus de récupération idle, 4 OCPU / 24 Go, mais toute erreur de dimensionnement se facture. |
+| Une seule VM + **Tailscale Funnel pour les testeurs et `tailscale serve` pour l'admin** | 0 € | Aucun | Sépare l'exposition publique (candidats) de l'espace conseiller/admin (privé au tailnet). Utile pour une beta sécurisée sans WAF. |
+
+---
+
+## Phase 3 — Recommandations, travail préparatoire, checklist
+
+### 3.1 Recommandations
+
+**Scénario 1 — usage personnel : Render Free (web, build natif) + Neon Free, mono-process (`QUEUE_DRIVER=sync`).**
+0 €, sans carte bancaire, ~1 min de cold start acceptée. Config : `NODE_ENV=production`, `HOST=0.0.0.0`, `PORT=10000`, `QUEUE_DRIVER=sync`, `SESSION_DRIVER=cookie`, `DB_URL=<Neon pooled>` (après le correctif 3.2-2), `AI_PROVIDER=mistral` (plan Experiment), `MAIL_PROVIDER=console` (ou `resend` vers ta propre adresse), `NODE_OPTIONS=--max-old-space-size=384`. Si le cold start d'une minute te lasse : Koyeb Free (réveil en secondes, image Docker du repo), même config.
+
+**Scénario 2 — beta fermée (toujours allumé) : une VM unique en `docker-compose` (Postgres + web + worker + Caddy), TLS sur `IP.sslip.io`.**
+VM = **Oracle Always Free A1 (0 €)** si tu obtiens une instance (sinon **netcup ≈ 3,35 €/mois** ou Hetzner CX23 ≈ 5,5 €). Un seul hôte règle d'un coup : pas de cold start, PDF partagés entre web et worker, SSE côté web, backups simples. Tailscale Funnel reste l'alternative si tu préfères ne pas exposer d'IP publique (attention aux ports 443/8443/10000). **Prévoir ~7 €/an pour un domaine** si tu veux que les testeurs reçoivent les e-mails d'onboarding via Resend ; sinon `MAIL_PROVIDER=console` et envoi manuel des liens (ou provider SMTP à ajouter).
+
+### 3.2 Travail préparatoire manquant dans le repo
+
+Bloquants (aucun déploiement ne fonctionne sans) :
+
+1. **Chemins SSR et manifest** — `config/inertia.ts` → `bundle: 'ssr/ssr.js'` ; `config/vite.ts` → `manifestFile: 'public/assets/.vite/manifest.json'` (ou supprimer les deux clés pour reprendre les défauts). Vérifié : passe de 500 à 200.
+2. **Connection string** — ajouter `DB_URL` (ou `DATABASE_URL`) en `Env.schema.string.optional()` dans `start/env.ts`, rendre `DB_HOST/DB_PORT/DB_USER/DB_DATABASE` optionnels quand l'URL est fournie, et ne passer `connectionString` à `pg` que si définie. Aligner `render.yaml`.
+3. **SSL Postgres configurable** — `DB_SSL=true|false` (défaut `true` en prod hors localhost) ; sans quoi `docker-compose` et tout Postgres local échouent.
+4. **`ADMIN_PASSWORD` dans une migration** — déplacer le contenu de `1778062253238_create_seed_users_table.ts` dans `admin_seeder.ts` (déjà idempotent), retirer le second compte en dur, et rendre la migration no-op. Les migrations ne doivent dépendre d'aucun secret.
+5. **Chemin des jobs** — dans `config/queue.ts`, résoudre via `app.makePath('app/jobs/**/*.js')` (racine `build/` en prod) au lieu d'un glob relatif au `cwd`.
+
+Nécessaires pour un hébergement sain :
+
+6. **Healthcheck** — aucune route `/health` ni `/up`. Ajouter `GET /health` (hors `guest`/`auth`) qui ping la DB (`@adonisjs/core/health`, `DbCheck`) ; l'utiliser dans `HEALTHCHECK` Docker, compose, PaaS, et un pinger externe.
+7. **`trustProxy`** — `config/app.ts` → `trustProxy: () => true` (ou `proxyAddr.compile('uniquelocal')`) pour que `request.protocol()` renvoie `https` derrière Render/Koyeb/Caddy/Funnel. En complément, une variable `APP_URL` pour construire les liens d'onboarding au lieu de dériver de la requête (déjà suggéré dans `docs/ONBOARDING.md`).
+8. **Transmit** — `pingInterval: '30s'` dans `config/transmit.ts` (keep-alive à travers les proxys). Documenter que les broadcasts du worker n'atteignent pas le navigateur sans transport Redis ; ou déplacer les broadcasts vers une notification persistée relue par Inertia.
+9. **Stockage des PDF** — chemin dérivé de `app.tmpPath('exports')` (pas `process.cwd()`), volume partagé `exports` dans le compose, et à terme `@adonisjs/drive` (S3/R2) pour les PaaS multi-services.
+10. **`docker-compose.prod.yml`** — image depuis le registre (pas `build:`), service `caddy` (TLS sslip.io), volume `exports` monté dans `app` et `worker`, `restart: unless-stopped`, `healthcheck` sur `/health`, migrations en service one-shot (`command: migrate`) plutôt qu'à chaque boot, `mem_limit`, service `backup` (`pg_dump` cron → R2/B2). Ajouter un mode `migrate` à `docker/entrypoint.sh`.
+11. **Dockerfile** — `ENV NODE_ENV=production HOST=0.0.0.0`, `USER node`, `HEALTHCHECK`, `--ignore-scripts` ou `pnpm install --frozen-lockfile --config.confirmModulesPurge=false` avec `python3 make g++` dans le stage builder si `better-sqlite3` n'a pas de prebuilt musl (à valider par un premier build, ou passer sur `node:24-slim`). Retirer `@google/genai` (inutilisé) pour alléger.
+12. **CI de build d'image** — job GitHub Actions `docker/build-push-action` vers **GHCR** (gratuit pour un repo public ; 500 Mo de stockage pour un privé sur le plan Free), tags `sha` + `latest`, multi-arch `linux/amd64,linux/arm64` (Oracle A1, Raspberry Pi). Le VPS/Koyeb ne fait alors que `docker compose pull && up -d`.
+13. **Env** — compléter `.env.example` (cf. 1.4), corriger `TZ`, ajouter `.env.production.example`, ajouter `packageManager: "pnpm@10.18.3"` et `engines.node: ">=24"` dans `package.json`.
+14. **Clé Mistral côté client** — supprimer `VITE_MISTRAL_API_KEY` et faire passer OCR/suggestions par des endpoints serveur (la clé reste secrète, le quota est protégé, le rate-limit est géré au même endroit que le job).
+15. **`QUEUE_DRIVER=redis`** — retirer de l'enum (ou ajouter l'adapter) pour éviter un crash silencieux.
+16. **E-mail sans domaine** — décider : domaine (~7 €/an) + Resend, ou provider SMTP (`nodemailer`, Brevo 300/j ou Gmail 500/j), ou `console` documenté comme mode beta.
+17. **Docs** — mettre à jour `docs/clever-cloud.md` (workflow/script/`POSTGRESQL_ADDON_*` inexistants) ou la retirer, corriger les liens morts de `docs/README.md`, aligner `render.yaml` (plans free) ou le retirer.
+
+### 3.3 Checklist post-déploiement
+
+Boot & rendu
+
+- [ ] `GET /health` → 200 (après 3.2-6) ; les logs ne montrent ni `E_MISSING_ENV` ni `ERR_MODULE_NOT_FOUND`.
+- [ ] `GET /` → 200, le HTML source contient le contenu SSR (pas un `<div id="app">` vide), aucun 404 sur `/assets/*`.
+- [ ] `node ace migration:status` : toutes les migrations `migrated`, tables `queue_jobs` / `queue_schedules` présentes.
+- [ ] Pas d'avertissement `No jobs found for locations` dans les logs (web et worker).
+- [ ] RSS du process web < 400 Mo après 10 pages ; aucun redémarrage OOM sur 24 h.
+
+Sécurité & réseau
+
+- [ ] `APP_KEY` généré (`node ace generate:key`), `ADMIN_PASSWORD` unique, `NODE_ENV=production`.
+- [ ] Cookie `adonis-session` avec `Secure; HttpOnly; SameSite=Lax` ; HSTS présent ; `X-Frame-Options: DENY`.
+- [ ] Formulaires POST OK derrière le proxy (CSRF/XSRF cookie) ; connexion persistante après redémarrage du serveur (session cookie).
+- [ ] `grep -r "MISTRAL" build/public/assets/` ne remonte **aucune clé** (après 3.2-14).
+- [ ] Lien d'onboarding généré en **https://** avec le bon hôte (après 3.2-7).
+
+Fonctionnel
+
+- [ ] Connexion super admin → création organisation / conseiller / candidat.
+- [ ] E-mail d'onboarding reçu (Resend) ou lien visible dans les logs (`console`), activation OK.
+- [ ] Exercice terminé → ligne dans `queue_jobs` → traitée par le worker (ou inline en `sync`) → `exercise_results.qualitative_analysis` rempli ; en cas de rate-limit Mistral, le job est retenté (2 fois).
+- [ ] Export PDF → `completed` → téléchargement OK depuis le web (fichier trouvé : disque partagé) ; badge/liste mis à jour (SSE en `sync`, ou après rechargement en mode worker).
+- [ ] Export ZIP dossier streamé sans erreur.
+- [ ] Onglet ouvert 5 min : `/__transmit/events` reste connecté ou se reconnecte sans erreur console.
+
+Exploitation
+
+- [ ] Scénario 1 : premier hit après veille < 90 s ; Neon se réveille (< 2 s) ; quota CU-h Neon en fin de mois < 100.
+- [ ] Scénario 2 : uptime monitor externe (UptimeRobot / cron-job.org, gratuit) sur `/health`, alerte e-mail.
+- [ ] Backup `pg_dump` exécuté et **restauration testée** sur une base vide.
+- [ ] `docker compose logs` / logs PaaS en `LOG_LEVEL=info`, rotation configurée (`max-size` sur le driver json-file).
+- [ ] Procédure de mise à jour testée : `pull` → `migrate` → `up -d`, rollback = image précédente + `migration:rollback` si nécessaire.
+
+---
+
+### Sources (tarifs et limites, septembre 2026)
+
+- Render free tier : [render.com/articles](https://render.com/articles/platforms-with-a-real-free-tier-for-developers-in-2026), [justinmckelvey.com](https://justinmckelvey.com/blog/is-render-free), [bex.co](https://bex.co/blog/2026/09/23/render-free-postgres-30-day-expiry)
+- Koyeb free tier : [koyeb.com/docs/faqs/pricing](https://www.koyeb.com/docs/faqs/pricing), [srvrlss.io](https://www.srvrlss.io/provider/koyeb/)
+- Neon free plan : [neon.com/faqs](https://neon.com/faqs/free-plan-limits-and-quotas), [neon.com/pricing](https://neon.com/pricing)
+- Supabase free plan : [supabase.com/docs project pausing](https://supabase.com/docs/guides/platform/free-project-pausing)
+- Google Cloud Run : [cloud.google.com/run/pricing](https://cloud.google.com/run/pricing)
+- Fly.io : [fly.io/docs/about/pricing](https://fly.io/docs/about/pricing/), [saaspricepulse.com](https://www.saaspricepulse.com/blog/flyio-free-tier-2026)
+- Oracle Always Free : [docs.oracle.com](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), [InfoQ (juin 2026)](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/)
+- Hetzner : [bitdoze.com](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/), [docs.hetzner.com price adjustment](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/)
+- VPS pas chers : [sliplane.io](https://sliplane.io/blog/top-5-cheap-vps-providers), [netcup VPS lite](https://www.netcup.com/en/server/vps-lite)
+- Tailscale Funnel : [tailscale.com/docs](https://tailscale.com/docs/features/tailscale-funnel)
+- Cloudflare quick tunnels : [flaviocopes.com](https://flaviocopes.com/cloudflare-quick-tunnels/)
+- ngrok free : [ngrok.com/docs free plan limits](https://ngrok.com/docs/pricing-limits/free-plan-limits)
+- Resend : [nuntly.com](https://nuntly.com/resend-pricing), [resend.com quotas](https://resend.com/docs/knowledge-base/account-quotas-and-limits)
+- Mistral Experiment : [pricepertoken.com](https://pricepertoken.com/endpoints/mistral/free)
