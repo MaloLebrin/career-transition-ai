@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react'
 import React from 'react'
+import { rateLimitError } from '#shared/helpers/rate_limit'
 import PublicLayout from '../../components/layout/PublicLayout'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
@@ -20,6 +21,7 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
     e.preventDefault()
     post(`/onboarding/${token}`)
   }
+  const throttled = rateLimitError(errors)
 
   return (
     <>
@@ -42,6 +44,11 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {throttled && (
+                <p role="alert" className="text-sm text-rose-600 font-medium">
+                  {throttled}
+                </p>
+              )}
               <Input
                 label="Mot de passe"
                 type="password"

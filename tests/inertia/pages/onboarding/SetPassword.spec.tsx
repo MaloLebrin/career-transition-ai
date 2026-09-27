@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 
+import { RATE_LIMIT_ERROR_KEY } from '#shared/helpers/rate_limit'
 import SetPassword from '~/pages/onboarding/SetPassword'
 import { formSubmissions, resetInertiaMock, setInertiaOutcome } from '../../support/inertia_mock'
 import { renderWithUser } from '../../support/render'
@@ -46,5 +47,21 @@ describe('SetPassword (onboarding)', () => {
 
     expect(screen.getByText('Trop court')).toBeInTheDocument()
     expect(screen.getByText('Ne correspond pas')).toBeInTheDocument()
+  })
+
+  test('affiche le refus de rate limiting (trop de tentatives)', async () => {
+    setInertiaOutcome({
+      errors: { [RATE_LIMIT_ERROR_KEY]: 'Trop de tentatives. Réessayez dans une minute.' },
+    })
+    const { user } = renderWithUser(<SetPassword token="t" userName="Camille" />)
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    await user.type(screen.getByPlaceholderText('Minimum 8 caractères'), 'SuperSecret1')
+    await user.type(screen.getByPlaceholderText('Repétez le mot de passe'), 'SuperSecret1')
+    await user.click(screen.getByRole('button', { name: /Créer mon mot de passe/ }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Trop de tentatives. Réessayez dans une minute.'
+    )
   })
 })

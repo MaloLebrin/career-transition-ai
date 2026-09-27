@@ -120,11 +120,26 @@ router.get('/health', async ({ response }) => {
 
 > ✅ Appliqué (issue #12) : `start/health.ts` + `HealthChecksController`. La réponse est filtrée (`app/utils/health_report.ts`) : `isHealthy`, `status`, `finishedAt` et le nom/statut de chaque check — ni `debugInfo`, ni message d'erreur `pg` (loggé côté serveur en cas de 503).
 
-### 0.6 Reverse proxy, SSE keep-alive
+### 0.6 Reverse proxy, SSE keep-alive, rate limiting
 
 `config/app.ts` (objet `http`) : `trustProxy: () => true` — l'app n'est jamais exposée sans proxy dans les deux scénarios ; les liens d'onboarding passent alors en `https://`.
 
 `config/transmit.ts` : `pingInterval: '30s'`.
+
+Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de `X-Forwarded-For`, écrite par le client : elle ne sert à aucune décision de sécurité. Le rate limiting (ci-dessous) utilise `clientIp()` (`app/utils/client_ip.ts`), soit l'entrée la plus à **droite**, celle que le proxy ajoute (Render) ou réécrit (Caddy). Un seul proxy doit donc se trouver devant l'app ; avec deux proxys chaînés (ex. CDN devant Caddy), la clé deviendrait l'IP du premier proxy et tous les clients partageraient un compteur.
+
+#### Rate limiting des endpoints publics
+
+`@adonisjs/limiter` (issue #23), limites définies dans `start/limiter.ts` :
+
+| Route | Limite | Clé |
+|---|---|---|
+| `POST /auth/login` | 5 / minute | IP + e-mail (normalisé) |
+| `POST /auth/register` | 3 / heure | IP |
+| `POST /contact-requests` | 3 / heure (2 e-mails Resend par demande) | IP |
+| `POST /onboarding/:token` | 10 / minute | IP |
+
+Au-delà : 429 avec `Retry-After` et `X-RateLimit-*`. Une requête Inertia reçoit à la place un redirect back (303) avec `flash.error` et `errors.rateLimit` (`app/exceptions/handler.ts`). Store `memory` (`config/limiter.ts`) : les compteurs sont propres au process web et repartent à zéro au redémarrage. Avec plusieurs instances web, passer au store `database`.
 
 ### 0.7 Dockerfile et entrypoint (scénario 2)
 

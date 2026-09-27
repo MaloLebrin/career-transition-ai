@@ -124,6 +124,8 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 
 Ordre standard : `auth()` → middleware de rôle.
 
+Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding` (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
+
 ---
 
 ## Conventions impératives

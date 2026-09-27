@@ -56,6 +56,11 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
   teardown: [],
 }
 
+async function clearRateLimits() {
+  const { default: limiter } = await import('@adonisjs/limiter/services/main')
+  await limiter.clear()
+}
+
 /**
  * Configure suites by tapping into the test suite instance.
  * Learn more - https://japa.dev/docs/test-suites#lifecycle-hooks
@@ -67,6 +72,11 @@ export const configureSuite: Config['configureSuite'] = (suite) => {
     // transaction globale leur serait invisible. Isolation par `truncateDb()`
     // (tests/utils/db.ts) dans chaque groupe.
     suite.setup(() => testUtils.httpServer().start())
+    // Rate limiting (`start/limiter.ts`) : store mémoire partagé par tout le
+    // process et toutes les requêtes viennent de 127.0.0.1 — sans remise à
+    // zéro, les connexions d'un test épuiseraient le quota du suivant.
+    suite.onGroup((group) => group.each.setup(() => clearRateLimits()))
+    suite.onTest((t) => t.setup(() => clearRateLimits()))
   } else if (suite.name === 'integration') {
     suite.setup(() => testUtils.db().withGlobalTransaction())
   }
