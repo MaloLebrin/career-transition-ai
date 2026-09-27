@@ -11,6 +11,11 @@ export default defineConfig({
    */
   ssr: {
     enabled: true,
-    bundle: 'build/ssr/ssr.js',
+    /**
+     * Chemin résolu relativement à la racine de l'app, qui est `build/` en
+     * production : ne jamais le préfixer par `build/` (→ `build/build/…`,
+     * ERR_MODULE_NOT_FOUND et 500 sur toutes les pages).
+     */
+    bundle: 'ssr/ssr.js',
   },
 })
