@@ -23,6 +23,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 ## Ops / Runbooks
 
+- **[Hébergement à coût minimal](hosting.md)** — analyse des besoins réels (process, DB, env, SSE, disque), options gratuites / quasi-gratuites par scénario, travail préparatoire et checklist post-déploiement.
 - **[Déploiement Clever Cloud](clever-cloud.md)** — build, run, worker, migrations, CI GitHub Actions.
 - **[Runbook](RUNBOOK.md)** — procédures et incidents courants (DB, queue, mail, IA, seeds).
 - **[Checklist prod](PRODUCTION_CHECKLIST.md)** — TODOs avant mise en production.
