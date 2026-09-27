@@ -45,6 +45,71 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
 
+  # Test de fumée du build de production : `build` ne fait que compiler, et les
+  # suites de tests tournent sur les sources. Ici on démarre `build/` comme en
+  # production (NODE_ENV=production, dépendances de prod seules, hors du dépôt)
+  # et on échoue si `/health`, `/` ou `/auth/login` ne répondent pas 200 avec
+  # le rendu SSR, si un asset du manifest manque, ou si les logs du serveur ou
+  # du worker contiennent une erreur ou « No jobs found for locations ».
+  # Voir scripts/smoke_prod_build.mjs.
+  smoke-prod-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    # Environnement de production minimal. La base reprend les identifiants du
+    # service `postgres_test` / `.env.test` ; le reste est propre à ce job
+    # (NODE_ENV=production, session cookie, queue database, LOG_LEVEL=info pour
+    # voir l'avertissement de jobs introuvables).
+    env:
+      NODE_ENV: production
+      TZ: UTC
+      PORT: 3333
+      HOST: 127.0.0.1
+      APP_KEY: smoke-test-only-app-key-not-a-secret
+      LOG_LEVEL: info
+      SESSION_DRIVER: cookie
+      QUEUE_DRIVER: database
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: test
+      DB_PASSWORD: test
+      DB_DATABASE: test
+      DB_SSL: false
+      AI_PROVIDER: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      # Copie hors du dépôt : depuis `build/`, Node remonterait jusqu'au
+      # `node_modules` racine et masquerait une dépendance de dev importée au
+      # runtime. `pnpm install --prod` reproduit l'installation de production.
+      - name: Installer le build comme en production
+        run: |
+          cp -r build "$RUNNER_TEMP/app"
+          cd "$RUNNER_TEMP/app" && pnpm install --prod --frozen-lockfile
+      - name: Migrations depuis le build
+        working-directory: ${{ runner.temp }}/app
+        run: node ace.js migration:run --force
+      - name: Test de fumée (serveur, pages SSR, assets, worker)
+        run: node scripts/smoke_prod_build.mjs --app-dir="$RUNNER_TEMP/app"
+
   # La matrice n'est pas écrite à la main : `scripts/ci_test_shards.mjs` la
   # dérive de `tests/functional/` et équilibre les specs au fichier près. Un
   # nouveau répertoire de tests est donc shardé sans toucher à ce fichier — une

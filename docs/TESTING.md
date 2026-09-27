@@ -66,14 +66,14 @@ test comme chez un futur appelant transactionnel.
 
 ## Organisation des specs (calquée sur boat-management)
 
-| Où                                       | Quoi                                                                    |
-| ---------------------------------------- | ----------------------------------------------------------------------- |
-| `tests/unit/<miroir de app/>`            | logique pure : validateurs, middlewares (faux contexte), mappers, DTOs  |
-| `tests/unit/shared/`                     | helpers de `shared/` côté serveur (prompts IA, cas d'usage…)            |
-| `tests/integration/{services,jobs,…}/`   | services, jobs, modèles qui touchent la base                            |
+| Où                                       | Quoi                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/unit/<miroir de app/>`            | logique pure : validateurs, middlewares (faux contexte), mappers, DTOs                                                                |
+| `tests/unit/shared/`                     | helpers de `shared/` côté serveur (prompts IA, cas d'usage…)                                                                          |
+| `tests/integration/{services,jobs,…}/`   | services, jobs, modèles qui touchent la base                                                                                          |
 | `tests/functional/<domaine>/<ressource>` | routes HTTP de bout en bout : un fichier par ressource, un dossier par domaine (`auth`, `candidat`, `conseiller`, `admin`, `access`…) |
-| `tests/inertia/`                         | composants, pages, hooks et helpers React (Vitest)                      |
-| `tests/support/`                         | helpers partagés des suites Japa (ci-dessous)                           |
+| `tests/inertia/`                         | composants, pages, hooks et helpers React (Vitest)                                                                                    |
+| `tests/support/`                         | helpers partagés des suites Japa (ci-dessous)                                                                                         |
 
 ### Client HTTP des tests `functional`
 
@@ -84,7 +84,10 @@ sans rejouer le formulaire de login.
 ```ts
 test('le conseiller voit sa liste', async ({ client, assert }) => {
   const advisor = await createAdvisor()
-  const response = await client.get('/dashboard/conseiller/employees').loginAs(advisor).withInertia()
+  const response = await client
+    .get('/dashboard/conseiller/employees')
+    .loginAs(advisor)
+    .withInertia()
   assertPage(assert, response, 'dashboard/conseiller/employees/Index', ['employees'])
 })
 ```
@@ -97,11 +100,11 @@ test('le conseiller voit sa liste', async ({ client, assert }) => {
 
 ### `tests/support/`
 
-| Fichier           | Rôle                                                                                   |
-| ----------------- | -------------------------------------------------------------------------------------- |
+| Fichier           | Rôle                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `actors.ts`       | `createAdvisor()`, `createAdmin()`, `createSuperAdmin()`, `createCandidate()`… — rôle toujours explicite (la factory en tire un au hasard) |
-| `inertia_page.ts` | `assertPage()` : composant épinglé + présence des props attendues                      |
-| `validation.ts`   | `assertFieldErrors()`, `assertNoFieldErrors()`                                          |
+| `inertia_page.ts` | `assertPage()` : composant épinglé + présence des props attendues                                                                          |
+| `validation.ts`   | `assertFieldErrors()`, `assertNoFieldErrors()`                                                                                             |
 | `http_context.ts` | `makeCtx()` / `makeNext()` : faux `HttpContext` qui **enregistre** redirections, refus et appels d'auth, pour les specs unit de middleware |
 
 Les journaux de `makeCtx()` sont des références vivantes (tableaux, objets compteurs), jamais
@@ -160,17 +163,43 @@ privé de son `.spec.ts`. Deux conséquences :
 
 ## Les autres jobs de la CI
 
-| Job             | Commande            | Note                                                          |
-| --------------- | ------------------- | ------------------------------------------------------------- |
-| `lint`          | `pnpm lint`         |                                                               |
-| `typecheck`     | `pnpm typecheck`    | `tsconfig.json` exclut `tests/` : les specs ne sont pas typés |
-| `build`         | `pnpm run build`    | `node ace build` — serveur + assets Vite                      |
-| `test-backend`  | voir ci-dessus      | agrégation des shards                                         |
-| `test-frontend` | `pnpm test:inertia` | Vitest + Testing Library, sans base                           |
+| Job                | Commande                            | Note                                                          |
+| ------------------ | ----------------------------------- | ------------------------------------------------------------- |
+| `lint`             | `pnpm lint`                         |                                                               |
+| `typecheck`        | `pnpm typecheck`                    | `tsconfig.json` exclut `tests/` : les specs ne sont pas typés |
+| `build`            | `pnpm run build`                    | `node ace build` — serveur + assets Vite                      |
+| `test-backend`     | voir ci-dessus                      | agrégation des shards                                         |
+| `test-frontend`    | `pnpm test:inertia`                 | Vitest + Testing Library, sans base                           |
+| `smoke-prod-build` | `node scripts/smoke_prod_build.mjs` | démarre le build de prod, voir ci-dessous                     |
 
 `pnpm/action-setup@v4` est appelé **sans** `version:` : l'action lit `packageManager` de
 `package.json`, qui reste la source unique de vérité (avec le `Dockerfile`). Les deux en même
 temps font échouer le setup (« Multiple versions of pnpm specified »).
+
+### Test de fumée du build de production
+
+Aucune suite ne démarre `build/` : le bundle SSR résolu sous `build/build/…` (500 sur toutes les
+pages) ou les jobs de queue introuvables depuis `build/` sont passés au travers d'une CI verte. Le
+job `smoke-prod-build` construit l'app, la copie **hors du dépôt** (sinon Node remonte au
+`node_modules` racine et masque une dépendance de dev importée au runtime), installe les seules
+dépendances de prod, joue les migrations puis lance `scripts/smoke_prod_build.mjs`, qui échoue si :
+
+- `GET /health` ne répond pas 200 ;
+- `GET /` ou `GET /auth/login` ne répond pas 200 avec la racine Inertia rendue par le SSR ;
+- un asset `/assets/…` référencé par ces pages (manifest Vite) ne répond pas 200 ;
+- le worker de queue s'arrête, ou les logs serveur/worker contiennent une erreur (`level >= 50`)
+  ou « No jobs found for locations ».
+
+En local, avec la base de test démarrée (`pnpm test:db:up`) et les variables du bloc `env:` du job
+exportées (`NODE_ENV=production`…) :
+
+```bash
+pnpm build
+(cd build && node ace.js migration:run --force)
+node scripts/smoke_prod_build.mjs --app-dir=build
+```
+
+Les helpers du script sont couverts par `tests/unit/hygiene/smoke_prod_build.spec.ts`.
 
 ## Couverture
 
