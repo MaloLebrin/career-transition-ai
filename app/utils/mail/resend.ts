@@ -1,4 +1,6 @@
 import type { MailMessage } from '#services/mail/types'
+import env from '#start/env'
+import app from '@adonisjs/core/services/app'
 
 export function toResendAddress(addr: { email: string; name?: string }): string {
   return addr.name ? `${addr.name} <${addr.email}>` : addr.email
@@ -7,17 +9,18 @@ export function toResendAddress(addr: { email: string; name?: string }): string 
 type TestEvent = 'delivered' | 'bounced' | 'complained' | 'suppressed'
 
 export function resolveDevTestMode(): boolean {
-  const raw = String(process.env.MAIL_RESEND_TEST_MODE ?? '')
+  // Booléen validé au boot, ou chaîne posée ensuite via `env.set`
+  const raw = String(env.get('MAIL_RESEND_TEST_MODE') ?? '')
     .trim()
     .toLowerCase()
-  if (raw === 'true') return true
-  if (raw === 'false') return false
+  if (raw === 'true' || raw === '1') return true
+  if (raw === 'false' || raw === '0') return false
   // Safe default outside production: avoid accidental real sends in dev/test
-  return process.env.NODE_ENV !== 'production'
+  return !app.inProduction
 }
 
 export function resolveDevTestEvent(): TestEvent {
-  const raw = String(process.env.MAIL_RESEND_TEST_EVENT ?? 'delivered')
+  const raw = String(env.get('MAIL_RESEND_TEST_EVENT') || 'delivered')
     .trim()
     .toLowerCase()
   switch (raw) {
@@ -34,7 +37,7 @@ export function resolveDevTestEvent(): TestEvent {
 }
 
 export function resolveDevTestTo(message: MailMessage): string {
-  const explicit = String(process.env.MAIL_RESEND_TEST_TO ?? '')
+  const explicit = String(env.get('MAIL_RESEND_TEST_TO') || '')
     .trim()
     .toLowerCase()
   if (explicit) return explicit
@@ -51,7 +54,7 @@ export function resolveDevTestTo(message: MailMessage): string {
 }
 
 export function resolveDevTestFrom(): string {
-  const explicit = String(process.env.MAIL_RESEND_TEST_FROM ?? '')
+  const explicit = String(env.get('MAIL_RESEND_TEST_FROM') || '')
     .trim()
     .toLowerCase()
   if (explicit) return explicit
@@ -59,7 +62,7 @@ export function resolveDevTestFrom(): string {
 }
 
 export function resolveResendApiKey(): string {
-  const key = String(process.env.RESEND_API_KEY ?? '').trim()
+  const key = String(env.get('RESEND_API_KEY') || '').trim()
   if (!key) {
     throw new Error('RESEND_API_KEY is required when MAIL_PROVIDER=resend.')
   }

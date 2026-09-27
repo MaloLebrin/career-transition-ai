@@ -275,6 +275,8 @@ Suivi des erreurs : Sentry si `SENTRY_DSN` (`config/error_tracking.ts`, `#servic
 
 Fichiers générés (PDF) : via Drive (`config/drive.ts`, `DRIVE_DISK=fs|s3`) et `#services/pdf_storage_service` — clé relative `exports/…` en base, jamais de chemin absolu ni de `node:fs` direct ; en test `drive.fake()` / `drive.restore()`. Purge nocturne `PurgeExpiredPdfExportsJob` (`start/scheduler.ts`).
 
+Variables d'env : déclarées dans `start/env_schema.ts` (+ `.env.example`, validé par `tests/unit/config/env_schema.spec.ts`), lues via `env.get` (`#start/env`) — jamais `process.env` dans `app/`, `config/`, `database/`, `start/` ; `NODE_ENV` via `app.inProduction`/`app.inTest`. En test : `overrideEnv`/`withEnv` (`#tests/utils/env`).
+
 Rétention de `queue_jobs` : `QUEUE_JOB_RETENTION` (`config/queue.ts`, 7 j succès / 30 j échecs, 1 000 par queue) — jamais `removeOnComplete: false`.
 
 Nouveau job → constantes de statut + contrainte CHECK + factory + seeder si visible en UI.

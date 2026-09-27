@@ -1,9 +1,19 @@
 import { MailService } from '#services/mail/mail_service'
+import env from '#start/env'
 import { inject } from '@adonisjs/core'
 
-const ADMIN_EMAIL = process.env.ADMIN_CONTACT_EMAIL ?? 'contact@francetransitioncarriere.fr'
-const FROM_EMAIL = process.env.MAIL_FROM_EMAIL ?? 'noreply@francetransitioncarriere.fr'
-const FROM_NAME = process.env.MAIL_FROM_NAME ?? 'France Transition Carrière'
+export const DEFAULT_ADMIN_CONTACT_EMAIL = 'contact@francetransitioncarriere.fr'
+export const DEFAULT_CONTACT_FROM_EMAIL = 'noreply@francetransitioncarriere.fr'
+export const DEFAULT_CONTACT_FROM_NAME = 'France Transition Carrière'
+
+/** Lu à l'envoi (et non au chargement du module) pour suivre `env`. */
+function resolveAddresses() {
+  return {
+    admin: env.get('ADMIN_CONTACT_EMAIL') || DEFAULT_ADMIN_CONTACT_EMAIL,
+    fromEmail: env.get('MAIL_FROM_EMAIL') || DEFAULT_CONTACT_FROM_EMAIL,
+    fromName: env.get('MAIL_FROM_NAME') || DEFAULT_CONTACT_FROM_NAME,
+  }
+}
 
 interface ContactRequestData {
   name: string
@@ -20,10 +30,11 @@ export class ContactRequestMailService {
 
   async sendAdminNotification(data: ContactRequestData): Promise<void> {
     const typeLabel = data.type === 'demo' ? 'Demande de démo' : 'Prise de contact'
+    const { admin, fromEmail, fromName } = resolveAddresses()
 
     await this.mailService.send({
-      from: { email: FROM_EMAIL, name: FROM_NAME },
-      to: { email: ADMIN_EMAIL, name: FROM_NAME },
+      from: { email: fromEmail, name: fromName },
+      to: { email: admin, name: fromName },
       subject: `[${typeLabel}] ${data.name} — ${data.organization ?? data.email}`,
       html: buildAdminHtml(data, typeLabel),
       text: buildAdminText(data, typeLabel),
@@ -33,9 +44,10 @@ export class ContactRequestMailService {
 
   async sendConfirmationToRequester(data: ContactRequestData): Promise<void> {
     const typeLabel = data.type === 'demo' ? 'demande de démo' : 'message'
+    const { fromEmail, fromName } = resolveAddresses()
 
     await this.mailService.send({
-      from: { email: FROM_EMAIL, name: FROM_NAME },
+      from: { email: fromEmail, name: fromName },
       to: { email: data.email, name: data.name },
       subject: `Votre ${typeLabel} a bien été reçu — France Transition Carrière`,
       html: buildConfirmationHtml(data, typeLabel),
