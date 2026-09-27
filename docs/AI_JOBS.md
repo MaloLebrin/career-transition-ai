@@ -88,7 +88,7 @@ En cas d’exception (clé invalide, réseau, etc.), le job enregistre un messag
 
 ## 5. Ce qui n’est **pas** ce job
 
-Les écrans **ciblage**, **import CV**, **cartographie** côté navigateur utilisent [`inertia/services/ai_service.ts`](../inertia/services/ai_service.ts), avec `VITE_AI_PROVIDER` (ex: `mistral`) et la clé associée (`VITE_MISTRAL_API_KEY` ou `VITE_GEMINI_API_KEY`) : ce sont des appels **client**, pas `AnalyzeExerciseQualitativeJob`.
+Les écrans **ciblage**, **import CV** et **cartographie** appellent des endpoints serveur authentifiés (`POST /dashboard/ai/cv`, `/dashboard/ai/skill-mapping`, `/dashboard/ai/targets` — `AiAssistController`, `#services/ai_assist_service`, limités par `throttleAi` à 20/min par utilisateur) via [`inertia/helpers/ai`](../inertia/helpers/ai/index.ts). Ils utilisent les mêmes `AI_PROVIDER` / `MISTRAL_API_KEY` que le job (`createServerAiClient`) ; aucune clé n'est embarquée dans le bundle. Appels synchrones (hors queue), contrairement à `AnalyzeExerciseQualitativeJob`.
 
 ---
 

@@ -39,25 +39,20 @@ const ProfilePage: React.FC<Props> = ({ employee, onSave, onBack }) => {
     if (!file) return
 
     setIsExtracting(true)
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const base64 = reader.result as string
-      const extracted = await extractCVData(base64, file.type)
-      if (extracted) {
-        setFormData((prev) => ({
-          ...prev,
-          name: extracted.name || prev.name,
-          currentRole: extracted.currentRole || prev.currentRole,
-          targetRole: extracted.suggestedTargetRole || prev.targetRole,
-          skills: extracted.skills || prev.skills,
-          summary: extracted.summary || prev.summary,
-          experiences: extracted.experiences || prev.experiences,
-          educations: extracted.educations || prev.educations,
-        }))
-      }
-      setIsExtracting(false)
+    const extracted = await extractCVData(file)
+    if (extracted) {
+      setFormData((prev) => ({
+        ...prev,
+        name: extracted.name || prev.name,
+        currentRole: extracted.currentRole || prev.currentRole,
+        targetRole: extracted.suggestedTargetRole || prev.targetRole,
+        skills: extracted.skills || prev.skills,
+        summary: extracted.summary || prev.summary,
+        experiences: extracted.experiences || prev.experiences,
+        educations: extracted.educations || prev.educations,
+      }))
     }
-    reader.readAsDataURL(file)
+    setIsExtracting(false)
   }
 
   const updateSkillLevel = (name: string, level: number) => {

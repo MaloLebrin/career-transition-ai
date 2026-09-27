@@ -4,6 +4,7 @@
  */
 
 export const controllers = {
+  AiAssist: () => import('#controllers/ai_assist_controller'),
   Auth: () => import('#controllers/auth_controller'),
   CandidatOnboarding: () => import('#controllers/candidat_onboarding_controller'),
   ContactRequests: () => import('#controllers/contact_requests_controller'),

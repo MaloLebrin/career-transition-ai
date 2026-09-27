@@ -1,74 +1,97 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-const deps = vi.hoisted(() => ({
-  client: {} as Record<string, unknown>,
-  extractCvDataFromMarkdown: vi.fn(),
-  extractSkillMappingFromText: vi.fn(),
-  suggestTargets: vi.fn(),
-}))
-
-vi.mock('../../../../inertia/helpers/ai/front_ai_client', () => ({
-  createFrontAiClient: () => deps.client,
-}))
-vi.mock('../../../../shared/helpers/ai/use_cases/extract_cv_from_markdown', () => ({
-  extractCvDataFromMarkdown: deps.extractCvDataFromMarkdown,
-}))
-vi.mock('../../../../shared/helpers/ai/use_cases/extract_skill_mapping', () => ({
-  extractSkillMappingFromText: deps.extractSkillMappingFromText,
-}))
-vi.mock('../../../../shared/helpers/ai/use_cases/suggest_targets', () => ({
-  suggestTargets: deps.suggestTargets,
-}))
-
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { AI_ASSIST_ROUTES } from '../../../../shared/constants/ai_assist'
 import {
   extractCVData,
   extractSkillMappingFromText,
   suggestTargets,
 } from '../../../../inertia/helpers/ai/index'
 
-describe('helpers IA front', () => {
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+describe('helpers IA front (endpoints serveur)', () => {
+  const fetchMock = vi.fn()
+
   beforeEach(() => {
-    deps.client = { provider: 'none' }
-    vi.clearAllMocks()
+    fetchMock.mockReset()
+    vi.stubGlobal('fetch', fetchMock)
+    document.cookie = 'XSRF-TOKEN=jeton%3Dxsrf'
   })
 
-  test('extractSkillMappingFromText et suggestTargets délèguent aux cas d’usage avec le client front', async () => {
-    deps.extractSkillMappingFromText.mockResolvedValue({ rows: [] })
-    deps.suggestTargets.mockResolvedValue({ companies: ['Acme'], sectors: [] })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+  })
 
-    expect(await extractSkillMappingFromText('texte')).toEqual({ rows: [] })
-    expect(deps.extractSkillMappingFromText).toHaveBeenCalledWith(deps.client, 'texte')
-
+  test('suggestTargets : POST JSON avec le jeton XSRF décodé', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ companies: ['Acme'], sectors: ['Industrie'] }))
     const profile = { skills: ['SQL'], targetRole: 'Data analyst' }
-    expect(await suggestTargets(profile)).toEqual({ companies: ['Acme'], sectors: [] })
-    expect(deps.suggestTargets).toHaveBeenCalledWith(deps.client, profile)
-  })
 
-  test('extractCVData : null sans fournisseur mistral ou sans OCR', async () => {
-    expect(await extractCVData('data:application/pdf;base64,QUJD', 'application/pdf')).toBeNull()
-    deps.client = { provider: 'mistral' }
-    expect(await extractCVData('QUJD', 'application/pdf')).toBeNull()
-    expect(deps.extractCvDataFromMarkdown).not.toHaveBeenCalled()
-  })
+    expect(await suggestTargets(profile)).toEqual({ companies: ['Acme'], sectors: ['Industrie'] })
 
-  test('extractCVData : OCR sur le base64 sans préfixe data-URL puis extraction', async () => {
-    const ocrToMarkdown = vi.fn().mockResolvedValue('# CV')
-    deps.client = { provider: 'mistral', ocrToMarkdown }
-    deps.extractCvDataFromMarkdown.mockResolvedValue({ name: 'Camille' })
-
-    expect(await extractCVData('data:application/pdf;base64,QUJD', 'application/pdf')).toEqual({
-      name: 'Camille',
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe(AI_ASSIST_ROUTES.TARGETS)
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('same-origin')
+    expect(init.headers).toMatchObject({
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': 'jeton=xsrf',
     })
-    expect(ocrToMarkdown).toHaveBeenCalledWith({ base64: 'QUJD', mimeType: 'application/pdf' })
-    expect(deps.extractCvDataFromMarkdown).toHaveBeenCalledWith(deps.client, '# CV')
-
-    await extractCVData('RAW64', 'image/png')
-    expect(ocrToMarkdown).toHaveBeenLastCalledWith({ base64: 'RAW64', mimeType: 'image/png' })
+    expect(JSON.parse(init.body)).toEqual(profile)
   })
 
-  test('extractCVData : OCR vide → null', async () => {
-    deps.client = { provider: 'mistral', ocrToMarkdown: vi.fn().mockResolvedValue(null) }
-    expect(await extractCVData('QUJD', 'image/png')).toBeNull()
-    expect(deps.extractCvDataFromMarkdown).not.toHaveBeenCalled()
+  test('extractSkillMappingFromText : renvoie le mapping du serveur', async () => {
+    const mapping = [{ mission: 'Clôture', activity: 'Rapprochements', proof: 'Délai' }]
+    fetchMock.mockResolvedValue(jsonResponse({ mapping }))
+
+    expect(await extractSkillMappingFromText('récit')).toEqual({ mapping })
+    expect(fetchMock.mock.calls[0][0]).toBe(AI_ASSIST_ROUTES.SKILL_MAPPING)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ text: 'récit' })
+  })
+
+  test('extractCVData : envoie le fichier en multipart, sans Content-Type forcé', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ data: { name: 'Camille' } }))
+    const file = new File(['%PDF'], 'cv.pdf', { type: 'application/pdf' })
+
+    expect(await extractCVData(file)).toEqual({ name: 'Camille' })
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe(AI_ASSIST_ROUTES.CV)
+    expect(init.body).toBeInstanceOf(FormData)
+    expect((init.body as FormData).get('cv')).toBeInstanceOf(File)
+    expect(init.headers).not.toHaveProperty('Content-Type')
+  })
+
+  test('résultats vides si le serveur refuse (429, 422…) ou si le réseau échoue', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Trop de requêtes' }, 429))
+    expect(await suggestTargets({ skills: [], targetRole: 'x' })).toEqual({
+      companies: [],
+      sectors: [],
+    })
+
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    expect(await extractSkillMappingFromText('récit')).toEqual({ mapping: [] })
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: null }))
+    expect(await extractCVData(new File(['x'], 'cv.png', { type: 'image/png' }))).toBeNull()
+  })
+
+  test('sans cookie XSRF : pas d’en-tête X-XSRF-TOKEN', async () => {
+    document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    fetchMock.mockResolvedValue(jsonResponse({ mapping: [] }))
+
+    await extractSkillMappingFromText('récit')
+
+    expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('X-XSRF-TOKEN')
+  })
+
+  test('aucun SDK ni clé fournisseur côté navigateur', async () => {
+    const source = await import('../../../../inertia/helpers/ai/index.ts?raw')
+    expect(source.default).not.toMatch(/mistralai|VITE_MISTRAL|import\.meta\.env/)
   })
 })

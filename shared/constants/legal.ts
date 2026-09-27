@@ -20,7 +20,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Mistral AI',
     purpose:
-      'Analyse des exercices et lecture des CV par intelligence artificielle. Le nom et l’e-mail du candidat sont retirés des analyses envoyées depuis nos serveurs.',
+      'Analyse des exercices, suggestions et lecture des CV importés par intelligence artificielle, depuis nos serveurs. Le nom et l’e-mail du candidat sont retirés des analyses ; un CV importé est transmis tel quel pour pré-remplir le profil.',
     location: 'France (UE)',
   },
   {

@@ -83,7 +83,7 @@ Sommaire :
 | `QUEUE_WORKER_QUEUES` / `QUEUE_NAMES` / `QUEUE_WORKER_CONCURRENCY` | `bin/dev-with-worker.mjs` | dev uniquement. |
 | `TZ` | Node | fuseau du process. |
 
-**Variables de build (Vite, embarquées dans le bundle navigateur)** : `VITE_AI_PROVIDER`, `VITE_MISTRAL_API_KEY`, `VITE_APP_NAME` (`inertia/helpers/ai/front_ai_client.ts`, `inertia/app.tsx`). Elles doivent être présentes **au moment de `node ace build`**, pas au runtime. ⚠️ `VITE_MISTRAL_API_KEY` expose la clé Mistral **en clair dans le JS public** (OCR d'import CV et suggestions de ciblage côté client) : n'importe qui peut l'extraire et consommer le quota. Les fallbacks `import.meta.env.AI_PROVIDER` / `AI_API_KEY` sont morts (Vite n'expose que le préfixe `VITE_`).
+**Variables de build (Vite, embarquées dans le bundle navigateur)** : `VITE_APP_NAME` seulement (`inertia/app.tsx`), présente **au moment de `node ace build`**. Aucune clé API : l'OCR des CV et les suggestions passent par `/dashboard/ai/*` avec `MISTRAL_API_KEY` côté serveur (anciennement `VITE_MISTRAL_API_KEY`, exposée en clair dans le JS public — corrigé, issue #18).
 
 **Écarts `.env.example` ↔ code** :
 
@@ -96,7 +96,7 @@ Sommaire :
 
 | Service | Usage dans le code | Free tier | Impact hébergement |
 |---|---|---|---|
-| **Mistral** (`@mistralai/mistralai`) | Serveur : job `analyze_exercise_qualitative_job` (queue `ai`). Client : OCR CV (`mistral-ocr-latest`), suggestions (`mistral-small-latest`) via `VITE_MISTRAL_API_KEY`. | Plan **Experiment** gratuit (rate-limité, ~1 Md tokens/mois, limites exactes dans la console, vérification téléphone) — [source](https://pricepertoken.com/endpoints/mistral/free). | Sortie HTTPS uniquement. Aucun webhook. Le job a `maxRetries: 2`, utile face au rate-limit. |
+| **Mistral** (`@mistralai/mistralai`) | Serveur : job `analyze_exercise_qualitative_job` (queue `ai`). Serveur aussi : OCR CV (`mistral-ocr-latest`) et suggestions (`mistral-small-latest`) via `/dashboard/ai/*`. | Plan **Experiment** gratuit (rate-limité, ~1 Md tokens/mois, limites exactes dans la console, vérification téléphone) — [source](https://pricepertoken.com/endpoints/mistral/free). | Sortie HTTPS uniquement. Aucun webhook. Le job a `maxRetries: 2`, utile face au rate-limit. |
 | `@google/genai` | **Dépendance non utilisée** (aucun import). | — | À retirer. |
 | **Resend** (`resend`) | Onboarding, notifications, formulaire contact. Provider `console` en repli (lien d'activation dans les logs). | 3 000 e-mails/mois, 100/jour, **1 domaine vérifié** — [source](https://nuntly.com/resend-pricing). | ⚠️ **Sans nom de domaine vérifié, Resend n'autorise l'envoi qu'à l'adresse de ton propre compte** (expéditeur `onboarding@resend.dev`). Pour inviter des testeurs par e-mail il faut soit un domaine (~5–10 €/an), soit un autre provider (ex. SMTP Brevo/Gmail via `nodemailer`, à implémenter : l'interface `MailProvider` est minimale), soit `MAIL_PROVIDER=console` et copier le lien depuis les logs. |
 | Paiement | **Aucun** (pas de Stripe/webhook). | — | Pas d'URL publique requise pour des webhooks. |
@@ -210,7 +210,7 @@ Nécessaires pour un hébergement sain :
 11. **Dockerfile** — `ENV NODE_ENV=production HOST=0.0.0.0`, `USER node`, `HEALTHCHECK`, `--ignore-scripts` ou `pnpm install --frozen-lockfile --config.confirmModulesPurge=false` avec `python3 make g++` dans le stage builder si `better-sqlite3` n'a pas de prebuilt musl (à valider par un premier build, ou passer sur `node:24-slim`). Retirer `@google/genai` (inutilisé) pour alléger.
 12. **CI de build d'image** — job GitHub Actions `docker/build-push-action` vers **GHCR** (gratuit pour un repo public ; 500 Mo de stockage pour un privé sur le plan Free), tags `sha` + `latest`, multi-arch `linux/amd64,linux/arm64` (Oracle A1, Raspberry Pi). Le VPS/Koyeb ne fait alors que `docker compose pull && up -d`.
 13. **Env** — compléter `.env.example` (cf. 1.4), corriger `TZ`, ajouter `.env.production.example`, ajouter `packageManager: "pnpm@10.18.3"` et `engines.node: ">=24"` dans `package.json`.
-14. **Clé Mistral côté client** — supprimer `VITE_MISTRAL_API_KEY` et faire passer OCR/suggestions par des endpoints serveur (la clé reste secrète, le quota est protégé, le rate-limit est géré au même endroit que le job).
+14. ~~**Clé Mistral côté client**~~ (fait, issue #18) — supprimer `VITE_MISTRAL_API_KEY` et faire passer OCR/suggestions par des endpoints serveur (la clé reste secrète, le quota est protégé, le rate-limit est géré au même endroit que le job).
 15. **`QUEUE_DRIVER=redis`** — retirer de l'enum (ou ajouter l'adapter) pour éviter un crash silencieux.
 16. **E-mail sans domaine** — décider : domaine (~7 €/an) + Resend, ou provider SMTP (`nodemailer`, Brevo 300/j ou Gmail 500/j), ou `console` documenté comme mode beta.
 17. **Docs** — mettre à jour `docs/clever-cloud.md` (workflow/script/`POSTGRESQL_ADDON_*` inexistants) ou la retirer, corriger les liens morts de `docs/README.md`, aligner `render.yaml` (plans free) ou le retirer.
@@ -230,7 +230,7 @@ Sécurité & réseau
 - [ ] `APP_KEY` généré (`node ace generate:key`), `ADMIN_PASSWORD` unique, `NODE_ENV=production`.
 - [ ] Cookie `adonis-session` avec `Secure; HttpOnly; SameSite=Lax` ; HSTS présent ; `X-Frame-Options: DENY`.
 - [ ] Formulaires POST OK derrière le proxy (CSRF/XSRF cookie) ; connexion persistante après redémarrage du serveur (session cookie).
-- [ ] `grep -r "MISTRAL" build/public/assets/` ne remonte **aucune clé** (après 3.2-14).
+- [x] `grep -r "MISTRAL" build/public/assets/` ne remonte **aucune clé** (3.2-14, issue #18).
 - [ ] Lien d'onboarding généré en **https://** avec le bon hôte (après 3.2-7).
 
 Fonctionnel
