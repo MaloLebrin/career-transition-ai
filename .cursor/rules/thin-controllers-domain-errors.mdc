@@ -1,0 +1,54 @@
+---
+description: Contrôleurs fins — requêtes et règles métier dans les services, erreurs dans app/exceptions/<domaine>_errors.ts, types dans shared/types
+globs:
+  - app/controllers/**/*.ts
+  - app/services/**/*.ts
+  - app/exceptions/**/*.ts
+  - shared/types/**/*.ts
+alwaysApply: false
+---
+
+# Contrôleurs fins et erreurs de domaine
+
+Repris de boat-management. Exemple de référence : `app/controllers/notes_controller.ts` +
+`app/services/notes_service.ts` + `app/exceptions/note_errors.ts`.
+
+## Contrôleur
+
+Un contrôleur fait, dans l'ordre : récupérer l'utilisateur (`auth.getUserOrFail()`) →
+charger la ressource **via le service** (scopée organisation) → valider (`request.validateUsing`) →
+appeler le service → flash + redirection (ou `inertia.render`).
+
+- **Pas de `Model.query()` / `.related().query()` dans un contrôleur** : garde
+  `tests/unit/hygiene/controllers_thin.spec.ts` (cliquet — on ne relève jamais une ligne de base,
+  on la baisse quand on migre un contrôleur).
+- Le service est injecté : `@inject()` sur le contrôleur + `constructor(private xService: XService)`.
+- Pas de `try/catch` pour traduire une erreur métier en réponse : `handler.ts` s'en charge.
+
+## Service (`app/services/<domaine>_service.ts`)
+
+- Toutes les lectures filtrent sur `user.organizationId`. Ressource d'une autre organisation →
+  erreur **404** (`XNotFoundError`), jamais 403 (ne pas confirmer l'existence).
+- Les rôles larges sont contrôlés par middleware de route (`routes-role-middleware.mdc`) ; les règles
+  plus fines (auteur, rôle précis que le middleware laisse passer) vivent ici et lèvent une erreur 403.
+- JSDoc sur les méthodes publiques.
+
+## Erreurs (`app/exceptions/<domaine>_errors.ts`)
+
+- Une classe par cas, **jamais définie inline** dans un contrôleur ou un service.
+- Elles étendent `DomainException` (`#exceptions/domain_exception`) avec `status` et un `code` `E_*` :
+  `handler.ts` les rend en flash + redirect back (Inertia) ou `{ message }` + statut (JSON).
+- Ajouter le `code` à `ignoreCodes` de `handler.ts` (erreur attendue, pas d'alerte monitoring).
+
+```ts
+export class NoteNotFoundError extends DomainException {
+  constructor(message: string = 'Note not found') {
+    super(message, { status: 404, code: 'E_NOTE_NOT_FOUND' })
+  }
+}
+```
+
+## Types (`shared/types/<domaine>/`)
+
+Les types d'entrée/sortie des services (`CreateXInput`, `UpdateXInput`…) vivent dans
+`shared/types/<domaine>/` — le front les réutilise. Jamais de type défini inline dans `app/`.
