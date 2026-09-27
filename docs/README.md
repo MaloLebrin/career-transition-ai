@@ -28,6 +28,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 - **[Déploiement Clever Cloud](clever-cloud.md)** — build, run, worker, migrations, CI GitHub Actions.
 - **[Runbook](RUNBOOK.md)** — procédures et incidents courants (DB, queue, mail, IA, seeds).
 - **[Checklist prod](PRODUCTION_CHECKLIST.md)** — TODOs avant mise en production.
+- **[RGPD](RGPD.md)** — sous-traitants et flux de données, opt-out Mistral, durées de conservation, procédures d’accès et d’effacement (`candidate:export`, `candidate:purge`).
 
 ## Qualité
 

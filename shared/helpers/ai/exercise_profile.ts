@@ -3,8 +3,13 @@ import type Education from '#models/education'
 import type Experience from '#models/experience'
 import type Skill from '#models/skill'
 
+/**
+ * Profil candidat envoyé au fournisseur IA (Mistral, cf. docs/RGPD.md).
+ *
+ * Pas de nom ni d'e-mail : le modèle n'en a pas besoin pour analyser un
+ * exercice, et un prompt ne doit pas identifier directement la personne.
+ */
 export interface EmployeeAiProfile {
-  name: string
   currentRole: string
   targetRole: string
   summary: string
@@ -58,7 +63,6 @@ export function buildEmployeeAiProfile(employee: EmployeeLoaded): EmployeeAiProf
   const educations = Array.isArray(employee.educations) ? employee.educations : []
 
   return {
-    name: toSafeString((employee as any).name),
     currentRole: toSafeString((employee as any).currentRole),
     targetRole: toSafeString((employee as any).targetRole),
     summary: toSafeString((employee as any).summary),
@@ -86,4 +90,67 @@ export function buildEmployeeAiProfile(employee: EmployeeLoaded): EmployeeAiProf
       description: toSafeString(edu?.description),
     })),
   }
+}
+
+/** Remplaçant des identifiants du candidat dans les données envoyées à l'IA. */
+export const AI_PSEUDONYM = '[candidat]'
+
+/** Particules de nom qu'on ne remplace pas seules (« des », « van »…). */
+const NAME_PARTICLES = new Set(['des', 'del', 'der', 'van', 'von', 'dos', 'das', 'les'])
+
+/** Longueur minimale d'un fragment de nom remplacé seul (évite « Li » dans « Lille »…). */
+const MIN_NAME_PART_LENGTH = 3
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Motifs à masquer pour un candidat : e-mail, nom complet puis chaque
+ * fragment du nom (prénom, nom de famille), du plus long au plus court pour
+ * que « Marie Martin » soit remplacé d'un bloc avant « Marie ».
+ */
+function identifierPatterns(identity: { name?: string | null; email?: string | null }): RegExp[] {
+  const name = (identity.name ?? '').trim()
+  const parts = name
+    .split(/[\s-]+/)
+    .filter((p) => p.length >= MIN_NAME_PART_LENGTH && !NAME_PARTICLES.has(p.toLowerCase()))
+  const names = [...new Set([name, ...parts].filter(Boolean))].sort((a, b) => b.length - a.length)
+  // L'e-mail d'abord : il contient souvent le prénom, qui sinon serait masqué
+  // seul et laisserait le reste de l'adresse lisible.
+  const email = identity.email?.trim()
+  const unique = email ? [email, ...names] : names
+
+  // Limites de mot Unicode : `\b` ignore les lettres accentuées (« Hélène »).
+  return unique.map(
+    (term) => new RegExp(`(?<![\\p{L}\\p{N}@.])${escapeRegExp(term)}(?![\\p{L}\\p{N}])`, 'giu')
+  )
+}
+
+function replaceDeep(value: unknown, patterns: RegExp[]): unknown {
+  if (typeof value === 'string') {
+    return patterns.reduce((text, pattern) => text.replace(pattern, AI_PSEUDONYM), value)
+  }
+  if (Array.isArray(value)) return value.map((item) => replaceDeep(item, patterns))
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, replaceDeep(item, patterns)])
+    )
+  }
+  return value
+}
+
+/**
+ * Remplace récursivement, dans toutes les chaînes de `value`, le nom et
+ * l'e-mail du candidat par {@link AI_PSEUDONYM}. Le nom est retiré du profil
+ * par {@link buildEmployeeAiProfile}, mais il peut réapparaître dans le texte
+ * libre (résumé, descriptions, réponses aux exercices).
+ */
+export function pseudonymizeForAi<T>(
+  value: T,
+  identity: { name?: string | null; email?: string | null }
+): T {
+  const patterns = identifierPatterns(identity)
+  if (patterns.length === 0) return value
+  return replaceDeep(value, patterns) as T
 }

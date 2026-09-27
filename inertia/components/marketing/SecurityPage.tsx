@@ -93,7 +93,7 @@ export default function SecurityPage({
           <Card
             icon={<ShieldCheck className="text-brand-terracotta" />}
             title="Protection des données"
-            desc="Chiffrement en transit (HTTPS) et pratiques de stockage à détailler (au repos, sauvegardes)."
+            desc="Chiffrement en transit (HTTPS), mots de passe hachés, limitation des tentatives de connexion et pseudonymisation des données envoyées à l’IA."
           />
           <Card
             icon={<CheckCircle2 className="text-brand-navy" />}
@@ -107,8 +107,21 @@ export default function SecurityPage({
         <div className="max-w-5xl mx-auto space-y-10">
           <Block title="Hébergement & localisation">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              Hébergement, localisation des données et mesures associées. <span className="text-brand-navy/60">[à compléter]</span>
+              Plateforme et base de données hébergées dans l&apos;Union européenne{' '}
+              <span className="text-brand-navy/60">[prestataire à compléter]</span>. Liste complète
+              des sous-traitants dans la politique de confidentialité.
             </p>
+          </Block>
+          <Block title="Intelligence artificielle">
+            <ul className="space-y-2 text-brand-navy/60 font-medium">
+              <li>- Fournisseur : Mistral AI, société française, traitement dans l&apos;UE</li>
+              <li>
+                - Analyses pseudonymisées : le nom et l&apos;e-mail du candidat sont retirés avant
+                envoi au modèle
+              </li>
+              <li>- Aucune utilisation des données pour l&apos;entraînement des modèles</li>
+              <li>- Analyses relues par le conseiller, jamais de décision automatisée</li>
+            </ul>
           </Block>
           <Block title="Gestion des accès">
             <ul className="space-y-2 text-brand-navy/60 font-medium">

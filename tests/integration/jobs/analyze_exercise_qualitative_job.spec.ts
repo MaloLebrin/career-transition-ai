@@ -5,6 +5,7 @@ import Notification from '#models/notification'
 import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
+import { AI_PSEUDONYM } from '#shared/helpers/ai/exercise_profile'
 import { createAdvisor, createCandidate } from '#tests/support/actors'
 import env from '#start/env'
 
@@ -114,5 +115,37 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     await result.refresh()
     assert.equal(result.qualitativeAnalysis, "Erreur lors de la génération de l'analyse.")
     assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
+  })
+
+  test("n'envoie ni le nom ni l'e-mail du candidat au fournisseur IA (RGPD)", async ({
+    assert,
+  }) => {
+    const { employee } = await createCandidate()
+    employee.merge({ summary: `Je suis ${employee.name}, joignable à ${employee.email}.` })
+    await employee.save()
+    const result = await ExerciseResult.create({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { note: `Réponse de ${employee.name}` },
+      qualitativeAnalysis: null,
+    })
+
+    const prompts: string[] = []
+    const original = NullAiTextProvider.prototype.completeText
+    NullAiTextProvider.prototype.completeText = async function (prompt: string) {
+      prompts.push(prompt)
+      return original.call(this, prompt)
+    }
+    try {
+      await run(result.id)
+    } finally {
+      NullAiTextProvider.prototype.completeText = original
+    }
+
+    assert.lengthOf(prompts, 1)
+    assert.notInclude(prompts[0], employee.name)
+    assert.notInclude(prompts[0], employee.email)
+    assert.include(prompts[0], AI_PSEUDONYM)
   })
 })
