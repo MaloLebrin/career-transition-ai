@@ -22,6 +22,7 @@ L'avantage de cette méthode est que toute la configuration est lue directement 
    - `ADMIN_PASSWORD`
    - `RESEND_API_KEY`
    - `MISTRAL_API_KEY`
+   - `SENTRY_DSN` (suivi des erreurs, projet Sentry en région EU ; vide = désactivé)
 7. Clique sur **Apply** et laisse Render créer la base de données, les serveurs et déployer le code !
 
 ### Créer (ou mettre à jour) le super admin

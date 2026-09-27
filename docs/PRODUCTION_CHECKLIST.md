@@ -16,7 +16,8 @@ Checklist des points à traiter avant ou pour la mise en production.
 ## Qualité & robustesse
 
 - [ ] **Tests** — Ajouter ou compléter les tests (onboarding, super admin, parcours critiques) pour limiter les régressions.
-- [ ] **Monitoring / erreurs** — Mettre en place un suivi des erreurs 5xx et des lenteurs (ex. Sentry ou équivalent).
+- [x] **Monitoring / erreurs** — Sentry (5xx serveur et jobs en échec définitif), activé par `SENTRY_DSN` : mise en place et vérification dans [DEPLOYMENT.md](DEPLOYMENT.md#suivi-des-erreurs-sentry). Page de secours React (`ErrorBoundary`).
+- [ ] **Lenteurs** — Pas de suivi des temps de réponse (traces Sentry désactivées pour le quota gratuit).
 - [ ] **Logs** — Configurer le niveau de log et la rotation en production.
 
 ## Données & performance

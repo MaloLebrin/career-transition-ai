@@ -82,6 +82,10 @@ export default defineConfig({
       file: () => import('#start/scheduler'),
       environment: ['web'],
     },
+    {
+      file: () => import('#start/error_tracking'),
+      environment: ['web', 'console'],
+    },
   ],
 
   /*

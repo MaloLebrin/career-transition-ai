@@ -35,6 +35,12 @@ export const SUBPROCESSORS: Subprocessor[] = [
     location: 'Union européenne',
   },
   {
+    name: 'Sentry',
+    purpose:
+      'Suivi des erreurs techniques de la plateforme (message d’erreur, pile d’appels, identifiant technique du compte ; ni nom, ni e-mail, ni adresse IP).',
+    location: 'Union européenne (région EU de Sentry)',
+  },
+  {
     name: 'Google Fonts',
     purpose: 'Chargement des polices de caractères du site (adresse IP transmise).',
     location: 'États-Unis (clauses contractuelles types)',

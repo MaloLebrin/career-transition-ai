@@ -2,6 +2,7 @@ import DomainException from '#exceptions/domain_exception'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
+import { reportError } from '#services/error_tracking_service'
 import { RATE_LIMIT_ERROR_KEY } from '#shared/helpers/rate_limit'
 import app from '@adonisjs/core/services/app'
 import { errors as limiterErrors } from '@adonisjs/limiter'
@@ -102,12 +103,23 @@ export default class HttpExceptionHandler extends ExceptionHandler {
   }
 
   /**
-   * The method is used to report error to the logging service or
-   * the a third party error monitoring service.
+   * Log (parent), puis envoi au suivi des erreurs (`#services/error_tracking_service`)
+   * des seules erreurs serveur : les 4xx et les erreurs métier ignorées
+   * (`ignoreCodes`, `ignoreStatuses`…) restent dans les logs. L'utilisateur
+   * n'est transmis que par son id.
    *
    * @note You should not attempt to send a response from this method.
    */
   async report(error: unknown, ctx: HttpContext) {
-    return super.report(error, ctx)
+    await super.report(error, ctx)
+
+    const httpError = this.toHttpError(error)
+    if (!this.shouldReport(httpError) || httpError.status < 500) return
+
+    reportError(error, {
+      userId: ctx.auth?.user?.id ?? null,
+      tags: { method: ctx.request.method(), route: ctx.route?.pattern ?? 'unknown' },
+      extra: { status: httpError.status },
+    })
   }
 }
