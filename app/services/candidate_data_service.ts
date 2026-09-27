@@ -3,10 +3,10 @@ import Notification from '#models/notification'
 import PdfExport from '#models/pdf_export'
 import User from '#models/user'
 import { buildDossierArchive } from '#services/dossier_export_service'
+import { deletePdf } from '#services/pdf_storage_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import db from '@adonisjs/lucid/services/db'
 import type archiver from 'archiver'
-import { rm } from 'node:fs/promises'
 
 /**
  * Droits d'accès et d'effacement d'un candidat (RGPD, procédure dans
@@ -98,7 +98,7 @@ export interface CandidatePurgeSummary {
   supportPlanSteps: number
   pdfExports: number
   notifications: number
-  /** Fichiers PDF supprimés du disque (`pdf_exports.file_path`). */
+  /** Fichiers PDF supprimés du stockage (`pdf_exports.file_path`). */
   filesDeleted: number
   /** Compte utilisateur supprimé (seulement s'il a le rôle candidat). */
   userDeleted: boolean
@@ -156,7 +156,7 @@ function notificationsAbout(employeeId: number) {
  *   couvert par la cascade) est supprimé s'il a le rôle candidat — jamais un
  *   compte conseiller ou admin rattaché par erreur.
  * - Les notifications des conseillers qui le citent sont supprimées.
- * - Les PDF générés sur disque (`pdf_exports.file_path`) sont supprimés après
+ * - Les PDF générés (`pdf_exports.file_path`, disque Drive) sont supprimés après
  *   la validation de la transaction : si la base échoue, rien n'est perdu.
  *
  * `null` si le candidat n'existe pas.
@@ -182,12 +182,12 @@ export async function purgeCandidate(employeeId: number): Promise<CandidatePurge
   })
 
   let filesDeleted = 0
-  for (const path of filePaths) {
+  for (const key of filePaths) {
     try {
-      await rm(path)
-      filesDeleted++
+      if (await deletePdf(key)) filesDeleted++
     } catch {
-      // Fichier déjà absent (tmp/ nettoyé, autre machine) : rien à effacer.
+      // Stockage indisponible : la base est déjà purgée, le fichier sera
+      // retiré par la purge des exports expirés.
     }
   }
 

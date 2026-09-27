@@ -11,7 +11,7 @@ import { createAdvisor, createEmployeeFor } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
-import { rm } from 'node:fs/promises'
+import drive from '@adonisjs/drive/services/main'
 
 /**
  * Synthèse candidat côté conseiller :
@@ -68,7 +68,7 @@ test.group('Conseiller — synthèse : page', (group) => {
       organizationId: advisor.organizationId,
       employeeId: employee.id,
       status: PDF_EXPORT_STATUSES.COMPLETED,
-      filePath: '/tmp/fake.pdf',
+      filePath: 'exports/pdf_export_1.pdf',
       fileName: 'fake.pdf',
     }).create()
 
@@ -185,7 +185,12 @@ test.group('Conseiller — synthèse : édition et partage', (group) => {
 })
 
 test.group('Conseiller — synthèse : génération PDF', (group) => {
+  let disk: ReturnType<typeof drive.fake>
   group.each.setup(() => truncateDb())
+  group.each.setup(() => {
+    disk = drive.fake()
+    return () => drive.restore()
+  })
 
   test('refuse la génération tant que la synthèse n’est pas partagée', async ({
     client,
@@ -271,7 +276,7 @@ test.group('Conseiller — synthèse : génération PDF', (group) => {
     assert.equal(pdf.status, PDF_EXPORT_STATUSES.COMPLETED)
     assert.equal(pdf.mimeType, 'application/pdf')
     assert.isAbove(pdf.size ?? 0, 0)
-    await rm(pdf.filePath!, { force: true })
+    disk.assertExists(pdf.filePath!)
 
     // userId et advisorUserId désignent ici le même conseiller : deux notifications
     const notifications = await Notification.query().where('userId', advisor.id)

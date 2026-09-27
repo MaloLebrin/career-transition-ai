@@ -292,7 +292,7 @@ Puis dans le navigateur : connexion `malolebrin@gmail.com` / `ADMIN_PASSWORD` (c
 ### 1.5 Ce qu'il faut savoir en exploitation
 
 - **Cold start** ≈ 1 min après 15 min sans requête (Render) + ≈ 1 s (Neon). Normal.
-- **PDF perdus** à chaque redémarrage (disque éphémère) : relancer l'export.
+- **PDF** : avec le disque local par défaut (`DRIVE_DISK=fs`), perdus à chaque redémarrage (disque éphémère) et illisibles si web et worker sont deux services ; passer à `DRIVE_DISK=s3` (Cloudflare R2), voir [§ stockage des PDF](#stockage-des-pdf).
 - **Mise à jour** = push sur `main` (auto-deploy). Migrations au démarrage. Rollback : Render → *Rollback* sur le déploiement précédent (les migrations déjà appliquées restent : écrire des migrations rétro-compatibles).
 - **Neon** : suivre *Usage* (CU-hours < 100/mois, stockage < 0,5 Go). Sauvegarde : `pg_dump "$DB_URL" | gzip > backup-$(date +%F).sql.gz` depuis ton poste, une fois par semaine ou avant chaque migration risquée.
 
@@ -386,7 +386,7 @@ services:
     environment:
       NODE_OPTIONS: --max-old-space-size=384
     volumes:
-      - exports:/app/tmp          # PDF générés par le worker, servis par le web
+      - exports:/app/storage      # PDF générés par le worker, servis par le web (DRIVE_DISK=fs)
     depends_on:
       postgres:
         condition: service_healthy
@@ -401,7 +401,7 @@ services:
     environment:
       NODE_OPTIONS: --max-old-space-size=256
     volumes:
-      - exports:/app/tmp
+      - exports:/app/storage
     depends_on:
       postgres:
         condition: service_healthy
@@ -608,7 +608,7 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 | `The server does not support SSL connections` | `DB_SSL` absent/`true` face à un Postgres sans TLS | `DB_SSL=false` (compose). |
 | `ADMIN_PASSWORD est requis…` pendant `migration:run` | §0.3 non appliqué | Vider la migration de seed ; définir `ADMIN_PASSWORD` pour le seeder. |
 | Worker : `No jobs found for locations` | glob relatif au `cwd` (§0.4) ou image lancée depuis `build/` | Appliquer §0.4 ; lancer `node build/bin/console.js …` depuis `/app`. |
-| Export PDF `completed` mais téléchargement « fichier introuvable » | web et worker ne partagent pas `/app/tmp` | Volume `exports` monté sur les deux services ; sur PaaS multi-services, passer à un stockage objet. |
+| Export PDF `completed` mais téléchargement « fichier introuvable » | web et worker ne partagent pas `/app/storage` (`DRIVE_DISK=fs`) | Volume `exports` monté sur les deux services ; sur PaaS multi-services, `DRIVE_DISK=s3` ([§ stockage des PDF](#stockage-des-pdf)). |
 | Exports PDF ne passent jamais en `completed` | pas de worker (ou `QUEUE_DRIVER=database` sans `queue:work`) | `docker compose ps worker`, logs ; en mono-process utiliser `QUEUE_DRIVER=sync`. |
 | Lien d'onboarding en `http://` | `trustProxy` par défaut (`loopback`) | §0.6. |
 | SSE coupés toutes les ~60–100 s, reconnexions en boucle | proxy qui bufferise / pas de keep-alive | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6). |
@@ -640,6 +640,9 @@ Validées au boot par `start/env.ts` (après §0.2) :
 | `REGISTRATION_ENABLED` | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin |
 | `SEO_INDEXING` | non (défaut `false`) | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`) |
 | `GOOGLE_SITE_VERIFICATION` | non | jeton Google Search Console ; la balise n'est rendue que s'il est défini |
+| `DRIVE_DISK` | non (défaut `fs`) | stockage des PDF générés (`config/drive.ts`) : `fs` = dossier `storage/` local (mono-machine ou volume partagé), `s3` = bucket S3/R2 (web et worker séparés). Voir [§ stockage des PDF](#stockage-des-pdf) |
+| `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | si `DRIVE_DISK=s3` | bucket **privé** ; le serveur refuse de démarrer s'il en manque une |
+| `S3_REGION` | non (défaut `auto`) | `auto` pour R2, région AWS sinon |
 | `SENTRY_DSN` | non (recommandé) | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry) |
 | `SENTRY_ENVIRONMENT` | non (défaut `NODE_ENV`) | `production`, `staging`… pour séparer les environnements dans Sentry |
 | `SENTRY_RELEASE` | non (défaut `RENDER_GIT_COMMIT`) | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`) |
@@ -657,6 +660,42 @@ Lues hors schéma (pas d'erreur au boot si absentes) :
 | `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo |
 
 Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.
+
+---
+
+## Stockage des PDF
+
+Le worker écrit les exports PDF sur le disque Drive par défaut
+(`config/drive.ts`, `#services/pdf_storage_service`) ; le web les relit pour
+les servir, **après** le contrôle d'accès de
+`PdfExportDownloadsController` (fichiers privés, jamais d'URL publique). En
+base, `pdf_exports.file_path` ne contient qu'une clé relative
+(`exports/pdf_export_<id>.pdf`), sans le nom du candidat.
+
+| `DRIVE_DISK` | Où | Quand |
+|---|---|---|
+| `fs` (défaut) | `storage/` dans le répertoire de l'app | dev, VM docker-compose (volume `exports` monté sur `/app/storage` pour web **et** worker) |
+| `s3` | bucket S3 compatible | web et worker sur deux services sans disque commun (Render : `render.yaml`) |
+
+Mise en place de Cloudflare R2 (10 Go gratuits) :
+
+1. *R2 → Create bucket* : juridiction **EU**, accès public désactivé.
+2. *R2 → Manage API tokens* : jeton *Object Read & Write* limité au bucket.
+3. Renseigner `DRIVE_DISK=s3`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
+   `S3_SECRET_ACCESS_KEY` et `S3_ENDPOINT`
+   (`https://<account-id>.eu.r2.cloudflarestorage.com`) sur le web **et** le
+   worker.
+4. Ajouter Cloudflare aux sous-traitants (`SUBPROCESSORS`, `shared/constants/legal.ts`).
+
+Vérification : générer un export depuis la synthèse d'un candidat, puis le
+télécharger depuis la page *Tâches*.
+
+Rétention : chaque nuit à 3 h (heure de Paris), `PurgeExpiredPdfExportsJob`
+(planifié par `start/scheduler.ts`, exécuté par le worker) supprime les PDF de
+plus de 30 jours (`PDF_EXPORT_RETENTION_DAYS`). L'export reste listé sans lien
+de téléchargement ; il suffit de le régénérer. Les anciens chemins absolus
+(avant l'issue #21) sont effacés par la migration
+`clear_absolute_pdf_export_paths`.
 
 ---
 

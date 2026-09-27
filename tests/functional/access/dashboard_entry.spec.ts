@@ -1,5 +1,6 @@
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import type User from '#models/user'
+import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import {
@@ -12,9 +13,7 @@ import {
 } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import drive from '@adonisjs/drive/services/main'
 
 /**
  * Entrée du dashboard (start/routes/dashboard/index.ts) : aiguillage par rôle
@@ -57,18 +56,16 @@ test.group('Dashboard — GET /dashboard aiguille selon le rôle (functional)', 
 })
 
 test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)', (group) => {
-  let dir: string
-  let filePath: string
+  const filePath = pdfExportKey(424_242)
 
   group.each.setup(() => truncateDb())
   group.each.setup(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'pdf-export-'))
-    filePath = join(dir, 'synthese.pdf')
-    await writeFile(filePath, '%PDF-1.4 contenu de test')
-    return () => rm(dir, { recursive: true, force: true })
+    drive.fake()
+    await storePdf(filePath, new TextEncoder().encode('%PDF-1.4 contenu de test'))
+    return () => drive.restore()
   })
 
-  /** Export d'un candidat suivi par `advisor`, fichier présent sur disque. */
+  /** Export d'un candidat suivi par `advisor`, fichier présent dans le stockage. */
   async function exportFor(
     advisor: User,
     overrides: { status?: PdfExportStatus; filePath?: string | null; userId?: number } = {}
@@ -107,6 +104,8 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
     response.assertStatus(200)
     assert.include(response.header('content-disposition'), 'attachment')
     assert.include(response.header('content-disposition'), 'synthese-candidat.pdf')
+    assert.include(response.header('content-type'), 'application/pdf')
+    assert.equal(Buffer.from(response.body()).toString(), '%PDF-1.4 contenu de test')
   })
 
   test('conseiller d’une autre organisation : 403', async ({ client }) => {
@@ -201,9 +200,9 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
     response.assertStatus(404)
   })
 
-  test('fichier absent du disque : 404', async ({ client }) => {
+  test('fichier absent du stockage : 404', async ({ client }) => {
     const advisor = await createAdvisor()
-    const pdfExport = await exportFor(advisor, { filePath: join(tmpdir(), 'absent-xyz.pdf') })
+    const pdfExport = await exportFor(advisor, { filePath: pdfExportKey(999_999) })
 
     const response = await client
       .get(`/dashboard/pdf-exports/${pdfExport.id}/download`)

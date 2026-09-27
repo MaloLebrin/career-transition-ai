@@ -64,6 +64,7 @@ export default defineConfig({
     () => import('@adonisjs/queue/queue_provider'),
     () => import('@adonisjs/transmit/transmit_provider'),
     () => import('@adonisjs/limiter/limiter_provider'),
+    () => import('@adonisjs/drive/drive_provider'),
   ],
 
   /*

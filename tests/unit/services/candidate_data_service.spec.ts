@@ -10,6 +10,7 @@ import Experience from '#models/experience'
 import Notification from '#models/notification'
 import PdfExport from '#models/pdf_export'
 import User from '#models/user'
+import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import {
   CANDIDATE_DATA_FILENAME,
   candidateDataSnapshot,
@@ -21,15 +22,15 @@ import { createAdvisor, createCandidate, type CandidateActor } from '#tests/supp
 import ace from '@adonisjs/core/services/ace'
 import app from '@adonisjs/core/services/app'
 import testUtils from '@adonisjs/core/services/test_utils'
+import drive from '@adonisjs/drive/services/main'
 import { test } from '@japa/runner'
-import { existsSync } from 'node:fs'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const TMP_DIR = app.tmpPath('tests-rgpd')
 
-/** Candidat avec un peu de tout : exercice, expérience, PDF sur disque, notification. */
-async function seedCandidate(): Promise<CandidateActor & { pdfPath: string; advisor: User }> {
+/** Candidat avec un peu de tout : exercice, expérience, PDF stocké, notification. */
+async function seedCandidate(): Promise<CandidateActor & { pdfKey: string; advisor: User }> {
   const advisor = await createAdvisor()
   const actor = await createCandidate({ advisor })
   const { employee } = actor
@@ -37,15 +38,15 @@ async function seedCandidate(): Promise<CandidateActor & { pdfPath: string; advi
   await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
   await ExperienceFactory.merge({ employeeId: employee.id }).create()
 
-  await mkdir(TMP_DIR, { recursive: true })
-  const pdfPath = join(TMP_DIR, `synthese-${employee.id}.pdf`)
-  await writeFile(pdfPath, '%PDF-1.4 test')
-  await PdfExportFactory.merge({
+  const pdfExport = await PdfExportFactory.merge({
     userId: advisor.id,
     organizationId: employee.organizationId,
     employeeId: employee.id,
-    filePath: pdfPath,
   }).create()
+  const pdfKey = pdfExportKey(pdfExport.id)
+  await storePdf(pdfKey, new TextEncoder().encode('%PDF-1.4 test'))
+  pdfExport.filePath = pdfKey
+  await pdfExport.save()
 
   await NotificationFactory.merge({
     userId: advisor.id,
@@ -53,17 +54,21 @@ async function seedCandidate(): Promise<CandidateActor & { pdfPath: string; advi
     meta: { employeeId: employee.id },
   }).create()
 
-  return { ...actor, pdfPath, advisor }
+  return { ...actor, pdfKey, advisor }
 }
 
 test.group('candidate_data_service | purge', (group) => {
+  let disk: ReturnType<typeof drive.fake>
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  group.teardown(() => rm(TMP_DIR, { recursive: true, force: true }))
+  group.each.setup(() => {
+    disk = drive.fake()
+    return () => drive.restore()
+  })
 
   test('supprime la fiche, les données liées, le compte et le PDF sur disque', async ({
     assert,
   }) => {
-    const { employee, user, pdfPath, advisor } = await seedCandidate()
+    const { employee, user, pdfKey, advisor } = await seedCandidate()
     const other = await seedCandidate()
 
     const summary = await purgeCandidate(employee.id)
@@ -83,7 +88,7 @@ test.group('candidate_data_service | purge', (group) => {
     assert.lengthOf(await Experience.query().where('employeeId', employee.id), 0)
     assert.lengthOf(await PdfExport.query().where('employeeId', employee.id), 0)
     assert.lengthOf(await Notification.query().where('userId', advisor.id), 0)
-    assert.isFalse(existsSync(pdfPath))
+    disk.assertMissing(pdfKey)
 
     // Le conseiller et l'autre candidat ne sont pas touchés.
     assert.isNotNull(await User.find(advisor.id))
@@ -91,7 +96,7 @@ test.group('candidate_data_service | purge', (group) => {
     assert.isNotNull(await User.find(other.user.id))
     assert.lengthOf(await ExerciseResult.query().where('employeeId', other.employee.id), 1)
     assert.lengthOf(await Notification.query().where('userId', other.advisor.id), 1)
-    assert.isTrue(existsSync(other.pdfPath))
+    disk.assertExists(other.pdfKey)
   })
 
   test("ne supprime jamais un compte qui n'a pas le rôle candidat", async ({ assert }) => {
@@ -108,13 +113,13 @@ test.group('candidate_data_service | purge', (group) => {
   })
 
   test("l'aperçu ne supprime rien", async ({ assert }) => {
-    const { employee, pdfPath } = await seedCandidate()
+    const { employee, pdfKey } = await seedCandidate()
 
     const preview = await previewCandidatePurge(employee.id)
 
     assert.equal(preview!.exerciseResults, 1)
     assert.isNotNull(await Employee.find(employee.id))
-    assert.isTrue(existsSync(pdfPath))
+    disk.assertExists(pdfKey)
   })
 
   test('renvoie null pour un candidat introuvable', async ({ assert }) => {
@@ -125,6 +130,10 @@ test.group('candidate_data_service | purge', (group) => {
 
 test.group('candidate_data_service | export', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
   group.teardown(() => rm(TMP_DIR, { recursive: true, force: true }))
 
   test('restitue profil, compte et exercices, sans mot de passe', async ({ assert }) => {
@@ -145,6 +154,10 @@ test.group('candidate_data_service | export', (group) => {
 
 test.group('commandes candidate:export et candidate:purge', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    drive.fake()
+    return () => drive.restore()
+  })
   // Sortie des commandes capturée plutôt qu'affichée (assertLog disponible).
   group.setup(() => {
     ace.ui.switchMode('raw')

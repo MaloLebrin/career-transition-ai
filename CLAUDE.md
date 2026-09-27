@@ -203,6 +203,8 @@ Jobs existants :
 
 Suivi des erreurs : Sentry si `SENTRY_DSN` (`config/error_tracking.ts`, `#services/error_tracking_service`) — 5xx via `HttpExceptionHandler.report()`, jobs en échec définitif via `watchQueueFailures`. Envoyer par `reportError` (utilisateur = id seulement), jamais `Sentry.*` directement. Vérif : `node ace error-tracking:test`.
 
+Fichiers générés (PDF) : via Drive (`config/drive.ts`, `DRIVE_DISK=fs|s3`) et `#services/pdf_storage_service` — clé relative `exports/…` en base, jamais de chemin absolu ni de `node:fs` direct ; en test `drive.fake()` / `drive.restore()`. Purge nocturne `PurgeExpiredPdfExportsJob` (`start/scheduler.ts`).
+
 Rétention de `queue_jobs` : `QUEUE_JOB_RETENTION` (`config/queue.ts`, 7 j succès / 30 j échecs, 1 000 par queue) — jamais `removeOnComplete: false`.
 
 Nouveau job → constantes de statut + contrainte CHECK + factory + seeder si visible en UI.

@@ -23,6 +23,7 @@ L'avantage de cette méthode est que toute la configuration est lue directement 
    - `RESEND_API_KEY`
    - `MISTRAL_API_KEY`
    - `SENTRY_DSN` (suivi des erreurs, projet Sentry en région EU ; vide = désactivé)
+   - `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (bucket Cloudflare R2 des PDF, requis : `DRIVE_DISK=s3` ; voir [DEPLOYMENT.md](DEPLOYMENT.md#stockage-des-pdf))
 7. Clique sur **Apply** et laisse Render créer la base de données, les serveurs et déployer le code !
 
 ### Créer (ou mettre à jour) le super admin
