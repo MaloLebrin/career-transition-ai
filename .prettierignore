@@ -1,0 +1,7 @@
+# Générés — jamais édités à la main
+.adonisjs
+database/schema.ts
+pnpm-lock.yaml
+build
+coverage
+public/assets

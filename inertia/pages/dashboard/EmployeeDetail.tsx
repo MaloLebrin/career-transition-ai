@@ -27,10 +27,11 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
     (t ?? '').toUpperCase().replace(/-/g, '_')
 
   const getResultsForStep = (step: SupportPlanStep) => {
-    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0) return []
+    if (!selectedEmployee || !step.associatedExercises || step.associatedExercises.length === 0)
+      return []
     const stepTypes = step.associatedExercises.map(normalizeExerciseType)
-    return selectedEmployee.exercises.filter(
-      (res) => stepTypes.includes(normalizeExerciseType(res.type))
+    return selectedEmployee.exercises.filter((res) =>
+      stepTypes.includes(normalizeExerciseType(res.type))
     )
   }
 
@@ -89,6 +90,7 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                 </Button>
               </AppLink>
               <a
+                // eslint-disable-next-line no-restricted-syntax -- téléchargement du dossier (binaire), pas une page Inertia
                 href={`/dashboard/conseiller/employees/${employeeId}/dossier`}
                 className="inline-flex items-center justify-center font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-2 border-brand-navy/10 text-brand-navy/60 hover:border-brand-navy hover:text-brand-navy px-4 py-2 text-sm rounded-xl gap-2"
               >
@@ -135,10 +137,12 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
             <div className="lg:col-span-8 space-y-6">
               {/* Tabs */}
               <div className="flex gap-1 p-1 bg-brand-navy/5 rounded-2xl w-fit">
-                {([
-                  { id: 'profil', label: 'Profil' },
-                  { id: 'feuille-de-route', label: 'Feuille de route' },
-                ] as { id: Tab; label: string }[]).map((tab) => (
+                {(
+                  [
+                    { id: 'profil', label: 'Profil' },
+                    { id: 'feuille-de-route', label: 'Feuille de route' },
+                  ] as { id: Tab; label: string }[]
+                ).map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -169,7 +173,9 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                             <span className="text-[10px] font-bold text-brand-navy uppercase">
                               {s.name}
                             </span>
-                            <span className="text-[9px] font-bold text-brand-sage">{s.level}/5</span>
+                            <span className="text-[9px] font-bold text-brand-sage">
+                              {s.level}/5
+                            </span>
                           </div>
                           <div className="h-1 bg-brand-navy/5 rounded-full w-full">
                             <div
@@ -240,11 +246,14 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                       </p>
                     ) : (
                       (() => {
-                        const byType = new Map<string, typeof selectedEmployee.exercises[0]>()
+                        const byType = new Map<string, (typeof selectedEmployee.exercises)[0]>()
                         for (const res of selectedEmployee.exercises) {
                           const key = (res.type as string).toLowerCase()
                           const existing = byType.get(key)
-                          if (!existing || (res.date && (!existing.date || res.date > existing.date))) {
+                          if (
+                            !existing ||
+                            (res.date && (!existing.date || res.date > existing.date))
+                          ) {
                             byType.set(key, res)
                           }
                         }
@@ -256,7 +265,8 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                                 EXERCISE_SLUGS[res.type as keyof typeof EXERCISE_SLUGS] ??
                                 (res.type as string).toLowerCase()
                               const title =
-                                EXERCISE_LIST.find((e) => e.slug === slug)?.title ?? (res.type as string)
+                                EXERCISE_LIST.find((e) => e.slug === slug)?.title ??
+                                (res.type as string)
                               const dateStr = res.date
                                 ? new Date(res.date).toLocaleDateString('fr-FR', {
                                     day: 'numeric',
@@ -297,7 +307,9 @@ export default function DashboardEmployeeDetail({ employeeId, employee }: Employ
                   defaultValue={selectedEmployee.advisorNotes || ''}
                   onBlur={(e) => {
                     const value = e.target.value
-                    router.put(`/dashboard/conseiller/employees/${employeeId}`, { advisorNotes: value })
+                    router.put(`/dashboard/conseiller/employees/${employeeId}`, {
+                      advisorNotes: value,
+                    })
                   }}
                 />
               </div>

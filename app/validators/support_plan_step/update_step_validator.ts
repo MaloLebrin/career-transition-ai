@@ -2,7 +2,7 @@ import vine from '@vinejs/vine'
 import { exerciceResultTypesValues } from '#models/exercise_result'
 import { appointmentStatusValues } from '#shared/constants/appointment'
 
-export const updateStepValidator = vine.compile(
+export const updateStepValidator = vine.create(
   vine.object({
     title: vine.string().trim().maxLength(255).nullable().optional(),
     description: vine.string().trim().nullable().optional(),

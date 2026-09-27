@@ -1,0 +1,55 @@
+---
+description: Pas de fetch/JSON manuel sur les écrans Inertia ; mutations via router.* / useForm et réponses en redirection
+globs:
+  - inertia/**/*.tsx
+  - inertia/**/*.ts
+  - app/controllers/**/*.ts
+alwaysApply: false
+---
+
+# Inertia — pas de fetch JSON manuel
+
+S'applique à `inertia/pages/**`, `inertia/components/**` et aux contrôleurs qui servent ces écrans.
+Repris de boat-management.
+
+## Interdit
+
+- `fetch` / `axios` avec un corps JSON pour POST/PUT/PATCH/DELETE depuis un écran Inertia.
+- Helper CSRF maison (lecture du cookie `XSRF-TOKEN`, en-tête `X-XSRF-TOKEN`) : Shield + le client Inertia s'en chargent.
+- `res.ok` puis `router.reload()` à la main quand une visite `router.*` avec `only` suffit.
+- `response.json({ ok: true })` sur une route appelée depuis l'UI Inertia.
+
+## Obligatoire
+
+| Cas | Frontend | Backend (même route) |
+|-----|----------|----------------------|
+| Formulaire | `useForm` (`@inertiajs/react`) + `form.post/put/…` | VineJS + `response.redirect(...)` |
+| Action ponctuelle (toggle, suppression, réordonnancement…) | `router.post/put/patch/delete` + `preserveScroll: true` | `response.redirect().back()` |
+| Seule une prop change | `only: ['nomDeProp']` sur la visite | Redirection vers la page concernée |
+| Erreur métier | rien à faire | lever une erreur de `app/exceptions/<domaine>_errors.ts` : `handler.ts` flashe et redirige |
+
+## Exceptions
+
+- `POST /dashboard/ai/*` (`AiAssistController`, client `createServerAiClient`) : JSON assumé, hors cycle Inertia.
+- Téléchargements / exports (PDF, dossier) et flux SSE (Transmit).
+
+## Exemple
+
+```ts
+// ❌
+await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+
+// ✅
+router.patch(url, body, { preserveScroll: true, only: ['employee'] })
+```
+
+```ts
+// ❌ contrôleur
+return response.json({ ok: true })
+
+// ✅ contrôleur
+session.flash('success', 'Étape mise à jour')
+return response.redirect().back()
+```
+
+Docs : https://inertiajs.com/manual-visits · https://docs.adonisjs.com/guides/frontend/inertia
