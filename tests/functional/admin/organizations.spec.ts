@@ -1,4 +1,5 @@
 import Organization from '#models/organization'
+import { EmployeeFactory } from '#database/factories/employee_factory'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -25,7 +26,7 @@ import { test } from '@japa/runner'
  */
 const ORGS = '/dashboard/super-admin/organizations'
 
-type OrgItem = { id: number; usersCount: number; employeesCount: number }
+type OrgItem = { id: number; ownerId: number | null; usersCount: number; employeesCount: number }
 
 test.group('Super admin — organisations : liste', (group) => {
   group.each.setup(() => truncateDb())
@@ -37,9 +38,11 @@ test.group('Super admin — organisations : liste', (group) => {
     const superAdmin = await createSuperAdmin()
     const advisor = await createAdvisor()
     const org = await Organization.findOrFail(advisor.organizationId)
-    await createAdmin(org)
+    const owner = await createAdmin(org)
     await createEmployeeFor(advisor)
     const empty = await createOrganization()
+    // Inscription en libre-service : le seul compte est un conseiller, pas un admin.
+    const solo = await createAdvisor()
 
     const response = await client.get(ORGS).loginAs(superAdmin).withInertia()
 
@@ -49,10 +52,20 @@ test.group('Super admin — organisations : liste', (group) => {
     const items = props.organizations as OrgItem[]
     assert.sameMembers(
       items.map((o) => o.id),
-      [org.id, empty.id]
+      [org.id, empty.id, solo.organizationId]
     )
-    assert.include(items.find((o) => o.id === org.id)!, { usersCount: 2, employeesCount: 1 })
-    assert.include(items.find((o) => o.id === empty.id)!, { usersCount: 0, employeesCount: 0 })
+    // `ownerId` : premier admin (même créé après un conseiller), à défaut premier compte.
+    assert.equal(items.find((o) => o.id === solo.organizationId)!.ownerId, solo.id)
+    assert.include(items.find((o) => o.id === org.id)!, {
+      ownerId: owner.id,
+      usersCount: 2,
+      employeesCount: 1,
+    })
+    assert.include(items.find((o) => o.id === empty.id)!, {
+      ownerId: null,
+      usersCount: 0,
+      employeesCount: 0,
+    })
   })
 })
 
@@ -196,6 +209,73 @@ test.group('Super admin — organisations : suppression', (group) => {
     response.assertHeader('location', ORGS)
     assert.equal(response.flashMessage('success'), 'Organisation supprimée.')
     await db.assertMissing('organizations', { id: org.id })
+  })
+
+  test('refuse de supprimer une organisation qui a encore des utilisateurs', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const org = await createOrganization()
+    await createAdmin(org)
+
+    const response = await client
+      .delete(`${ORGS}/${org.id}`)
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(303)
+    response.assertHeader('location', ORGS)
+    assert.equal(
+      response.flashMessage('error'),
+      'Impossible de supprimer une organisation qui compte encore des utilisateurs ou des talents.'
+    )
+    await db.assertHas('organizations', { id: org.id })
+  })
+
+  test('refuse de supprimer une organisation qui a encore des talents', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const org = await createOrganization()
+    await EmployeeFactory.merge({ organizationId: org.id, userId: null, advisorId: null }).create()
+
+    const response = await client
+      .delete(`${ORGS}/${org.id}`)
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(303)
+    response.assertHeader('location', ORGS)
+    assert.equal(
+      response.flashMessage('error'),
+      'Impossible de supprimer une organisation qui compte encore des utilisateurs ou des talents.'
+    )
+    await db.assertHas('organizations', { id: org.id })
+  })
+
+  test('refuse de supprimer l’organisation du super admin', async ({ client, assert, db }) => {
+    const org = await createOrganization()
+    const superAdmin = await createSuperAdmin(org)
+
+    const response = await client
+      .delete(`${ORGS}/${org.id}`)
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(303)
+    response.assertHeader('location', ORGS)
+    assert.equal(
+      response.flashMessage('error'),
+      'Vous ne pouvez pas supprimer votre propre organisation.'
+    )
+    await db.assertHas('organizations', { id: org.id })
   })
 
   test('une organisation inconnue renvoie un flash d’erreur', async ({ client, assert }) => {

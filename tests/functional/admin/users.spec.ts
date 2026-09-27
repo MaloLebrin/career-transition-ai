@@ -167,6 +167,30 @@ test.group('Super admin — utilisateurs : création et relance', (group) => {
     await db.assertCount('users', 1)
   })
 
+  test('rejette une organisation inexistante (erreur de validation, pas de 500)', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+
+    const response = await client
+      .post(USERS)
+      .json({
+        organizationId: 999999,
+        name: 'Fantôme',
+        email: 'fantome@example.com',
+        role: 'advisor',
+      })
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    assertFieldErrors(assert, response, ['organizationId'])
+    await db.assertCount('users', 1)
+    assert.deepEqual(mails.sent, [])
+  })
+
   test('renvoie l’invitation d’un utilisateur non activé en révoquant les anciens liens', async ({
     client,
     assert,

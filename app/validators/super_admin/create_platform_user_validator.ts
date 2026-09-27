@@ -6,7 +6,7 @@ export const superAdminCreatableUserRoles = ['advisor', 'admin', 'expert', 'empl
 export type SuperAdminCreatableUserRole = (typeof superAdminCreatableUserRoles)[number]
 
 export const createPlatformUserValidator = vine.create({
-  organizationId: vine.number().positive(),
+  organizationId: vine.number().positive().exists({ table: 'organizations', column: 'id' }),
   name: vine.string().trim().minLength(1).maxLength(255),
   email: vine.string().trim().email().maxLength(255),
   role: vine.enum(superAdminCreatableUserRoles),

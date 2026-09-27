@@ -4,7 +4,7 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
-import { userRolesValues } from '#shared/types/advisor/roles'
+import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
 import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
 import { inject } from '@adonisjs/core'
@@ -48,7 +48,7 @@ export default class SuperAdminController {
     const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
     const organizations = await Organization.query()
       .where('id', '!=', excludeOrgId)
-      .preload('users')
+      .preload('users', (query) => query.orderBy('id', 'asc'))
       .preload('employees')
 
     logger.info('Super admin organizations', { organizations: JSON.stringify(organizations) })
@@ -57,6 +57,11 @@ export default class SuperAdminController {
       id: org.id,
       name: org.name,
       slug: org.slug,
+      // Propriétaire = premier admin de l'organisation (à défaut, premier compte créé — cas
+      // de l'inscription en libre-service, dont le créateur est conseiller) : cible des
+      // actions impersonation / reset mot de passe.
+      ownerId:
+        (org.users.find((user) => user.role === USERS_ROLES.ADMIN) ?? org.users[0])?.id ?? null,
       usersCount: org.users.length,
       employeesCount: org.employees.length,
       createdAt: org.createdAt?.toISO() ?? null,
@@ -354,11 +359,29 @@ export default class SuperAdminController {
   /**
    * Inertia form: delete an organization from the Super Admin dashboard.
    */
-  public async destroyOrganization({ params, response, session }: HttpContext) {
+  public async destroyOrganization({ params, response, session, auth }: HttpContext) {
     const id = Number(params.id)
     const organization = await Organization.find(id)
     if (!organization) {
       session.flash('error', 'Organisation introuvable.')
+      return response.redirect('/dashboard/super-admin/organizations')
+    }
+
+    if (organization.id === auth.user!.organizationId) {
+      session.flash('error', 'Vous ne pouvez pas supprimer votre propre organisation.')
+      return response.redirect('/dashboard/super-admin/organizations')
+    }
+
+    // Les clés étrangères users/employees → organizations sont en RESTRICT.
+    await organization.loadCount('users').loadCount('employees')
+    if (
+      Number(organization.$extras.users_count) > 0 ||
+      Number(organization.$extras.employees_count) > 0
+    ) {
+      session.flash(
+        'error',
+        'Impossible de supprimer une organisation qui compte encore des utilisateurs ou des talents.'
+      )
       return response.redirect('/dashboard/super-admin/organizations')
     }
 

@@ -95,6 +95,7 @@ describe('OrganizationsAdmin page', () => {
         id: 1,
         name: 'Cabinet Alpha',
         slug: 'cabinet-alpha',
+        ownerId: 7,
         usersCount: 3,
         employeesCount: 10,
         createdAt: '2025-01-01T00:00:00.000Z',
@@ -122,28 +123,55 @@ describe('OrganizationsAdmin page', () => {
     expect(screen.getByText('Nouvelle organisation')).toBeInTheDocument()
   })
 
-  test('calls impersonation endpoint when clicking button', () => {
-    const organizations = [
-      {
-        id: 42,
-        name: 'Cabinet Beta',
-        slug: 'cabinet-beta',
-        usersCount: 2,
-        employeesCount: 5,
-        createdAt: '2025-02-01T00:00:00.000Z',
-      },
-    ]
+  // Ces endpoints attendent l'id d'un utilisateur : on vise le propriétaire (admin),
+  // jamais l'id de l'organisation (régression : `/auth/impersonate/<org.id>`).
+  const orgWithOwner = {
+    id: 42,
+    name: 'Cabinet Beta',
+    slug: 'cabinet-beta',
+    ownerId: 314,
+    usersCount: 2,
+    employeesCount: 5,
+    createdAt: '2025-02-01T00:00:00.000Z',
+  }
 
-    render(<OrganizationsAdmin organizations={organizations} />)
+  test('posts impersonation for the organization owner user, not the organization id', () => {
+    render(<OrganizationsAdmin organizations={[orgWithOwner]} />)
 
-    const button = screen.getByRole('button', { name: /Impersonation/i })
-    fireEvent.click(button)
+    fireEvent.click(screen.getByRole('button', { name: /Impersonation/i }))
 
+    expect(postMock).toHaveBeenCalledTimes(1)
     expect(postMock).toHaveBeenCalledWith(
-      '/auth/impersonate/42',
+      '/auth/impersonate/314',
       undefined,
       expect.objectContaining({ preserveScroll: true })
     )
+  })
+
+  test('posts password reset for the organization owner user, not the organization id', () => {
+    render(<OrganizationsAdmin organizations={[orgWithOwner]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Reset mot de passe/i }))
+
+    expect(postMock).toHaveBeenCalledTimes(1)
+    expect(postMock).toHaveBeenCalledWith(
+      '/auth/reset-password/314',
+      undefined,
+      expect.objectContaining({ preserveScroll: true })
+    )
+  })
+
+  test('disables owner actions when the organization has no owner', () => {
+    render(<OrganizationsAdmin organizations={[{ ...orgWithOwner, ownerId: null }]} />)
+
+    const impersonate = screen.getByRole('button', { name: /Impersonation/i })
+    const reset = screen.getByRole('button', { name: /Reset mot de passe/i })
+    expect(impersonate).toBeDisabled()
+    expect(reset).toBeDisabled()
+
+    fireEvent.click(impersonate)
+    fireEvent.click(reset)
+    expect(postMock).not.toHaveBeenCalled()
   })
 
   test('submits create organization form with owner fields via modal', () => {
