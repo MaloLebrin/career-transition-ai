@@ -1,8 +1,10 @@
-import { describe, test, expect, vi } from 'vitest'
+import { beforeEach, describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import OrganizationSettings from '../../../inertia/components/settings/OrganizationSettings'
 
 const mockOnBack = vi.fn()
+
+let currentRole: string = 'advisor'
 
 vi.mock('../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
@@ -10,12 +12,13 @@ vi.mock('../../../inertia/hooks/use_auth', () => ({
       id: 1,
       name: 'Conseiller Test',
       email: 'advisor@example.com',
-      role: 'advisor' as const,
+      role: currentRole,
     },
   }),
 }))
 
 vi.mock('@inertiajs/react', () => ({
+  router: { delete: vi.fn() },
   useForm: (initial: Record<string, unknown>) => ({
     data: initial,
     setData: vi.fn(),
@@ -51,6 +54,10 @@ const mockMembers: {
 ]
 
 describe('OrganizationSettings', () => {
+  beforeEach(() => {
+    currentRole = 'advisor'
+  })
+
   test('renders cabinet content when organization and members are passed as props', () => {
     render(
       <OrganizationSettings
@@ -106,5 +113,36 @@ describe('OrganizationSettings', () => {
       'src',
       'https://res.test/logo.png'
     )
+  })
+
+  /** #61 : les modifications du cabinet sont réservées aux admins (middleware.admin()). */
+  test.each(['advisor', 'expert'])('%s : infos et logo en lecture seule', (role) => {
+    currentRole = role
+    render(
+      <OrganizationSettings
+        organization={mockOrganization}
+        members={mockMembers}
+        onBack={mockOnBack}
+      />
+    )
+
+    expect(screen.queryByText('Mettre à jour les infos')).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Seul un administrateur du cabinet/)).toHaveLength(2)
+    expect(screen.queryByLabelText('Choisir un logo')).not.toBeInTheDocument()
+  })
+
+  test('admin : infos et logo modifiables', () => {
+    currentRole = 'admin'
+    render(
+      <OrganizationSettings
+        organization={mockOrganization}
+        members={mockMembers}
+        onBack={mockOnBack}
+      />
+    )
+
+    expect(screen.queryByText(/Seul un administrateur du cabinet/)).not.toBeInTheDocument()
+    expect(screen.getByText('Mettre à jour les infos')).toBeInTheDocument()
+    expect(screen.getByLabelText('Choisir un logo')).toBeInTheDocument()
   })
 })

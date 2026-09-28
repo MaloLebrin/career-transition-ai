@@ -11,12 +11,14 @@ import { Organization } from '~/types/organization'
 
 interface VisualIdentityProps {
   organization: Organization
+  /** Consultation seule (conseiller, expert) : le logo est géré par les admins. */
+  readOnly?: boolean
 }
 
 const ACCEPT = ORGANIZATION_LOGO_EXTENSIONS.map((ext) => `.${ext}`).join(',')
 
 /** Logo du cabinet : choix d'une image, aperçu, envoi (Cloudinary) et suppression. */
-export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
+export const VisualIdentity = ({ organization, readOnly = false }: VisualIdentityProps) => {
   const form = useForm<{ logo: File | null }>({ logo: null })
   const inputRef = useRef<HTMLInputElement>(null)
   const [deleting, setDeleting] = useState(false)
@@ -74,26 +76,35 @@ export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
             </svg>
           )}
         </div>
-        <Button
-          size="sm"
-          type="button"
-          aria-label="Choisir un logo"
-          className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-          onClick={() => inputRef.current?.click()}
-          disabled={form.processing || deleting}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-          </svg>
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPT}
-          className="hidden"
-          data-testid="logo-input"
-          onChange={(e) => form.setData('logo', e.target.files?.[0] ?? null)}
-        />
+        {!readOnly && (
+          <>
+            <Button
+              size="sm"
+              type="button"
+              aria-label="Choisir un logo"
+              className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+              onClick={() => inputRef.current?.click()}
+              disabled={form.processing || deleting}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </Button>
+            <input
+              ref={inputRef}
+              type="file"
+              accept={ACCEPT}
+              className="hidden"
+              data-testid="logo-input"
+              onChange={(e) => form.setData('logo', e.target.files?.[0] ?? null)}
+            />
+          </>
+        )}
       </div>
 
       {form.errors.logo && (
@@ -102,7 +113,7 @@ export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
         </p>
       )}
 
-      {form.data.logo ? (
+      {readOnly ? null : form.data.logo ? (
         <div className="flex justify-center gap-3">
           <Button type="button" size="sm" onClick={submit} isLoading={form.processing}>
             Enregistrer le logo
@@ -125,9 +136,16 @@ export const VisualIdentity = ({ organization }: VisualIdentityProps) => {
         )
       )}
 
-      <p className="text-xs text-slate-500 font-medium">
-        Format carré, PNG, JPG, WebP ou SVG (max {ORGANIZATION_LOGO_MAX_SIZE.replace('mb', ' Mo')}).
-      </p>
+      {readOnly ? (
+        <p className="text-xs text-slate-500 font-medium">
+          Seul un administrateur du cabinet peut modifier le logo.
+        </p>
+      ) : (
+        <p className="text-xs text-slate-500 font-medium">
+          Format carré, PNG, JPG, WebP ou SVG (max {ORGANIZATION_LOGO_MAX_SIZE.replace('mb', ' Mo')}
+          ).
+        </p>
+      )}
     </Card>
   )
 }

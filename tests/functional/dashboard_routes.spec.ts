@@ -1,13 +1,14 @@
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { createAdvisor } from '#tests/support/actors'
+import { createAdmin, createAdvisor } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
 
 /**
  * Mutations du dashboard conseiller (candidats, organisation, invitations) :
- * refus anonyme en JSON (401) et chemin nominal pour un conseiller connecté.
+ * refus anonyme en JSON (401) et chemin nominal pour un conseiller connecté
+ * (un administrateur pour les mutations du cabinet, cf. #61).
  *
  * `loginAs()` écrit directement dans la session (store mémoire en test) : plus
  * besoin de rejouer le formulaire de login ni de recopier les cookies.
@@ -66,17 +67,17 @@ test.group('Dashboard routes (functional)', (group) => {
     response.assertStatus(401)
   })
 
-  test('PUT /dashboard/conseiller/settings/organization updates org and redirects when authenticated', async ({
+  test('PUT /dashboard/conseiller/settings/organization updates org and redirects when authenticated as admin', async ({
     assert,
     client,
   }) => {
-    const advisor = await createAdvisor()
-    const org = await Organization.findOrFail(advisor.organizationId)
+    const admin = await createAdmin()
+    const org = await Organization.findOrFail(admin.organizationId)
     const newName = 'Updated Org'
 
     const response = await client
       .put('/dashboard/conseiller/settings/organization')
-      .loginAs(advisor)
+      .loginAs(admin)
       .header('Accept', 'application/json')
       .json({ name: newName, slug: org.slug })
       .redirects(0)
@@ -102,16 +103,16 @@ test.group('Dashboard routes (functional)', (group) => {
     assert.isNull(await User.findBy('email', 'advisor@example.com'))
   })
 
-  test('POST /dashboard/conseiller/settings/organization/advisors invites advisor and redirects when authenticated', async ({
+  test('POST /dashboard/conseiller/settings/organization/advisors invites advisor and redirects when authenticated as admin', async ({
     assert,
     client,
   }) => {
-    const advisor = await createAdvisor()
+    const admin = await createAdmin()
     const invitedEmail = 'invited.advisor@example.com'
 
     const response = await client
       .post('/dashboard/conseiller/settings/organization/advisors')
-      .loginAs(advisor)
+      .loginAs(admin)
       .header('Accept', 'application/json')
       .json({ name: 'Invited Advisor', email: invitedEmail, role: 'consultant' })
       .redirects(0)
@@ -122,6 +123,6 @@ test.group('Dashboard routes (functional)', (group) => {
     const invitedUser = await User.findBy('email', invitedEmail)
     assert.isNotNull(invitedUser)
     assert.equal(invitedUser!.name, 'Invited Advisor')
-    assert.equal(invitedUser!.organizationId, advisor.organizationId)
+    assert.equal(invitedUser!.organizationId, admin.organizationId)
   })
 })

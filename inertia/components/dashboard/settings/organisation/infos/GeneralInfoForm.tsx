@@ -1,15 +1,17 @@
-import { useForm } from "@inertiajs/react";
-import { useEffect } from "react";
-import Button from "~/components/ui/Button";
-import Card from "~/components/ui/Card";
-import Input from "~/components/ui/Input";
-import { Organization } from "~/types/organization";
+import { useForm } from '@inertiajs/react'
+import { useEffect } from 'react'
+import Button from '~/components/ui/Button'
+import Card from '~/components/ui/Card'
+import Input from '~/components/ui/Input'
+import { Organization } from '~/types/organization'
 
 interface GeneralInfoFormProps {
-  organization: Organization;
+  organization: Organization
+  /** Consultation seule (conseiller, expert) : la modification est réservée aux admins. */
+  readOnly?: boolean
 }
 
-export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => {
+export const GeneralInfoForm = ({ organization: org, readOnly = false }: GeneralInfoFormProps) => {
   const orgForm = useForm({ name: '', slug: '' })
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => 
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          if (readOnly) return
           orgForm.put('/dashboard/conseiller/settings/organization')
         }}
         className="space-y-6"
@@ -38,6 +41,7 @@ export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => 
           onChange={(e) => orgForm.setData('name', e.target.value)}
           placeholder="Ex: FTC Paris"
           error={orgForm.errors.name}
+          disabled={readOnly}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
@@ -46,6 +50,7 @@ export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => 
             onChange={(e) => orgForm.setData('slug', e.target.value)}
             placeholder="ftc-paris"
             error={orgForm.errors.slug}
+            disabled={readOnly}
           />
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
@@ -57,17 +62,23 @@ export const GeneralInfoForm = ({ organization: org }: GeneralInfoFormProps) => 
           </div>
         </div>
 
-        <div className="pt-4">
-          <Button
-            type="submit"
-            isLoading={orgForm.processing}
-            disabled={orgForm.processing}
-            className="w-full shadow-indigo-100"
-          >
-            Mettre à jour les infos
-          </Button>
-        </div>
+        {readOnly ? (
+          <p className="text-xs text-slate-500 font-medium">
+            Seul un administrateur du cabinet peut modifier ces informations.
+          </p>
+        ) : (
+          <div className="pt-4">
+            <Button
+              type="submit"
+              isLoading={orgForm.processing}
+              disabled={orgForm.processing}
+              className="w-full shadow-indigo-100"
+            >
+              Mettre à jour les infos
+            </Button>
+          </div>
+        )}
       </form>
     </Card>
-  );
-};
+  )
+}

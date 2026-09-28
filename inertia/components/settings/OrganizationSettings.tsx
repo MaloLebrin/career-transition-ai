@@ -35,12 +35,12 @@ const OrganizationSettings: React.FC<Props> = ({
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
 
-  const canInvite = useMemo(() => {
-    const isAdmin = isOrganizationAdmin(user?.role)
-    const isUserSuperAdmin = isSuperAdmin(user?.role)
-    const hasUserRightToInvite = isUserSuperAdmin || isAdmin
-    return hasUserRightToInvite && team.length < MAX_LICENSES_ADVISORS
-  }, [user?.role, team.length])
+  // Aligné sur `middleware.admin()` des routes de mutation du cabinet.
+  const canManage = isOrganizationAdmin(user?.role) || isSuperAdmin(user?.role)
+  const canInvite = useMemo(
+    () => canManage && team.length < MAX_LICENSES_ADVISORS,
+    [canManage, team.length]
+  )
 
   if (!org) {
     return (
@@ -89,7 +89,7 @@ const OrganizationSettings: React.FC<Props> = ({
             <ProfileForm user={user as UserSession} setSuccess={setSuccess} />
           </Card>
 
-          <GeneralInfoForm organization={org} />
+          <GeneralInfoForm organization={org} readOnly={!canManage} />
 
           <TeamCard
             team={team}
@@ -101,7 +101,7 @@ const OrganizationSettings: React.FC<Props> = ({
 
         {/* Branding & Side Info */}
         <div className="lg:col-span-5 space-y-8">
-          <VisualIdentity organization={org} />
+          <VisualIdentity organization={org} readOnly={!canManage} />
           <UsageCompletionCard numberOfLicenses={team.length} />
         </div>
       </div>
