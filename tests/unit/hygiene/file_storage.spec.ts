@@ -27,7 +27,6 @@ const CONFIG_FILES = [
   '.env.production.example',
   'deploy/.env.example',
   'deploy/compose.yml',
-  'render.yaml',
   'Dockerfile',
   'scripts/smoke_compose_prod.sh',
   '.github/workflows/ci.yml',

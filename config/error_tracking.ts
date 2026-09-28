@@ -10,8 +10,8 @@ import env from '#start/env'
 const errorTrackingConfig = {
   dsn: env.get('SENTRY_DSN'),
   environment: env.get('SENTRY_ENVIRONMENT', env.get('NODE_ENV')),
-  /** Sha du commit déployé : `RENDER_GIT_COMMIT` est fourni par Render. */
-  release: env.get('SENTRY_RELEASE') ?? env.get('RENDER_GIT_COMMIT'),
+  /** Sha du commit déployé (`git rev-parse HEAD`). */
+  release: env.get('SENTRY_RELEASE'),
 }
 
 export default errorTrackingConfig
