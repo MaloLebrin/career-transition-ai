@@ -147,6 +147,32 @@ Référence Resend: [Send Test Emails](https://resend.com/docs/dashboard/emails/
 
 ---
 
+## Domaine vérifié (production, issue #19)
+
+Sans domaine vérifié, Resend n'envoie qu'à l'adresse de ton propre compte : les testeurs ne reçoivent ni lien d'onboarding ni notification. La cible de production est donc **un domaine à soi (~7 €/an) vérifié chez Resend**.
+
+1. Acheter le domaine chez un registrar (OVH, Gandi, Cloudflare…).
+2. Resend → **Domains → Add domain**, région **EU (`eu-west-1`)** (données hébergées dans l'UE, cf. [RGPD.md](RGPD.md)). Un sous-domaine d'envoi (`mail.<domaine>`) isole la réputation d'envoi du domaine principal.
+3. Chez le registrar, créer les enregistrements DNS affichés par Resend : **DKIM** (TXT `resend._domainkey`), **SPF** (MX + TXT sur le sous-domaine `send`). Ajouter un **DMARC** (`_dmarc`, TXT `v=DMARC1; p=none;`) : recommandé, il améliore la délivrabilité.
+4. Attendre le statut **Verified** (quelques minutes à quelques heures), puis créer une clé API (_Sending access_, limitée au domaine).
+5. Variables de production (`~/cta/.env` sur la VM, `docs/DEPLOYMENT.md` §2.3) :
+
+   ```bash
+   MAIL_PROVIDER=resend
+   RESEND_API_KEY=re_xxx
+   MAIL_FROM_EMAIL=no-reply@<ton-domaine>
+   MAIL_FROM_NAME="Career Transition AI"
+   ADMIN_CONTACT_EMAIL=contact@<ton-domaine>
+   ```
+
+6. Vérifier : créer un candidat test depuis l'UI super admin → l'e-mail d'onboarding arrive, expédié par `MAIL_FROM_EMAIL` (le provider Resend transmet l'expéditeur du message tel quel).
+
+**Garde au démarrage** (`config/mail.ts`) : en production avec `MAIL_PROVIDER=resend`, le serveur refuse de démarrer si `RESEND_API_KEY` ou `MAIL_FROM_EMAIL` manque, ou si l'expéditeur est encore en `@resend.dev` (domaine non vérifié). Message : `Mail : … (voir docs/MAIL.md)`.
+
+**Repli sans domaine** : `MAIL_PROVIDER=console` (+ `MAIL_FROM_EMAIL=onboarding@resend.dev`, requis en production par les services mail). Les e-mails sont écrits dans les logs ; le super admin y récupère le lien d'onboarding et le transmet à la main (`docs/DEPLOYMENT.md` §3.5).
+
+---
+
 ## Tests
 
 ### Unit tests
@@ -158,10 +184,10 @@ node ace test --suite=unit
 ```
 
 Test existant :
+
 - `tests/unit/services/onboarding_notify_service.spec.ts` (vérifie que l’envoi onboarding passe par la couche mail)
 
 ### Stratégie de test recommandée
 
 - **Mock du provider** : instancier `new MailService(fakeProvider)` dans les tests ciblés si besoin.
 - **Ne pas tester les SDKs** dans les tests unit : tester plutôt que `MailService.send()` appelle bien le provider avec le bon `MailMessage`.
-

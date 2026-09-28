@@ -26,7 +26,8 @@ test.group('ResendMailProvider', () => {
     })
 
     assert.equal(sent.length, 1)
-    assert.equal(sent[0].from, 'Contact <contact@careertransition.fr>')
+    // Régression #19 : l'expéditeur du message (MAIL_FROM_EMAIL) est transmis tel quel
+    assert.equal(sent[0].from, 'From <from@example.com>')
     assert.deepEqual(sent[0].to, ['To <to@example.com>'])
     assert.equal(sent[0].subject, 'Hello')
     assert.equal(sent[0].text, 'Body')

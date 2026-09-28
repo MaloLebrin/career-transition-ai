@@ -382,7 +382,7 @@ docker compose run --rm --entrypoint node app ace.js migration:rollback --force 
 
 ### 3.5 Créer les comptes testeurs (beta)
 
-Le super admin crée l'organisation puis les conseillers/candidats depuis l'UI. Sans domaine vérifié (`MAIL_PROVIDER=console`), récupérer les liens d'onboarding :
+Le super admin crée l'organisation puis les conseillers/candidats depuis l'UI. Avec un domaine vérifié (`MAIL_PROVIDER=resend`, [MAIL.md](MAIL.md#domaine-vérifié-production-issue-19)), chaque testeur reçoit son lien d'onboarding par e-mail. En repli sans domaine (`MAIL_PROVIDER=console`), récupérer les liens d'onboarding :
 
 ```bash
 docker compose logs app --since 10m | grep -i 'onboarding'
@@ -407,7 +407,8 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 | Lien d'onboarding en `http://`                                                | `trustProxy` par défaut (`loopback`)                                           | §0.6.                                                                                                                                        |
 | SSE coupés toutes les ~60–100 s, reconnexions en boucle                       | proxy qui bufferise / pas de keep-alive                                        | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6).                                                                                   |
 | Analyse IA vide avec message d'erreur                                         | rate-limit plan Experiment / clé absente                                       | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois.                                                         |
-| E-mail non reçu par un testeur (Resend)                                       | pas de domaine vérifié : envoi restreint à ton adresse                         | Domaine + vérification DNS, ou `MAIL_PROVIDER=console`.                                                                                      |
+| E-mail non reçu par un testeur (Resend)                                       | domaine non vérifié : envoi restreint à ton adresse                            | Vérifier le domaine ([MAIL.md](MAIL.md#domaine-vérifié-production-issue-19)), ou `MAIL_PROVIDER=console`.                                    |
+| Démarrage : `Mail : RESEND_API_KEY manquante` / `MAIL_FROM_EMAIL …`           | `MAIL_PROVIDER=resend` incomplet, ou expéditeur encore en `@resend.dev`        | Renseigner `RESEND_API_KEY` et `MAIL_FROM_EMAIL=no-reply@<ton-domaine>` (domaine vérifié), ou revenir à `console`.                           |
 | Oracle : instance disparue                                                    | récupération « idle » Always Free                                              | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG.                                                                      |
 | OOM / redémarrages                                                            | pas de plafond V8 sur 512 Mo                                                   | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker).                                                                               |
 
@@ -437,8 +438,8 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 | `SENTRY_ENVIRONMENT`                                                      | non (défaut `NODE_ENV`)                             | `production`, `staging`… pour séparer les environnements dans Sentry                                                                                                                                                               |
 | `SENTRY_RELEASE`                                                          | non                                                 | sha du commit déployé (`git rev-parse HEAD`)                                                                                                                                                                                       |
 
-| `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié ; `console` écrit les e-mails dans les logs |
-| `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console`) | adresse du domaine vérifié |
+| `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié (garde au démarrage, `config/mail.ts`) ; `console` écrit les e-mails dans les logs |
+| `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console` ; au démarrage avec `resend`) | adresse du domaine vérifié, jamais `@resend.dev` avec `resend` |
 | `MAIL_FROM_NAME` | non | nom d'expéditeur |
 | `RESEND_API_KEY` | si `MAIL_PROVIDER=resend` | clé Resend |
 | `ADMIN_CONTACT_EMAIL` | non | destinataire des demandes de contact / démo |

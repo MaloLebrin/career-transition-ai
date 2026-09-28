@@ -196,7 +196,7 @@ Nécessaires pour un hébergement sain :
 13. ~~**Env**~~ (fait, issue #17) — `.env.example` complet et bootable, `TZ=Europe/Paris`, `.env.production.example`, `packageManager`/`engines` dans `package.json`, variables mail/admin déclarées dans le schéma.
 14. ~~**Clé Mistral côté client**~~ (fait, issue #18) — supprimer `VITE_MISTRAL_API_KEY` et faire passer OCR/suggestions par des endpoints serveur (la clé reste secrète, le quota est protégé, le rate-limit est géré au même endroit que le job).
 15. ~~**`QUEUE_DRIVER=redis`**~~ (fait, issue #17) — retiré de l'enum.
-16. **E-mail sans domaine** — décider : domaine (~7 €/an) + Resend, ou provider SMTP (`nodemailer`, Brevo 300/j ou Gmail 500/j), ou `console` documenté comme mode beta.
+16. ~~**E-mail sans domaine**~~ (tranché, issue #19 : domaine + Resend, procédure dans `docs/MAIL.md`) — options étudiées : domaine (~7 €/an) + Resend, ou provider SMTP (`nodemailer`, Brevo 300/j ou Gmail 500/j), ou `console` documenté comme mode beta.
 17. ~~**Docs**~~ (fait, issue #20) — guide Clever Cloud retiré, liens morts de `docs/README.md` corrigés, `render.yaml` aligné sur le plan Free du runbook, providers IA disparus retirés des docs.
 
 ### 3.3 Checklist post-déploiement
