@@ -101,10 +101,11 @@ Route :
 
 - `GET /dashboard/pdf-exports/:id/download`
 
-La route vérifie :
+La route (`PdfExportDownloadsService`, `#services/pdf_export_downloads_service`) vérifie, dans cet ordre :
 
-- que l’export est `completed`
-- et que l’utilisateur a le droit d’accéder à cet export (RBAC + correspondance `employeeId` côté candidat)
+1. que l’export est dans la portée de l’utilisateur, **dans la requête** : super admin → tous ; conseiller, expert, admin → son organisation ; candidat → ses demandes ou celles de sa fiche (`employeeId`). Hors portée ou inexistant → **404** (jamais 403, pour ne pas révéler l’existence d’un export d’une autre organisation) ;
+2. que l’export est `completed` → sinon **409** ;
+3. que le fichier existe dans le stockage → sinon **404**.
 
 ### Job “ai” (analyse qualitative d’exercice)
 

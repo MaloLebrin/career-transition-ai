@@ -108,7 +108,8 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
     assert.equal(Buffer.from(response.body()).toString(), '%PDF-1.4 contenu de test')
   })
 
-  test('conseiller d’une autre organisation : 403', async ({ client }) => {
+  /** #63 : 404, jamais 403 — la réponse ne confirme pas l'existence de l'export. */
+  test('conseiller d’une autre organisation : 404', async ({ client }) => {
     const owner = await createAdvisor()
     const pdfExport = await exportFor(owner)
     const outsider = await createAdvisor(await createOrganization())
@@ -117,7 +118,7 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
       .get(`/dashboard/pdf-exports/${pdfExport.id}/download`)
       .loginAs(outsider)
 
-    response.assertStatus(403)
+    response.assertStatus(404)
   })
 
   test('super admin : télécharge l’export de n’importe quelle organisation', async ({ client }) => {
@@ -152,7 +153,7 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
     response.assertStatus(200)
   })
 
-  test('candidat : 403 sur l’export d’une autre fiche de sa propre organisation', async ({
+  test('candidat : 404 sur l’export d’une autre fiche de sa propre organisation', async ({
     client,
   }) => {
     const organization = await createOrganization()
@@ -164,10 +165,10 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
       .get(`/dashboard/pdf-exports/${pdfExport.id}/download`)
       .loginAs(user)
 
-    response.assertStatus(403)
+    response.assertStatus(404)
   })
 
-  test('export non terminé : 400', async ({ client }) => {
+  test('export non terminé : 409', async ({ client }) => {
     const advisor = await createAdvisor()
     const pdfExport = await exportFor(advisor, { status: PDF_EXPORT_STATUSES.PROCESSING })
 
@@ -175,7 +176,7 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
       .get(`/dashboard/pdf-exports/${pdfExport.id}/download`)
       .loginAs(advisor)
 
-    response.assertStatus(400)
+    response.assertStatus(409)
   })
 
   test('export inexistant : 404', async ({ client }) => {

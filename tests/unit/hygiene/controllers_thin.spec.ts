@@ -17,7 +17,6 @@ const BASELINE: Record<string, number> = {
   'employees_controller.ts': 16,
   'exercise_results_controller.ts': 10,
   'onboarding_controller.ts': 2,
-  'pdf_export_downloads_controller.ts': 1,
   'pdf_exports_controller.ts': 1,
   'super_admin_controller.ts': 8,
   'support_plan_steps_controller.ts': 11,
