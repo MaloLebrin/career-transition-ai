@@ -1,26 +1,22 @@
-import ContactRequest, { CONTACT_REQUEST_STATUSES } from '#models/contact_request'
-import { ContactRequestMailService } from '#services/mail/contact_request_mail_service'
+import { ContactRequestsService } from '#services/contact_requests_service'
 import { createContactRequestValidator } from '#validators/contact_request/create_contact_request_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class ContactRequestsController {
-  constructor(private mailService: ContactRequestMailService) {}
+  constructor(private contactRequestsService: ContactRequestsService) {}
 
-  public async store({ request, response }: HttpContext) {
+  /**
+   * POST /contact-requests — soumis par `useForm` (Inertia) : redirection vers
+   * la page d'origine, jamais de JSON (règle `inertia-no-fetch-json`).
+   */
+  public async store({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(createContactRequestValidator)
 
-    const contactRequest = await ContactRequest.create({
-      ...payload,
-      status: CONTACT_REQUEST_STATUSES.PENDING,
-    })
+    await this.contactRequestsService.create(payload)
 
-    await Promise.allSettled([
-      this.mailService.sendAdminNotification(contactRequest),
-      this.mailService.sendConfirmationToRequester(contactRequest),
-    ])
-
-    return response.created({ success: true, id: contactRequest.id })
+    session.flash('success', 'Votre message a bien été envoyé.')
+    return response.redirect().back()
   }
 }
