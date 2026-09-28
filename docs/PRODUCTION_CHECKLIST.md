@@ -4,7 +4,8 @@ Checklist des points à traiter avant ou pour la mise en production.
 
 ## Onboarding & emails
 
-- [x] **Envoi d’email réel** — `MailService` (providers `resend` et `console`) et `OnboardingMailService` envoient les liens d’activation : voir [MAIL.md](MAIL.md). Reste à décider l’envoi sans domaine vérifié (issue #19) ; d’ici là, `MAIL_PROVIDER=console` et lien lu dans les logs.
+- [x] **Envoi d’email réel** — `MailService` (providers `resend` et `console`) et `OnboardingMailService` envoient les liens d’activation : voir [MAIL.md](MAIL.md). Envoi sans domaine tranché (issue #19) : domaine vérifié chez Resend.
+- [ ] **Domaine vérifié chez Resend** — SPF/DKIM (+ DMARC), région EU, puis `MAIL_PROVIDER=resend`, `RESEND_API_KEY`, `MAIL_FROM_EMAIL=no-reply@<domaine>` : voir [MAIL.md](MAIL.md#domaine-vérifié-production-issue-19). D’ici là, `MAIL_PROVIDER=console` et lien lu dans les logs.
 - [ ] **(Optionnel) Doublon Employee** — En cas de ré-invitation (même email, pas encore onboardé), éviter de créer un second `Employee` : réutiliser celui existant (recherche par email + organisation) ou documenter le comportement actuel.
 
 ## Sécurité & configuration

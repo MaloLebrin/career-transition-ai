@@ -1,4 +1,5 @@
 import { missingCloudinaryEnv } from '#config/cloudinary'
+import { mailProductionErrors } from '#config/mail'
 import queueConfig from '#config/queue'
 import { envSchema } from '#start/env_schema'
 import { EnvParser } from '@adonisjs/core/env'
@@ -107,6 +108,14 @@ for (const file of ['.env.production.example', 'deploy/.env.example']) {
       const { parsed } = validate(await parseEnvFile(file))
       assert.deepEqual(
         missingCloudinaryEnv((name) => parsed[name] as string | undefined),
+        []
+      )
+    })
+
+    test('passe la garde e-mail du démarrage (config/mail.ts)', async ({ assert }) => {
+      const { parsed } = validate(await parseEnvFile(file))
+      assert.deepEqual(
+        mailProductionErrors((name) => parsed[name] as string | undefined),
         []
       )
     })

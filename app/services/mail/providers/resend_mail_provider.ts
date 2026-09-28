@@ -27,9 +27,8 @@ export class ResendMailProvider implements MailProvider {
     const toList = Array.isArray(message.to) ? message.to : [message.to]
     const isDevTestMode = !app.inProduction && resolveDevTestMode()
     const resolvedTo = isDevTestMode ? [resolveDevTestTo(message)] : toList.map(toResendAddress)
-    const resolvedFrom = isDevTestMode
-      ? resolveDevTestFrom()
-      : 'Contact <contact@careertransition.fr>'
+    // En production, l'expéditeur du message (MAIL_FROM_EMAIL, domaine vérifié chez Resend)
+    const resolvedFrom = isDevTestMode ? resolveDevTestFrom() : toResendAddress(message.from)
 
     if (isDevTestMode) {
       Logger.info(

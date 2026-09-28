@@ -54,8 +54,9 @@ services:
       - key: REGISTRATION_ENABLED
         value: "false"
 
-      # Mail : `console` tant qu'aucun domaine n'est vérifié (issue #19),
-      # le lien d'onboarding est lu dans les logs Render.
+      # Mail : `console` tant que le domaine n'est pas vérifié chez Resend ; le lien
+      # d'onboarding est lu dans les logs Render. Ensuite : MAIL_PROVIDER=resend,
+      # RESEND_API_KEY et MAIL_FROM_EMAIL=no-reply@<domaine> (docs/MAIL.md, issue #19).
       - key: MAIL_PROVIDER
         value: console
       - key: MAIL_FROM_EMAIL
