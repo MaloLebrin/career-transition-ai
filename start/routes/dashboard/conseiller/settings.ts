@@ -4,7 +4,8 @@ const OrganizationsController = () => import('#controllers/organizations_control
 const OrganizationLogosController = () => import('#controllers/organization_logos_controller')
 
 /**
- * Settings
+ * Settings — lecture ouverte aux conseillers, mutations du cabinet (infos,
+ * logo, invitations) réservées aux administrateurs.
  */
 router
   .group(() => {
@@ -18,6 +19,7 @@ router
         router.delete('/logo', [OrganizationLogosController, 'destroy'])
       })
       .prefix('/organization')
+      .use(middleware.admin())
   })
   .use([middleware.auth(), middleware.advisorOrAdmin()])
   .prefix('/dashboard/conseiller/settings')

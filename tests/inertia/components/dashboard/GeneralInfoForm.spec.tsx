@@ -21,14 +21,14 @@ describe('GeneralInfoForm', () => {
     expect(() => render(<GeneralInfoForm organization={mockOrg} />)).not.toThrow()
   })
 
-  test('pré-remplit les champs avec les données de l\'organisation', () => {
+  test("pré-remplit les champs avec les données de l'organisation", () => {
     render(<GeneralInfoForm organization={mockOrg} />)
 
     expect(screen.getByDisplayValue('Mon Cabinet')).toBeInTheDocument()
     expect(screen.getByDisplayValue('mon-cabinet')).toBeInTheDocument()
   })
 
-  test('réinitialise le formulaire quand l\'organisation change d\'id', () => {
+  test("réinitialise le formulaire quand l'organisation change d'id", () => {
     const { rerender } = render(<GeneralInfoForm organization={mockOrg} />)
 
     const updatedOrg = { ...mockOrg, id: 2, name: 'Nouveau Cabinet', slug: 'nouveau-cabinet' }
@@ -36,5 +36,22 @@ describe('GeneralInfoForm', () => {
 
     expect(screen.getByDisplayValue('Nouveau Cabinet')).toBeInTheDocument()
     expect(screen.getByDisplayValue('nouveau-cabinet')).toBeInTheDocument()
+  })
+
+  test('admin : champs modifiables et bouton de mise à jour', () => {
+    render(<GeneralInfoForm organization={mockOrg} />)
+
+    expect(screen.getByDisplayValue('Mon Cabinet')).not.toBeDisabled()
+    expect(screen.getByText('Mettre à jour les infos')).toBeInTheDocument()
+  })
+
+  /** #61 : un conseiller ou un expert consulte le cabinet sans pouvoir le modifier. */
+  test('lecture seule : champs désactivés, pas de bouton de mise à jour', () => {
+    render(<GeneralInfoForm organization={mockOrg} readOnly />)
+
+    expect(screen.getByDisplayValue('Mon Cabinet')).toBeDisabled()
+    expect(screen.getByDisplayValue('mon-cabinet')).toBeDisabled()
+    expect(screen.queryByText('Mettre à jour les infos')).not.toBeInTheDocument()
+    expect(screen.getByText(/Seul un administrateur du cabinet/)).toBeInTheDocument()
   })
 })

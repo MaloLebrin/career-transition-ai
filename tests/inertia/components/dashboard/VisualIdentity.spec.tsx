@@ -82,4 +82,17 @@ describe('VisualIdentity', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('Le fichier est trop volumineux')
   })
+
+  /** #61 : un conseiller ou un expert voit le logo sans pouvoir le changer. */
+  test('lecture seule : logo affiché, aucune action', () => {
+    render(
+      <VisualIdentity organization={{ ...ORG, logoUrl: 'https://res.test/logo.png' }} readOnly />
+    )
+
+    expect(screen.getByAltText('Logo du cabinet')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Choisir un logo')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('logo-input')).not.toBeInTheDocument()
+    expect(screen.queryByText('Supprimer le logo')).not.toBeInTheDocument()
+    expect(screen.getByText(/Seul un administrateur du cabinet/)).toBeInTheDocument()
+  })
 })

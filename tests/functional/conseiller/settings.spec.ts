@@ -2,7 +2,13 @@ import Organization from '#models/organization'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import { createAdmin, createAdvisor, createCandidate, createUser } from '#tests/support/actors'
+import {
+  createAdmin,
+  createAdvisor,
+  createCandidate,
+  createOrganization,
+  createUser,
+} from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { assertFieldErrors, inertiaErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
@@ -239,13 +245,13 @@ test.group('Conseiller — paramètres : logo du cabinet', (group) => {
   })
 
   test('uploade le logo de son cabinet (image publique)', async ({ client, assert }) => {
-    const advisor = await createAdvisor()
+    const admin = await createAdmin()
     const other = await createAdmin()
 
     const response = await client
       .post(LOGO)
       .file('logo', PNG, { filename: 'logo.png' })
-      .loginAs(advisor)
+      .loginAs(admin)
       .withInertia()
       .header('referer', SETTINGS)
       .redirects(0)
@@ -254,7 +260,7 @@ test.group('Conseiller — paramètres : logo du cabinet', (group) => {
     response.assertHeader('location', SETTINGS)
     assert.equal(response.flashMessage('success'), 'Logo mis à jour.')
 
-    const org = await Organization.findOrFail(advisor.organizationId)
+    const org = await Organization.findOrFail(admin.organizationId)
     assert.match(org.logoPublicId!, new RegExp(`/organizations/${org.id}/logo/logo_`))
     assert.include(org.logoUrl!, org.logoPublicId!)
     assert.deepEqual(cloud.uploaded, [
@@ -304,7 +310,7 @@ test.group('Conseiller — paramètres : logo du cabinet', (group) => {
     const owner = await createAdmin()
     await client.post(LOGO).file('logo', PNG, { filename: 'logo.png' }).loginAs(owner)
     const ownerLogo = await logoPublicIdOf(owner)
-    const intruder = await createAdvisor()
+    const intruder = await createAdmin()
 
     await client.delete(LOGO).loginAs(intruder).redirects(0)
 
@@ -348,6 +354,115 @@ test.group('Conseiller — paramètres : logo du cabinet', (group) => {
 
     response.assertStatus(403)
     assert.deepEqual(cloud.uploaded, [])
+  })
+})
+
+/**
+ * Régression #61 : les mutations du cabinet n'étaient protégées que par
+ * `advisorOrAdmin()` — un conseiller ou un expert pouvait renommer le cabinet,
+ * changer son logo ou inviter un administrateur.
+ */
+test.group('Conseiller — paramètres : mutations réservées aux administrateurs', (group) => {
+  const PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    'base64'
+  )
+  let cloud: FakeCloudinary
+  let mails: RecordingMailProvider
+
+  group.each.setup(() => truncateDb())
+  group.each.setup(() => {
+    cloud = swapFakeCloudinary()
+    mails = fakeMail()
+    return () => {
+      restoreCloudinary()
+      restoreMail()
+    }
+  })
+
+  const nonAdmins = [
+    { label: 'conseiller', create: (org: Organization) => createAdvisor(org) },
+    {
+      label: 'expert',
+      create: (org: Organization) => createUser(USERS_ROLES.EXPERT, org),
+    },
+  ]
+
+  for (const { label, create } of nonAdmins) {
+    test(`un ${label} peut consulter les paramètres`, async ({ client }) => {
+      const org = await createOrganization()
+      const user = await create(org)
+
+      const response = await client.get(SETTINGS).loginAs(user).withInertia()
+
+      response.assertStatus(200)
+    })
+
+    test(`un ${label} ne peut pas modifier le cabinet (403)`, async ({ client, assert }) => {
+      const org = await createOrganization()
+      const user = await create(org)
+
+      const response = await client
+        .put(`${SETTINGS}/organization`)
+        .json({ name: 'Cabinet Pirate' })
+        .loginAs(user)
+        .redirects(0)
+
+      response.assertStatus(403)
+      const after = await Organization.findOrFail(org.id)
+      assert.equal(after.name, org.name)
+    })
+
+    test(`un ${label} ne peut pas inviter de collaborateur (403)`, async ({
+      client,
+      assert,
+      db,
+    }) => {
+      const org = await createOrganization()
+      const user = await create(org)
+
+      const response = await client
+        .post(`${SETTINGS}/organization/advisors`)
+        .json({ name: 'Nouvel admin', email: 'pirate@example.com', role: 'admin' })
+        .loginAs(user)
+        .redirects(0)
+
+      response.assertStatus(403)
+      await db.assertCount('users', 1)
+      assert.deepEqual(mails.sent, [])
+    })
+
+    test(`un ${label} ne peut ni changer ni supprimer le logo (403)`, async ({
+      client,
+      assert,
+    }) => {
+      const org = await createOrganization()
+      const user = await create(org)
+
+      const upload = await client
+        .post(`${SETTINGS}/organization/logo`)
+        .file('logo', PNG, { filename: 'logo.png' })
+        .loginAs(user)
+        .redirects(0)
+      const removal = await client
+        .delete(`${SETTINGS}/organization/logo`)
+        .loginAs(user)
+        .redirects(0)
+
+      upload.assertStatus(403)
+      removal.assertStatus(403)
+      assert.deepEqual(cloud.uploaded, [])
+    })
+  }
+
+  test('un visiteur non connecté est renvoyé vers la connexion', async ({ client }) => {
+    const response = await client
+      .put(`${SETTINGS}/organization`)
+      .json({ name: 'Anonyme' })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', '/auth/login')
   })
 })
 
