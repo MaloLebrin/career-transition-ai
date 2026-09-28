@@ -1,6 +1,7 @@
 import { CloudinaryService } from '#services/cloudinary_service'
 import type { CloudinaryAsset, CloudinaryUploadResult } from '#shared/types/storage/cloudinary'
 import app from '@adonisjs/core/services/app'
+import { readFile } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 
 /**
@@ -32,6 +33,10 @@ export class FakeCloudinary extends CloudinaryService {
       bytes: bytes.byteLength,
       secureUrl: `https://res.cloudinary.com/fake/${asset.resourceType}/${asset.deliveryType}/${asset.publicId}`,
     }
+  }
+
+  async uploadFile(path: string, asset: CloudinaryAsset): Promise<CloudinaryUploadResult> {
+    return this.uploadBuffer(await readFile(path), asset)
   }
 
   async download(asset: CloudinaryAsset): Promise<Readable | null> {

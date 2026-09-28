@@ -8,7 +8,6 @@ import { USERS_ROLES } from '#shared/types/advisor/roles'
 type UpdateOrganizationInput = {
   name?: string
   slug?: string
-  logoUrl?: string
 }
 
 export class OrganizationsService {
@@ -21,7 +20,6 @@ export class OrganizationsService {
     org.merge({
       name: input.name ?? org.name,
       slug: input.slug ?? org.slug,
-      logoUrl: input.logoUrl !== undefined ? input.logoUrl : org.logoUrl,
     })
     await org.save()
     return mapOrganization(org)

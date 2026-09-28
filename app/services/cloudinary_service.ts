@@ -28,6 +28,7 @@ export const CloudinaryFolders = {
   organization: (organizationId: number) =>
     `${cloudinaryEnvRoot()}/organizations/${organizationId}`,
   exports: (organizationId: number) => `${CloudinaryFolders.organization(organizationId)}/exports`,
+  logo: (organizationId: number) => `${CloudinaryFolders.organization(organizationId)}/logo`,
 }
 
 /**
@@ -53,6 +54,26 @@ export class CloudinaryService {
         stream.end(Buffer.from(bytes))
       }
     )
+    return {
+      ...asset,
+      publicId: result.public_id,
+      bytes: result.bytes,
+      secureUrl: result.secure_url,
+    }
+  }
+
+  /**
+   * Envoie un fichier reçu en multipart (`file.tmpPath`) sous `asset.publicId`.
+   * Le SDK lit le fichier temporaire lui-même : aucun accès disque ici.
+   */
+  async uploadFile(path: string, asset: CloudinaryAsset): Promise<CloudinaryUploadResult> {
+    this.ensureConfigured()
+    const result = await cloudinary.uploader.upload(path, {
+      public_id: asset.publicId,
+      resource_type: asset.resourceType,
+      type: asset.deliveryType,
+      overwrite: true,
+    })
     return {
       ...asset,
       publicId: result.public_id,

@@ -6,7 +6,12 @@ const mockOnBack = vi.fn()
 
 vi.mock('../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
-    user: { id: 1, name: 'Conseiller Test', email: 'advisor@example.com', role: 'advisor' as const },
+    user: {
+      id: 1,
+      name: 'Conseiller Test',
+      email: 'advisor@example.com',
+      role: 'advisor' as const,
+    },
   }),
 }))
 
@@ -16,6 +21,7 @@ vi.mock('@inertiajs/react', () => ({
     setData: vi.fn(),
     put: vi.fn(),
     post: vi.fn(),
+    reset: vi.fn(),
     processing: false,
     errors: {},
   }),
@@ -28,8 +34,20 @@ const mockOrganization = {
   createdAt: '2025-01-01T00:00:00.000Z',
 }
 
-const mockMembers: { id: number; organizationId: number; email: string; name: string; role: string }[] = [
-  { id: 1, organizationId: 1, email: 'advisor@example.com', name: 'Conseiller Test', role: 'expert' },
+const mockMembers: {
+  id: number
+  organizationId: number
+  email: string
+  name: string
+  role: string
+}[] = [
+  {
+    id: 1,
+    organizationId: 1,
+    email: 'advisor@example.com',
+    name: 'Conseiller Test',
+    role: 'expert',
+  },
 ]
 
 describe('OrganizationSettings', () => {
@@ -44,17 +62,13 @@ describe('OrganizationSettings', () => {
 
     expect(screen.getByText('Mon Cabinet')).toBeInTheDocument()
     expect(screen.getByText('Mon Profil Personnel')).toBeInTheDocument()
-    expect(screen.getByText('Identité visuelle et gestion d\'équipe')).toBeInTheDocument()
+    expect(screen.getByText("Identité visuelle et gestion d'équipe")).toBeInTheDocument()
     expect(screen.getByText('Mon Équipe')).toBeInTheDocument()
   })
 
   test('renders with empty members list and shows no collaborator message', () => {
     render(
-      <OrganizationSettings
-        organization={mockOrganization}
-        members={[]}
-        onBack={mockOnBack}
-      />
+      <OrganizationSettings organization={mockOrganization} members={[]} onBack={mockOnBack} />
     )
 
     expect(screen.getByText('Mon Cabinet')).toBeInTheDocument()
@@ -62,12 +76,35 @@ describe('OrganizationSettings', () => {
   })
 
   test('shows loading spinner when organization is not provided', () => {
-    const { container } = render(
-      <OrganizationSettings onBack={mockOnBack} />
-    )
+    const { container } = render(<OrganizationSettings onBack={mockOnBack} />)
 
     const spinner = container.querySelector('.animate-spin')
     expect(spinner).toBeInTheDocument()
     expect(screen.queryByText('Mon Cabinet')).not.toBeInTheDocument()
+  })
+
+  /** Régression : l'organisation était figée dans un useState, le nouveau logo n'apparaissait pas. */
+  test('affiche le logo renvoyé par Inertia après un upload', () => {
+    const { rerender } = render(
+      <OrganizationSettings
+        organization={mockOrganization}
+        members={mockMembers}
+        onBack={mockOnBack}
+      />
+    )
+    expect(screen.queryByAltText('Logo du cabinet')).not.toBeInTheDocument()
+
+    rerender(
+      <OrganizationSettings
+        organization={{ ...mockOrganization, logoUrl: 'https://res.test/logo.png' }}
+        members={mockMembers}
+        onBack={mockOnBack}
+      />
+    )
+
+    expect(screen.getByAltText('Logo du cabinet')).toHaveAttribute(
+      'src',
+      'https://res.test/logo.png'
+    )
   })
 })
