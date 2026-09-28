@@ -7,7 +7,9 @@ const PdfExportDownloadsController = () => import('#controllers/pdf_export_downl
 router
   .group(() => {
     router.get('/', [DashboardController, 'index'])
-    router.get('/pdf-exports/:id/download', [PdfExportDownloadsController, 'show'])
+    router
+      .get('/pdf-exports/:id/download', [PdfExportDownloadsController, 'show'])
+      .where('id', router.matchers.number())
   })
   .use([middleware.auth()])
   .prefix('/dashboard')

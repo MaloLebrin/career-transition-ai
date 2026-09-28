@@ -50,6 +50,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_MEDIA_NOT_FOUND',
     'E_MEDIA_LIMIT_REACHED',
     'E_MEDIA_FORBIDDEN',
+    'E_PDF_EXPORT_NOT_FOUND',
+    'E_PDF_EXPORT_NOT_READY',
   ]
 
   /**

@@ -1,63 +1,22 @@
-import PdfExport from '#models/pdf_export'
-import Employee from '#models/employee'
-import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
-import { PDF_MIME_TYPE, attachmentDisposition, readPdfStream } from '#services/pdf_storage_service'
+import { PdfExportDownloadsService } from '#services/pdf_export_downloads_service'
+import { attachmentDisposition } from '#services/pdf_storage_service'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
+@inject()
 export default class PdfExportDownloadsController {
+  constructor(private downloads: PdfExportDownloadsService) {}
+
   /**
-   * GET /dashboard/pdf-exports/:id/download
+   * GET /dashboard/pdf-exports/:id/download — export hors de portée ou
+   * inexistant : 404 (`PdfExportNotFoundError`) ; pas encore prêt : 409.
    */
-  public async show(ctx: HttpContext) {
-    const user = ctx.auth.user
-    if (!user) {
-      return ctx.response.unauthorized()
-    }
+  public async show({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const file = await this.downloads.open(user, Number(params.id))
 
-    const exportId = Number(ctx.params.id)
-    const pdfExport = await PdfExport.findOrFail(exportId)
-
-    if (pdfExport.status !== PDF_EXPORT_STATUSES.COMPLETED) {
-      return ctx.response.badRequest('Export not completed')
-    }
-
-    if (user.role === USERS_ROLES.SUPER_ADMIN) {
-      // ok
-    } else if (user.role === USERS_ROLES.ADMIN || user.role === USERS_ROLES.ADVISOR) {
-      if (pdfExport.organizationId !== user.organizationId) {
-        return ctx.response.forbidden()
-      }
-    } else {
-      if (pdfExport.userId === user.id) {
-        // ok
-      } else {
-        const employee = await Employee.query()
-          .where('userId', user.id)
-          .where('organizationId', user.organizationId)
-          .first()
-        if (!employee || employee.id !== pdfExport.employeeId) {
-          return ctx.response.forbidden()
-        }
-      }
-    }
-
-    const key = String(pdfExport.filePath || '')
-    const fileName = String(pdfExport.fileName || `pdf_export_${pdfExport.id}.pdf`)
-
-    if (!key) {
-      return ctx.response.notFound()
-    }
-
-    // Relayé depuis Cloudinary (URL signée côté serveur, jamais transmise au
-    // navigateur) : le fichier a pu être écrit par le worker sur une autre machine.
-    const stream = await readPdfStream(key)
-    if (!stream) {
-      return ctx.response.notFound('Le fichier PDF est introuvable sur le serveur.')
-    }
-
-    ctx.response.header('Content-Type', pdfExport.mimeType || PDF_MIME_TYPE)
-    ctx.response.header('Content-Disposition', attachmentDisposition(fileName))
-    return ctx.response.stream(stream)
+    response.header('Content-Type', file.mimeType)
+    response.header('Content-Disposition', attachmentDisposition(file.fileName))
+    return response.stream(file.stream)
   }
 }
