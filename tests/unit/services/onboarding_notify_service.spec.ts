@@ -23,7 +23,7 @@ test.group('sendOnboardingEmail', () => {
 
     const token = await OnboardingToken.createForUser(user.id)
 
-    await sendOnboardingEmail(user, token, 'http://localhost')
+    await sendOnboardingEmail(user, token)
     assert.isTrue(true)
   })
 })

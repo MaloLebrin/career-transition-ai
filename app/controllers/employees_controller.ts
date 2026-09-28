@@ -29,11 +29,9 @@ export default class EmployeesController {
    * Inertia form: resend onboarding link for an existing employee.
    * POST /dashboard/conseiller/employees/:id/onboarding/resend
    */
-  public async resendOnboardingLink({ params, auth, request, response, session }: HttpContext) {
+  public async resendOnboardingLink({ params, auth, response, session }: HttpContext) {
     const user = auth.user
     if (!user) return response.unauthorized()
-
-    const baseUrl = `${request.protocol()}://${request.hostname()}`
 
     const employee = await Employee.query()
       .where('id', Number(params.id))
@@ -41,7 +39,7 @@ export default class EmployeesController {
       .firstOrFail()
 
     try {
-      await this.employeesService.resendOnboardingLink(employee, baseUrl)
+      await this.employeesService.resendOnboardingLink(employee)
     } catch (err: any) {
       session.flash('error', err?.message ?? "Impossible de renvoyer le lien d'onboarding.")
       return response.redirect().back()
@@ -59,8 +57,6 @@ export default class EmployeesController {
     if (!user) return response.unauthorized()
 
     const payload = await request.validateUsing(createEmployeeValidator)
-    const baseUrl = `${request.protocol()}://${request.hostname()}`
-
     try {
       await this.employeesService.create(
         {
@@ -68,7 +64,7 @@ export default class EmployeesController {
           advisorId: user.id,
           ...payload,
         },
-        { baseUrl }
+        { sendInvite: true }
       )
     } catch (err) {
       if (err instanceof EmployeeAlreadyExistsException) {

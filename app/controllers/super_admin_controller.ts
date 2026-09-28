@@ -276,14 +276,12 @@ export default class SuperAdminController {
   public async storeUser({ request, response, session, auth }: HttpContext) {
     const payload = await request.validateUsing(createPlatformUserValidator)
     const currentUser = auth.user!
-    const baseUrl = `${request.protocol()}://${request.hostname()}`
 
     await this.superAdminUsersService.createUserWithInvite({
       organizationId: payload.organizationId,
       name: payload.name,
       email: payload.email,
       role: payload.role,
-      baseUrl,
       platformOrganizationId: currentUser.organizationId,
     })
 
@@ -294,7 +292,7 @@ export default class SuperAdminController {
   /**
    * Inertia form: resend set-password link for users who have not completed onboarding.
    */
-  public async resendUserOnboarding({ params, request, response, session, auth }: HttpContext) {
+  public async resendUserOnboarding({ params, response, session, auth }: HttpContext) {
     const id = Number(params.id)
     const currentUser = auth.user!
     const user = await User.find(id)
@@ -304,8 +302,7 @@ export default class SuperAdminController {
       return response.redirect('/dashboard/super-admin/users')
     }
 
-    const baseUrl = `${request.protocol()}://${request.hostname()}`
-    await this.superAdminUsersService.resendOnboardingInvitation(user, baseUrl)
+    await this.superAdminUsersService.resendOnboardingInvitation(user)
     session.flash('success', `Lien d’invitation renvoyé à ${user.email}.`)
     return response.redirect('/dashboard/super-admin/users')
   }
@@ -341,13 +338,11 @@ export default class SuperAdminController {
   public async storeOrganization({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(createOrganizationValidator)
 
-    const baseUrl = `${request.protocol()}://${request.hostname()}`
     await this.superAdminOrganizationsService.createOrganizationWithOwner({
       organizationName: payload.name,
       organizationSlug: payload.slug,
       ownerName: payload.ownerName,
       ownerEmail: payload.ownerEmail,
-      baseUrl,
     })
     session.flash(
       'success',

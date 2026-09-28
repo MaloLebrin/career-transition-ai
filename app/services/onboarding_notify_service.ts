@@ -8,12 +8,8 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
  * Legacy wrapper kept for backward compatibility.
  * Prefer using `OnboardingMailService` via DI.
  */
-export async function sendOnboardingEmail(
-  user: User,
-  token: OnboardingToken,
-  baseUrl: string
-): Promise<void> {
+export async function sendOnboardingEmail(user: User, token: OnboardingToken): Promise<void> {
   const mail = new MailService()
   const service = new OnboardingMailService(mail)
-  await service.sendSetPasswordLink({ user, token, baseUrl })
+  await service.sendSetPasswordLink({ user, token })
 }

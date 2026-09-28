@@ -21,8 +21,6 @@ function makeService() {
   return { service: new AdvisorService(mail), invites }
 }
 
-const BASE_URL = 'https://app.example.test'
-
 test.group('AdvisorService.inviteAdvisor', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
@@ -30,15 +28,12 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     const { service, invites } = makeService()
     const org = await createOrganization()
 
-    const dto = await service.inviteAdvisor(
-      {
-        organizationId: org.id,
-        name: 'Claire Martin',
-        email: 'claire@example.com',
-        role: 'expert',
-      },
-      BASE_URL
-    )
+    const dto = await service.inviteAdvisor({
+      organizationId: org.id,
+      name: 'Claire Martin',
+      email: 'claire@example.com',
+      role: 'expert',
+    })
 
     assert.deepEqual(dto, {
       id: dto.id,
@@ -61,17 +56,18 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     assert.equal(invite.user.id, user.id)
     assert.equal((invite.organization as Organization).id, org.id)
     assert.equal(invite.token.id, tokens[0].id)
-    assert.equal(invite.baseUrl, BASE_URL)
   })
 
   test('le rôle « admin » donne un compte admin', async ({ assert }) => {
     const { service } = makeService()
     const org = await createOrganization()
 
-    const dto = await service.inviteAdvisor(
-      { organizationId: org.id, name: 'Admin', email: 'admin@example.com', role: 'admin' },
-      BASE_URL
-    )
+    const dto = await service.inviteAdvisor({
+      organizationId: org.id,
+      name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    })
 
     assert.equal(dto.role, 'admin')
     const reloaded = await User.findOrFail(dto.id)
@@ -82,10 +78,12 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     const { service } = makeService()
     const org = await createOrganization()
 
-    const dto = await service.inviteAdvisor(
-      { organizationId: org.id, name: 'Conseil', email: 'conseil@example.com', role: 'consultant' },
-      BASE_URL
-    )
+    const dto = await service.inviteAdvisor({
+      organizationId: org.id,
+      name: 'Conseil',
+      email: 'conseil@example.com',
+      role: 'consultant',
+    })
 
     assert.equal(dto.role, 'expert')
     const reloaded = await User.findOrFail(dto.id)
@@ -96,14 +94,18 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     const { service } = makeService()
     const org = await createOrganization()
 
-    const a = await service.inviteAdvisor(
-      { organizationId: org.id, name: 'A', email: 'a@example.com', role: 'expert' },
-      BASE_URL
-    )
-    const b = await service.inviteAdvisor(
-      { organizationId: org.id, name: 'B', email: 'b@example.com', role: 'expert' },
-      BASE_URL
-    )
+    const a = await service.inviteAdvisor({
+      organizationId: org.id,
+      name: 'A',
+      email: 'a@example.com',
+      role: 'expert',
+    })
+    const b = await service.inviteAdvisor({
+      organizationId: org.id,
+      name: 'B',
+      email: 'b@example.com',
+      role: 'expert',
+    })
 
     const userA = await User.findOrFail(a.id)
     const userB = await User.findOrFail(b.id)
@@ -118,15 +120,12 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     const existing = await createAdvisor()
 
     const error = await service
-      .inviteAdvisor(
-        {
-          organizationId: existing.organizationId,
-          name: 'Doublon',
-          email: existing.email.toUpperCase(),
-          role: 'expert',
-        },
-        BASE_URL
-      )
+      .inviteAdvisor({
+        organizationId: existing.organizationId,
+        name: 'Doublon',
+        email: existing.email.toUpperCase(),
+        role: 'expert',
+      })
       .catch((e) => e)
 
     assert.instanceOf(error, Error)
@@ -144,28 +143,14 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     const existing = await createAdvisor()
     const otherOrg = await createOrganization()
 
-    const dto = await service.inviteAdvisor(
-      { organizationId: otherOrg.id, name: 'Homonyme', email: existing.email, role: 'expert' },
-      BASE_URL
-    )
+    const dto = await service.inviteAdvisor({
+      organizationId: otherOrg.id,
+      name: 'Homonyme',
+      email: existing.email,
+      role: 'expert',
+    })
 
     assert.equal(dto.organizationId, otherOrg.id)
     assert.notEqual(dto.id, existing.id)
-  })
-
-  test('exige une baseUrl et ne crée rien sans elle', async ({ assert }) => {
-    const { service, invites } = makeService()
-    const org = await createOrganization()
-
-    await assert.rejects(
-      () =>
-        service.inviteAdvisor(
-          { organizationId: org.id, name: 'X', email: 'x@example.com', role: 'expert' },
-          ''
-        ),
-      'baseUrl is required'
-    )
-    assert.isNull(await User.findBy('email', 'x@example.com'))
-    assert.lengthOf(invites, 0)
   })
 })

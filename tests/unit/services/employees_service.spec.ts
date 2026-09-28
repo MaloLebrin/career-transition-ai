@@ -115,7 +115,7 @@ test.group('EmployeesService — doublons à la création', (group) => {
         () =>
           service.create(
             { organizationId: org.id, name: 'Dup bis', email: 'dup@example.com' },
-            { baseUrl: 'http://localhost' }
+            { sendInvite: true }
           ),
         EmployeeAlreadyExistsException
       )

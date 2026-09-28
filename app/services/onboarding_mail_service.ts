@@ -4,6 +4,7 @@ import type User from '#models/user'
 import { MailService } from '#services/mail/mail_service'
 import type { MailAddress } from '#services/mail/types'
 import env from '#start/env'
+import { appUrl } from '#utils/app_url'
 import { inject } from '@adonisjs/core'
 import app from '@adonisjs/core/services/app'
 
@@ -30,13 +31,11 @@ export class OnboardingMailService {
   public async sendSetPasswordLink({
     user,
     token,
-    baseUrl,
   }: {
     user: User
     token: OnboardingToken
-    baseUrl: string
   }): Promise<void> {
-    const link = `${baseUrl}/onboarding/${token.token}`
+    const link = appUrl(`/onboarding/${token.token}`)
 
     await this.mail.send({
       from: resolveFromAddress(),
@@ -58,15 +57,13 @@ export class OnboardingMailService {
   public async sendInviteAdvisorLink({
     user,
     token,
-    baseUrl,
     organization,
   }: {
     user: User
     organization: Organization
     token: OnboardingToken
-    baseUrl: string
   }): Promise<void> {
-    const link = `${baseUrl}/onboarding/${token.token}`
+    const link = appUrl(`/onboarding/${token.token}`)
 
     await this.mail.send({
       from: resolveFromAddress(),

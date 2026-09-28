@@ -12,11 +12,7 @@ import { randomBytes } from 'node:crypto'
 export class AdvisorService {
   constructor(private onboardingMailService: OnboardingMailService) {}
 
-  public async inviteAdvisor(input: InviteAdvisorInput, baseUrl: string): Promise<AdvisorDto> {
-    if (!baseUrl) {
-      throw new Error('baseUrl is required')
-    }
-
+  public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
     const existing = await User.query()
       .where('organizationId', input.organizationId)
       .whereRaw('LOWER(email) = ?', [input.email.toLowerCase()])
@@ -43,7 +39,6 @@ export class AdvisorService {
       user,
       organization,
       token,
-      baseUrl,
     })
     return userToAdvisorDto(user)
   }

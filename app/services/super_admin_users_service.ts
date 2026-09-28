@@ -12,7 +12,6 @@ type CreatePlatformUserInput = {
   name: string
   email: string
   role: SuperAdminCreatableUserRole
-  baseUrl: string
   /** Organisation plateforme du super admin : interdite comme cible de création. */
   platformOrganizationId: number
 }
@@ -61,7 +60,6 @@ export class SuperAdminUsersService {
     await this.onboardingMailService.sendSetPasswordLink({
       user,
       token,
-      baseUrl: input.baseUrl,
     })
 
     return user
@@ -71,7 +69,7 @@ export class SuperAdminUsersService {
    * Nouveau token + email. Refuse si l’utilisateur a déjà consommé un token.
    * Révoque les tokens non utilisés existants pour ce user.
    */
-  public async resendOnboardingInvitation(user: User, baseUrl: string): Promise<void> {
+  public async resendOnboardingInvitation(user: User): Promise<void> {
     const completed = await SuperAdminUsersService.hasCompletedOnboarding(user.id)
     if (completed) {
       throw new DomainException('Cet utilisateur a déjà activé son compte.', { status: 400 })
@@ -83,7 +81,6 @@ export class SuperAdminUsersService {
     await this.onboardingMailService.sendSetPasswordLink({
       user,
       token,
-      baseUrl,
     })
   }
 }

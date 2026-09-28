@@ -11,8 +11,8 @@ import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 
 type CreateEmployeeOptions = {
-  /** When set, a User account is created and an onboarding link is sent (e.g. by email). */
-  baseUrl?: string
+  /** Crée aussi le compte du candidat et lui envoie son lien d'onboarding par e-mail. */
+  sendInvite?: boolean
 }
 
 function randomPassword(): string {
@@ -29,7 +29,7 @@ export class EmployeesService {
    * - Creates a fresh onboarding token
    * - Sends/logs the onboarding email
    */
-  public async resendOnboardingLink(employee: Employee, baseUrl: string): Promise<void> {
+  public async resendOnboardingLink(employee: Employee): Promise<void> {
     if (employee.onboarded) {
       throw new Error('Ce candidat a déjà terminé son onboarding.')
     }
@@ -67,17 +67,17 @@ export class EmployeesService {
     }
 
     const token = await OnboardingToken.createForUser(user.id)
-    await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl })
+    await this.onboardingMailService.sendSetPasswordLink({ user, token })
   }
 
   public async create(
     input: CreateEmployeeInput,
     options?: CreateEmployeeOptions
   ): Promise<EmployeeDto> {
-    const baseUrl = options?.baseUrl
+    const sendInvite = options?.sendInvite ?? false
 
     let existingUser: User | null = null
-    if (baseUrl) {
+    if (sendInvite) {
       existingUser = await User.query()
         .where('organizationId', input.organizationId)
         .where('email', input.email)
@@ -104,7 +104,7 @@ export class EmployeesService {
     // qu'une fois la fiche enregistrée, jamais pour une création avortée.
     const { employee, user } = await db.transaction(async (trx) => {
       let account: User | null = existingUser
-      if (baseUrl && !account) {
+      if (sendInvite && !account) {
         // Aucun utilisateur encore existant : on crée le compte.
         account = await User.create(
           {
@@ -137,10 +137,10 @@ export class EmployeesService {
       return { employee: created, user: account }
     })
 
-    if (baseUrl && user) {
+    if (sendInvite && user) {
       // Compte neuf, ou compte existant sans fiche candidat : nouveau token + lien.
       const token = await OnboardingToken.createForUser(user.id)
-      await this.onboardingMailService.sendSetPasswordLink({ user, token, baseUrl })
+      await this.onboardingMailService.sendSetPasswordLink({ user, token })
     }
 
     await employee.load('skills', (q) => q.pivotColumns(['level']))

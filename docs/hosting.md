@@ -187,7 +187,7 @@ Bloquants (aucun déploiement ne fonctionne sans) :
 Nécessaires pour un hébergement sain :
 
 6. **Healthcheck** — aucune route `/health` ni `/up`. Ajouter `GET /health` (hors `guest`/`auth`) qui ping la DB (`@adonisjs/core/health`, `DbCheck`) ; l'utiliser dans `HEALTHCHECK` Docker, compose, PaaS, et un pinger externe.
-7. **`trustProxy`** — `config/app.ts` → `trustProxy: () => true` (ou `proxyAddr.compile('uniquelocal')`) pour que `request.protocol()` renvoie `https` derrière Render/Koyeb/Caddy/Funnel. En complément, une variable `APP_URL` pour construire les liens d'onboarding au lieu de dériver de la requête (déjà suggéré dans `docs/ONBOARDING.md`).
+7. **`trustProxy`** — `config/app.ts` → `trustProxy: () => true` (ou `proxyAddr.compile('uniquelocal')`) pour que `request.protocol()` renvoie `https` derrière Render/Koyeb/Caddy/Funnel. Les liens d'onboarding partent d'`APP_URL`, jamais de la requête (fait, #64).
 8. **Transmit** — `pingInterval: '30s'` dans `config/transmit.ts` (keep-alive à travers les proxys). Documenter que les broadcasts du worker n'atteignent pas le navigateur sans transport Redis ; ou déplacer les broadcasts vers une notification persistée relue par Inertia.
 9. ~~**Stockage des PDF**~~ (fait, issues #21 puis #49) — Cloudinary, seul stockage de fichiers : ni volume ni disque partagé.
 10. ~~**Compose de production**~~ (fait, issue #16) — `deploy/compose.yml` : image depuis le registre (pas `build:`), service `caddy` (TLS sslip.io), PDF hors conteneur plutôt qu'un volume `exports` (Cloudinary depuis #49), `restart: unless-stopped`, `healthcheck` sur `/health`, `migrate`/`seed` one-shot (profil `ops`), `mem_limit` ; sauvegarde par `deploy/backup.sh` + crontab plutôt qu'un service.
