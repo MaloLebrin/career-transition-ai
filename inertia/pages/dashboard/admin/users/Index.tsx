@@ -1,6 +1,10 @@
-import { ROLE_DESCRIPTIONS, ROLE_FILTER_ALL_DESCRIPTION } from '#shared/constants/roles'
+import {
+  ROLE_DESCRIPTIONS,
+  ROLE_FILTER_ALL_DESCRIPTION,
+  SUPER_ADMIN_ASSIGNABLE_ROLES,
+} from '#shared/constants/roles'
 import { ROLE_LABELS, isSuperAdmin } from '#shared/helpers/roles'
-import { USERS_ROLES, userRolesValues, type UserRole } from '#shared/types/advisor/roles'
+import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -102,9 +106,10 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
     []
   )
 
+  // `super_admin` ne s'attribue pas depuis l'interface (refusé côté serveur, #66).
   const roleRowSelectOptions = useMemo<SelectFieldOption<UserRole>[]>(
     () =>
-      userRolesValues.map((r) => ({
+      SUPER_ADMIN_ASSIGNABLE_ROLES.map((r) => ({
         value: r,
         label: ROLE_LABELS[r],
         description: ROLE_DESCRIPTIONS[r],
@@ -272,15 +277,21 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
                       {u.organization ? u.organization.name : '—'}
                     </td>
                     <td className="px-6 py-4 align-top">
-                      <SelectField<UserRole>
-                        aria-label={`Changer le rôle de ${u.name}`}
-                        options={roleRowSelectOptions}
-                        value={u.role}
-                        onChange={(newRole) => handleRoleSelectChange(u, newRole)}
-                        showSelectedOptionDescription
-                        className="w-full max-w-[240px]"
-                        selectClassName="py-1.5 px-2 text-xs"
-                      />
+                      {u.role === USERS_ROLES.SUPER_ADMIN ? (
+                        <span className="text-xs font-semibold text-brand-navy/70">
+                          {ROLE_LABELS[u.role]}
+                        </span>
+                      ) : (
+                        <SelectField<UserRole>
+                          aria-label={`Changer le rôle de ${u.name}`}
+                          options={roleRowSelectOptions}
+                          value={u.role}
+                          onChange={(newRole) => handleRoleSelectChange(u, newRole)}
+                          showSelectedOptionDescription
+                          className="w-full max-w-[240px]"
+                          selectClassName="py-1.5 px-2 text-xs"
+                        />
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span

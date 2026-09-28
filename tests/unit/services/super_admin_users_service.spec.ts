@@ -7,6 +7,12 @@ import OnboardingToken from '#models/onboarding_token'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import DomainException from '#exceptions/domain_exception'
 import { DateTime } from 'luxon'
+import {
+  SuperAdminRoleLockedError,
+  SuperAdminUserNotFoundError,
+} from '#exceptions/super_admin_user_errors'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { createAdvisor, createOrganization, createSuperAdmin } from '#tests/support/actors'
 
 test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -204,5 +210,61 @@ test.group('SuperAdminUsersService.hasCompletedOnboarding', (group) => {
       onboardingCompletedAt: null,
     })
     assert.isFalse(await SuperAdminUsersService.hasCompletedOnboarding(user.id))
+  })
+})
+
+test.group('SuperAdminUsersService.updateRole', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new SuperAdminUsersService({} as any)
+
+  test('change le rôle d’un utilisateur d’une organisation cliente', async ({ assert }) => {
+    const actor = await createSuperAdmin()
+    const target = await createAdvisor()
+
+    const updated = await service.updateRole(actor, target.id, USERS_ROLES.ADMIN)
+
+    assert.equal(updated.id, target.id)
+    await target.refresh()
+    assert.equal(target.role, USERS_ROLES.ADMIN)
+  })
+
+  /** Régression #66 : le super admin pouvait modifier son propre rôle. */
+  test('son propre compte : introuvable, hors périmètre', async ({ assert }) => {
+    const actor = await createSuperAdmin()
+
+    await assert.rejects(
+      () => service.updateRole(actor, actor.id, USERS_ROLES.EMPLOYEE),
+      SuperAdminUserNotFoundError as any
+    )
+    await actor.refresh()
+    assert.equal(actor.role, USERS_ROLES.SUPER_ADMIN)
+  })
+
+  test('compte de l’organisation plateforme ou inexistant : 404', async ({ assert }) => {
+    const platform = await createOrganization()
+    const actor = await createSuperAdmin(platform)
+    const colleague = await createAdvisor(platform)
+
+    for (const id of [colleague.id, 999_999]) {
+      await assert.rejects(
+        () => service.updateRole(actor, id, USERS_ROLES.ADMIN),
+        SuperAdminUserNotFoundError as any
+      )
+    }
+    await colleague.refresh()
+    assert.equal(colleague.role, USERS_ROLES.ADVISOR)
+  })
+
+  test('un autre super admin (organisation cliente) : rôle verrouillé', async ({ assert }) => {
+    const actor = await createSuperAdmin()
+    const other = await createSuperAdmin(await createOrganization())
+
+    await assert.rejects(
+      () => service.updateRole(actor, other.id, USERS_ROLES.EMPLOYEE),
+      SuperAdminRoleLockedError as any
+    )
+    await other.refresh()
+    assert.equal(other.role, USERS_ROLES.SUPER_ADMIN)
   })
 })

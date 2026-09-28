@@ -1,9 +1,14 @@
 import DomainException from '#exceptions/domain_exception'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import {
+  SuperAdminRoleLockedError,
+  SuperAdminUserNotFoundError,
+} from '#exceptions/super_admin_user_errors'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
-import type { SuperAdminCreatableUserRole } from '#validators/super_admin/create_platform_user_validator'
+import type { SuperAdminAssignableRole } from '#shared/constants/roles'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { inject } from '@adonisjs/core'
 import { randomBytes } from 'node:crypto'
 
@@ -11,7 +16,7 @@ type CreatePlatformUserInput = {
   organizationId: number
   name: string
   email: string
-  role: SuperAdminCreatableUserRole
+  role: SuperAdminAssignableRole
   baseUrl: string
   /** Organisation plateforme du super admin : interdite comme cible de création. */
   platformOrganizationId: number
@@ -85,5 +90,33 @@ export class SuperAdminUsersService {
       token,
       baseUrl,
     })
+  }
+
+  /**
+   * Change le rôle d’un utilisateur d’une organisation cliente.
+   *
+   * Hors périmètre (inexistant ou compte de l’organisation plateforme, dont le
+   * super admin lui-même) → 404 ; son propre compte ou un autre super admin → 422.
+   * `super_admin` n’est jamais attribuable (`updateUserRoleValidator`).
+   */
+  public async updateRole(
+    actor: User,
+    userId: number,
+    role: SuperAdminAssignableRole
+  ): Promise<User> {
+    const user = await User.query()
+      .where('id', userId)
+      .where('organizationId', '!=', actor.organizationId)
+      .first()
+    if (!user) {
+      throw new SuperAdminUserNotFoundError()
+    }
+    if (user.id === actor.id || user.role === USERS_ROLES.SUPER_ADMIN) {
+      throw new SuperAdminRoleLockedError()
+    }
+
+    user.role = role
+    await user.save()
+    return user
   }
 }

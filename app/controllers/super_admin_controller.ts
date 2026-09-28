@@ -4,13 +4,13 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
-import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
 import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
+import { updateUserRoleValidator } from '#validators/super_admin/update_user_role_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
-import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 
 @inject()
@@ -313,23 +313,13 @@ export default class SuperAdminController {
   /**
    * Inertia form: update a user's role from the Super Admin dashboard.
    */
-  public async updateUserRole({ request, params, response, session }: HttpContext) {
-    const updateRoleValidator = vine.create(
-      vine.object({
-        role: vine.enum(userRolesValues),
-      })
+  public async updateUserRole({ request, params, response, session, auth }: HttpContext) {
+    const payload = await request.validateUsing(updateUserRoleValidator)
+    const user = await this.superAdminUsersService.updateRole(
+      auth.getUserOrFail(),
+      Number(params.id),
+      payload.role
     )
-
-    const payload = await request.validateUsing(updateRoleValidator)
-    const id = Number(params.id)
-    const user = await User.find(id)
-    if (!user) {
-      session.flash('error', 'Utilisateur introuvable.')
-      return response.redirect('/dashboard/super-admin/users')
-    }
-
-    user.role = payload.role
-    await user.save()
 
     session.flash('success', `Rôle mis à jour pour ${user.name}.`)
     return response.redirect('/dashboard/super-admin/users')
