@@ -52,6 +52,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_MEDIA_FORBIDDEN',
     'E_PDF_EXPORT_NOT_FOUND',
     'E_PDF_EXPORT_NOT_READY',
+    'E_SUPER_ADMIN_USER_NOT_FOUND',
+    'E_SUPER_ADMIN_ROLE_LOCKED',
   ]
 
   /**

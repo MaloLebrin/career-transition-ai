@@ -204,4 +204,40 @@ describe('UsersAdmin page', () => {
 
     expect(screen.getByRole('dialog', { name: /Nouvel utilisateur/i })).toBeInTheDocument()
   })
+
+  /** #66 : `super_admin` n’est jamais proposé, et un super admin n’a pas de sélecteur. */
+  test('ne propose pas le rôle super admin et verrouille la ligne d’un super admin', () => {
+    const users = [
+      {
+        id: 4,
+        name: 'Dan',
+        email: 'dan@example.com',
+        role: 'advisor' as const,
+        organization: { id: 12, name: 'Cabinet Gamma' },
+        createdAt: '2025-03-01T00:00:00.000Z',
+        onboardingCompleted: true,
+      },
+      {
+        id: 5,
+        name: 'Eve',
+        email: 'eve@example.com',
+        role: 'super_admin' as const,
+        organization: { id: 12, name: 'Cabinet Gamma' },
+        createdAt: '2025-03-01T00:00:00.000Z',
+        onboardingCompleted: true,
+      },
+    ]
+
+    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
+
+    const danRow = screen.getByText('Dan').closest('tr') as HTMLElement
+    const roleSelect = within(danRow).getByRole('combobox', { name: /Changer le rôle de Dan/i })
+    const values = within(roleSelect)
+      .getAllByRole('option')
+      .map((o) => (o as HTMLOptionElement).value)
+    expect(values).not.toContain('super_admin')
+
+    const eveRow = screen.getByText('Eve').closest('tr') as HTMLElement
+    expect(within(eveRow).queryByRole('combobox')).not.toBeInTheDocument()
+  })
 })

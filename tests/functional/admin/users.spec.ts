@@ -309,6 +309,70 @@ test.group('Super admin — utilisateurs : changement de rôle', (group) => {
     assert.equal(response.flashMessage('error'), 'Utilisateur introuvable.')
   })
 
+  /** Régression #66 : l’ancien validator acceptait `super_admin` (escalade de privilège). */
+  test('refuse de promouvoir un utilisateur super admin', async ({ client, assert }) => {
+    const superAdmin = await createSuperAdmin()
+    const user = await createAdvisor()
+
+    const response = await client
+      .post(`${USERS}/${user.id}/role`)
+      .json({ role: USERS_ROLES.SUPER_ADMIN })
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    assertFieldErrors(assert, response, ['role'])
+    await user.refresh()
+    assert.equal(user.role, USERS_ROLES.ADVISOR)
+  })
+
+  /** Régression #66 : le super admin pouvait se rétrograder lui-même. */
+  test('refuse de modifier son propre rôle ou celui d’un compte de la plateforme', async ({
+    client,
+    assert,
+  }) => {
+    const platform = await createOrganization()
+    const superAdmin = await createSuperAdmin(platform)
+    const colleague = await createAdvisor(platform)
+
+    for (const target of [superAdmin, colleague]) {
+      const response = await client
+        .post(`${USERS}/${target.id}/role`)
+        .json({ role: USERS_ROLES.EMPLOYEE })
+        .header('referer', USERS)
+        .loginAs(superAdmin)
+        .withInertia()
+        .redirects(0)
+
+      response.assertStatus(302)
+      assert.equal(response.flashMessage('error'), 'Utilisateur introuvable.')
+    }
+    await superAdmin.refresh()
+    await colleague.refresh()
+    assert.equal(superAdmin.role, USERS_ROLES.SUPER_ADMIN)
+    assert.equal(colleague.role, USERS_ROLES.ADVISOR)
+  })
+
+  test('refuse de modifier le rôle d’un autre super admin', async ({ client, assert }) => {
+    const superAdmin = await createSuperAdmin()
+    const other = await createSuperAdmin(await createOrganization())
+
+    const response = await client
+      .post(`${USERS}/${other.id}/role`)
+      .json({ role: USERS_ROLES.EMPLOYEE })
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(302)
+    assert.equal(
+      response.flashMessage('error'),
+      'Le rôle d’un super administrateur ne peut pas être modifié ici.'
+    )
+    await other.refresh()
+    assert.equal(other.role, USERS_ROLES.SUPER_ADMIN)
+  })
+
   test('un admin ne peut pas changer de rôle (403)', async ({ client, assert }) => {
     const admin = await createAdmin()
     const target = await createAdvisor()
