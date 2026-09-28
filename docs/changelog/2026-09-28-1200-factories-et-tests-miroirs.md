@@ -13,7 +13,7 @@ indirecte via les tests functional).
   uniquement en functional : formations, expériences, compétences, notes, notifications,
   logo d'organisation, étapes du plan d'accompagnement, synthèses.
 - **Helpers et `shared/`.** Tests Vitest pour les prompts IA par exercice (dont l'absence de
-  nom/e-mail candidat), le client IA et toutes les constantes partagées ; tests Japa pour
+  nom/e-mail candidat), les prompts génériques et toutes les constantes partagées ; tests Japa pour
   `app/utils` et `app/mappers`.
 - **Gardes.** `tests/unit/hygiene/model_factories.spec.ts` (une factory par modèle) et
   `tests/unit/hygiene/mirror_tests.spec.ts` (un test miroir par fichier source) font échouer
