@@ -155,7 +155,7 @@ Sans domaine vérifié, Resend n'envoie qu'à l'adresse de ton propre compte : l
 2. Resend → **Domains → Add domain**, région **EU (`eu-west-1`)** (données hébergées dans l'UE, cf. [RGPD.md](RGPD.md)). Un sous-domaine d'envoi (`mail.<domaine>`) isole la réputation d'envoi du domaine principal.
 3. Chez le registrar, créer les enregistrements DNS affichés par Resend : **DKIM** (TXT `resend._domainkey`), **SPF** (MX + TXT sur le sous-domaine `send`). Ajouter un **DMARC** (`_dmarc`, TXT `v=DMARC1; p=none;`) : recommandé, il améliore la délivrabilité.
 4. Attendre le statut **Verified** (quelques minutes à quelques heures), puis créer une clé API (_Sending access_, limitée au domaine).
-5. Variables de production (Render : _Environment_ ; VM : `~/cta/.env`) :
+5. Variables de production (`~/cta/.env` sur la VM, `docs/DEPLOYMENT.md` §2.3) :
 
    ```bash
    MAIL_PROVIDER=resend

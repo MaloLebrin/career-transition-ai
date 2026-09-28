@@ -1,14 +1,13 @@
 # Déploiement — procédure pas à pas
 
-Runbook de mise en production pour les deux scénarios recommandés dans [hosting.md](hosting.md) :
+Runbook de mise en production (analyse des options dans [hosting.md](hosting.md)) :
 
-- **Scénario 1 — usage perso** : Render Free (web) + Neon Free (Postgres), un seul process (`QUEUE_DRIVER=sync`), 0 €.
 - **Scénario 2 — beta fermée** : une VM (Oracle Always Free ou VPS ≈ 3–6 €/mois) en `docker-compose` complet (Postgres + web + worker + Caddy), toujours allumée.
 
 Sommaire :
 
 0. [Préparer le repo (obligatoire, une fois)](#0-préparer-le-repo-obligatoire-une-fois)
-1. [Scénario 1 — Render + Neon](#1-scénario-1--render--neon-usage-perso)
+1. [Scénario 1 — retiré](#1-scénario-1--retiré)
 2. [Scénario 2 — VM docker-compose](#2-scénario-2--vm-docker-compose-beta-fermée)
 3. [Exploitation : mise à jour, rollback, sauvegardes, secrets](#3-exploitation)
 4. [Incidents courants](#4-incidents-courants)
@@ -37,7 +36,7 @@ ssr: {
 manifestFile: 'public/assets/.vite/manifest.json',
 ```
 
-### 0.2 Connection string + SSL configurable (bloquant Render/Neon et docker-compose)
+### 0.2 Connection string + SSL configurable (bloquant docker-compose)
 
 `start/env.ts` — remplacer le bloc base de données par :
 
@@ -125,7 +124,7 @@ router.get('/health', async ({ response }) => {
 
 `config/transmit.ts` : `pingInterval: '30s'`.
 
-Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de `X-Forwarded-For`, écrite par le client : elle ne sert à aucune décision de sécurité. Le rate limiting (ci-dessous) utilise `clientIp()` (`app/utils/client_ip.ts`), soit l'entrée la plus à **droite**, celle que le proxy ajoute (Render) ou réécrit (Caddy). Un seul proxy doit donc se trouver devant l'app ; avec deux proxys chaînés (ex. CDN devant Caddy), la clé deviendrait l'IP du premier proxy et tous les clients partageraient un compteur.
+Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de `X-Forwarded-For`, écrite par le client : elle ne sert à aucune décision de sécurité. Le rate limiting (ci-dessous) utilise `clientIp()` (`app/utils/client_ip.ts`), soit l'entrée la plus à **droite**, celle que le proxy (Caddy) réécrit. Un seul proxy doit donc se trouver devant l'app ; avec deux proxys chaînés (ex. CDN devant Caddy), la clé deviendrait l'IP du premier proxy et tous les clients partageraient un compteur.
 
 #### Rate limiting des endpoints publics
 
@@ -219,83 +218,9 @@ Fait : `package.json` porte `"packageManager": "pnpm@10.18.3"` et `"engines": { 
 
 ---
 
-## 1. Scénario 1 — Render + Neon (usage perso)
+## 1. Scénario 1 — retiré
 
-Durée : ~30 min. Aucune carte bancaire. Prérequis : §0 mergé sur `main`.
-
-### 1.1 Générer les secrets (local)
-
-```bash
-node ace generate:key        # → APP_KEY (ne pas l'écrire dans .env local par erreur)
-openssl rand -base64 24      # → ADMIN_PASSWORD
-```
-
-### 1.2 Créer la base Neon
-
-1. <https://console.neon.tech> → **New project** : nom `career-transition-ai`, région **Frankfurt (eu-central-1)**, Postgres 17.
-2. Onglet **Connection details** → cocher _Pooled connection_ désactivé (prendre la connexion **directe** : plus simple pour les migrations) → copier l'URL, forme :
-   `postgresql://<user>:<password>@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`
-3. Laisser l'autosuspend par défaut (5 min) : c'est ce qui rend le plan gratuit tenable.
-
-### 1.3 Créer le web service Render
-
-1. <https://dashboard.render.com> → **New → Web Service** → connecter le repo GitHub `career-transition-ai`, branche `main`, région **Frankfurt**.
-2. **Runtime** : Node (Render lit `.node-version` → 24). **Instance type** : Free.
-3. **Build command** :
-   ```bash
-   npm install -g pnpm@10.18.3 && pnpm install --frozen-lockfile && pnpm build
-   ```
-4. **Start command** (le plan Free n'a ni _pre-deploy command_ ni shell : migrations et seed s'exécutent au démarrage, ils sont idempotents) :
-   ```bash
-   node build/bin/console.js migration:run --force && node build/bin/console.js db:seed --files database/seeders/admin_seeder && node build/bin/server.js
-   ```
-5. **Health check path** : `/health`.
-6. **Environment variables** (onglet Environment) :
-
-   | Clé               | Valeur                                                                                                                                                       |
-   | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | `NODE_ENV`        | `production`                                                                                                                                                 |
-   | `HOST`            | `0.0.0.0`                                                                                                                                                    |
-   | `PORT`            | `10000`                                                                                                                                                      |
-   | `TZ`              | `Europe/Paris`                                                                                                                                               |
-   | `LOG_LEVEL`       | `info`                                                                                                                                                       |
-   | `APP_KEY`         | _(généré en 1.1)_                                                                                                                                            |
-   | `SESSION_DRIVER`  | `cookie`                                                                                                                                                     |
-   | `DB_URL`          | _(URL Neon, avec `?sslmode=require`)_                                                                                                                        |
-   | `DB_SSL`          | `true`                                                                                                                                                       |
-   | `QUEUE_DRIVER`    | `sync`                                                                                                                                                       |
-   | `AI_PROVIDER`     | `mistral`                                                                                                                                                    |
-   | `MISTRAL_API_KEY` | _(clé plan Experiment, console Mistral)_                                                                                                                     |
-   | `MISTRAL_MODEL`   | `mistral-small-latest`                                                                                                                                       |
-   | `MAIL_PROVIDER`   | `console` tant que le domaine n'est pas vérifié, puis `resend` + `RESEND_API_KEY` ([MAIL.md § domaine vérifié](MAIL.md#domaine-vérifié-production-issue-19)) |
-   | `MAIL_FROM_EMAIL` | `onboarding@resend.dev` en `console` (requis en prod), puis `no-reply@<ton-domaine>`                                                                         |
-   | `MAIL_FROM_NAME`  | `Career Transition AI`                                                                                                                                       |
-   | `ADMIN_PASSWORD`  | _(généré en 1.1)_                                                                                                                                            |
-   | `NODE_OPTIONS`    | `--max-old-space-size=384`                                                                                                                                   |
-
-   L'OCR des CV et les suggestions passent par le serveur (`/dashboard/ai/*`) avec cette même clé : aucune variable `VITE_*` n'est nécessaire pour l'IA.
-
-7. **Create Web Service**. Premier build ≈ 5–8 min (0,1 CPU). L'URL est `https://<nom>.onrender.com`.
-
-> **Alternative : Blueprint.** `render.yaml` décrit exactement ce service (plan Free, commandes, health check, variables ci-dessus plus `REGISTRATION_ENABLED`, `CLOUDINARY_*` et `SENTRY_DSN`). Dashboard → **New → Blueprint** → choisir le repo, puis saisir les valeurs marquées `sync: false` (`APP_KEY`, `DB_URL`, `ADMIN_PASSWORD`, `MISTRAL_API_KEY`, `CLOUDINARY_*`, `SENTRY_DSN`) : elles ne sont jamais écrites dans le fichier. Toute modification du blueprint reste alignée sur ce paragraphe (garde `tests/unit/hygiene/render_blueprint.spec.ts`).
-
-### 1.4 Vérifier
-
-```bash
-URL=https://<nom>.onrender.com
-curl -s -o /dev/null -w "%{http_code}\n" $URL/health          # 200
-curl -s $URL/ | grep -c '<div id="app"'                      # 1, et le HTML contient du texte SSR
-curl -s -o /dev/null -w "%{http_code}\n" $URL/assets/app-XXXX.js  # 200 (chemin visible dans le source de /)
-```
-
-Puis dans le navigateur : connexion `malolebrin@gmail.com` / `ADMIN_PASSWORD` (compte créé par `admin_seeder`), création d'une organisation et d'un conseiller, lecture du lien d'onboarding dans **Logs** Render (mode `console`), activation, exercice → analyse IA (inline, la requête dure quelques secondes), export PDF → téléchargement immédiat (même process). Dérouler la checklist de [hosting.md §3.3](hosting.md#33-checklist-post-déploiement).
-
-### 1.5 Ce qu'il faut savoir en exploitation
-
-- **Cold start** ≈ 1 min après 15 min sans requête (Render) + ≈ 1 s (Neon). Normal.
-- **PDF** : stockés sur Cloudinary (`CLOUDINARY_*`, requises au démarrage), donc ni perdus au redémarrage ni liés au disque du service ; voir [§ stockage des fichiers](#stockage-des-fichiers-cloudinary).
-- **Mise à jour** = push sur `main` (auto-deploy). Migrations au démarrage. Rollback : Render → _Rollback_ sur le déploiement précédent (les migrations déjà appliquées restent : écrire des migrations rétro-compatibles).
-- **Neon** : suivre _Usage_ (CU-hours < 100/mois, stockage < 0,5 Go). Sauvegarde : `pg_dump "$DB_URL" | gzip > backup-$(date +%F).sql.gz` depuis ton poste, une fois par semaine ou avant chaque migration risquée.
+L'ancien scénario Render Free + Neon (blueprint `render.yaml`) a été retiré : le seul déploiement supporté est la VM docker-compose du §2.
 
 ---
 
@@ -356,7 +281,7 @@ cd ~/cta && cp .env.example .env && chmod 600 .env
 | `.env.example` | Variables du compose (`APP_IMAGE`, `APP_DOMAIN`) et de l'application (validées contre `start/env_schema.ts` par `tests/unit/config/env_schema.spec.ts`).                                                                  |
 | `backup.sh`    | `pg_dump` compressé dans `backups/`, rotation 14 jours (§2.6).                                                                                                                                                            |
 
-**Aucun volume dans `app` ni `worker`** : les fichiers vont sur Cloudinary (`CLOUDINARY_*`, voir [Stockage des fichiers](#stockage-des-fichiers-cloudinary)), comme sur Render. Web et worker n'ont pas de disque commun ; seuls Postgres et les certificats de Caddy sont persistés. Le HEALTHCHECK HTTP de l'image est désactivé sur `worker`, `migrate` et `seed`, qui ne servent pas de HTTP.
+**Aucun volume dans `app` ni `worker`** : les fichiers vont sur Cloudinary (`CLOUDINARY_*`, voir [Stockage des fichiers](#stockage-des-fichiers-cloudinary)). Web et worker n'ont pas de disque commun ; seuls Postgres et les certificats de Caddy sont persistés. Le HEALTHCHECK HTTP de l'image est désactivé sur `worker`, `migrate` et `seed`, qui ne servent pas de HTTP.
 
 `APP_IMAGE` : l'image publiée sur GHCR (§0.8), ou en attendant une image construite sur l'hôte (`docker build -t cta:local .` depuis le repo, puis `APP_IMAGE=cta:local`). Si le repo GHCR est privé : `echo <PAT read:packages> | docker login ghcr.io -u malolebrin --password-stdin`.
 
@@ -443,18 +368,16 @@ docker compose run --rm --entrypoint node app ace.js migration:rollback --force 
 # 3. sinon : restaurer la sauvegarde faite en 3.1
 ```
 
-Scénario 1 : bouton _Rollback_ dans Render ; pas de rollback de schéma → écrire des migrations additives.
-
 ### 3.3 Rotation des secrets
 
-- `ADMIN_PASSWORD` : changer la valeur, puis `docker compose run --rm seed` (scénario 2) ou redéployer (scénario 1, le seed tourne au démarrage).
+- `ADMIN_PASSWORD` : changer la valeur, puis `docker compose run --rm seed`.
 - `APP_KEY` : changer = **déconnecte tout le monde** (sessions et cookies signés). À faire hors heures d'usage.
-- `MISTRAL_API_KEY`, `RESEND_API_KEY` : changer la valeur puis `docker compose up -d app worker` / redéploiement.
+- `MISTRAL_API_KEY`, `RESEND_API_KEY` : changer la valeur puis `docker compose up -d app worker`.
 
 ### 3.4 Logs et supervision
 
 - Scénario 2 : `docker compose logs -f --tail=200 app worker` ; limiter la taille dans `/etc/docker/daemon.json` : `{"log-driver":"json-file","log-opts":{"max-size":"20m","max-file":"5"}}` puis `sudo systemctl restart docker`.
-- Uptime : UptimeRobot ou cron-job.org (gratuits) sur `https://<hôte>/health`, alerte e-mail. Ne pas le faire sur Render Free (le réveil permanent contourne l'esprit du plan).
+- Uptime : UptimeRobot ou cron-job.org (gratuits) sur `https://<hôte>/health`, alerte e-mail.
 - Espace disque : `df -h` ; `docker system df` ; les sauvegardes locales sont purgées à 14 jours.
 
 ### 3.5 Créer les comptes testeurs (beta)
@@ -486,9 +409,7 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 | Analyse IA vide avec message d'erreur                                         | rate-limit plan Experiment / clé absente                                       | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois.                                                         |
 | E-mail non reçu par un testeur (Resend)                                       | domaine non vérifié : envoi restreint à ton adresse                            | Vérifier le domaine ([MAIL.md](MAIL.md#domaine-vérifié-production-issue-19)), ou `MAIL_PROVIDER=console`.                                    |
 | Démarrage : `Mail : RESEND_API_KEY manquante` / `MAIL_FROM_EMAIL …`           | `MAIL_PROVIDER=resend` incomplet, ou expéditeur encore en `@resend.dev`        | Renseigner `RESEND_API_KEY` et `MAIL_FROM_EMAIL=no-reply@<ton-domaine>` (domaine vérifié), ou revenir à `console`.                           |
-| Neon : `compute time quota exceeded`                                          | worker qui polle en continu                                                    | Scénario 1 = `QUEUE_DRIVER=sync`, jamais de worker permanent sur Neon Free.                                                                  |
 | Oracle : instance disparue                                                    | récupération « idle » Always Free                                              | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG.                                                                      |
-| Render : page « service unavailable » ~1 min                                  | cold start                                                                     | Attendu sur le plan Free.                                                                                                                    |
 | OOM / redémarrages                                                            | pas de plafond V8 sur 512 Mo                                                   | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker).                                                                               |
 
 ---
@@ -504,7 +425,7 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 | `APP_KEY`                                                                 | oui                                                 | `node ace generate:key`                                                                                                                                                                                                            |
 | `LOG_LEVEL`                                                               | oui                                                 | `info`                                                                                                                                                                                                                             |
 | `SESSION_DRIVER`                                                          | oui                                                 | `cookie`                                                                                                                                                                                                                           |
-| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                                                       |
+| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Postgres managé : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                                            |
 | `DB_SSL`                                                                  | non (défaut `true`)                                 | `false` seulement pour un Postgres sans TLS                                                                                                                                                                                        |
 | `QUEUE_DRIVER`                                                            | oui                                                 | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter)                                                                                                                                                      |
 | `AI_PROVIDER`                                                             | non                                                 | `mistral` ou `none`                                                                                                                                                                                                                |
@@ -515,7 +436,7 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`    | oui en production                                   | stockage des fichiers (`config/cloudinary.ts`) ; le serveur refuse de démarrer en production s'il en manque une. Optionnelles en dev (seul l'export PDF échoue). Voir [§ stockage des fichiers](#stockage-des-fichiers-cloudinary) |
 | `SENTRY_DSN`                                                              | non (recommandé)                                    | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry)                                                            |
 | `SENTRY_ENVIRONMENT`                                                      | non (défaut `NODE_ENV`)                             | `production`, `staging`… pour séparer les environnements dans Sentry                                                                                                                                                               |
-| `SENTRY_RELEASE`                                                          | non (défaut `RENDER_GIT_COMMIT`)                    | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`)                                                                                                                                               |
+| `SENTRY_RELEASE`                                                          | non                                                 | sha du commit déployé (`git rev-parse HEAD`)                                                                                                                                                                                       |
 
 | `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié (garde au démarrage, `config/mail.ts`) ; `console` écrit les e-mails dans les logs |
 | `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console` ; au démarrage avec `resend`) | adresse du domaine vérifié, jamais `@resend.dev` avec `resend` |
@@ -528,11 +449,10 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 
 Hors schéma (lues par Node ou l'hébergeur) :
 
-| Variable            | Rôle                                                                 |
-| ------------------- | -------------------------------------------------------------------- |
-| `TZ`                | `Europe/Paris` (nom IANA ; `UTC+2` en notation POSIX signifie UTC−2) |
-| `NODE_OPTIONS`      | `--max-old-space-size=384` recommandé sur 512 Mo                     |
-| `RENDER_GIT_COMMIT` | injectée par Render, release Sentry par défaut                       |
+| Variable       | Rôle                                                                 |
+| -------------- | -------------------------------------------------------------------- |
+| `TZ`           | `Europe/Paris` (nom IANA ; `UTC+2` en notation POSIX signifie UTC−2) |
+| `NODE_OPTIONS` | `--max-old-space-size=384` recommandé sur 512 Mo                     |
 
 Variables de **build** (embarquées dans le bundle navigateur, à ne pas confondre avec le runtime) : `VITE_APP_NAME` (optionnel). Aucune clé API ne doit être préfixée `VITE_`.
 
@@ -557,7 +477,7 @@ Mise en place :
    rangé sous `career-transition/`, puis `production` ou `dev`).
 2. _Settings → API Keys_ : renseigner `CLOUDINARY_CLOUD_NAME`,
    `CLOUDINARY_API_KEY` et `CLOUDINARY_API_SECRET` sur le web **et** le
-   worker (groupe partagé sur Render, `.env` du compose).
+   worker (`.env` du compose).
 3. Région : le stockage est aux États-Unis par défaut (transfert encadré par
    les clauses contractuelles types, voir `SUBPROCESSORS`). Un hébergement UE
    relève d'une offre payante (issue #24).
@@ -594,7 +514,7 @@ Mise en place :
 
 1. Créer un compte Sentry en **région EU** (choix à la création de
    l'organisation, non modifiable), puis un projet _Node.js_.
-2. Copier le DSN dans `SENTRY_DSN` (web et worker ; groupe partagé sur Render).
+2. Copier le DSN dans `SENTRY_DSN` (web et worker, `.env` du compose).
 3. Dans _Settings → Security & Privacy_ : laisser **Data Scrubber** actif et
    cocher **Prevent Storing of IP Addresses**.
 4. Créer une alerte e-mail « nouvelle issue » (_Alerts → Create alert → Issues_).

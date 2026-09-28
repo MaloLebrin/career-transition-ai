@@ -14,5 +14,5 @@ Décision de l'issue #19 : pour que les testeurs de la beta reçoivent leurs e-m
   Tests : `tests/unit/config/mail.spec.ts` ; les exemples de production passent la garde
   (`tests/unit/config/env_schema.spec.ts`).
 - **Docs.** `MAIL.md` : procédure « Domaine vérifié » (région EU, DNS, variables,
-  vérification). `DEPLOYMENT.md` §1.3, §3.5, §4, §5, `PRODUCTION_CHECKLIST.md`, `hosting.md`,
-  `render.yaml` et `deploy/.env.example` : `resend` + domaine comme cible, `console` en repli.
+  vérification). `DEPLOYMENT.md` §3.5, §4, §5, `PRODUCTION_CHECKLIST.md`, `hosting.md`,
+  `deploy/.env.example` : `resend` + domaine comme cible, `console` en repli.
