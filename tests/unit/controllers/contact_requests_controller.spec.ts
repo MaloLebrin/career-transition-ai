@@ -1,117 +1,79 @@
 import ContactRequestsController from '#controllers/contact_requests_controller'
-import ContactRequest, { CONTACT_REQUEST_STATUSES } from '#models/contact_request'
-import testUtils from '@adonisjs/core/services/test_utils'
+import type { CreateContactRequestInput } from '#shared/types/contact_request/inputs'
 import { test } from '@japa/runner'
 
-interface NotificationCall {
-  name: string
-  email: string
-  type: string
-}
+class FakeContactRequestsService {
+  public created: CreateContactRequestInput[] = []
 
-class FakeContactRequestMailService {
-  public adminNotificationCalls: NotificationCall[] = []
-  public confirmationCalls: NotificationCall[] = []
-
-  async sendAdminNotification(data: NotificationCall) {
-    this.adminNotificationCalls.push(data)
-  }
-
-  async sendConfirmationToRequester(data: NotificationCall) {
-    this.confirmationCalls.push(data)
+  async create(input: CreateContactRequestInput) {
+    this.created.push(input)
+    return { id: 1, ...input }
   }
 }
 
-function makeResponse() {
-  let createdBody: unknown = null
+function makeContext(payload: CreateContactRequestInput) {
+  const flashes: Record<string, string> = {}
+  let redirectedBack = false
+  let createdCalled = false
   return {
-    createdBody,
-    created(body: unknown) {
-      this.createdBody = body
-      return this
+    flashes,
+    get redirectedBack() {
+      return redirectedBack
+    },
+    get createdCalled() {
+      return createdCalled
+    },
+    ctx: {
+      request: { validateUsing: () => Promise.resolve(payload) },
+      session: {
+        flash(key: string, message: string) {
+          flashes[key] = message
+        },
+      },
+      response: {
+        redirect() {
+          return {
+            back() {
+              redirectedBack = true
+            },
+          }
+        },
+        created() {
+          createdCalled = true
+        },
+      },
     },
   }
 }
 
-test.group('ContactRequestsController.store', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
+const PAYLOAD: CreateContactRequestInput = {
+  name: 'Marie Dupont',
+  email: 'marie@cabinet.fr',
+  organization: 'Cabinet Test',
+  message: 'Bonjour, je souhaite une démo de votre solution.',
+  type: 'demo',
+}
 
-  test('persists contact request in database and returns 201', async ({ assert }) => {
-    const mailService = new FakeContactRequestMailService()
-    const controller = new ContactRequestsController(mailService as any)
-    const response = makeResponse()
+test.group('ContactRequestsController.store', () => {
+  test('délègue la création au service avec le payload validé', async ({ assert }) => {
+    const service = new FakeContactRequestsService()
+    const controller = new ContactRequestsController(service as any)
+    const { ctx } = makeContext(PAYLOAD)
 
-    const payload = {
-      name: 'Marie Dupont',
-      email: 'marie@cabinet.fr',
-      phone: null,
-      organization: 'Cabinet Test',
-      message: 'Bonjour, je souhaite une démo de votre solution.',
-      type: 'demo' as const,
-    }
+    await controller.store(ctx as any)
 
-    await controller.store({
-      request: { validateUsing: () => Promise.resolve(payload) },
-      response: response as any,
-    } as any)
-
-    const saved = await ContactRequest.query().where('email', payload.email).first()
-    assert.isNotNull(saved)
-    assert.equal(saved!.name, payload.name)
-    assert.equal(saved!.email, payload.email)
-    assert.equal(saved!.organization, payload.organization)
-    assert.equal(saved!.type, 'demo')
-    assert.equal(saved!.status, CONTACT_REQUEST_STATUSES.PENDING)
-    assert.deepEqual((response.createdBody as any)?.success, true)
+    assert.deepEqual(service.created, [PAYLOAD])
   })
 
-  test('sends admin notification and confirmation emails', async ({ assert }) => {
-    const mailService = new FakeContactRequestMailService()
-    const controller = new ContactRequestsController(mailService as any)
-    const response = makeResponse()
+  /** Régression #62 : `response.created({...})` (JSON) cassait le `useForm` Inertia. */
+  test('flashe un succès et redirige vers la page d’origine, sans JSON', async ({ assert }) => {
+    const controller = new ContactRequestsController(new FakeContactRequestsService() as any)
+    const context = makeContext(PAYLOAD)
 
-    const payload = {
-      name: 'Paul Martin',
-      email: 'paul@cabinet.fr',
-      phone: null,
-      organization: null,
-      message: 'Je voudrais en savoir plus sur votre offre.',
-      type: 'contact' as const,
-    }
+    await controller.store(context.ctx as any)
 
-    await controller.store({
-      request: { validateUsing: () => Promise.resolve(payload) },
-      response: response as any,
-    } as any)
-
-    assert.lengthOf(mailService.adminNotificationCalls, 1)
-    assert.equal(mailService.adminNotificationCalls[0].email, payload.email)
-    assert.equal(mailService.adminNotificationCalls[0].type, 'contact')
-
-    assert.lengthOf(mailService.confirmationCalls, 1)
-    assert.equal(mailService.confirmationCalls[0].email, payload.email)
-  })
-
-  test('sets status to pending on creation', async ({ assert }) => {
-    const mailService = new FakeContactRequestMailService()
-    const controller = new ContactRequestsController(mailService as any)
-
-    await controller.store({
-      request: {
-        validateUsing: () =>
-          Promise.resolve({
-            name: 'Test User',
-            email: 'test@example.com',
-            phone: null,
-            organization: null,
-            message: 'Message de test suffisamment long.',
-            type: 'demo' as const,
-          }),
-      },
-      response: makeResponse() as any,
-    } as any)
-
-    const saved = await ContactRequest.query().where('email', 'test@example.com').first()
-    assert.equal(saved!.status, CONTACT_REQUEST_STATUSES.PENDING)
+    assert.isTrue(context.redirectedBack)
+    assert.isFalse(context.createdCalled)
+    assert.equal(context.flashes.success, 'Votre message a bien été envoyé.')
   })
 })

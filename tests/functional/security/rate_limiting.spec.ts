@@ -221,7 +221,8 @@ test.group('Rate limiting — POST /contact-requests (functional)', (group) => {
         .header('X-Forwarded-For', '203.0.113.30')
         .header('Accept', 'application/json')
         .json(contactPayload())
-      response.assertStatus(201)
+        .redirects(0)
+      response.assertStatus(302)
     }
 
     const response = await client
@@ -250,8 +251,9 @@ test.group('Rate limiting — POST /contact-requests (functional)', (group) => {
       .header('X-Forwarded-For', '203.0.113.32')
       .header('Accept', 'application/json')
       .json(contactPayload())
+      .redirects(0)
 
-    response.assertStatus(201)
+    response.assertStatus(302)
   })
 })
 

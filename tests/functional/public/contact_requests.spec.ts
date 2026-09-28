@@ -1,12 +1,18 @@
 import ContactRequest, { CONTACT_REQUEST_STATUSES } from '#models/contact_request'
 import { createAdvisor } from '#tests/support/actors'
+import { inertiaErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
 
 /**
  * Formulaire de contact / demande de démo : `POST /contact-requests`
  * (start/routes/public.ts), public et hors `guest()`.
+ *
+ * Soumis par `useForm` (Inertia) : la réponse est une redirection vers la page
+ * d'origine, jamais du JSON (régression #62 : `response.created({...})` cassait
+ * le formulaire).
  */
+const ORIGIN = '/offre'
 function validPayload(overrides: Record<string, unknown> = {}) {
   return {
     name: 'Jeanne Martin',
@@ -22,17 +28,22 @@ function validPayload(overrides: Record<string, unknown> = {}) {
 test.group('Demandes de contact — POST /contact-requests (functional)', (group) => {
   group.each.setup(() => truncateDb())
 
-  test('enregistre la demande en statut pending et renvoie 201', async ({ assert, client }) => {
+  test('enregistre la demande en statut pending et redirige vers la page d’origine', async ({
+    assert,
+    client,
+  }) => {
     const response = await client
       .post('/contact-requests')
-      .header('Accept', 'application/json')
+      .withInertia()
+      .header('referer', ORIGIN)
       .json(validPayload())
+      .redirects(0)
 
-    response.assertStatus(201)
-    const body = response.body()
-    assert.isTrue(body.success)
+    response.assertStatus(302)
+    response.assertHeader('location', ORIGIN)
+    assert.equal(response.flashMessage('success'), 'Votre message a bien été envoyé.')
 
-    const saved = await ContactRequest.findOrFail(body.id)
+    const saved = await ContactRequest.findByOrFail('email', 'jeanne.martin@example.com')
     assert.equal(saved.status, CONTACT_REQUEST_STATUSES.PENDING)
     assert.equal(saved.email, 'jeanne.martin@example.com')
     assert.equal(saved.type, 'demo')
@@ -49,11 +60,13 @@ test.group('Demandes de contact — POST /contact-requests (functional)', (group
 
     const response = await client
       .post('/contact-requests')
-      .header('Accept', 'application/json')
+      .withInertia()
+      .header('referer', ORIGIN)
       .json(payload)
+      .redirects(0)
 
-    response.assertStatus(201)
-    const saved = await ContactRequest.findOrFail(response.body().id)
+    response.assertStatus(302)
+    const saved = await ContactRequest.findByOrFail('email', 'jeanne.martin@example.com')
     assert.isNull(saved.phone)
     assert.isNull(saved.organization)
   })
@@ -64,10 +77,13 @@ test.group('Demandes de contact — POST /contact-requests (functional)', (group
     const response = await client
       .post('/contact-requests')
       .loginAs(advisor)
-      .header('Accept', 'application/json')
+      .withInertia()
+      .header('referer', ORIGIN)
       .json(validPayload())
+      .redirects(0)
 
-    response.assertStatus(201)
+    response.assertStatus(302)
+    response.assertHeader('location', ORIGIN)
   })
 
   test('rejette (422) un payload invalide sans rien enregistrer', async ({ assert, client }) => {
@@ -79,6 +95,23 @@ test.group('Demandes de contact — POST /contact-requests (functional)', (group
     response.assertStatus(422)
     const fields = (response.body().errors as Array<{ field: string }>).map((e) => e.field).sort()
     assert.deepEqual(fields, ['email', 'message', 'name', 'type'])
+    assert.lengthOf(await ContactRequest.all(), 0)
+  })
+
+  test('Inertia : un payload invalide renvoie les erreurs de champ sans rien enregistrer', async ({
+    assert,
+    client,
+  }) => {
+    const response = await client
+      .post('/contact-requests')
+      .withInertia()
+      .header('referer', ORIGIN)
+      .json({ name: 'J', email: 'pas-un-email', message: 'court', type: 'spam' })
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', ORIGIN)
+    assert.sameMembers(Object.keys(inertiaErrors(response)), ['email', 'message', 'name', 'type'])
     assert.lengthOf(await ContactRequest.all(), 0)
   })
 })
