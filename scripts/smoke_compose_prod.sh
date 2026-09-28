@@ -55,6 +55,8 @@ cleanup() {
   exit "$status"
 }
 trap cleanup EXIT
+# Sous `set -e`, une commande en échec arrête le script sans message.
+trap 'echo "échec ligne $LINENO : $BASH_COMMAND" >&2' ERR
 
 step() { printf '\n==> %s\n' "$*"; }
 
@@ -68,7 +70,10 @@ step 'seed (one-shot)'
 compose run --rm seed
 
 step 'app, worker, caddy'
-compose up -d --wait
+# `--wait` seulement sur les services qui ont un healthcheck : sur le worker
+# (healthcheck désactivé), certaines versions de Compose échouent.
+compose up -d --wait app caddy
+compose up -d worker
 
 step '/health en HTTPS via Caddy'
 # Caddy est « up » avant d'avoir émis son certificat : les premières poignées
