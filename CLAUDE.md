@@ -152,6 +152,7 @@ Toujours `pnpm`, jamais `npm run` ou `yarn`.
 - Tout nouveau/modifié composant/page → test dans `tests/inertia/`.
 - Tout nouveau/modifié model/service/controller → test dans `tests/unit/`.
 - Tâche non terminée tant que les tests ne passent pas.
+- Chaque modèle a sa factory (`database/factories/<modele>_factory.ts`, garde `tests/unit/hygiene/model_factories.spec.ts`) ; chaque fichier de `app/services`, `app/controllers`, `app/utils`, `app/mappers`, `shared/helpers`, `shared/constants` a un test miroir `<nom>.spec.ts` (garde `tests/unit/hygiene/mirror_tests.spec.ts`, liste blanche réservée aux fichiers de types purs).
 - Les tests backend tournent sur **PostgreSQL** (`pnpm test:db:up` avant `pnpm test`), jamais SQLite.
 - Tests HTTP (`tests/functional/`) : isolation par `truncateDb()` (`#tests/utils/db`), pas de transaction globale (invisible aux handlers).
 - `.env.test`, le service `postgres_test` du compose et le bloc `env:` de `.github/workflows/ci.yml` doivent rester alignés.
