@@ -110,6 +110,73 @@ jobs:
       - name: Test de fumée (serveur, pages SSR, assets, worker)
         run: node scripts/smoke_prod_build.mjs --app-dir="$RUNNER_TEMP/app"
 
+  # Image Docker (issue #14) : construit le Dockerfile tel qu'il serait déployé,
+  # puis déroule les modes de l'entrypoint dans l'ordre d'un déploiement —
+  # `migrate`, `seed`, `server` — et échoue si `/health` ne répond pas 200, si
+  # le conteneur ne tourne pas en `node` ou si son HEALTHCHECK n'est pas
+  # `healthy`. Même base et même env minimal que `smoke-prod-build`.
+  docker-image:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build de l'image
+        run: docker build -t career-transition-ai:ci .
+      - name: Env du conteneur
+        run: |
+          cat > "$RUNNER_TEMP/docker.env" <<'EOF'
+          TZ=UTC
+          APP_KEY=smoke-test-only-app-key-not-a-secret
+          LOG_LEVEL=info
+          SESSION_DRIVER=cookie
+          QUEUE_DRIVER=database
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_USER=test
+          DB_PASSWORD=test
+          DB_DATABASE=test
+          DB_SSL=false
+          AI_PROVIDER=none
+          ADMIN_PASSWORD=ci-only-admin-password
+          EOF
+      - name: Mode migrate
+        run: docker run --rm --network host --env-file "$RUNNER_TEMP/docker.env" career-transition-ai:ci migrate
+      - name: Mode seed (admin)
+        run: docker run --rm --network host --env-file "$RUNNER_TEMP/docker.env" career-transition-ai:ci seed
+      - name: Mode server (/health, utilisateur, HEALTHCHECK)
+        run: |
+          docker run -d --name web --network host --env-file "$RUNNER_TEMP/docker.env" career-transition-ai:ci server
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/health || true)
+            [ "$code" = 200 ] && break
+            sleep 2
+          done
+          [ "$code" = 200 ] || { docker logs web; echo "/health a répondu $code"; exit 1; }
+          user=$(docker exec web id -un)
+          [ "$user" = node ] || { echo "le conteneur tourne en $user, attendu node"; exit 1; }
+          for i in $(seq 1 30); do
+            health=$(docker inspect -f '{{.State.Health.Status}}' web)
+            [ "$health" = healthy ] && break
+            sleep 3
+          done
+          [ "$health" = healthy ] || { docker logs web; echo "HEALTHCHECK : $health"; exit 1; }
+          if docker logs web 2>&1 | grep -qi 'migrat'; then
+            echo 'le mode server ne doit pas lancer de migration'; exit 1
+          fi
+
   # La matrice n'est pas écrite à la main : `scripts/ci_test_shards.mjs` la
   # dérive de `tests/functional/` et équilibre les specs au fichier près. Un
   # nouveau répertoire de tests est donc shardé sans toucher à ce fichier — une

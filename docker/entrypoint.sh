@@ -1,21 +1,26 @@
 #!/bin/sh
+# Modes de l'image (docs/DEPLOYMENT.md §0.7). Les migrations ne tournent plus
+# au démarrage du serveur : `migrate` est une étape explicite du déploiement,
+# à lancer avant `server` et `worker`.
 set -e
 
 MODE="${1:-server}"
 
 case "$MODE" in
   server)
-    echo "Running migrations..."
-    node build/bin/console.js migration:run --force
-    echo "Starting server..."
-    exec node build/bin/server.js
+    exec node bin/server.js
     ;;
   worker)
-    echo "Starting workers..."
-    exec node build/bin/console.js queue:work --queue=default,ai,pdfs,analytics
+    exec node ace.js queue:work --queue=default,ai,pdfs,analytics
+    ;;
+  migrate)
+    exec node ace.js migration:run --force
+    ;;
+  seed)
+    exec node ace.js db:seed --files database/seeders/admin_seeder
     ;;
   *)
-    echo "Unknown mode: $MODE. Use 'server' or 'worker'."
+    echo "Unknown mode: $MODE. Use one of: server, worker, migrate, seed."
     exit 1
     ;;
 esac

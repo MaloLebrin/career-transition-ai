@@ -112,7 +112,6 @@
     "@aws-sdk/client-s3": "^3.1141.0",
     "@aws-sdk/s3-request-presigner": "^3.1141.0",
     "@boringnode/queue": "^0.5.1",
-    "@google/genai": "^1.47.0",
     "@headlessui/react": "^2.2.9",
     "@inertiajs/react": "^2.3.18",
     "@mistralai/mistralai": "^2.1.2",
