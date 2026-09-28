@@ -23,6 +23,17 @@ function resolveFromAddress(): MailAddress {
   throw new Error('MAIL_FROM_EMAIL is required in production to send emails.')
 }
 
+/**
+ * Secret du lien : seule l'instance renvoyée par `OnboardingToken.createForUser`
+ * le porte (la base ne stocke que son empreinte, #65).
+ */
+function plainTokenOf(token: OnboardingToken): string {
+  if (!token.plainToken) {
+    throw new Error('Onboarding token secret is only available right after createForUser().')
+  }
+  return token.plainToken
+}
+
 @inject()
 export class OnboardingMailService {
   constructor(private mail: MailService) {}
@@ -36,7 +47,7 @@ export class OnboardingMailService {
     token: OnboardingToken
     baseUrl: string
   }): Promise<void> {
-    const link = `${baseUrl}/onboarding/${token.token}`
+    const link = `${baseUrl}/onboarding/${plainTokenOf(token)}`
 
     await this.mail.send({
       from: resolveFromAddress(),
@@ -66,7 +77,7 @@ export class OnboardingMailService {
     token: OnboardingToken
     baseUrl: string
   }): Promise<void> {
-    const link = `${baseUrl}/onboarding/${token.token}`
+    const link = `${baseUrl}/onboarding/${plainTokenOf(token)}`
 
     await this.mail.send({
       from: resolveFromAddress(),

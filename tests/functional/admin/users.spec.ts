@@ -104,7 +104,7 @@ test.group('Super admin — utilisateurs : création et relance', (group) => {
     assert.equal(user.role, USERS_ROLES.EXPERT)
     const token = await OnboardingToken.query().where('userId', user.id).firstOrFail()
     assert.deepEqual(mails.recipients(), ['eva@example.com'])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${token.token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
   test('refuse la création dans l’organisation plateforme (flash error)', async ({
@@ -215,7 +215,7 @@ test.group('Super admin — utilisateurs : création et relance', (group) => {
     assert.lengthOf(tokens, 1)
     assert.notEqual(tokens[0].token, old.token)
     assert.deepEqual(mails.recipients(), [user.email])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${tokens[0].token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), tokens[0].token)
   })
 
   test('refuse de relancer un compte déjà activé', async ({ client, assert }) => {

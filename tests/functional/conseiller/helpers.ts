@@ -27,6 +27,16 @@ export class RecordingMailProvider implements MailProvider {
   recipients(): string[] {
     return this.sent.flatMap((m) => (Array.isArray(m.to) ? m.to : [m.to]).map((a) => a.email))
   }
+
+  /**
+   * Secret du lien `/onboarding/:token` du message `index`. La base n'en garde
+   * que l'empreinte : comparer `OnboardingToken.hash(secret)` à `token.token`.
+   */
+  onboardingSecret(index = 0): string {
+    const match = (this.sent[index]?.text ?? '').match(/\/onboarding\/([0-9a-f]{64})\b/)
+    if (!match) throw new Error(`Aucun lien d'onboarding dans le message ${index}`)
+    return match[1]
+  }
 }
 
 export function fakeMail(): RecordingMailProvider {

@@ -160,7 +160,7 @@ test.group('Conseiller — paramètres : invitation de collaborateurs', (group) 
     assert.equal(invited.role, USERS_ROLES.ADMIN)
     const token = await OnboardingToken.query().where('userId', invited.id).firstOrFail()
     assert.deepEqual(mails.recipients(), ['nina@example.com'])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${token.token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
   test('les rôles expert et consultant deviennent des conseillers', async ({ client, assert }) => {
