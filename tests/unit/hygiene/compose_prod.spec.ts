@@ -7,7 +7,7 @@ import { access, constants, readFile } from 'node:fs/promises'
  *
  * Le job CI `docker-image` démarre la pile ; cette garde échoue plus tôt, en
  * local, si une modification retire un invariant : aucun volume dans `app` ni
- * `worker` (PDF sur S3/R2), healthcheck HTTP réservé à `app`, `migrate`/`seed`
+ * `worker` (fichiers sur Cloudinary), healthcheck HTTP réservé à `app`, `migrate`/`seed`
  * en one-shot, redémarrage automatique, SSE non bufferisés par Caddy.
  */
 async function read(path: string) {
@@ -32,7 +32,7 @@ test.group('Hygiène — compose de production', () => {
     }
   })
 
-  test('aucun volume dans app ni worker : PDF sur S3', async ({ assert }) => {
+  test('aucun volume dans app ni worker : fichiers sur Cloudinary', async ({ assert }) => {
     const compose = await read('deploy/compose.yml')
 
     for (const name of ['app', 'worker', 'migrate', 'seed']) {
