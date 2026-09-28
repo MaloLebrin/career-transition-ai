@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import OnboardingController from '#controllers/onboarding_controller'
 import OnboardingToken from '#models/onboarding_token'
+import { OnboardingTokensService } from '#services/onboarding_tokens_service'
 import Organization from '#models/organization'
 import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
@@ -57,14 +58,14 @@ test.group('OnboardingController.submit', (group) => {
 
     const token = await OnboardingToken.createForUser(user.id)
 
-    const controller = new OnboardingController()
+    const controller = new OnboardingController(new OnboardingTokensService())
     const response = makeResponse()
     const session = makeSession()
     const loginCalls: any[] = []
 
     // @ts-expect-error minimal context
     await controller.submit({
-      params: { token: token.token },
+      params: { token: token.plainToken },
       request: {
         validateUsing: () =>
           Promise.resolve({

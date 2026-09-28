@@ -63,6 +63,7 @@ test.group('Factories — OnboardingToken', (group) => {
     const row = await OnboardingToken.findOrFail(created.id)
     assert.equal(row.userId, user.id)
     assert.match(row.token, /^[0-9a-f]{64}$/)
+    assert.equal(row.token, OnboardingToken.hash(created.plainToken!))
     assert.isNull(row.usedAt)
     assert.isTrue(row.isValid())
   })

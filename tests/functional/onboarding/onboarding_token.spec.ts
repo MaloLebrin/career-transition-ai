@@ -38,10 +38,10 @@ test.group('Onboarding — GET /onboarding/:token (functional)', (group) => {
     const { user } = await createCandidate({ onboarded: false })
     const token = await tokenFor(user)
 
-    const response = await client.get(`/onboarding/${token.token}`).withInertia()
+    const response = await client.get(`/onboarding/${token.plainToken}`).withInertia()
 
     const props = assertPage(assert, response, 'onboarding/SetPassword', ['token', 'userName'])
-    assert.equal(props.token, token.token)
+    assert.equal(props.token, token.plainToken)
     assert.equal(props.userName, user.name)
   })
 
@@ -59,7 +59,7 @@ test.group('Onboarding — GET /onboarding/:token (functional)', (group) => {
     const { user } = await createCandidate({ onboarded: false })
     const token = await tokenFor(user, 'expired')
 
-    const response = await client.get(`/onboarding/${token.token}`).withInertia()
+    const response = await client.get(`/onboarding/${token.plainToken}`).withInertia()
 
     const props = assertPage(assert, response, 'onboarding/InvalidToken', ['expired'])
     assert.isTrue(props.expired)
@@ -72,7 +72,7 @@ test.group('Onboarding — GET /onboarding/:token (functional)', (group) => {
     const { user } = await createCandidate({ onboarded: false })
     const token = await tokenFor(user, 'used')
 
-    const response = await client.get(`/onboarding/${token.token}`).withInertia()
+    const response = await client.get(`/onboarding/${token.plainToken}`).withInertia()
 
     const props = assertPage(assert, response, 'onboarding/InvalidToken', ['expired'])
     assert.isFalse(props.expired)
@@ -87,7 +87,7 @@ test.group('Onboarding — GET /onboarding/:token (functional)', (group) => {
     await tokenFor(first)
     const secondToken = await tokenFor(second)
 
-    const response = await client.get(`/onboarding/${secondToken.token}`).withInertia()
+    const response = await client.get(`/onboarding/${secondToken.plainToken}`).withInertia()
 
     const props = assertPage(assert, response, 'onboarding/SetPassword', ['userName'])
     assert.equal(props.userName, second.name)
@@ -121,7 +121,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const passwordBefore = user.password
 
     const response = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
       .redirects(0)
 
@@ -139,7 +139,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user, 'used')
 
     const response = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
       .redirects(0)
 
@@ -157,7 +157,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user)
 
     const response = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .withInertia()
       .form({ password: NEW_PASSWORD, password_confirmation: 'autre-chose-123' })
       .redirects(0)
@@ -173,7 +173,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user)
 
     const response = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .withInertia()
       .form({ password: 'court', password_confirmation: 'court' })
       .redirects(0)
@@ -193,7 +193,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user)
 
     const response = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
       .redirects(0)
 
@@ -217,7 +217,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user)
 
     await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
       .redirects(0)
 
@@ -239,12 +239,12 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     const token = await tokenFor(user)
 
     await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
       .redirects(0)
 
     const replay = await client
-      .post(`/onboarding/${token.token}`)
+      .post(`/onboarding/${token.plainToken}`)
       .form({ password: 'encore-un-autre', password_confirmation: 'encore-un-autre' })
       .redirects(0)
 
@@ -253,7 +253,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
     replay.assertFlashMessage('error', 'Ce lien a déjà été utilisé ou a expiré.')
     assert.isUndefined(replay.session(SESSION_KEY))
 
-    const page = await client.get(`/onboarding/${token.token}`).withInertia()
+    const page = await client.get(`/onboarding/${token.plainToken}`).withInertia()
     assertPage(assert, page, 'onboarding/InvalidToken', ['expired'])
   })
 
@@ -273,7 +273,7 @@ test.group('Onboarding — POST /onboarding/:token (functional)', (group) => {
       const token = await tokenFor(user)
 
       const response = await client
-        .post(`/onboarding/${token.token}`)
+        .post(`/onboarding/${token.plainToken}`)
         .form({ password: NEW_PASSWORD, password_confirmation: NEW_PASSWORD })
         .redirects(0)
 

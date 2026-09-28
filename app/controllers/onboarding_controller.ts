@@ -1,22 +1,22 @@
-import OnboardingToken from '#models/onboarding_token'
-import User from '#models/user'
+import { OnboardingTokensService } from '#services/onboarding_tokens_service'
 import { isConseillerDashboardRole } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { onboardingSetPasswordValidator } from '#validators/auth/onboarding_set_password_validator'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
+@inject()
 export default class OnboardingController {
+  constructor(private onboardingTokens: OnboardingTokensService) {}
+
   /**
    * GET /onboarding/:token — Show set-password page (guest).
    */
   public async show({ params, inertia }: HttpContext) {
-    const tokenRecord = await OnboardingToken.query()
-      .where('token', params.token)
-      .preload('user')
-      .first()
+    const tokenRecord = await this.onboardingTokens.findByPlainToken(String(params.token))
 
-    if (!tokenRecord || !tokenRecord.user) {
+    if (!tokenRecord) {
       return (inertia as any).render('onboarding/InvalidToken', {})
     }
 
@@ -35,12 +35,9 @@ export default class OnboardingController {
    * POST /onboarding/:token — Set password, consume token, log in, redirect to dashboard.
    */
   public async submit({ params, request, response, auth, session }: HttpContext) {
-    const tokenRecord = await OnboardingToken.query()
-      .where('token', params.token)
-      .preload('user')
-      .first()
+    const tokenRecord = await this.onboardingTokens.findByPlainToken(String(params.token))
 
-    if (!tokenRecord || !tokenRecord.user) {
+    if (!tokenRecord) {
       session.flash('error', 'Lien invalide ou expiré.')
       return response.redirect('/auth/login')
     }
@@ -51,16 +48,7 @@ export default class OnboardingController {
     }
 
     const payload = await request.validateUsing(onboardingSetPasswordValidator)
-
-    const user = tokenRecord.user as User
-    // En clair : le hook `beforeSave` de `withAuthFinder` le hashe. Un `hash.make()`
-    // ici le faisait hasher deux fois — le mot de passe choisi ne fonctionnait pas.
-    user.password = payload.password
-    user.onboardingCompletedAt = DateTime.now()
-    await user.save()
-
-    tokenRecord.usedAt = DateTime.now()
-    await tokenRecord.save()
+    const user = await this.onboardingTokens.consume(tokenRecord, payload.password)
 
     await auth.use('web').login(user)
     session.flash('success', 'Mot de passe créé. Bienvenue !')
