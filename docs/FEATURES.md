@@ -67,7 +67,7 @@
 - **Sections principales**
   - **Bureau** : vue globale conseiller.
   - **Candidats** : liste détaillée de ses talents, accès aux fiches.
-  - **Réglages** : configuration du cabinet, des membres.
+  - **Réglages** : configuration du cabinet, des membres, logo du cabinet (upload, remplacement, suppression ; image publique sur Cloudinary).
   - **Design** : zone dédiée à la personnalisation (présente ou à activer selon roadmap).
 
 - **Actions rapides**

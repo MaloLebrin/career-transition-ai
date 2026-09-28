@@ -28,7 +28,9 @@ const OrganizationSettings: React.FC<Props> = ({
   onBack,
 }) => {
   const { user } = useAuth()
-  const [org] = useState<Organization | undefined>(organizationProp)
+  // Lu depuis les props (pas d'état local) : après un upload de logo, Inertia
+  // renvoie l'organisation à jour.
+  const org: Organization | undefined = organizationProp
   const [team] = useState<Advisor[]>(membersProp ?? [])
   const [success, setSuccess] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)

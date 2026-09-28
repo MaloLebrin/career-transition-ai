@@ -61,6 +61,7 @@ test.group('CloudinaryService | dossiers', () => {
   test('dossiers par id d’organisation, sous la racine dev hors production', ({ assert }) => {
     assert.equal(CloudinaryFolders.organization(3), 'career-transition/dev/organizations/3')
     assert.equal(CloudinaryFolders.exports(3), 'career-transition/dev/organizations/3/exports')
+    assert.equal(CloudinaryFolders.logo(3), 'career-transition/dev/organizations/3/logo')
   })
 })
 
@@ -94,6 +95,33 @@ test.group('CloudinaryService | SDK', () => {
     })
     assert.equal(sent!.toString(), '%PDF')
     assert.deepEqual(result, { ...PDF, bytes: 4, secureUrl: 'u' })
+  })
+
+  test('uploadFile laisse le SDK lire le fichier temporaire (logo public)', async ({
+    assert,
+    cleanup,
+  }) => {
+    cleanup(overrideEnv(CREDENTIALS))
+    const LOGO: CloudinaryAsset = {
+      publicId: 'career-transition/dev/organizations/3/logo/logo_abc',
+      resourceType: 'image',
+      deliveryType: 'upload',
+    }
+    let call: [string, any] | null = null
+    cleanup(
+      stub(cloudinary.uploader, 'upload', (async (path: string, opts: any) => {
+        call = [path, opts]
+        return { public_id: opts.public_id, bytes: 12, secure_url: 'https://res.test/logo' }
+      }) as any)
+    )
+
+    const result = await new CloudinaryService().uploadFile('/tmp/upload-xyz', LOGO)
+
+    assert.deepEqual(call, [
+      '/tmp/upload-xyz',
+      { public_id: LOGO.publicId, resource_type: 'image', type: 'upload', overwrite: true },
+    ])
+    assert.deepEqual(result, { ...LOGO, bytes: 12, secureUrl: 'https://res.test/logo' })
   })
 
   test('download relaie le contenu via une URL signée courte', async ({ assert, cleanup }) => {
@@ -178,6 +206,7 @@ test.group('CloudinaryService | SDK', () => {
       CloudinaryNotConfiguredError
     )
     await assert.rejects(() => service.download(PDF), CloudinaryNotConfiguredError)
+    await assert.rejects(() => service.uploadFile('/tmp/x', PDF), CloudinaryNotConfiguredError)
     assert.isFalse(called)
   })
 })

@@ -20,6 +20,10 @@ export default class Organization extends BaseModel {
   @column()
   declare logoUrl: string | null
 
+  /** `public_id` Cloudinary du logo (`#services/branding_service`), jamais exposé. */
+  @column({ serializeAs: null })
+  declare logoPublicId: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

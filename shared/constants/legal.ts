@@ -43,7 +43,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Cloudinary',
     purpose:
-      'Stockage des fichiers générés (synthèses PDF exportées), en accès privé : chaque téléchargement passe par nos serveurs après contrôle des droits.',
+      'Stockage des fichiers : synthèses PDF exportées en accès privé (chaque téléchargement passe par nos serveurs après contrôle des droits) et logo des cabinets (public).',
     location: 'États-Unis par défaut (clauses contractuelles types) [région à confirmer]',
   },
   {

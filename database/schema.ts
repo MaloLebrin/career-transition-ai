@@ -409,6 +409,7 @@ export class OrganizationSchema extends BaseModel {
     'createdAt',
     'deletedAt',
     'id',
+    'logoPublicId',
     'logoUrl',
     'name',
     'slug',
@@ -421,6 +422,8 @@ export class OrganizationSchema extends BaseModel {
   declare deletedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare logoPublicId: string | null
   @column()
   declare logoUrl: string | null
   @column()
