@@ -82,13 +82,11 @@ export const envSchema = {
   |----------------------------------------------------------
   | Suivi des erreurs — voir config/error_tracking.ts
   |----------------------------------------------------------
-  | Sans `SENTRY_DSN`, rien n'est envoyé. `RENDER_GIT_COMMIT` est
-  | injecté par Render et sert de release par défaut.
+  | Sans `SENTRY_DSN`, rien n'est envoyé.
   */
   SENTRY_DSN: Env.schema.string.optional(),
   SENTRY_ENVIRONMENT: Env.schema.string.optional(),
   SENTRY_RELEASE: Env.schema.string.optional(),
-  RENDER_GIT_COMMIT: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

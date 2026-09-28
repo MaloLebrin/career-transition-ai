@@ -23,7 +23,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 ## Ops / Runbooks
 
-- **[Déploiement — procédure pas à pas](DEPLOYMENT.md)** — correctifs préalables du repo, procédure Render + Neon (perso, Blueprint `render.yaml`) et VM docker-compose (beta), mise à jour, rollback, sauvegardes, incidents.
+- **[Déploiement — procédure pas à pas](DEPLOYMENT.md)** — correctifs préalables du repo, procédure VM docker-compose (beta), mise à jour, rollback, sauvegardes, incidents.
 - **[Hébergement à coût minimal](hosting.md)** — analyse des besoins réels (process, DB, env, SSE, disque), options gratuites / quasi-gratuites par scénario, travail préparatoire et checklist post-déploiement.
 - **[Incidents courants](DEPLOYMENT.md#4-incidents-courants)** — symptômes, causes et correctifs (DB, queue, mail, IA, hébergeurs).
 - **[Checklist prod](PRODUCTION_CHECKLIST.md)** — TODOs avant mise en production.

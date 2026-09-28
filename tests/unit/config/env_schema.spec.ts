@@ -18,15 +18,12 @@ import { readFile } from 'node:fs/promises'
 type EnvKey = keyof typeof envSchema
 type Rule = (key: string, value?: string) => unknown
 
-/** Variables hors schéma, lues par Node, Vite ou l'hébergeur. */
+/** Variables hors schéma, lues par Node ou Vite. */
 const OUTSIDE_SCHEMA = ['TZ', 'NODE_OPTIONS', 'VITE_APP_NAME']
 /** Variables lues par docker compose (deploy/compose.yml), pas par l'application. */
 const COMPOSE_ONLY: Record<string, string[]> = {
   'deploy/.env.example': ['APP_IMAGE', 'APP_DOMAIN'],
 }
-/** Variables du schéma injectées par l'hébergeur, absentes des exemples. */
-const HOST_INJECTED: EnvKey[] = ['RENDER_GIT_COMMIT']
-
 async function parseEnvFile(name: string): Promise<Record<string, string>> {
   const contents = await readFile(app.makePath(name), 'utf-8')
   return new EnvParser(contents, new URL(app.makeURL()), { ignoreProcessEnv: true }).parse()
@@ -86,9 +83,7 @@ for (const file of ['.env.example', '.env.production.example', 'deploy/.env.exam
 test.group('Env — .env.example', () => {
   test('documente toutes les variables du schéma', async ({ assert }) => {
     const keys = await documentedKeys('.env.example')
-    const missing = (Object.keys(envSchema) as EnvKey[]).filter(
-      (key) => !HOST_INJECTED.includes(key) && !keys.includes(key)
-    )
+    const missing = (Object.keys(envSchema) as EnvKey[]).filter((key) => !keys.includes(key))
     assert.deepEqual(missing, [], 'ajouter la variable (commentée si optionnelle) à .env.example')
   })
 })

@@ -136,7 +136,7 @@ Options utiles :
 
 ### Notes prod
 
-- En production, il faut **un process worker en plus** du serveur HTTP : service `worker` du compose de production (`deploy/compose.yml`, commande `worker` de l'entrypoint : `queue:work` sur toutes les queues). Exception : Render Free (scénario 1) tourne en `QUEUE_DRIVER=sync`, sans worker — voir [DEPLOYMENT.md](DEPLOYMENT.md).
+- En production, il faut **un process worker en plus** du serveur HTTP : service `worker` du compose de production (`deploy/compose.yml`, commande `worker` de l'entrypoint : `queue:work` sur toutes les queues). Voir [DEPLOYMENT.md](DEPLOYMENT.md).
 - Plusieurs workers peuvent consommer la même queue en parallèle (à dimensionner selon charge et DB).
 - **Temps réel (Transmit / SSE) depuis le worker** : `config/transmit.ts` est en `transport: null`, donc un `transmit.broadcast()` n'est diffusé qu'aux clients SSE connectés au **même process**. Les broadcasts émis depuis le **worker** (`pdf_export_events_service.ts` via `generate_employee_synthesis_pdf.ts`, `notification_service.ts` depuis un job…) n'atteignent **jamais** le navigateur, qui est connecté au process web : seuls les broadcasts du process web (ou tout en un seul process avec `QUEUE_DRIVER=sync`) sont temps réel. Pour un déploiement web + worker séparés, brancher le transport Redis de Transmit (`transport: { driver: redis(...) }`) ; sinon la page se met à jour au prochain rechargement.
 
