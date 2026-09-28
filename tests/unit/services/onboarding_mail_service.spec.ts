@@ -39,6 +39,8 @@ function fixtures() {
   return { user, token, organization }
 }
 
+/** `APP_URL` avec un `/` final : le lien n'en garde qu'un. */
+const APP_URL = 'https://app.example.test/'
 const BASE_URL = 'https://app.example.test'
 
 test.group('OnboardingMailService.sendSetPasswordLink', () => {
@@ -46,8 +48,8 @@ test.group('OnboardingMailService.sendSetPasswordLink', () => {
     const { service, sent } = makeService()
     const { user, token } = fixtures()
 
-    await withEnv({ MAIL_FROM_EMAIL: undefined, MAIL_FROM_NAME: undefined }, () =>
-      service.sendSetPasswordLink({ user, token, baseUrl: BASE_URL })
+    await withEnv({ APP_URL, MAIL_FROM_EMAIL: undefined, MAIL_FROM_NAME: undefined }, () =>
+      service.sendSetPasswordLink({ user, token })
     )
 
     assert.lengthOf(sent, 1)
@@ -68,7 +70,7 @@ test.group('OnboardingMailService.sendInviteAdvisorLink', () => {
     const { service, sent } = makeService()
     const { user, token, organization } = fixtures()
 
-    await service.sendInviteAdvisorLink({ user, token, organization, baseUrl: BASE_URL })
+    await withEnv({ APP_URL }, () => service.sendInviteAdvisorLink({ user, token, organization }))
 
     assert.lengthOf(sent, 1)
     const [mail] = sent
@@ -87,7 +89,7 @@ test.group('OnboardingMailService — expéditeur', () => {
     const { user, token } = fixtures()
 
     await withEnv({ MAIL_FROM_EMAIL: '  noreply@example.com ', MAIL_FROM_NAME: ' Équipe ' }, () =>
-      service.sendSetPasswordLink({ user, token, baseUrl: BASE_URL })
+      service.sendSetPasswordLink({ user, token })
     )
 
     assert.deepEqual(sent[0].from, { email: 'noreply@example.com', name: 'Équipe' })
@@ -98,7 +100,7 @@ test.group('OnboardingMailService — expéditeur', () => {
     const { user, token } = fixtures()
 
     await withEnv({ MAIL_FROM_EMAIL: 'noreply@example.com', MAIL_FROM_NAME: undefined }, () =>
-      service.sendSetPasswordLink({ user, token, baseUrl: BASE_URL })
+      service.sendSetPasswordLink({ user, token })
     )
 
     assert.deepEqual(sent[0].from, { email: 'noreply@example.com', name: undefined })
@@ -114,7 +116,7 @@ test.group('OnboardingMailService — expéditeur', () => {
 
     await withEnv({ MAIL_FROM_EMAIL: undefined }, () =>
       assert.rejects(
-        () => service.sendSetPasswordLink({ user, token, baseUrl: BASE_URL }),
+        () => service.sendSetPasswordLink({ user, token }),
         'MAIL_FROM_EMAIL is required in production to send emails.'
       )
     )
@@ -130,9 +132,7 @@ test.group('OnboardingMailService — secret du lien', () => {
     const stored = new OnboardingToken()
     stored.merge({ id: 6, userId: 12, token: OnboardingToken.hash('abc123') })
 
-    await assert.rejects(() =>
-      service.sendSetPasswordLink({ user, token: stored, baseUrl: BASE_URL })
-    )
+    await assert.rejects(() => service.sendSetPasswordLink({ user, token: stored }))
     assert.lengthOf(sent, 0)
   })
 })

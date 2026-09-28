@@ -17,6 +17,11 @@ export const envSchema = {
   PORT: Env.schema.number(),
   APP_KEY: Env.schema.string(),
   HOST: Env.schema.string({ format: 'host' }),
+  /**
+   * URL publique de l'application (`https://app.example.fr`) : base des liens
+   * envoyés par e-mail (`#utils/app_url`), jamais dérivée de l'en-tête `Host`.
+   */
+  APP_URL: Env.schema.string({ format: 'url', tld: false }),
   LOG_LEVEL: Env.schema.string(),
   APP_NAME: Env.schema.string.optional(),
 

@@ -11,10 +11,11 @@ export const http = defineConfig({
   /**
    * L'app n'est jamais exposée sans reverse proxy (Caddy, Render, Koyeb,
    * Tailscale Funnel…) qui termine le TLS. Sans `trustProxy`, AdonisJS ne fait
-   * confiance qu'à `loopback` : `request.protocol()` renvoie `http` et les liens
-   * d'onboarding construits avec `${request.protocol()}://${request.hostname()}`
-   * sont générés en `http://`. On fait confiance aux en-têtes
-   * `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-For` du proxy.
+   * confiance qu'à `loopback` et `request.protocol()` renvoie `http`. On fait
+   * confiance aux en-têtes `X-Forwarded-Proto` / `X-Forwarded-Host` /
+   * `X-Forwarded-For` du proxy — ils restent fournis par le client : jamais de
+   * lien envoyé par e-mail construit depuis la requête (`APP_URL`, #64), jamais
+   * `request.ip()` pour une clé de rate limiting (`clientIp()`).
    */
   trustProxy: () => true,
 

@@ -39,7 +39,6 @@ test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
       name: 'Alice',
       email: 'alice@client.test',
       role: 'advisor',
-      baseUrl: 'https://app.test',
       platformOrganizationId: platformOrg.id,
     })
 
@@ -82,7 +81,6 @@ test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
           name: 'Bob',
           email: 'dup@client.test',
           role: 'admin',
-          baseUrl: 'https://app.test',
           platformOrganizationId: platformOrg.id,
         }),
       EmailAlreadyUsedException
@@ -104,7 +102,6 @@ test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
           name: 'Eve',
           email: 'eve@test.com',
           role: 'employee',
-          baseUrl: 'https://app.test',
           platformOrganizationId: platformOrg.id,
         }),
       DomainException
@@ -130,7 +127,7 @@ test.group('SuperAdminUsersService.resendOnboardingInvitation', (group) => {
       sendSetPasswordLink: async (p: unknown) => calls.push(p),
     } as any)
 
-    await service.resendOnboardingInvitation(user, 'https://app.test')
+    await service.resendOnboardingInvitation(user)
 
     const tokens = await OnboardingToken.query().where('userId', user.id)
     assert.lengthOf(tokens, 1)
@@ -150,10 +147,7 @@ test.group('SuperAdminUsersService.resendOnboardingInvitation', (group) => {
 
     const service = new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
 
-    await assert.rejects(
-      () => service.resendOnboardingInvitation(user, 'https://app.test'),
-      DomainException
-    )
+    await assert.rejects(() => service.resendOnboardingInvitation(user), DomainException)
   })
 
   test('deletes unused tokens before creating a new one', async ({ assert }) => {
@@ -174,7 +168,7 @@ test.group('SuperAdminUsersService.resendOnboardingInvitation', (group) => {
     })
 
     const service = new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
-    await service.resendOnboardingInvitation(user, 'https://app.test')
+    await service.resendOnboardingInvitation(user)
 
     const tokens = await OnboardingToken.query().where('userId', user.id)
     assert.lengthOf(tokens, 1)

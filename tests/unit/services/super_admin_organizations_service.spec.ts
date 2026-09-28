@@ -23,7 +23,6 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
       organizationSlug: '',
       ownerName: 'Alice Owner',
       ownerEmail: 'alice.owner@example.com',
-      baseUrl: 'https://example.test',
     })
 
     assert.exists(result.organization.id)
@@ -42,7 +41,6 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
 
     assert.equal(calls.length, 1)
     assert.equal(calls[0].user.id, result.owner.id)
-    assert.equal(calls[0].baseUrl, 'https://example.test')
     assert.equal(calls[0].token.id, result.token.id)
   })
 
@@ -70,7 +68,6 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
           organizationSlug: '',
           ownerName: 'Owner',
           ownerEmail: 'existing@example.com',
-          baseUrl: 'https://example.test',
         }),
       EmailAlreadyUsedException
     )
@@ -89,7 +86,6 @@ test.group('SuperAdminOrganizationsService.createOrganizationWithOwner', (group)
           organizationSlug: '',
           ownerName: 'Owner',
           ownerEmail: 'new-owner@example.com',
-          baseUrl: 'https://example.test',
         }),
       OrganizationNameAlreadyUsedException
     )

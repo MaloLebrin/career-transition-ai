@@ -14,7 +14,6 @@ type CreateOrganizationWithOwnerInput = {
   organizationSlug?: string
   ownerName: string
   ownerEmail: string
-  baseUrl: string
 }
 
 @inject()
@@ -79,7 +78,6 @@ export class SuperAdminOrganizationsService {
     await this.onboardingMailService.sendSetPasswordLink({
       user: owner,
       token,
-      baseUrl: input.baseUrl,
     })
 
     return { organization, owner, token }

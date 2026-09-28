@@ -35,7 +35,7 @@ class FakeAdvisorService {
   public inviteAdvisorCalls: InviteAdvisorCall[] = []
   public inviteAdvisorError: Error | null = null
 
-  async inviteAdvisor(input: InviteAdvisorCall, _baseUrl: string) {
+  async inviteAdvisor(input: InviteAdvisorCall) {
     this.inviteAdvisorCalls.push(input)
     if (this.inviteAdvisorError) throw this.inviteAdvisorError
     return { id: 1, ...input }

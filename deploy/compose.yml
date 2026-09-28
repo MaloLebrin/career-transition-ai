@@ -16,6 +16,8 @@ x-app: &app
   image: ${APP_IMAGE:?APP_IMAGE manquant dans .env}
   env_file: .env
   environment: &app-env
+    # Base des liens envoyés par e-mail : le domaine servi par Caddy.
+    APP_URL: https://${APP_DOMAIN:?APP_DOMAIN manquant dans .env}
     # Postgres du compose : réseau interne, sans TLS.
     DB_HOST: postgres
     DB_PORT: 5432
