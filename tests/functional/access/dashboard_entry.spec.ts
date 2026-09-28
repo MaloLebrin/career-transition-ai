@@ -13,7 +13,7 @@ import {
 } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
-import drive from '@adonisjs/drive/services/main'
+import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 
 /**
  * Entrée du dashboard (start/routes/dashboard/index.ts) : aiguillage par rôle
@@ -56,13 +56,13 @@ test.group('Dashboard — GET /dashboard aiguille selon le rôle (functional)', 
 })
 
 test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)', (group) => {
-  const filePath = pdfExportKey(424_242)
+  const filePath = pdfExportKey(1, 424_242)
 
   group.each.setup(() => truncateDb())
   group.each.setup(async () => {
-    drive.fake()
+    swapFakeCloudinary()
     await storePdf(filePath, new TextEncoder().encode('%PDF-1.4 contenu de test'))
-    return () => drive.restore()
+    return () => restoreCloudinary()
   })
 
   /** Export d'un candidat suivi par `advisor`, fichier présent dans le stockage. */
@@ -202,7 +202,7 @@ test.group('Dashboard — GET /dashboard/pdf-exports/:id/download (functional)',
 
   test('fichier absent du stockage : 404', async ({ client }) => {
     const advisor = await createAdvisor()
-    const pdfExport = await exportFor(advisor, { filePath: pdfExportKey(999_999) })
+    const pdfExport = await exportFor(advisor, { filePath: pdfExportKey(1, 999_999) })
 
     const response = await client
       .get(`/dashboard/pdf-exports/${pdfExport.id}/download`)

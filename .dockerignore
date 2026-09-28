@@ -9,7 +9,6 @@ coverage
 *.log
 *.tsbuildinfo
 .DS_Store
-storage
 
 # Inutiles à `node ace build` et à l'image : allègent le contexte et évitent
 # de reconstruire l'image quand seule la doc change. `tests/` reste : `bin/test.ts`

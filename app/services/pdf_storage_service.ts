@@ -1,58 +1,71 @@
 import PdfExport from '#models/pdf_export'
+import {
+  CloudinaryFolders,
+  CloudinaryService,
+  cloudinaryEnvRoot,
+} from '#services/cloudinary_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
-import drive from '@adonisjs/drive/services/main'
+import type { CloudinaryAsset } from '#shared/types/storage/cloudinary'
+import app from '@adonisjs/core/services/app'
 import type { DateTime } from 'luxon'
 import type { Readable } from 'node:stream'
 
 /**
- * Stockage des exports PDF sur le disque Drive par défaut (`config/drive.ts`),
- * issue #21 : local (`fs`) ou bucket S3/R2 (`s3`). Web et worker n'ont plus à
- * partager un disque, et `pdf_exports.file_path` ne contient qu'une clé
- * relative.
+ * Stockage des exports PDF sur Cloudinary (issue #49), en ressource `raw`
+ * privée (`authenticated`). `pdf_exports.file_path` contient le `public_id`,
+ * lu par le web quel que soit le service (worker) qui l'a écrit.
  */
-
-/** Préfixe des clés d'exports PDF. */
-export const PDF_EXPORTS_PREFIX = 'exports'
 
 export const PDF_MIME_TYPE = 'application/pdf'
 
 /**
- * Clé d'un export : dérivée de son id seulement, pour ne pas mettre le nom du
- * candidat dans le stockage (le nom affiché reste `pdf_exports.file_name`).
+ * `public_id` d'un export : dérivé des ids seulement, pour ne pas mettre le
+ * nom du candidat dans le stockage (le nom affiché reste
+ * `pdf_exports.file_name`).
  */
-export function pdfExportKey(pdfExportId: number): string {
-  return `${PDF_EXPORTS_PREFIX}/pdf_export_${pdfExportId}.pdf`
+export function pdfExportKey(organizationId: number, pdfExportId: number): string {
+  return `${CloudinaryFolders.exports(organizationId)}/pdf_export_${pdfExportId}.pdf`
 }
 
 /** Écrit le PDF et renvoie sa taille en octets. */
 export async function storePdf(key: string, bytes: Uint8Array): Promise<number> {
-  await drive.use().put(key, bytes, { contentType: PDF_MIME_TYPE })
+  const cloud = await storage()
+  await cloud.uploadBuffer(bytes, pdfAsset(key))
   return bytes.byteLength
 }
 
 /**
- * Flux du PDF, ou `null` s'il est absent. Une clé qui n'est pas sous
- * `exports/` (ancien chemin absolu, valeur inattendue) est traitée comme
- * absente : on ne lit jamais hors du préfixe.
+ * Flux du PDF, ou `null` s'il est absent. Une clé qui n'a pas la forme d'un
+ * export (ancienne clé `exports/…` du stockage Drive, chemin absolu, valeur
+ * inattendue) est traitée comme absente : on ne lit jamais hors des exports.
  */
 export async function readPdfStream(key: string): Promise<Readable | null> {
   if (!isPdfExportKey(key)) return null
-  const disk = drive.use()
-  if (!(await disk.exists(key))) return null
-  return disk.getStream(key)
+  const cloud = await storage()
+  return cloud.download(pdfAsset(key))
 }
 
-/** Supprime le PDF ; `false` s'il n'existait pas (ou clé hors préfixe). */
+/** Supprime le PDF ; `false` s'il n'existait pas (ou clé hors exports). */
 export async function deletePdf(key: string): Promise<boolean> {
   if (!isPdfExportKey(key)) return false
-  const disk = drive.use()
-  if (!(await disk.exists(key))) return false
-  await disk.delete(key)
-  return true
+  const cloud = await storage()
+  return cloud.destroy(pdfAsset(key))
 }
 
 export function isPdfExportKey(key: string): boolean {
-  return key.startsWith(`${PDF_EXPORTS_PREFIX}/`) && !key.split('/').includes('..')
+  // La racine ne contient que des lettres, `-` et `/` : rien à échapper.
+  return new RegExp(
+    `^${cloudinaryEnvRoot()}/organizations/\\d+/exports/pdf_export_\\d+\\.pdf$`
+  ).test(key)
+}
+
+function pdfAsset(key: string): CloudinaryAsset {
+  return { publicId: key, resourceType: 'raw', deliveryType: 'authenticated' }
+}
+
+/** Résolu à chaque appel : le fake de test (`app.container.swap`) s'applique. */
+function storage(): Promise<CloudinaryService> {
+  return app.container.make(CloudinaryService)
 }
 
 /**

@@ -88,6 +88,11 @@ jobs:
       DB_DATABASE: test
       DB_SSL: false
       AI_PROVIDER: none
+      # Exigées au démarrage en production (config/cloudinary.ts) ; factices,
+      # aucun fichier n'est envoyé pendant le smoke.
+      CLOUDINARY_CLOUD_NAME: smoke
+      CLOUDINARY_API_KEY: smoke-key
+      CLOUDINARY_API_SECRET: smoke-secret
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -150,6 +155,9 @@ jobs:
           DB_DATABASE=test
           DB_SSL=false
           AI_PROVIDER=none
+          CLOUDINARY_CLOUD_NAME=smoke
+          CLOUDINARY_API_KEY=smoke-key
+          CLOUDINARY_API_SECRET=smoke-secret
           ADMIN_PASSWORD=ci-only-admin-password
           EOF
       - name: Mode migrate
@@ -178,8 +186,8 @@ jobs:
           fi
           docker rm -f web
       # Compose de production (deploy/, issue #16) avec la même image : Caddy
-      # TLS, migrate/seed one-shot, bucket S3 partagé par app et worker (aucun
-      # volume), backup.sh. Voir scripts/smoke_compose_prod.sh.
+      # TLS, migrate/seed one-shot, app et worker sans volume (fichiers sur
+      # Cloudinary), backup.sh. Voir scripts/smoke_compose_prod.sh.
       - name: Compose de production (deploy/)
         run: APP_IMAGE=career-transition-ai:ci scripts/smoke_compose_prod.sh
 

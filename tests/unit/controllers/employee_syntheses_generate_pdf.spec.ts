@@ -9,7 +9,7 @@ import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
 import testUtils from '@adonisjs/core/services/test_utils'
-import drive from '@adonisjs/drive/services/main'
+import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import { test } from '@japa/runner'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -105,10 +105,10 @@ function makeController() {
 
 test.group('EmployeeSynthesesController.generateShareablePdfAdvisor', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  // Queue `sync` en test : le job écrit le PDF, sur le disque factice.
+  // Queue `sync` en test : le job écrit le PDF, dans le Cloudinary factice.
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
   group.each.teardown(() => {
     delete flashes['error']
@@ -213,10 +213,10 @@ test.group('EmployeeSynthesesController.generateShareablePdfAdvisor', (group) =>
 
 test.group('EmployeeSynthesesController.generateShareablePdfCandidate', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
-  // Queue `sync` en test : le job écrit le PDF, sur le disque factice.
+  // Queue `sync` en test : le job écrit le PDF, dans le Cloudinary factice.
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
   group.each.teardown(() => {
     delete flashes['error']

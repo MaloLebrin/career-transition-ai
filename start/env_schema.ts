@@ -92,18 +92,14 @@ export const envSchema = {
 
   /*
   |----------------------------------------------------------
-  | Stockage des fichiers (exports PDF) — voir config/drive.ts
+  | Stockage des fichiers (exports PDF) — voir config/cloudinary.ts
   |----------------------------------------------------------
-  | `fs` (défaut) : disque local `storage/`. `s3` : bucket S3
-  | compatible (Cloudflare R2) quand web et worker ne partagent
-  | pas de disque ; `S3_*` alors requises (vérifié par config/drive.ts).
+  | Optionnelles au schéma (dev et test tournent sans), requises
+  | en production : config/cloudinary.ts refuse de démarrer sinon.
   */
-  DRIVE_DISK: Env.schema.enum.optional(['fs', 's3'] as const),
-  S3_BUCKET: Env.schema.string.optional(),
-  S3_ACCESS_KEY_ID: Env.schema.string.optional(),
-  S3_SECRET_ACCESS_KEY: Env.schema.string.optional(),
-  S3_ENDPOINT: Env.schema.string.optional(),
-  S3_REGION: Env.schema.string.optional(),
+  CLOUDINARY_CLOUD_NAME: Env.schema.string.optional(),
+  CLOUDINARY_API_KEY: Env.schema.string.optional(),
+  CLOUDINARY_API_SECRET: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

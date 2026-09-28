@@ -11,7 +11,11 @@ import { createAdvisor, createCandidate, createOrganization } from '#tests/suppo
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
 import { DateTime } from 'luxon'
-import drive from '@adonisjs/drive/services/main'
+import {
+  type FakeCloudinary,
+  restoreCloudinary,
+  swapFakeCloudinary,
+} from '#tests/support/fake_cloudinary'
 
 /**
  * Synthèse côté candidat (`EmployeeSynthesesController`) :
@@ -144,11 +148,11 @@ test.group('Candidat — synthèse : page (GET)', (group) => {
 })
 
 test.group('Candidat — synthèse : export PDF (POST)', (group) => {
-  let disk: ReturnType<typeof drive.fake>
+  let cloud: FakeCloudinary
   group.each.setup(() => truncateDb())
   group.each.setup(() => {
-    disk = drive.fake()
-    return () => drive.restore()
+    cloud = swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test("refuse l'export tant que la synthèse n'est pas partagée", async ({ client, assert }) => {
@@ -211,7 +215,7 @@ test.group('Candidat — synthèse : export PDF (POST)', (group) => {
     assert.equal(pdfExport.mimeType, 'application/pdf')
     assert.isAbove(pdfExport.size ?? 0, 0)
 
-    disk.assertExists(pdfExport.filePath!)
+    assert.isTrue(cloud.has(pdfExport.filePath!))
   })
 
   test('refuse un conseiller (403)', async ({ client, assert }) => {

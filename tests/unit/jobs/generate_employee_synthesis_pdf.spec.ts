@@ -10,7 +10,7 @@ import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { pdfExportKey } from '#services/pdf_storage_service'
 import testUtils from '@adonisjs/core/services/test_utils'
-import drive from '@adonisjs/drive/services/main'
+import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import { test } from '@japa/runner'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -82,8 +82,8 @@ async function createPendingExport(
 test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('passe en COMPLETED avec filePath et fileName definis', async ({ assert }) => {
@@ -108,19 +108,23 @@ test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
     assert.isNull(updated.errorMessage)
   })
 
-  test('écrit le PDF sur le disque Drive sous une clé relative (issue #21)', async ({ assert }) => {
-    const disk = drive.fake()
-    const { org, advisor, employee } = await seedFullScenario('job-drive')
+  test('écrit le PDF privé sur Cloudinary sous un public_id sans nom (issue #49)', async ({
+    assert,
+  }) => {
+    const cloud = swapFakeCloudinary()
+    const { org, advisor, employee } = await seedFullScenario('job-storage')
     const pdfExport = await createPendingExport(advisor.id, org.id, employee.id, advisor.id)
 
     await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
 
     const updated = await PdfExport.findOrFail(pdfExport.id)
     assert.equal(updated.status, PDF_EXPORT_STATUSES.COMPLETED)
-    assert.equal(updated.filePath, pdfExportKey(pdfExport.id))
+    assert.equal(updated.filePath, pdfExportKey(org.id, pdfExport.id))
     assert.notInclude(updated.filePath!, employee.name)
-    disk.assertExists(updated.filePath!)
-    const bytes = await disk.getBytes(updated.filePath!)
+    assert.deepEqual(cloud.uploaded, [
+      { publicId: updated.filePath!, resourceType: 'raw', deliveryType: 'authenticated' },
+    ])
+    const bytes = cloud.files.get(updated.filePath!)!.bytes
     assert.equal(Buffer.from(bytes.subarray(0, 5)).toString(), '%PDF-')
     assert.equal(updated.size, bytes.byteLength)
   })
@@ -164,8 +168,8 @@ test.group('GenerateEmployeeSynthesisPdf job — succes', (group) => {
 test.group('GenerateEmployeeSynthesisPdf job — transitions detat', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('startedAt et finishedAt sont definis apres execution', async ({ assert }) => {
@@ -194,8 +198,8 @@ test.group('GenerateEmployeeSynthesisPdf job — transitions detat', (group) => 
 test.group('GenerateEmployeeSynthesisPdf job — echec', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('passe en FAILED avec errorMessage quand le service PDF echoue', async ({ assert }) => {

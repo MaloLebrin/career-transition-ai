@@ -3,7 +3,9 @@
 Ce document explique comment l'infrastructure de **Career Transition AI** est gérée et déployée sur Render via l'outil natif de Blueprints (`render.yaml`).
 
 ## 🏗️ Architecture Provisionnée
+
 Le fichier `render.yaml` à la racine du projet permet de déployer automatiquement les composants suivants sur Render :
+
 1. **Base de données PostgreSQL** (`career-transition-db`, Plan starter) : Stockage des données de l'application.
 2. **Web Service AdonisJS** (`career-transition-web`) : Serveur principal HTTP.
 3. **Background Worker** (`career-transition-worker`) : Processus d'arrière-plan pour les tâches asynchrones (emails, PDFs, IA) gérées par `@boringnode/queue`.
@@ -23,7 +25,7 @@ L'avantage de cette méthode est que toute la configuration est lue directement 
    - `RESEND_API_KEY`
    - `MISTRAL_API_KEY`
    - `SENTRY_DSN` (suivi des erreurs, projet Sentry en région EU ; vide = désactivé)
-   - `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (bucket Cloudflare R2 des PDF, requis : `DRIVE_DISK=s3` ; voir [DEPLOYMENT.md](DEPLOYMENT.md#stockage-des-pdf))
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (stockage des PDF, requis : le service refuse de démarrer sans ; voir [DEPLOYMENT.md](DEPLOYMENT.md#stockage-des-fichiers-cloudinary))
 7. Clique sur **Apply** et laisse Render créer la base de données, les serveurs et déployer le code !
 
 ### Créer (ou mettre à jour) le super admin
@@ -44,6 +46,7 @@ Grâce à cette configuration, tu n'as **plus rien à faire**.
 ## 🛠️ Ajouter ou Modifier des Variables d'Environnement
 
 Si tu dois ajouter une nouvelle clé secrète à l'avenir :
+
 1. Ajoute-la dans `render.yaml` sous `envVarGroups` avec la propriété `sync: false`.
 2. Commit et Push tes changements.
 3. Rends-toi dans le Dashboard Render de ton projet, tu auras une notification te demandant de renseigner la valeur de cette nouvelle clé.

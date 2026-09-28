@@ -22,7 +22,11 @@ import { createAdvisor, createCandidate, type CandidateActor } from '#tests/supp
 import ace from '@adonisjs/core/services/ace'
 import app from '@adonisjs/core/services/app'
 import testUtils from '@adonisjs/core/services/test_utils'
-import drive from '@adonisjs/drive/services/main'
+import {
+  type FakeCloudinary,
+  restoreCloudinary,
+  swapFakeCloudinary,
+} from '#tests/support/fake_cloudinary'
 import { test } from '@japa/runner'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -43,7 +47,7 @@ async function seedCandidate(): Promise<CandidateActor & { pdfKey: string; advis
     organizationId: employee.organizationId,
     employeeId: employee.id,
   }).create()
-  const pdfKey = pdfExportKey(pdfExport.id)
+  const pdfKey = pdfExportKey(employee.organizationId, pdfExport.id)
   await storePdf(pdfKey, new TextEncoder().encode('%PDF-1.4 test'))
   pdfExport.filePath = pdfKey
   await pdfExport.save()
@@ -58,16 +62,14 @@ async function seedCandidate(): Promise<CandidateActor & { pdfKey: string; advis
 }
 
 test.group('candidate_data_service | purge', (group) => {
-  let disk: ReturnType<typeof drive.fake>
+  let cloud: FakeCloudinary
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    disk = drive.fake()
-    return () => drive.restore()
+    cloud = swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
-  test('supprime la fiche, les données liées, le compte et le PDF sur disque', async ({
-    assert,
-  }) => {
+  test('supprime la fiche, les données liées, le compte et le PDF stocké', async ({ assert }) => {
     const { employee, user, pdfKey, advisor } = await seedCandidate()
     const other = await seedCandidate()
 
@@ -88,7 +90,7 @@ test.group('candidate_data_service | purge', (group) => {
     assert.lengthOf(await Experience.query().where('employeeId', employee.id), 0)
     assert.lengthOf(await PdfExport.query().where('employeeId', employee.id), 0)
     assert.lengthOf(await Notification.query().where('userId', advisor.id), 0)
-    disk.assertMissing(pdfKey)
+    assert.isFalse(cloud.has(pdfKey))
 
     // Le conseiller et l'autre candidat ne sont pas touchés.
     assert.isNotNull(await User.find(advisor.id))
@@ -96,7 +98,7 @@ test.group('candidate_data_service | purge', (group) => {
     assert.isNotNull(await User.find(other.user.id))
     assert.lengthOf(await ExerciseResult.query().where('employeeId', other.employee.id), 1)
     assert.lengthOf(await Notification.query().where('userId', other.advisor.id), 1)
-    disk.assertExists(other.pdfKey)
+    assert.isTrue(cloud.has(other.pdfKey))
   })
 
   test("ne supprime jamais un compte qui n'a pas le rôle candidat", async ({ assert }) => {
@@ -119,7 +121,7 @@ test.group('candidate_data_service | purge', (group) => {
 
     assert.equal(preview!.exerciseResults, 1)
     assert.isNotNull(await Employee.find(employee.id))
-    disk.assertExists(pdfKey)
+    assert.isTrue(cloud.has(pdfKey))
   })
 
   test('renvoie null pour un candidat introuvable', async ({ assert }) => {
@@ -131,8 +133,8 @@ test.group('candidate_data_service | purge', (group) => {
 test.group('candidate_data_service | export', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
   group.teardown(() => rm(TMP_DIR, { recursive: true, force: true }))
 
@@ -155,8 +157,8 @@ test.group('candidate_data_service | export', (group) => {
 test.group('commandes candidate:export et candidate:purge', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
   // Sortie des commandes capturée plutôt qu'affichée (assertLog disponible).
   group.setup(() => {

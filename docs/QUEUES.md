@@ -36,10 +36,10 @@ QUEUE_DRIVER=database
 
 `defaultJobOptions` de `config/queue.ts` (constante `QUEUE_JOB_RETENTION`) :
 
-| Statut | `removeOn…` | Conservation |
-|---|---|---|
-| `completed` | `removeOnComplete` | 7 jours, 1 000 jobs max **par queue** |
-| `failed` | `removeOnFail` | 30 jours, 1 000 jobs max **par queue** (colonne `error` : message de l'échec) |
+| Statut      | `removeOn…`        | Conservation                                                                  |
+| ----------- | ------------------ | ----------------------------------------------------------------------------- |
+| `completed` | `removeOnComplete` | 7 jours, 1 000 jobs max **par queue**                                         |
+| `failed`    | `removeOnFail`     | 30 jours, 1 000 jobs max **par queue** (colonne `error` : message de l'échec) |
 
 - Sans cette option, `@boringnode/queue` supprime un job dès qu'il se termine
   (`true` par défaut) : aucune trace d'un échec. `false` garderait tout,
@@ -81,7 +81,7 @@ Job : `app/jobs/generate_employee_synthesis_pdf.ts`
 - **Entrées** :
   - Ligne `pdf_exports` : `employee_id`, `user_id`, `organization_id`, `advisor_user_id`, etc.
 - **Sorties** :
-  - Écrit le PDF sur le disque Drive (`#services/pdf_storage_service`, local ou S3 selon `DRIVE_DISK`)
+  - Écrit le PDF privé sur Cloudinary (`#services/pdf_storage_service` → `#services/cloudinary_service`)
   - Met à jour `pdf_exports` (`file_path` = clé relative `exports/pdf_export_<id>.pdf`, `file_name`, `mime_type`, `size`)
   - Met à jour `pdf_exports.status` : `pending → processing → completed/failed`
 - **Suivi temps réel** :

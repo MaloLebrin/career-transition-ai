@@ -41,6 +41,12 @@ export const SUBPROCESSORS: Subprocessor[] = [
     location: 'Union européenne (région EU de Sentry)',
   },
   {
+    name: 'Cloudinary',
+    purpose:
+      'Stockage des fichiers générés (synthèses PDF exportées), en accès privé : chaque téléchargement passe par nos serveurs après contrôle des droits.',
+    location: 'États-Unis par défaut (clauses contractuelles types) [région à confirmer]',
+  },
+  {
     name: 'Google Fonts',
     purpose: 'Chargement des polices de caractères du site (adresse IP transmise).',
     location: 'États-Unis (clauses contractuelles types)',
