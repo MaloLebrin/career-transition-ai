@@ -71,7 +71,14 @@ step 'app, worker, caddy'
 compose up -d --wait
 
 step '/health en HTTPS via Caddy'
-code=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/health)
+# Caddy est « up » avant d'avoir émis son certificat : les premières poignées
+# de main TLS échouent (curl 35) le temps de l'émission.
+code=000
+for _ in $(seq 1 30); do
+  code=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/health || true)
+  [ "$code" = 200 ] && break
+  sleep 2
+done
 [ "$code" = 200 ] || { echo "/health a répondu $code"; exit 1; }
 # Corps capturé d'abord : `curl | grep -q` échoue sous pipefail (SIGPIPE).
 home=$(curl -sk https://localhost/)
