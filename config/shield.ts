@@ -3,12 +3,34 @@ import { defineConfig } from '@adonisjs/shield'
 
 const shieldConfig = defineConfig({
   /**
-   * Configure CSP policies for your app. Refer documentation
-   * to learn more
+   * Content-Security-Policy (#67). Scripts : même origine + nonce par requête
+   * (`cspNonce`, passé à `@vite` / `@viteReactRefresh` dans le layout Edge).
+   * Styles inline autorisés : attributs `style` de React et barre de
+   * progression d'Inertia. Origines externes : Google Fonts, logos Cloudinary,
+   * avatars DiceBear de la landing. En dev, websocket HMR de Vite.
    */
   csp: {
-    enabled: false,
-    directives: {},
+    enabled: true,
+    directives: {
+      defaultSrc: [`'self'`],
+      scriptSrc: [`'self'`, '@nonce', ...(app.inDev ? ['@viteUrl'] : [])],
+      styleSrc: [`'self'`, `'unsafe-inline'`, 'https://fonts.googleapis.com'],
+      fontSrc: [`'self'`, 'data:', 'https://fonts.gstatic.com'],
+      imgSrc: [
+        `'self'`,
+        'data:',
+        'blob:',
+        'https://res.cloudinary.com',
+        'https://api.dicebear.com',
+      ],
+      connectSrc: [`'self'`, ...(app.inDev ? ['ws:', 'wss:', '@viteUrl'] : [])],
+      workerSrc: [`'self'`, 'blob:'],
+      manifestSrc: [`'self'`],
+      objectSrc: [`'none'`],
+      baseUri: [`'self'`],
+      formAction: [`'self'`],
+      frameAncestors: [`'none'`],
+    },
     reportOnly: false,
   },
 
@@ -37,7 +59,8 @@ const shieldConfig = defineConfig({
    */
   hsts: {
     enabled: true,
-    maxAge: '180 days',
+    maxAge: '365 days',
+    includeSubDomains: true,
   },
 
   /**

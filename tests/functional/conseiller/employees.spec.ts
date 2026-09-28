@@ -116,7 +116,7 @@ test.group('Conseiller — candidats : création', (group) => {
 
     const token = await OnboardingToken.query().where('userId', user.id).firstOrFail()
     assert.deepEqual(mails.recipients(), ['alice@example.com'])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${token.token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
   test('rejette un nom manquant et un email invalide', async ({ client, assert, db }) => {
@@ -481,7 +481,7 @@ test.group('Conseiller — candidats : renvoi du lien d’onboarding', (group) =
     assert.equal(user.role, USERS_ROLES.EMPLOYEE)
     const token = await OnboardingToken.query().where('userId', user.id).firstOrFail()
     assert.deepEqual(mails.recipients(), ['sans-compte@example.com'])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${token.token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
   test('refuse un candidat déjà onboardé, sans envoyer d’email', async ({ client, assert }) => {

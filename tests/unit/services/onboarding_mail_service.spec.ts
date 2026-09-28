@@ -32,7 +32,8 @@ function fixtures() {
   const user = new User()
   user.merge({ id: 12, email: 'claire@example.com', name: 'Claire Martin' })
   const token = new OnboardingToken()
-  token.merge({ id: 5, userId: 12, token: 'abc123' })
+  token.merge({ id: 5, userId: 12, token: OnboardingToken.hash('abc123') })
+  token.plainToken = 'abc123'
   const organization = new Organization()
   organization.merge({ id: 3, name: 'ACME RH' })
   return { user, token, organization }
@@ -119,6 +120,19 @@ test.group('OnboardingMailService — expéditeur', () => {
         'MAIL_FROM_EMAIL is required in production to send emails.'
       )
     )
+    assert.lengthOf(sent, 0)
+  })
+})
+
+test.group('OnboardingMailService — secret du lien', () => {
+  /** #65 : la base ne stocke que l'empreinte ; sans secret, aucun lien n'est envoyé. */
+  test('refuse un jeton relu en base (sans secret en clair)', async ({ assert }) => {
+    const { service, sent } = makeService()
+    const { user } = fixtures()
+    const stored = new OnboardingToken()
+    stored.merge({ id: 6, userId: 12, token: OnboardingToken.hash('abc123') })
+
+    await assert.rejects(() => service.sendSetPasswordLink({ user, token: stored }))
     assert.lengthOf(sent, 0)
   })
 })

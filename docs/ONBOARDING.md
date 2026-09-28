@@ -24,7 +24,7 @@ Ce document décrit le parcours d’invitation des candidats (talents) : créati
   - Création d’un **Employee** (organisation, conseiller, nom, email, `onboarded: false`, `userId` renseigné après création du User).
   - Création d’un **User** (même organisation, même nom/email, rôle `employee`, mot de passe temporaire hashé, jamais communiqué).
   - Liaison `Employee.userId = User.id`.
-  - Création d’un **OnboardingToken** (token unique, expiration 7 jours, `used_at: null`).
+  - Création d’un **OnboardingToken** (`OnboardingToken.createForUser` : secret aléatoire envoyé dans le lien, seule son empreinte SHA-256 est stockée ; expiration 7 jours, `used_at: null`).
   - Appel au service d’envoi d’email (par défaut : log du lien en console ; à remplacer par un vrai mailer en production).
 - **Message utilisateur** : « Candidat ajouté. Un lien d’activation a été envoyé par email. »
 - **Erreur** : Si un utilisateur avec le même email existe déjà dans l’organisation → message d’erreur et redirect back.
@@ -136,7 +136,7 @@ Dans `AuthController.updateProfileCandidat` :
 | ------------ | ---------- | -------------------------------------- |
 | `id`         | integer PK | —                                      |
 | `user_id`    | integer FK | Référence `users.id` (CASCADE)         |
-| `token`      | string(64) | Token unique (hex, 32 bytes)           |
+| `token`      | string(64) | Empreinte SHA-256 (hex) du secret      |
 | `expires_at` | timestamp  | Date d’expiration (création + 7 j)     |
 | `used_at`    | timestamp  | Nullable ; renseigné après utilisation |
 | `created_at` | timestamp  | —                                      |
@@ -145,6 +145,7 @@ Dans `AuthController.updateProfileCandidat` :
 
 - Un token est **valide** si : `used_at` est null et `expires_at` > maintenant.
 - Un token est **one-shot** : après utilisation, il ne peut plus servir.
+- Le secret du lien n’est **jamais stocké** (#65) : `token` contient `sha256(secret)`, le secret n’existe que sur l’instance renvoyée par `createForUser` (`plainToken`, pour l’e-mail). `OnboardingTokensService.findByPlainToken` hache le secret reçu dans l’URL avant la requête.
 - Un même `User` peut avoir eu plusieurs tokens (ex. ré-invitation), mais un seul token actif à la fois pour un flux donné.
 
 ---
@@ -177,6 +178,7 @@ Dans `AuthController.updateProfileCandidat` :
 ## Routes résumées
 
 - `GET  /onboarding/:token` — Affiche la page « Créer votre mot de passe » ou « Lien invalide ».
+- GET et POST partagent le quota `throttleOnboarding` (10/min par IP, `start/limiter.ts`).
 - `POST /onboarding/:token` — Enregistre le mot de passe, connecte l’utilisateur, redirige vers `/dashboard`.
 
 Ces routes sont **publiques** (pas de middleware auth).

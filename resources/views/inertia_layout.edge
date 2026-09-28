@@ -10,7 +10,10 @@
     <meta name="robots" content="{{ seo.robots() }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
 
     <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
@@ -20,15 +23,15 @@
     @if(seo.googleSiteVerification())
       <meta name="google-site-verification" content="{{ seo.googleSiteVerification() }}" />
     @end
-
+    
     <title inertia>
       Transition Carrière IA
     </title>
 
     @stack('dumper')
-    @viteReactRefresh()
+    @viteReactRefresh({ nonce: cspNonce })
     @inertiaHead()
-    @vite(['inertia/app.tsx', `inertia/pages/${page.component}.tsx`])
+    @vite(['inertia/app.tsx', `inertia/pages/${page.component}.tsx`], { nonce: cspNonce })
   </head>
 
   <body class="min-h-screen w-screen font-sans">

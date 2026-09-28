@@ -1,8 +1,9 @@
 import User from '#models/user'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import type { QueryClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
-import crypto from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 
 export default class OnboardingToken extends BaseModel {
   @column({ isPrimary: true })
@@ -11,9 +12,19 @@ export default class OnboardingToken extends BaseModel {
   @column()
   declare userId: number
 
-  /** Secret du lien d'onboarding : jamais sérialisé (lu via `.token` pour l'e-mail). */
+  /**
+   * Empreinte SHA-256 (hex) du secret du lien d'onboarding, jamais le secret
+   * lui-même (#65) : une fuite de la base ou d'une sauvegarde ne donne pas de
+   * lien utilisable. Jamais sérialisée.
+   */
   @column({ serializeAs: null })
   declare token: string
+
+  /**
+   * Secret en clair, pour le lien envoyé par e-mail. Présent seulement sur
+   * l'instance renvoyée par `createForUser` : il n'est jamais enregistré.
+   */
+  declare plainToken?: string
 
   @column.dateTime()
   declare expiresAt: DateTime
@@ -27,15 +38,27 @@ export default class OnboardingToken extends BaseModel {
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
-  static async createForUser(userId: number, expiresInDays = 7): Promise<OnboardingToken> {
-    const token = crypto.randomBytes(32).toString('hex')
-    const expiresAt = DateTime.now().plus({ days: expiresInDays })
-    return OnboardingToken.create({
-      userId,
-      token,
-      expiresAt,
-      usedAt: null,
-    })
+  /** Empreinte stockée pour un secret de lien. */
+  static hash(plainToken: string): string {
+    return createHash('sha256').update(plainToken).digest('hex')
+  }
+
+  static async createForUser(
+    userId: number,
+    options: { expiresInDays?: number; client?: QueryClientContract } = {}
+  ): Promise<OnboardingToken> {
+    const plainToken = randomBytes(32).toString('hex')
+    const record = await OnboardingToken.create(
+      {
+        userId,
+        token: OnboardingToken.hash(plainToken),
+        expiresAt: DateTime.now().plus({ days: options.expiresInDays ?? 7 }),
+        usedAt: null,
+      },
+      { client: options.client }
+    )
+    record.plainToken = plainToken
+    return record
   }
 
   isValid(): boolean {

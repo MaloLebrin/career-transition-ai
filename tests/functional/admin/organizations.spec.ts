@@ -105,7 +105,7 @@ test.group('Super admin — organisations : création', (group) => {
     assert.equal(owner.role, USERS_ROLES.ADMIN)
     const token = await OnboardingToken.query().where('userId', owner.id).firstOrFail()
     assert.deepEqual(mails.recipients(), ['olivia@example.com'])
-    assert.include(mails.sent[0].text ?? '', `/onboarding/${token.token}`)
+    assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
   test('refuse un email propriétaire déjà utilisé (flash error)', async ({

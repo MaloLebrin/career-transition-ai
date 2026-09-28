@@ -280,4 +280,41 @@ test.group('Rate limiting — POST /onboarding/:token (functional)', (group) => 
 
     response.assertStatus(429)
   })
+
+  /** Régression #65 : le GET, qui dit aussi si un jeton existe, n'avait aucune limite. */
+  test(`GET : le ${ONBOARDING_LIMIT + 1}ᵉ jeton consulté en une minute renvoie 429`, async ({
+    client,
+  }) => {
+    for (let i = 0; i < ONBOARDING_LIMIT; i++) {
+      const response = await client
+        .get(`/onboarding/jeton-invente-${i}`)
+        .header('X-Forwarded-For', '203.0.113.41')
+        .redirects(0)
+      response.assertStatus(200)
+    }
+
+    const response = await client
+      .get('/onboarding/jeton-invente-final')
+      .header('X-Forwarded-For', '203.0.113.41')
+      .redirects(0)
+
+    response.assertStatus(429)
+  })
+
+  test('GET et POST partagent le même quota', async ({ client }) => {
+    for (let i = 0; i < ONBOARDING_LIMIT; i++) {
+      await client
+        .get(`/onboarding/jeton-invente-${i}`)
+        .header('X-Forwarded-For', '203.0.113.42')
+        .redirects(0)
+    }
+
+    const response = await client
+      .post('/onboarding/jeton-invente-final')
+      .header('X-Forwarded-For', '203.0.113.42')
+      .form({ password: 'nouveau-mot-de-passe', password_confirmation: 'nouveau-mot-de-passe' })
+      .redirects(0)
+
+    response.assertStatus(429)
+  })
 })
