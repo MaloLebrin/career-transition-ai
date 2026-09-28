@@ -1,0 +1,106 @@
+# Compose de production (scénario 2 de docs/DEPLOYMENT.md) : Postgres, web,
+# worker et Caddy (TLS) sur une seule machine. Copier le dossier `deploy/` sur
+# l'hôte (ex. ~/cta), remplir `.env` depuis `.env.example`, puis :
+#
+#   docker compose pull
+#   docker compose up -d postgres
+#   docker compose run --rm migrate
+#   docker compose run --rm seed
+#   docker compose up -d
+#
+# Aucun volume dans `app` ni `worker` : les PDF vont sur S3/R2
+# (DRIVE_DISK=s3, config/drive.ts). Seules les données Postgres et l'état de
+# Caddy (certificats) sont persistés.
+
+x-app: &app
+  image: ${APP_IMAGE:?APP_IMAGE manquant dans .env}
+  env_file: .env
+  environment: &app-env
+    # Postgres du compose : réseau interne, sans TLS.
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_SSL: 'false'
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+# Le HEALTHCHECK de l'image interroge /health : seul `app` sert du HTTP.
+x-no-healthcheck: &no-healthcheck
+  healthcheck:
+    disable: true
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?DB_USER manquant dans .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD manquant dans .env}
+      POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE manquant dans .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 512m
+
+  # One-shot : `docker compose run --rm migrate` avant chaque mise à jour.
+  migrate:
+    <<: [*app, *no-healthcheck]
+    command: migrate
+    restart: 'no'
+    profiles: [ops]
+
+  # One-shot : super admin (idempotent, exige ADMIN_PASSWORD).
+  seed:
+    <<: [*app, *no-healthcheck]
+    command: seed
+    restart: 'no'
+    profiles: [ops]
+
+  app:
+    <<: *app
+    command: server
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      NODE_OPTIONS: --max-old-space-size=384
+    expose: ['8080']
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8080/health > /dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    mem_limit: 640m
+
+  worker:
+    <<: [*app, *no-healthcheck]
+    command: worker
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      NODE_OPTIONS: --max-old-space-size=256
+    mem_limit: 512m
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN manquant dans .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    mem_limit: 128m
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
