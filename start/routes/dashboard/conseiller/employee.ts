@@ -5,6 +5,7 @@ const SupportPlanStepsController = () => import('#controllers/support_plan_steps
 const NotesController = () => import('#controllers/notes_controller')
 const ExerciseResultsController = () => import('#controllers/exercise_results_controller')
 const EmployeeSynthesesController = () => import('#controllers/employee_syntheses_controller')
+const CandidateDocumentsController = () => import('#controllers/candidate_documents_controller')
 
 /**
  * Employees management
@@ -40,6 +41,21 @@ router
         router.delete('/steps/:stepId', [SupportPlanStepsController, 'destroy'])
         router.post('/steps/:stepId/unlock', [SupportPlanStepsController, 'unlock'])
         router.post('/steps/:stepId/lock', [SupportPlanStepsController, 'lock'])
+
+        /**
+         * Employee Documents (Cloudinary, privés)
+         */
+        router
+          .post('/documents', [CandidateDocumentsController, 'store'])
+          .as('conseiller.employees.documents.store')
+        router
+          .get('/documents/:mediaId', [CandidateDocumentsController, 'download'])
+          .where('mediaId', router.matchers.number())
+          .as('conseiller.employees.documents.download')
+        router
+          .delete('/documents/:mediaId', [CandidateDocumentsController, 'destroy'])
+          .where('mediaId', router.matchers.number())
+          .as('conseiller.employees.documents.destroy')
 
         /**
          * Employee Notes

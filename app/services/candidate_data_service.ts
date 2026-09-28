@@ -1,12 +1,18 @@
 import Employee from '#models/employee'
+import type Media from '#models/media'
 import Notification from '#models/notification'
 import PdfExport from '#models/pdf_export'
 import User from '#models/user'
 import { buildDossierArchive } from '#services/dossier_export_service'
+import { employeeMediaOwner } from '#services/candidate_documents_service'
+import { MediaService } from '#services/media_service'
 import { deletePdf } from '#services/pdf_storage_service'
+import { MEDIA_ENTITY_TYPES } from '#shared/constants/media'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
 import type archiver from 'archiver'
+import type { Readable } from 'node:stream'
 
 /**
  * Droits d'accès et d'effacement d'un candidat (RGPD, procédure dans
@@ -16,6 +22,14 @@ import type archiver from 'archiver'
 
 /** Nom du fichier de données brutes ajouté au dossier PDF de l'export. */
 export const CANDIDATE_DATA_FILENAME = 'donnees.json'
+
+/** Dossier des documents déposés (issue #50) dans l'archive d'export. */
+export const CANDIDATE_DOCUMENTS_DIR = 'documents'
+
+/** Résolu à chaque appel : le fake Cloudinary de test (`app.container.swap`) s'applique. */
+function mediaService(): Promise<MediaService> {
+  return app.container.make(MediaService)
+}
 
 /** Charge un candidat avec tout ce que l'export restitue. */
 export async function loadCandidateForExport(employeeId: number): Promise<Employee | null> {
@@ -35,7 +49,7 @@ export async function loadCandidateForExport(employeeId: number): Promise<Employ
  * Données brutes du candidat (`donnees.json`). Liste explicite des champs du
  * compte : jamais de mot de passe ni de jeton.
  */
-export function candidateDataSnapshot(employee: Employee) {
+export function candidateDataSnapshot(employee: Employee, documents: Media[] = []) {
   const user = employee.user
   return {
     exportedAt: new Date().toISOString(),
@@ -76,16 +90,52 @@ export function candidateDataSnapshot(employee: Employee) {
       content: note.content,
       createdAt: note.createdAt?.toISO() ?? null,
     })),
+    documents: documents.map((document) => ({
+      kind: document.kind,
+      originalFilename: document.originalFilename,
+      bytes: document.bytes,
+      createdAt: document.createdAt?.toISO() ?? null,
+      file: `${CANDIDATE_DOCUMENTS_DIR}/${documentEntryName(document)}`,
+    })),
   }
+}
+
+/** Nom du fichier dans l'archive : id (unicité) + nom d'origine assaini. */
+function documentEntryName(document: Media): string {
+  const safe = document.originalFilename.replace(/[^\p{L}\p{N} ._()-]/gu, '_')
+  return `${document.id}_${safe}`
+}
+
+async function readAll(stream: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk))
+  return Buffer.concat(chunks)
 }
 
 /** Archive ZIP de l'export : dossier PDF existant + `donnees.json`. */
 export async function buildCandidateExportArchive(employee: Employee): Promise<archiver.Archiver> {
+  const media = await mediaService()
+  const documents = await media.list(employeeMediaOwner(employee))
+
+  const files = []
+  for (const document of documents) {
+    try {
+      const { stream } = await media.download(document)
+      files.push({
+        name: `${CANDIDATE_DOCUMENTS_DIR}/${documentEntryName(document)}`,
+        content: await readAll(stream),
+      })
+    } catch {
+      // Fichier absent du stockage : le document reste listé dans donnees.json.
+    }
+  }
+
   return buildDossierArchive(employee, [
     {
       name: CANDIDATE_DATA_FILENAME,
-      content: JSON.stringify(candidateDataSnapshot(employee), null, 2),
+      content: JSON.stringify(candidateDataSnapshot(employee, documents), null, 2),
     },
+    ...files,
   ])
 }
 
@@ -98,14 +148,25 @@ export interface CandidatePurgeSummary {
   supportPlanSteps: number
   pdfExports: number
   notifications: number
-  /** Fichiers PDF supprimés du stockage (`pdf_exports.file_path`). */
+  /** Documents déposés (table `media`, issue #50). */
+  documents: number
+  /** Fichiers supprimés du stockage : PDF (`pdf_exports.file_path`) et documents. */
   filesDeleted: number
   /** Compte utilisateur supprimé (seulement s'il a le rôle candidat). */
   userDeleted: boolean
 }
 
-async function countWhere(table: string, column: string, value: number): Promise<number> {
-  const [row] = await db.from(table).where(column, value).count('* as total')
+async function countWhere(
+  table: string,
+  column: string,
+  value: number,
+  entityType?: string
+): Promise<number> {
+  const [row] = await db
+    .from(table)
+    .where(column, value)
+    .if(entityType, (query) => query.where('entity_type', entityType!))
+    .count('* as total')
   return Number(row.total)
 }
 
@@ -121,6 +182,7 @@ export async function previewCandidatePurge(
 
   const user = employee.userId ? await User.find(employee.userId) : null
   const pdfExports = await PdfExport.query().where('employeeId', employeeId)
+  const documents = await countWhere('media', 'entity_id', employeeId, MEDIA_ENTITY_TYPES.EMPLOYEE)
 
   return {
     employeeId,
@@ -133,7 +195,8 @@ export async function previewCandidatePurge(
     notifications: await notificationsAbout(employeeId)
       .count('* as total')
       .then(([row]) => Number(row.$extras.total)),
-    filesDeleted: pdfExports.filter((pdf) => pdf.filePath).length,
+    documents,
+    filesDeleted: pdfExports.filter((pdf) => pdf.filePath).length + documents,
     userDeleted: user?.role === USERS_ROLES.EMPLOYEE,
   }
 }
@@ -156,8 +219,10 @@ function notificationsAbout(employeeId: number) {
  *   couvert par la cascade) est supprimé s'il a le rôle candidat — jamais un
  *   compte conseiller ou admin rattaché par erreur.
  * - Les notifications des conseillers qui le citent sont supprimées.
- * - Les PDF générés (`pdf_exports.file_path`, disque Drive) sont supprimés après
- *   la validation de la transaction : si la base échoue, rien n'est perdu.
+ * - Les documents déposés (table `media`, polymorphe donc hors cascade) sont
+ *   supprimés dans la même transaction.
+ * - Les fichiers Cloudinary (PDF générés et documents) sont supprimés après la
+ *   validation de la transaction : si la base échoue, rien n'est perdu.
  *
  * `null` si le candidat n'existe pas.
  */
@@ -170,15 +235,18 @@ export async function purgeCandidate(employeeId: number): Promise<CandidatePurge
     .map((pdf) => pdf.filePath)
     .filter((path): path is string => Boolean(path))
 
-  await db.transaction(async (trx) => {
+  const media = await mediaService()
+  const documentFiles = await db.transaction(async (trx) => {
     const employee = await Employee.findOrFail(employeeId, { client: trx })
     const user = employee.userId ? await User.find(employee.userId, { client: trx }) : null
 
     await notificationsAbout(employeeId).useTransaction(trx).delete()
+    const files = await media.deleteAllForEntity(MEDIA_ENTITY_TYPES.EMPLOYEE, employeeId, trx)
     await employee.useTransaction(trx).delete()
     if (user?.role === USERS_ROLES.EMPLOYEE) {
       await user.useTransaction(trx).delete()
     }
+    return files
   })
 
   let filesDeleted = 0
@@ -190,6 +258,8 @@ export async function purgeCandidate(employeeId: number): Promise<CandidatePurge
       // retiré par la purge des exports expirés.
     }
   }
+
+  filesDeleted += await media.destroyFiles(documentFiles)
 
   return { ...summary, filesDeleted }
 }

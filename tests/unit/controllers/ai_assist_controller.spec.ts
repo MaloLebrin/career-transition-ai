@@ -25,6 +25,12 @@ function fakeService() {
   }
 }
 
+/** Faux service de documents : enregistre les CV conservés. */
+function fakeDocuments() {
+  const stored: unknown[][] = []
+  return { stored, storeImportedCv: async (...args: unknown[]) => stored.push(args) }
+}
+
 function makeCtx(payload: unknown, user: unknown = null) {
   const response = {
     body: undefined as unknown,
@@ -53,10 +59,11 @@ test.group('AiAssistController', () => {
     assert,
   }) => {
     const service = fakeService()
-    const controller = new AiAssistController(service as any)
-    const { ctx, response } = makeCtx({
-      cv: { tmpPath: '/tmp/upload-1', type: 'application', subtype: 'pdf' },
-    })
+    const documents = fakeDocuments()
+    const controller = new AiAssistController(service as any, documents as any)
+    const cv = { tmpPath: '/tmp/upload-1', type: 'application', subtype: 'pdf' }
+    const user = { id: 7 }
+    const { ctx, response } = makeCtx({ cv }, user)
 
     await controller.extractCv(ctx)
 
@@ -64,6 +71,22 @@ test.group('AiAssistController', () => {
       [{ path: '/tmp/upload-1', mimeType: 'application/pdf' }],
     ])
     assert.deepEqual(response.body, { data: { name: 'Camille' } })
+    assert.deepEqual(documents.stored, [[user, cv]], 'CV conservé après extraction réussie')
+  })
+
+  test('extractCv : rien n’est conservé quand l’extraction échoue', async ({ assert }) => {
+    const service = { ...fakeService(), extractCv: async () => null }
+    const documents = fakeDocuments()
+    const controller = new AiAssistController(service as any, documents as any)
+    const { ctx, response } = makeCtx(
+      { cv: { tmpPath: '/tmp/upload-2', type: 'image', subtype: 'png' } },
+      { id: 7 }
+    )
+
+    await controller.extractCv(ctx)
+
+    assert.deepEqual(response.body, { data: null })
+    assert.deepEqual(documents.stored, [])
   })
 
   test('extractSkillMapping : identité de l’utilisateur connecté pour la pseudonymisation', async ({

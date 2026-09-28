@@ -47,6 +47,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_NOTE_NOT_FOUND',
     'E_NOTE_FORBIDDEN',
     'E_NOTE_LINKED_RESOURCE_NOT_FOUND',
+    'E_MEDIA_NOT_FOUND',
+    'E_MEDIA_LIMIT_REACHED',
+    'E_MEDIA_FORBIDDEN',
   ]
 
   /**

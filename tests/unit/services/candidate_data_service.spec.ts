@@ -2,17 +2,21 @@ import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { ExperienceFactory } from '#database/factories/experience_factory'
+import { MediaFactory } from '#database/factories/media_factory'
 import { NotificationFactory } from '#database/factories/notification_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Experience from '#models/experience'
+import Media from '#models/media'
 import Notification from '#models/notification'
 import PdfExport from '#models/pdf_export'
 import User from '#models/user'
+import { CloudinaryService } from '#services/cloudinary_service'
 import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import {
   CANDIDATE_DATA_FILENAME,
+  buildCandidateExportArchive,
   candidateDataSnapshot,
   loadCandidateForExport,
   previewCandidatePurge,
@@ -33,8 +37,10 @@ import { join } from 'node:path'
 
 const TMP_DIR = app.tmpPath('tests-rgpd')
 
-/** Candidat avec un peu de tout : exercice, expérience, PDF stocké, notification. */
-async function seedCandidate(): Promise<CandidateActor & { pdfKey: string; advisor: User }> {
+/** Candidat avec un peu de tout : exercice, expérience, PDF et document stockés, notification. */
+async function seedCandidate(): Promise<
+  CandidateActor & { pdfKey: string; documentKey: string; advisor: User }
+> {
   const advisor = await createAdvisor()
   const actor = await createCandidate({ advisor })
   const { employee } = actor
@@ -58,7 +64,23 @@ async function seedCandidate(): Promise<CandidateActor & { pdfKey: string; advis
     meta: { employeeId: employee.id },
   }).create()
 
-  return { ...actor, pdfKey, advisor }
+  // Document déposé (issue #50), présent dans le stockage (fake Cloudinary).
+  const documentKey = `career-transition/dev/organizations/${employee.organizationId}/employees/${employee.id}/documents/doc_${employee.id}.pdf`
+  const cloudinary = await app.container.make(CloudinaryService)
+  await cloudinary.uploadBuffer(new TextEncoder().encode('%PDF-1.4 diplome'), {
+    publicId: documentKey,
+    resourceType: 'raw',
+    deliveryType: 'authenticated',
+  })
+  await MediaFactory.merge({
+    entityId: employee.id,
+    organizationId: employee.organizationId,
+    cloudinaryPublicId: documentKey,
+    originalFilename: 'Diplôme 2020.pdf',
+    uploadedById: actor.user.id,
+  }).create()
+
+  return { ...actor, pdfKey, documentKey, advisor }
 }
 
 test.group('candidate_data_service | purge', (group) => {
@@ -69,8 +91,10 @@ test.group('candidate_data_service | purge', (group) => {
     return () => restoreCloudinary()
   })
 
-  test('supprime la fiche, les données liées, le compte et le PDF stocké', async ({ assert }) => {
-    const { employee, user, pdfKey, advisor } = await seedCandidate()
+  test('supprime la fiche, les données liées, le compte, le PDF et les documents stockés', async ({
+    assert,
+  }) => {
+    const { employee, user, pdfKey, documentKey, advisor } = await seedCandidate()
     const other = await seedCandidate()
 
     const summary = await purgeCandidate(employee.id)
@@ -81,7 +105,8 @@ test.group('candidate_data_service | purge', (group) => {
       experiences: 1,
       pdfExports: 1,
       notifications: 1,
-      filesDeleted: 1,
+      documents: 1,
+      filesDeleted: 2,
       userDeleted: true,
     })
     assert.isNull(await Employee.find(employee.id))
@@ -91,6 +116,8 @@ test.group('candidate_data_service | purge', (group) => {
     assert.lengthOf(await PdfExport.query().where('employeeId', employee.id), 0)
     assert.lengthOf(await Notification.query().where('userId', advisor.id), 0)
     assert.isFalse(cloud.has(pdfKey))
+    assert.isFalse(cloud.has(documentKey))
+    assert.lengthOf(await Media.query().where('entityId', employee.id), 0)
 
     // Le conseiller et l'autre candidat ne sont pas touchés.
     assert.isNotNull(await User.find(advisor.id))
@@ -99,6 +126,23 @@ test.group('candidate_data_service | purge', (group) => {
     assert.lengthOf(await ExerciseResult.query().where('employeeId', other.employee.id), 1)
     assert.lengthOf(await Notification.query().where('userId', other.advisor.id), 1)
     assert.isTrue(cloud.has(other.pdfKey))
+    assert.isTrue(cloud.has(other.documentKey))
+    assert.lengthOf(await Media.query().where('entityId', other.employee.id), 1)
+  })
+
+  test('stockage indisponible : la base est purgée, les fichiers restent comptés à part', async ({
+    assert,
+  }) => {
+    const { employee } = await seedCandidate()
+    cloud.destroy = async () => {
+      throw new Error('cloudinary down')
+    }
+
+    const summary = await purgeCandidate(employee.id)
+
+    assert.equal(summary!.filesDeleted, 0)
+    assert.isNull(await Employee.find(employee.id))
+    assert.lengthOf(await Media.query().where('entityId', employee.id), 0)
   })
 
   test("ne supprime jamais un compte qui n'a pas le rôle candidat", async ({ assert }) => {
@@ -120,6 +164,8 @@ test.group('candidate_data_service | purge', (group) => {
     const preview = await previewCandidatePurge(employee.id)
 
     assert.equal(preview!.exerciseResults, 1)
+    assert.equal(preview!.documents, 1)
+    assert.equal(preview!.filesDeleted, 2)
     assert.isNotNull(await Employee.find(employee.id))
     assert.isTrue(cloud.has(pdfKey))
   })
@@ -151,6 +197,31 @@ test.group('candidate_data_service | export', (group) => {
     assert.lengthOf(snapshot.experiences, 1)
     assert.notInclude(json, 'password')
     assert.notInclude(json, user.password)
+  })
+
+  test('l’archive contient la liste et le contenu des documents déposés', async ({ assert }) => {
+    const { employee } = await seedCandidate()
+    const [document] = await Media.query().where('entityId', employee.id)
+
+    const loaded = await loadCandidateForExport(employee.id)
+    const chunks: Buffer[] = []
+    for await (const chunk of await buildCandidateExportArchive(loaded!)) {
+      chunks.push(Buffer.from(chunk))
+    }
+    const zip = Buffer.concat(chunks).toString('latin1')
+
+    assert.include(zip, `documents/${document.id}_Dipl`)
+    assert.include(zip, CANDIDATE_DATA_FILENAME)
+    const snapshot = candidateDataSnapshot(loaded!, [document])
+    assert.deepEqual(snapshot.documents, [
+      {
+        kind: document.kind,
+        originalFilename: 'Diplôme 2020.pdf',
+        bytes: document.bytes,
+        createdAt: document.createdAt.toISO(),
+        file: `documents/${document.id}_Diplôme 2020.pdf`,
+      },
+    ])
   })
 })
 

@@ -42,7 +42,7 @@ export default class CandidatePurge extends BaseCommand {
 
     const summary = await purgeCandidate(id)
     this.logger.success(
-      `Candidat #${id} supprimé (${summary?.filesDeleted ?? 0} fichier(s) PDF effacé(s) du disque, compte ${summary?.userDeleted ? 'supprimé' : 'non supprimé'}).`
+      `Candidat #${id} supprimé (${summary?.filesDeleted ?? 0} fichier(s) (PDF et documents) effacé(s) du stockage, compte ${summary?.userDeleted ? 'supprimé' : 'non supprimé'}).`
     )
   }
 }
