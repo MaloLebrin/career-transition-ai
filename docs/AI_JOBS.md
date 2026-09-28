@@ -4,9 +4,9 @@ Ce document décrit **comment le job d’analyse qualitative** est déclenché, 
 
 ## Job concerné
 
-| Fichier | Queue | Payload |
-|--------|-------|---------|
-| [`app/jobs/analyze_exercise_qualitative_job.ts`](../app/jobs/analyze_exercise_qualitative_job.ts) | `ai` | `{ exerciseResultId: number }` |
+| Fichier                                                                                           | Queue | Payload                        |
+| ------------------------------------------------------------------------------------------------- | ----- | ------------------------------ |
+| [`app/jobs/analyze_exercise_qualitative_job.ts`](../app/jobs/analyze_exercise_qualitative_job.ts) | `ai`  | `{ exerciseResultId: number }` |
 
 Le job charge l’`ExerciseResult`, vérifie que le statut est **terminé** (`completed`), appelle le fournisseur IA configuré, puis enregistre le texte dans `exercise_results.qualitative_analysis`.
 
@@ -75,12 +75,10 @@ Si `QUEUE_DRIVER=sync` dans `.env`, le job s’exécute **immédiatement** dans 
 
 Le job utilise [`resolveAiTextCompletionProvider()`](../app/services/ai/resolve_ai_text_provider.ts) :
 
-| `AI_PROVIDER` | Prérequis | Comportement |
-|---------------|-----------|--------------|
-| `mistral` | `MISTRAL_API_KEY` | API Chat Completions Mistral (`MISTRAL_MODEL` optionnel, défaut `mistral-small-latest`) |
-| `gemini` | `GEMINI_API_KEY` | Appel Google GenAI |
-| `openai` | `OPENAI_API_KEY` | API Chat Completions (`OPENAI_MODEL` optionnel, défaut `gpt-4o-mini`) |
-| `none` ou absent | — | Texte de substitution, **sans** appel réseau |
+| `AI_PROVIDER`    | Prérequis         | Comportement                                                                            |
+| ---------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `mistral`        | `MISTRAL_API_KEY` | API Chat Completions Mistral (`MISTRAL_MODEL` optionnel, défaut `mistral-small-latest`) |
+| `none` ou absent | —                 | Texte de substitution, **sans** appel réseau                                            |
 
 En cas d’exception (clé invalide, réseau, etc.), le job enregistre un message d’erreur dans `qualitative_analysis` et log l’erreur.
 

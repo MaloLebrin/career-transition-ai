@@ -277,6 +277,8 @@ openssl rand -base64 24      # → ADMIN_PASSWORD
 
 7. **Create Web Service**. Premier build ≈ 5–8 min (0,1 CPU). L'URL est `https://<nom>.onrender.com`.
 
+> **Alternative : Blueprint.** `render.yaml` décrit exactement ce service (plan Free, commandes, health check, variables ci-dessus plus `REGISTRATION_ENABLED`, `CLOUDINARY_*` et `SENTRY_DSN`). Dashboard → **New → Blueprint** → choisir le repo, puis saisir les valeurs marquées `sync: false` (`APP_KEY`, `DB_URL`, `ADMIN_PASSWORD`, `MISTRAL_API_KEY`, `CLOUDINARY_*`, `SENTRY_DSN`) : elles ne sont jamais écrites dans le fichier. Toute modification du blueprint reste alignée sur ce paragraphe (garde `tests/unit/hygiene/render_blueprint.spec.ts`).
+
 ### 1.4 Vérifier
 
 ```bash

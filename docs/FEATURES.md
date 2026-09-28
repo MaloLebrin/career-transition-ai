@@ -6,7 +6,7 @@
 
 - **Promesse produit**
   - “L’IA qui structure le potentiel humain / travail”.
-  - Positionnement premium : mélange sciences comportementales + IA (Gemini).
+  - Positionnement premium : mélange sciences comportementales + IA (Mistral).
 
 - **Sections pédagogiques**
   - **Méthodologie** : explication du cadre de travail, étapes d’accompagnement, logique de diagnostic.
@@ -179,7 +179,7 @@
     - Nom de l’entité.
     - Type (Entreprise / Organisme de formation).
     - Commentaire.
-  - **Suggestions IA (Gemini)** :
+  - **Suggestions IA (Mistral)** :
     - Propositions de structures pertinentes selon profil.
     - Ajout en un clic aux cibles retenues.
   - Génération d’un plan d’action structuré (liste validée, heure / durée de travail).

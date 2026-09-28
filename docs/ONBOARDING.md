@@ -62,6 +62,7 @@ Ce document décrit le parcours d’invitation des candidats (talents) : créati
   5. Redirection vers `/dashboard/candidat` avec flash « Mot de passe créé. Bienvenue ! ».
 
 Après redirection :
+
 - Si `employee.onboarded = false`, le middleware redirige vers `/dashboard/candidat/onboarding`.
 - Sinon, le candidat arrive directement sur `/dashboard/candidat`.
 
@@ -72,6 +73,7 @@ Après redirection :
 ### Objectif
 
 Collecter et persister les informations nécessaires à l’accompagnement **avant** d’aborder les exercices :
+
 - Identité / positionnement : `name`, `currentRole`, `targetRole`, `summary`
 - CV structuré : `experiences`, `educations`
 - Compétences : `skills` (niveau 1–5)
@@ -95,7 +97,7 @@ Collecter et persister les informations nécessaires à l’accompagnement **ava
 
 - **Flow onboarding** : `inertia/components/onboarding/OnboardingFlow.tsx`
   - Étape 1 : écran d’accueil
-  - Étape 2 : import CV (Gemini, optionnel)
+  - Étape 2 : import CV (OCR Mistral côté serveur, optionnel)
   - Étape 3 : édition complète via `inertia/components/profile/ProfilePage.tsx` (infos + résumé + exp/formations + skills)
 
 ### Payload envoyé
@@ -105,12 +107,14 @@ Pour éviter les divergences entre onboarding et édition du profil, un helper u
 - `inertia/helpers/candidat_profile_payload.ts` → `candidatProfileUpdatePayload(employee)`
 
 Caractéristiques :
+
 - inclut `experiences/educations/skills` (sans `id`)
 - conserve des dates en string côté front (tolérance côté backend sur les formats)
 
 ### Persistance & règles (backend)
 
 Dans `AuthController.updateProfileCandidat` :
+
 - **Transaction** uniquement si `experiences` / `educations` / `skills` sont présents dans le payload.
 - **Synchronisation “exacte”** par tableau :
   - Si `experiences` est fourni : suppression des expériences existantes du candidat, puis recréation des entrées valides.
@@ -196,6 +200,7 @@ pnpm test:inertia
 ```
 
 Tests ajoutés/pertinents :
+
 - `tests/unit/controllers/auth_controller.spec.ts` (sync `experiences/educations/skills`, dates invalides tolérées)
 - `tests/unit/validators/candidat_profile_update_validator.spec.ts`
 - `tests/inertia/components/onboarding/OnboardingFlow.spec.tsx`

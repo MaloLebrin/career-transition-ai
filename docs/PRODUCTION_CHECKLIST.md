@@ -4,7 +4,7 @@ Checklist des points à traiter avant ou pour la mise en production.
 
 ## Onboarding & emails
 
-- [ ] **Envoi d’email réel** — Remplacer le stub dans `app/services/onboarding_notify_service.ts` par un vrai envoi (ex. `@adonisjs/mail`) pour les liens d’activation candidats.
+- [x] **Envoi d’email réel** — `MailService` (providers `resend` et `console`) et `OnboardingMailService` envoient les liens d’activation : voir [MAIL.md](MAIL.md). Reste à décider l’envoi sans domaine vérifié (issue #19) ; d’ici là, `MAIL_PROVIDER=console` et lien lu dans les logs.
 - [ ] **(Optionnel) Doublon Employee** — En cas de ré-invitation (même email, pas encore onboardé), éviter de créer un second `Employee` : réutiliser celui existant (recherche par email + organisation) ou documenter le comportement actuel.
 
 ## Sécurité & configuration
@@ -23,11 +23,10 @@ Checklist des points à traiter avant ou pour la mise en production.
 ## Données & performance
 
 - [ ] **Pagination** — Activer ou renforcer la pagination sur les listes (candidats, organisations, utilisateurs super admin) si le volume augmente.
-- [ ] **Sauvegardes** — Planifier des sauvegardes régulières de la base de données.
+- [x] **Sauvegardes** — Scénario 2 : `deploy/backup.sh` + crontab sur la VM ; scénario 1 : `pg_dump` manuel de la base Neon. Procédures dans [DEPLOYMENT.md](DEPLOYMENT.md) §1.5 et §2.6.
 - [ ] **Migrations** — Tester les migrations sur une copie de la prod avant déploiement.
 
 ## Fonctionnel
 
 - [ ] **Messages utilisateur** — Vérifier les textes (flash, erreurs, emails) et les faire relire si besoin.
 - [ ] **Design / responsive** — Contrôler les écrans clés sur mobile et tablette.
-

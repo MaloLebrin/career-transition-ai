@@ -4,15 +4,14 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 ## Démarrer (dev)
 
-- **[Getting started](GETTING_STARTED.md)** — installer, configurer, lancer en local, tests.
-- **[Configuration & env](CONFIGURATION.md)** — variables d’environnement (serveur vs front), DB, queue, mail, IA.
-- **[Architecture](ARCHITECTURE.md)** — vue d’ensemble AdonisJS + Inertia/React, flux, jobs/queues.
-- **[Schéma de données](DATABASE_SCHEMA.md)** — entités principales et règles métier (avec référence `database/schema.ts`).
+- **[README du projet](../README.md)** — installation, base de test, commandes de tests.
+- **[Conventions et architecture](../CLAUDE.md)** — stack AdonisJS + Inertia/React, arborescence, alias d'import, règles (contrôleurs fins, services, erreurs de domaine, tests).
+- **Variables d'environnement** — schéma validé au boot dans [`start/env_schema.ts`](../start/env_schema.ts), valeurs de dev dans [`.env.example`](../.env.example), référence production dans [DEPLOYMENT.md §5](DEPLOYMENT.md#5-référence--variables-denvironnement-de-production).
+- **Schéma de données** — généré par les migrations : [`database/schema.ts`](../database/schema.ts) (ne pas éditer à la main).
 
 ## Parcours produit (support / métier)
 
 - **[Cartographie fonctionnelle](FEATURES.md)** — vision produit par modules.
-- **[Parcours utilisateurs](USER_FLOWS.md)** — parcours par rôle (super admin / conseiller / candidat) + points d’attention.
 - **[Onboarding candidat](ONBOARDING.md)** — invitation, création mot de passe, onboarding profil.
 
 ## Sous-systèmes (référence)
@@ -20,13 +19,13 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 - **[Emails](MAIL.md)** — abstraction provider-agnostic, Resend, variables et tests.
 - **[Jobs d’analyse IA (serveur)](AI_JOBS.md)** — `AnalyzeExerciseQualitativeJob`, queue `ai`, `AI_PROVIDER`.
 - **[Queues & scheduler](QUEUES.md)** — `@adonisjs/queue`, worker, scheduler, stratégie de test.
+- **[Stockage des fichiers](CLOUDINARY.md)** — Cloudinary (exports PDF, logo, documents candidat), accès privé, fake de test.
 
 ## Ops / Runbooks
 
-- **[Déploiement — procédure pas à pas](DEPLOYMENT.md)** — correctifs préalables du repo, procédure Render + Neon (perso) et VM docker-compose (beta), mise à jour, rollback, sauvegardes, incidents.
+- **[Déploiement — procédure pas à pas](DEPLOYMENT.md)** — correctifs préalables du repo, procédure Render + Neon (perso, Blueprint `render.yaml`) et VM docker-compose (beta), mise à jour, rollback, sauvegardes, incidents.
 - **[Hébergement à coût minimal](hosting.md)** — analyse des besoins réels (process, DB, env, SSE, disque), options gratuites / quasi-gratuites par scénario, travail préparatoire et checklist post-déploiement.
-- **[Déploiement Clever Cloud](clever-cloud.md)** — build, run, worker, migrations, CI GitHub Actions.
-- **[Runbook](RUNBOOK.md)** — procédures et incidents courants (DB, queue, mail, IA, seeds).
+- **[Incidents courants](DEPLOYMENT.md#4-incidents-courants)** — symptômes, causes et correctifs (DB, queue, mail, IA, hébergeurs).
 - **[Checklist prod](PRODUCTION_CHECKLIST.md)** — TODOs avant mise en production.
 - **[RGPD](RGPD.md)** — sous-traitants et flux de données, opt-out Mistral, durées de conservation, procédures d’accès et d’effacement (`candidate:export`, `candidate:purge`).
 
