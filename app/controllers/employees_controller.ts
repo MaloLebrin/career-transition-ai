@@ -5,6 +5,11 @@ import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
+import {
+  CANDIDATE_DOCUMENTS_URL,
+  CandidateDocumentsService,
+  advisorDocumentsUrl,
+} from '#services/candidate_documents_service'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import { EmployeesService } from '#services/employees_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -15,7 +20,10 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 @inject()
 export default class EmployeesController {
-  constructor(private employeesService: EmployeesService) {}
+  constructor(
+    private employeesService: EmployeesService,
+    private candidateDocuments: CandidateDocumentsService
+  ) {}
 
   /**
    * Inertia form: resend onboarding link for an existing employee.
@@ -166,10 +174,14 @@ export default class EmployeesController {
       .orderBy('createdAt', 'desc')
 
     const data = mapEmployee(employee)
+    const documents = await this.candidateDocuments.list(employee, user)
 
     return (ctx.inertia as any).render('dashboard/employee/profile/Home', {
       employeeId: employee.id,
       employee: data,
+      documents,
+      documentsBaseUrl:
+        employeeIdFromParam === null ? CANDIDATE_DOCUMENTS_URL : advisorDocumentsUrl(employee.id),
       notes: sharedNotes.map((note) => ({
         id: note.id,
         content: note.content,

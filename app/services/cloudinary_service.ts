@@ -29,6 +29,9 @@ export const CloudinaryFolders = {
     `${cloudinaryEnvRoot()}/organizations/${organizationId}`,
   exports: (organizationId: number) => `${CloudinaryFolders.organization(organizationId)}/exports`,
   logo: (organizationId: number) => `${CloudinaryFolders.organization(organizationId)}/logo`,
+  /** Documents d'une entité : `…/organizations/<org>/<entityType>s/<entityId>/documents`. */
+  documents: (organizationId: number, entityType: string, entityId: number) =>
+    `${CloudinaryFolders.organization(organizationId)}/${entityType}s/${entityId}/documents`,
 }
 
 /**

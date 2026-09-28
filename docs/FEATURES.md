@@ -121,6 +121,11 @@
   - Diplômes, écoles, périodes.
   - Distinction des formations clés à valoriser.
 
+- **Documents** (profil candidat et fiche conseiller)
+  - Dépôt par le candidat ou son conseiller : CV, lettre de motivation, certificat, diplôme, autre (PDF, Word, image ; 10 Mo, 30 documents max).
+  - Téléchargement relayé par le serveur (fichiers privés sur Cloudinary), suppression (le candidat ne supprime que ses propres dépôts).
+  - Le CV envoyé à l'import IA est conservé automatiquement comme document « CV ».
+
 - **Compétences**
   - Liste de compétences avec niveau (par exemple 1–5).
   - Support pour la cartographie globale des forces du talent.

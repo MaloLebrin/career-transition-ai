@@ -273,43 +273,52 @@ export class ExperienceSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
-export class FileSchema extends BaseModel {
+export class MediaSchema extends BaseModel {
   static $columns = [
+    'bytes',
+    'cloudinaryPublicId',
     'createdAt',
-    'deletedAt',
-    'employeeId',
+    'deliveryType',
+    'entityId',
+    'entityType',
+    'format',
     'id',
-    'mimeType',
-    'name',
+    'kind',
     'organizationId',
-    'path',
-    'size',
-    'type',
+    'originalFilename',
+    'resourceType',
     'updatedAt',
+    'uploadedById',
   ] as const
-  $columns = FileSchema.$columns
+  $columns = MediaSchema.$columns
+  @column()
+  declare bytes: number
+  @column()
+  declare cloudinaryPublicId: string
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
-  @column.dateTime()
-  declare deletedAt: DateTime | null
   @column()
-  declare employeeId: number
+  declare deliveryType: string
+  @column()
+  declare entityId: number
+  @column()
+  declare entityType: string
+  @column()
+  declare format: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare mimeType: string | null
-  @column()
-  declare name: string
+  declare kind: string
   @column()
   declare organizationId: number
   @column()
-  declare path: string
+  declare originalFilename: string
   @column()
-  declare size: number | null
-  @column()
-  declare type: string
+  declare resourceType: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+  @column()
+  declare uploadedById: number | null
 }
 
 export class NoteSchema extends BaseModel {

@@ -1,6 +1,5 @@
 import Education from '#models/education'
 import Experience from '#models/experience'
-import File from '#models/file'
 import Note from '#models/note'
 import Organization from '#models/organization'
 import Skill from '#models/skill'
@@ -91,9 +90,6 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => SupportPlanStep)
   declare supportPlanSteps: HasMany<typeof SupportPlanStep>
-
-  @hasMany(() => File)
-  declare files: HasMany<typeof File>
 
   @hasMany(() => Note)
   declare notes: HasMany<typeof Note>

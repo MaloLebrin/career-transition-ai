@@ -7,37 +7,37 @@ interface OnBoardingStep2Props {
   setFormData: (data: any) => void
 }
 
-export const OnBoardingStep2 = ({
-  onNext,
-  setFormData,
-}: OnBoardingStep2Props) => {
+export const OnBoardingStep2 = ({ onNext, setFormData }: OnBoardingStep2Props) => {
   const [isExtracting, setIsExtracting] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileUpload = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFileUpload = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
 
-    setSelectedFileName(file.name)
-    setIsExtracting(true)
-    const extracted = await extractCVData(file)
-    if (extracted) {
-      setFormData((prev: { name: any; }) => ({
-        ...prev,
-        name: extracted.name || prev.name,
-        currentRole: extracted.currentRole || '',
-        targetRole: extracted.suggestedTargetRole || '',
-        skills: extracted.skills || [],
-        summary: extracted.summary || '',
-        experiences: extracted.experiences || [],
-        educations: extracted.educations || [],
-      }))
-      onNext()
-    }
-    setIsExtracting(false)
-  }, [setFormData, onNext])
+      setSelectedFileName(file.name)
+      setIsExtracting(true)
+      const extracted = await extractCVData(file)
+      if (extracted) {
+        setFormData((prev: { name: any }) => ({
+          ...prev,
+          name: extracted.name || prev.name,
+          currentRole: extracted.currentRole || '',
+          targetRole: extracted.suggestedTargetRole || '',
+          skills: extracted.skills || [],
+          summary: extracted.summary || '',
+          experiences: extracted.experiences || [],
+          educations: extracted.educations || [],
+        }))
+        onNext()
+      }
+      setIsExtracting(false)
+    },
+    [setFormData, onNext]
+  )
 
   return (
     <div className="space-y-10 animate-slideUp">
@@ -45,6 +45,9 @@ export const OnBoardingStep2 = ({
         <h3 className="text-3xl font-bold text-brand-navy">Importez votre CV</h3>
         <p className="text-brand-navy/60 mt-2">
           Notre IA va extraire vos expériences et formations automatiquement.
+        </p>
+        <p className="text-brand-navy/40 text-xs mt-2">
+          Votre CV est ensuite conservé dans vos documents, visibles par vous et votre conseiller.
         </p>
       </div>
 
@@ -100,5 +103,6 @@ export const OnBoardingStep2 = ({
       <Button onClick={onNext} variant="ghost" size="sm" className="w-full">
         Saisir manuellement (Plus long)
       </Button>
-    </div>)
-};
+    </div>
+  )
+}

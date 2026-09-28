@@ -1,6 +1,8 @@
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { Head, usePage } from '@inertiajs/react'
+import type { CandidateDocumentDto } from '#shared/types/media/documents'
 import NotesSection from '~/components/dashboard/NotesSection'
+import { CandidateDocuments } from '~/components/dashboard/employee/profile/documents/CandidateDocuments'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
@@ -21,6 +23,9 @@ interface EmployeeProfileProps {
   employee: EmployeeData
   availableSkills?: AvailableSkill[]
   notes?: Note[]
+  documents?: CandidateDocumentDto[]
+  /** Base des routes de documents : espace candidat ou fiche conseiller. */
+  documentsBaseUrl?: string
 }
 
 export default function EmployeeProfile({
@@ -28,6 +33,8 @@ export default function EmployeeProfile({
   employee,
   availableSkills = [],
   notes = [],
+  documents = [],
+  documentsBaseUrl,
 }: EmployeeProfileProps) {
   const { url } = usePage()
   const backHref =
@@ -65,15 +72,15 @@ export default function EmployeeProfile({
               {employee.name[0]}
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                {employee.name}
-              </h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{employee.name}</h1>
               <p className="text-white/80 mt-2 text-lg">
                 {employee.currentRole}
                 {employee.targetRole && (
                   <>
                     <span className="text-white/50 mx-2">·</span>
-                    <span className="text-brand-sage font-semibold">Objectif {employee.targetRole}</span>
+                    <span className="text-brand-sage font-semibold">
+                      Objectif {employee.targetRole}
+                    </span>
                   </>
                 )}
               </p>
@@ -88,7 +95,9 @@ export default function EmployeeProfile({
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">Email</span>
+              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">
+                Email
+              </span>
               <a
                 href={`mailto:${employee.email}`}
                 className="text-brand-sage font-semibold hover:underline"
@@ -97,17 +106,23 @@ export default function EmployeeProfile({
               </a>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">Poste actuel</span>
+              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">
+                Poste actuel
+              </span>
               <span className="text-brand-navy font-medium">{employee.currentRole}</span>
             </div>
             {employee.targetRole && (
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">Objectif</span>
+                <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">
+                  Objectif
+                </span>
                 <span className="text-brand-navy font-medium">{employee.targetRole}</span>
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">Statut</span>
+              <span className="text-[10px] font-bold text-brand-navy/50 uppercase tracking-widest">
+                Statut
+              </span>
               <span className="text-brand-navy font-medium">
                 {employee.status === EMPLOYEES_STATUS.ACTIVE && 'Actif'}
                 {employee.status === EMPLOYEES_STATUS.COMPLETED && 'Terminé'}
@@ -133,6 +148,10 @@ export default function EmployeeProfile({
 
         <EducationsCard employee={employee} />
         <Skills employee={employee} availableSkills={availableSkills} />
+
+        {documentsBaseUrl && (
+          <CandidateDocuments documents={documents} baseUrl={documentsBaseUrl} />
+        )}
 
         <NotesSection
           employeeId={employee.id}

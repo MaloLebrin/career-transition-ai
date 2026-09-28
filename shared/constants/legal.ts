@@ -43,7 +43,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Cloudinary',
     purpose:
-      'Stockage des fichiers : synthèses PDF exportées en accès privé (chaque téléchargement passe par nos serveurs après contrôle des droits) et logo des cabinets (public).',
+      'Stockage des fichiers : documents déposés par les candidats et leurs conseillers (dont le CV importé) et synthèses PDF exportées, en accès privé (chaque téléchargement passe par nos serveurs après contrôle des droits) ; logo des cabinets (public).',
     location: 'États-Unis par défaut (clauses contractuelles types) [région à confirmer]',
   },
   {
@@ -68,6 +68,10 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: 'Durée du contrat avec le cabinet, puis 3 ans',
   },
   { data: 'Demandes de contact et prospection B2B', duration: '3 ans après le dernier contact' },
+  {
+    data: 'Documents du candidat (CV importé, diplômes, attestations…)',
+    duration: 'Jusqu’à leur suppression, celle du dossier ou une demande d’effacement',
+  },
   { data: 'Exports PDF générés (synthèses)', duration: '30 jours, puis régénérables' },
   { data: 'Journaux techniques et de sécurité', duration: '1 an' },
 ]

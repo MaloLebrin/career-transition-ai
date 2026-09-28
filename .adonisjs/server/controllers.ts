@@ -7,6 +7,7 @@ export const controllers = {
   AiAssist: () => import('#controllers/ai_assist_controller'),
   Auth: () => import('#controllers/auth_controller'),
   CandidatOnboarding: () => import('#controllers/candidat_onboarding_controller'),
+  CandidateDocuments: () => import('#controllers/candidate_documents_controller'),
   ContactRequests: () => import('#controllers/contact_requests_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),

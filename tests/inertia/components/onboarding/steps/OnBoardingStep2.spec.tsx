@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { OnBoardingStep2 } from '../../../../../inertia/components/onboarding/steps/OnBoardingStep2'
 import { extractCVData } from '../../../../../inertia/helpers/ai'
@@ -54,5 +54,11 @@ describe('OnBoardingStep2', () => {
     await waitFor(() => expect(extractCVData).toHaveBeenCalled())
     expect(setFormData).not.toHaveBeenCalled()
     expect(onNext).not.toHaveBeenCalled()
+  })
+
+  test('informe que le CV importé est conservé dans les documents', () => {
+    renderStep()
+
+    expect(screen.getByText(/Votre CV est ensuite conservé dans vos documents/)).toBeInTheDocument()
   })
 })
