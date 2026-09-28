@@ -291,7 +291,7 @@ Puis dans le navigateur : connexion `malolebrin@gmail.com` / `ADMIN_PASSWORD` (c
 ### 1.5 Ce qu'il faut savoir en exploitation
 
 - **Cold start** ≈ 1 min après 15 min sans requête (Render) + ≈ 1 s (Neon). Normal.
-- **PDF** : avec le disque local par défaut (`DRIVE_DISK=fs`), perdus à chaque redémarrage (disque éphémère) et illisibles si web et worker sont deux services ; passer à `DRIVE_DISK=s3` (Cloudflare R2), voir [§ stockage des PDF](#stockage-des-pdf).
+- **PDF** : stockés sur Cloudinary (`CLOUDINARY_*`, requises au démarrage), donc ni perdus au redémarrage ni liés au disque du service ; voir [§ stockage des fichiers](#stockage-des-fichiers-cloudinary).
 - **Mise à jour** = push sur `main` (auto-deploy). Migrations au démarrage. Rollback : Render → _Rollback_ sur le déploiement précédent (les migrations déjà appliquées restent : écrire des migrations rétro-compatibles).
 - **Neon** : suivre _Usage_ (CU-hours < 100/mois, stockage < 0,5 Go). Sauvegarde : `pg_dump "$DB_URL" | gzip > backup-$(date +%F).sql.gz` depuis ton poste, une fois par semaine ou avant chaque migration risquée.
 
@@ -337,7 +337,7 @@ Nom d'hôte sans domaine : `<IP avec des tirets>.sslip.io`, ex. `129-146-10-20.s
 
 ### 2.3 Fichiers de déploiement (`~/cta/`)
 
-> ✅ Versionnés dans [`deploy/`](../deploy/) (issue #16) et démarrés à chaque PR par le job CI `docker-image` (`scripts/smoke_compose_prod.sh` : migrate/seed, `/health` en HTTPS via Caddy, bucket S3 partagé, `backup.sh`).
+> ✅ Versionnés dans [`deploy/`](../deploy/) (issue #16) et démarrés à chaque PR par le job CI `docker-image` (`scripts/smoke_compose_prod.sh` : migrate/seed, `/health` en HTTPS via Caddy, app sans volume, `backup.sh`).
 
 Copier le dossier sur l'hôte, puis remplir `.env` :
 
@@ -354,7 +354,7 @@ cd ~/cta && cp .env.example .env && chmod 600 .env
 | `.env.example` | Variables du compose (`APP_IMAGE`, `APP_DOMAIN`) et de l'application (validées contre `start/env_schema.ts` par `tests/unit/config/env_schema.spec.ts`).                                                                  |
 | `backup.sh`    | `pg_dump` compressé dans `backups/`, rotation 14 jours (§2.6).                                                                                                                                                            |
 
-**Aucun volume dans `app` ni `worker`** : les PDF vont sur un bucket S3/R2 (`DRIVE_DISK=s3`, voir [Stockage des PDF](#stockage-des-pdf)), comme sur Render. Web et worker n'ont pas de disque commun ; seuls Postgres et les certificats de Caddy sont persistés. Le HEALTHCHECK HTTP de l'image est désactivé sur `worker`, `migrate` et `seed`, qui ne servent pas de HTTP.
+**Aucun volume dans `app` ni `worker`** : les fichiers vont sur Cloudinary (`CLOUDINARY_*`, voir [Stockage des fichiers](#stockage-des-fichiers-cloudinary)), comme sur Render. Web et worker n'ont pas de disque commun ; seuls Postgres et les certificats de Caddy sont persistés. Le HEALTHCHECK HTTP de l'image est désactivé sur `worker`, `migrate` et `seed`, qui ne servent pas de HTTP.
 
 `APP_IMAGE` : l'image publiée sur GHCR (§0.8), ou en attendant une image construite sur l'hôte (`docker build -t cta:local .` depuis le repo, puis `APP_IMAGE=cta:local`). Si le repo GHCR est privé : `echo <PAT read:packages> | docker login ghcr.io -u malolebrin --password-stdin`.
 
@@ -380,7 +380,7 @@ curl -sI $H/ | grep -i strict-transport                    # HSTS présent
 curl -s $H/ | grep -o '<title[^<]*'                        # titre SSR
 ```
 
-Puis, dans le navigateur, le parcours complet : connexion super admin → organisation → conseiller → candidat → lien d'onboarding (`docker compose logs app | grep onboarding`) → exercice → vérifier dans `docker compose logs worker` le job `ai` → export PDF → `completed` → téléchargement (PDF écrit par le worker dans le bucket R2, lu par le web). Dérouler la checklist de [hosting.md §3.3](hosting.md#33-checklist-post-déploiement).
+Puis, dans le navigateur, le parcours complet : connexion super admin → organisation → conseiller → candidat → lien d'onboarding (`docker compose logs app | grep onboarding`) → exercice → vérifier dans `docker compose logs worker` le job `ai` → export PDF → `completed` → téléchargement (PDF écrit par le worker sur Cloudinary, relayé par le web). Dérouler la checklist de [hosting.md §3.3](hosting.md#33-checklist-post-déploiement).
 
 ### 2.6 Sauvegardes (obligatoire pour une beta)
 
@@ -399,7 +399,7 @@ docker compose exec -T postgres psql -U cta cta_restore -c 'select count(*) from
 docker compose exec -T postgres dropdb -U cta cta_restore
 ```
 
-Les PDF sont dans le bucket R2 (purge nocturne à 30 jours) et régénérables : pas sauvegardés.
+Les PDF sont sur Cloudinary (purge nocturne à 30 jours) et régénérables : pas sauvegardés.
 
 ### 2.7 Variante sans IP publique : Tailscale Funnel
 
@@ -469,23 +469,24 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 
 ## 4. Incidents courants
 
-| Symptôme                                                                      | Cause probable                                                  | Action                                                                                                                   |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| 500 sur toutes les pages, log `ERR_MODULE_NOT_FOUND …/build/build/ssr/ssr.js` | §0.1 non appliqué                                               | Corriger `config/inertia.ts` / `config/vite.ts`, rebuild.                                                                |
-| Boot : `E_MISSING_ENV` / `Missing environment variable`                       | variable vide ou absente (une valeur vide compte comme absente) | Comparer avec §5.                                                                                                        |
-| `The server does not support SSL connections`                                 | `DB_SSL` absent/`true` face à un Postgres sans TLS              | `DB_SSL=false` (compose).                                                                                                |
-| `ADMIN_PASSWORD est requis…` pendant `migration:run`                          | §0.3 non appliqué                                               | Vider la migration de seed ; définir `ADMIN_PASSWORD` pour le seeder.                                                    |
-| Worker : `No jobs found for locations`                                        | glob relatif au `cwd` (§0.4) ou image lancée depuis `build/`    | Appliquer §0.4 ; en Docker, passer par l'entrypoint (`worker`) ou `--entrypoint node … ace.js` depuis `/app`.            |
-| Export PDF `completed` mais téléchargement « fichier introuvable »            | web et worker ne partagent pas `/app/storage` (`DRIVE_DISK=fs`) | `DRIVE_DISK=s3` et variables `S3_*` sur les deux services, compose comme PaaS ([§ stockage des PDF](#stockage-des-pdf)). |
-| Exports PDF ne passent jamais en `completed`                                  | pas de worker (ou `QUEUE_DRIVER=database` sans `queue:work`)    | `docker compose ps worker`, logs ; en mono-process utiliser `QUEUE_DRIVER=sync`.                                         |
-| Lien d'onboarding en `http://`                                                | `trustProxy` par défaut (`loopback`)                            | §0.6.                                                                                                                    |
-| SSE coupés toutes les ~60–100 s, reconnexions en boucle                       | proxy qui bufferise / pas de keep-alive                         | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6).                                                               |
-| Analyse IA vide avec message d'erreur                                         | rate-limit plan Experiment / clé absente                        | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois.                                     |
-| E-mail non reçu par un testeur (Resend)                                       | pas de domaine vérifié : envoi restreint à ton adresse          | Domaine + vérification DNS, ou `MAIL_PROVIDER=console`.                                                                  |
-| Neon : `compute time quota exceeded`                                          | worker qui polle en continu                                     | Scénario 1 = `QUEUE_DRIVER=sync`, jamais de worker permanent sur Neon Free.                                              |
-| Oracle : instance disparue                                                    | récupération « idle » Always Free                               | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG.                                                  |
-| Render : page « service unavailable » ~1 min                                  | cold start                                                      | Attendu sur le plan Free.                                                                                                |
-| OOM / redémarrages                                                            | pas de plafond V8 sur 512 Mo                                    | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker).                                                           |
+| Symptôme                                                                      | Cause probable                                                                 | Action                                                                                                                                       |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 500 sur toutes les pages, log `ERR_MODULE_NOT_FOUND …/build/build/ssr/ssr.js` | §0.1 non appliqué                                                              | Corriger `config/inertia.ts` / `config/vite.ts`, rebuild.                                                                                    |
+| Boot : `E_MISSING_ENV` / `Missing environment variable`                       | variable vide ou absente (une valeur vide compte comme absente)                | Comparer avec §5.                                                                                                                            |
+| `The server does not support SSL connections`                                 | `DB_SSL` absent/`true` face à un Postgres sans TLS                             | `DB_SSL=false` (compose).                                                                                                                    |
+| `ADMIN_PASSWORD est requis…` pendant `migration:run`                          | §0.3 non appliqué                                                              | Vider la migration de seed ; définir `ADMIN_PASSWORD` pour le seeder.                                                                        |
+| Worker : `No jobs found for locations`                                        | glob relatif au `cwd` (§0.4) ou image lancée depuis `build/`                   | Appliquer §0.4 ; en Docker, passer par l'entrypoint (`worker`) ou `--entrypoint node … ace.js` depuis `/app`.                                |
+| Export PDF `completed` mais téléchargement « fichier introuvable »            | PDF purgé (30 jours) ou supprimé de Cloudinary, identifiants d'un autre compte | Régénérer l'export ; vérifier que web et worker ont les mêmes `CLOUDINARY_*` ([§ stockage des fichiers](#stockage-des-fichiers-cloudinary)). |
+| Démarrage : `Cloudinary : variables manquantes`                               | `CLOUDINARY_*` absentes en production                                          | Les renseigner sur le web **et** le worker.                                                                                                  |
+| Exports PDF ne passent jamais en `completed`                                  | pas de worker (ou `QUEUE_DRIVER=database` sans `queue:work`)                   | `docker compose ps worker`, logs ; en mono-process utiliser `QUEUE_DRIVER=sync`.                                                             |
+| Lien d'onboarding en `http://`                                                | `trustProxy` par défaut (`loopback`)                                           | §0.6.                                                                                                                                        |
+| SSE coupés toutes les ~60–100 s, reconnexions en boucle                       | proxy qui bufferise / pas de keep-alive                                        | `flush_interval -1` (Caddy), `pingInterval: '30s'` (§0.6).                                                                                   |
+| Analyse IA vide avec message d'erreur                                         | rate-limit plan Experiment / clé absente                                       | Vérifier `MISTRAL_API_KEY`, limites dans la console Mistral ; le job retente 2 fois.                                                         |
+| E-mail non reçu par un testeur (Resend)                                       | pas de domaine vérifié : envoi restreint à ton adresse                         | Domaine + vérification DNS, ou `MAIL_PROVIDER=console`.                                                                                      |
+| Neon : `compute time quota exceeded`                                          | worker qui polle en continu                                                    | Scénario 1 = `QUEUE_DRIVER=sync`, jamais de worker permanent sur Neon Free.                                                                  |
+| Oracle : instance disparue                                                    | récupération « idle » Always Free                                              | Restaurer depuis sauvegarde sur une nouvelle instance ; passer en PAYG.                                                                      |
+| Render : page « service unavailable » ~1 min                                  | cold start                                                                     | Attendu sur le plan Free.                                                                                                                    |
+| OOM / redémarrages                                                            | pas de plafond V8 sur 512 Mo                                                   | `NODE_OPTIONS=--max-old-space-size=384` (web), `256` (worker).                                                                               |
 
 ---
 
@@ -493,27 +494,25 @@ et les transmettre manuellement (message privé). Les liens sont à usage unique
 
 Modèle à copier : [`.env.production.example`](../.env.production.example) (le développement local part de `.env.example`, qui démarre tel quel). Toutes les variables lues par le serveur sont déclarées et validées au boot par `start/env_schema.ts` : une valeur invalide (`QUEUE_DRIVER=redis`, `MAIL_PROVIDER=smtp`…) empêche le démarrage. Les deux fichiers d'exemple sont validés contre ce schéma par `tests/unit/config/env_schema.spec.ts`.
 
-| Variable                                                                  | Obligatoire                                         | Valeur prod                                                                                                                                                                                                               |
-| ------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NODE_ENV`                                                                | oui                                                 | `production`                                                                                                                                                                                                              |
-| `HOST` / `PORT`                                                           | oui                                                 | `0.0.0.0` / port du conteneur ou de la plateforme                                                                                                                                                                         |
-| `APP_KEY`                                                                 | oui                                                 | `node ace generate:key`                                                                                                                                                                                                   |
-| `LOG_LEVEL`                                                               | oui                                                 | `info`                                                                                                                                                                                                                    |
-| `SESSION_DRIVER`                                                          | oui                                                 | `cookie`                                                                                                                                                                                                                  |
-| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                                              |
-| `DB_SSL`                                                                  | non (défaut `true`)                                 | `false` seulement pour un Postgres sans TLS                                                                                                                                                                               |
-| `QUEUE_DRIVER`                                                            | oui                                                 | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter)                                                                                                                                             |
-| `AI_PROVIDER`                                                             | non                                                 | `mistral` ou `none`                                                                                                                                                                                                       |
-| `MISTRAL_API_KEY`, `MISTRAL_MODEL`                                        | si `mistral`                                        | clé ; `mistral-small-latest`                                                                                                                                                                                              |
-| `REGISTRATION_ENABLED`                                                    | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin                        |
-| `SEO_INDEXING`                                                            | non (défaut `false`)                                | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`)                                                        |
-| `GOOGLE_SITE_VERIFICATION`                                                | non                                                 | jeton Google Search Console ; la balise n'est rendue que s'il est défini                                                                                                                                                  |
-| `DRIVE_DISK`                                                              | non (défaut `fs`)                                   | stockage des PDF générés (`config/drive.ts`) : `fs` = dossier `storage/` local (dev, process unique), `s3` = bucket S3/R2 (web et worker séparés : Render, compose de prod). Voir [§ stockage des PDF](#stockage-des-pdf) |
-| `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`    | si `DRIVE_DISK=s3`                                  | bucket **privé** ; le serveur refuse de démarrer s'il en manque une                                                                                                                                                       |
-| `S3_REGION`                                                               | non (défaut `auto`)                                 | `auto` pour R2, région AWS sinon                                                                                                                                                                                          |
-| `SENTRY_DSN`                                                              | non (recommandé)                                    | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry)                                                   |
-| `SENTRY_ENVIRONMENT`                                                      | non (défaut `NODE_ENV`)                             | `production`, `staging`… pour séparer les environnements dans Sentry                                                                                                                                                      |
-| `SENTRY_RELEASE`                                                          | non (défaut `RENDER_GIT_COMMIT`)                    | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`)                                                                                                                                      |
+| Variable                                                                  | Obligatoire                                         | Valeur prod                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                                | oui                                                 | `production`                                                                                                                                                                                                                       |
+| `HOST` / `PORT`                                                           | oui                                                 | `0.0.0.0` / port du conteneur ou de la plateforme                                                                                                                                                                                  |
+| `APP_KEY`                                                                 | oui                                                 | `node ace generate:key`                                                                                                                                                                                                            |
+| `LOG_LEVEL`                                                               | oui                                                 | `info`                                                                                                                                                                                                                             |
+| `SESSION_DRIVER`                                                          | oui                                                 | `cookie`                                                                                                                                                                                                                           |
+| `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Neon : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                                                       |
+| `DB_SSL`                                                                  | non (défaut `true`)                                 | `false` seulement pour un Postgres sans TLS                                                                                                                                                                                        |
+| `QUEUE_DRIVER`                                                            | oui                                                 | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter)                                                                                                                                                      |
+| `AI_PROVIDER`                                                             | non                                                 | `mistral` ou `none`                                                                                                                                                                                                                |
+| `MISTRAL_API_KEY`, `MISTRAL_MODEL`                                        | si `mistral`                                        | clé ; `mistral-small-latest`                                                                                                                                                                                                       |
+| `REGISTRATION_ENABLED`                                                    | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin                                 |
+| `SEO_INDEXING`                                                            | non (défaut `false`)                                | `false` (`noindex, nofollow` + `robots.txt` en `Disallow: /`) tant que l'app est sur une URL provisoire ; `true` uniquement sur le domaine final (`config/seo.ts`)                                                                 |
+| `GOOGLE_SITE_VERIFICATION`                                                | non                                                 | jeton Google Search Console ; la balise n'est rendue que s'il est défini                                                                                                                                                           |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`    | oui en production                                   | stockage des fichiers (`config/cloudinary.ts`) ; le serveur refuse de démarrer en production s'il en manque une. Optionnelles en dev (seul l'export PDF échoue). Voir [§ stockage des fichiers](#stockage-des-fichiers-cloudinary) |
+| `SENTRY_DSN`                                                              | non (recommandé)                                    | DSN d'un projet Sentry **en région EU** (plan gratuit). Absent : aucune erreur n'est envoyée, seulement les logs. Voir [§ suivi des erreurs](#suivi-des-erreurs-sentry)                                                            |
+| `SENTRY_ENVIRONMENT`                                                      | non (défaut `NODE_ENV`)                             | `production`, `staging`… pour séparer les environnements dans Sentry                                                                                                                                                               |
+| `SENTRY_RELEASE`                                                          | non (défaut `RENDER_GIT_COMMIT`)                    | sha du commit déployé ; Render le fournit, à définir ailleurs (`git rev-parse HEAD`)                                                                                                                                               |
 
 | `MAIL_PROVIDER` | non (défaut `console`) | `resend` avec un domaine vérifié ; `console` écrit les e-mails dans les logs |
 | `MAIL_FROM_EMAIL` | **oui en production** (vérifié à l'envoi, même en `console`) | adresse du domaine vérifié |
@@ -536,29 +535,29 @@ Variables de **build** (embarquées dans le bundle navigateur, à ne pas confond
 
 ---
 
-## Stockage des PDF
+## Stockage des fichiers (Cloudinary)
 
-Le worker écrit les exports PDF sur le disque Drive par défaut
-(`config/drive.ts`, `#services/pdf_storage_service`) ; le web les relit pour
-les servir, **après** le contrôle d'accès de
-`PdfExportDownloadsController` (fichiers privés, jamais d'URL publique). En
-base, `pdf_exports.file_path` ne contient qu'une clé relative
-(`exports/pdf_export_<id>.pdf`), sans le nom du candidat.
+Cloudinary est le seul stockage de fichiers (issue #49, détails dans
+[CLOUDINARY.md](CLOUDINARY.md)). Le worker y écrit les exports PDF
+(`#services/pdf_storage_service` → `#services/cloudinary_service`) ; le web
+les relit pour les servir, **après** le contrôle d'accès de
+`PdfExportDownloadsController`. Les PDF sont **privés**
+(`type: authenticated`) : le serveur signe une URL de téléchargement de
+5 minutes, relaie le contenu, et ne la transmet jamais au navigateur. En base,
+`pdf_exports.file_path` contient le `public_id`
+(`career-transition/production/organizations/<orgId>/exports/pdf_export_<id>.pdf`),
+sans le nom du candidat.
 
-| `DRIVE_DISK`  | Où                                     | Quand                                                                       |
-| ------------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| `fs` (défaut) | `storage/` dans le répertoire de l'app | dev, tests, process unique (`QUEUE_DRIVER=sync`)                            |
-| `s3`          | bucket S3 compatible                   | web et worker sur deux services sans disque commun (Render : `render.yaml`) |
+Mise en place :
 
-Mise en place de Cloudflare R2 (10 Go gratuits) :
-
-1. _R2 → Create bucket_ : juridiction **EU**, accès public désactivé.
-2. _R2 → Manage API tokens_ : jeton _Object Read & Write_ limité au bucket.
-3. Renseigner `DRIVE_DISK=s3`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
-   `S3_SECRET_ACCESS_KEY` et `S3_ENDPOINT`
-   (`https://<account-id>.eu.r2.cloudflarestorage.com`) sur le web **et** le
-   worker.
-4. Ajouter Cloudflare aux sous-traitants (`SUBPROCESSORS`, `shared/constants/legal.ts`).
+1. Créer un compte Cloudinary (ou réutiliser un compte existant : tout est
+   rangé sous `career-transition/`, puis `production` ou `dev`).
+2. _Settings → API Keys_ : renseigner `CLOUDINARY_CLOUD_NAME`,
+   `CLOUDINARY_API_KEY` et `CLOUDINARY_API_SECRET` sur le web **et** le
+   worker (groupe partagé sur Render, `.env` du compose).
+3. Région : le stockage est aux États-Unis par défaut (transfert encadré par
+   les clauses contractuelles types, voir `SUBPROCESSORS`). Un hébergement UE
+   relève d'une offre payante (issue #24).
 
 Vérification : générer un export depuis la synthèse d'un candidat, puis le
 télécharger depuis la page _Tâches_.
@@ -566,9 +565,9 @@ télécharger depuis la page _Tâches_.
 Rétention : chaque nuit à 3 h (heure de Paris), `PurgeExpiredPdfExportsJob`
 (planifié par `start/scheduler.ts`, exécuté par le worker) supprime les PDF de
 plus de 30 jours (`PDF_EXPORT_RETENTION_DAYS`). L'export reste listé sans lien
-de téléchargement ; il suffit de le régénérer. Les anciens chemins absolus
-(avant l'issue #21) sont effacés par la migration
-`clear_absolute_pdf_export_paths`.
+de téléchargement ; il suffit de le régénérer. Une clé d'avant Cloudinary
+(`exports/…`, stockage Drive) est traitée comme absente : téléchargement
+« fichier introuvable », à régénérer.
 
 ---
 

@@ -6,19 +6,16 @@
 #   APP_IMAGE=career-transition-ai:ci scripts/smoke_compose_prod.sh
 #
 # Vérifie : migrate et seed one-shot, /health 200 en HTTPS via Caddy, worker
-# vivant sans erreur, app et worker lisent et écrivent le même bucket S3 (pas
-# de volume), backup.sh produit un dump non vide.
+# vivant sans erreur, app sans volume, backup.sh produit un dump non vide.
 #
-# Le bucket est simulé par `rclone serve s3` dans un override propre à ce
-# script : le compose livré n'a pas de stockage local. Style d'adressage
-# « virtual host » comme R2 (config/drive.ts ne force pas le path style) :
-# le nom `<bucket>.s3` est un alias réseau du service.
+# Les fichiers vont sur Cloudinary (issue #49) : les identifiants sont
+# factices, le démarrage en production les exige mais aucun appel réseau
+# n'est fait ici.
 set -euo pipefail
 
 : "${APP_IMAGE:?APP_IMAGE requis (image construite depuis le Dockerfile)}"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 WORK=$(mktemp -d)
-BUCKET=cta-exports
 
 cp -r "$ROOT/deploy" "$WORK/cta"
 cd "$WORK/cta"
@@ -28,25 +25,14 @@ sed \
   -e 's#^APP_DOMAIN=.*#APP_DOMAIN=localhost#' \
   -e 's#^APP_KEY=.*#APP_KEY=smoke-test-only-app-key-not-a-secret#' \
   -e 's#^DB_PASSWORD=.*#DB_PASSWORD=smoke-test-db-password#' \
-  -e "s#^S3_BUCKET=.*#S3_BUCKET=$BUCKET#" \
-  -e 's#^S3_ENDPOINT=.*#S3_ENDPOINT=http://s3:9000#' \
-  -e 's#^S3_ACCESS_KEY_ID=.*#S3_ACCESS_KEY_ID=smoke#' \
-  -e 's#^S3_SECRET_ACCESS_KEY=.*#S3_SECRET_ACCESS_KEY=smoke-secret#' \
+  -e 's#^CLOUDINARY_CLOUD_NAME=.*#CLOUDINARY_CLOUD_NAME=smoke#' \
+  -e 's#^CLOUDINARY_API_KEY=.*#CLOUDINARY_API_KEY=smoke-key#' \
+  -e 's#^CLOUDINARY_API_SECRET=.*#CLOUDINARY_API_SECRET=smoke-secret#' \
   -e 's#^AI_PROVIDER=.*#AI_PROVIDER=none#' \
   -e 's#^ADMIN_PASSWORD=.*#ADMIN_PASSWORD=smoke-test-admin-password#' \
   .env.example > .env
 
-cat > "$WORK/s3.override.yml" <<EOF
-services:
-  s3:
-    image: rclone/rclone:1
-    command: serve s3 /data --addr :9000 --auth-key smoke,smoke-secret --force-path-style=false
-    networks:
-      default:
-        aliases: ['$BUCKET.s3']
-EOF
-
-compose() { docker compose -f compose.yml -f "$WORK/s3.override.yml" "$@"; }
+compose() { docker compose -f compose.yml "$@"; }
 cleanup() {
   status=$?
   if [ "$status" -ne 0 ]; then compose logs --no-color --tail=100 || true; fi
@@ -60,8 +46,8 @@ trap 'echo "échec ligne $LINENO : $BASH_COMMAND" >&2' ERR
 
 step() { printf '\n==> %s\n' "$*"; }
 
-step 'postgres + s3'
-compose up -d --wait postgres s3
+step 'postgres'
+compose up -d --wait postgres
 
 step 'migrate (one-shot)'
 compose run --rm migrate
@@ -88,24 +74,6 @@ done
 # Corps capturé d'abord : `curl | grep -q` échoue sous pipefail (SIGPIPE).
 home=$(curl -sk https://localhost/)
 grep -q '<title' <<< "$home" || { echo 'pas de rendu SSR sur /'; exit 1; }
-
-step 'bucket S3 partagé entre worker et app (aucun volume)'
-probe='import { S3Client, CreateBucketCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
-const e = process.env
-const s3 = new S3Client({ region: e.S3_REGION, endpoint: e.S3_ENDPOINT,
-  credentials: { accessKeyId: e.S3_ACCESS_KEY_ID, secretAccessKey: e.S3_SECRET_ACCESS_KEY } })
-const [mode] = process.argv.slice(1)
-if (mode === "write") {
-  await s3.send(new CreateBucketCommand({ Bucket: e.S3_BUCKET })).catch(() => {})
-  await s3.send(new PutObjectCommand({ Bucket: e.S3_BUCKET, Key: "exports/probe.txt", Body: "from-worker" }))
-} else {
-  const res = await s3.send(new GetObjectCommand({ Bucket: e.S3_BUCKET, Key: "exports/probe.txt" }))
-  const body = await res.Body.transformToString()
-  if (body !== "from-worker") throw new Error("contenu inattendu : " + body)
-}
-console.log("s3 " + mode + " ok")'
-compose exec -T worker node --input-type=module -e "$probe" write
-compose exec -T app node --input-type=module -e "$probe" read
 
 step 'worker vivant, sans erreur'
 [ "$(compose ps --format '{{.State}}' worker)" = running ] || { echo 'worker arrêté'; exit 1; }

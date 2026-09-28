@@ -1,4 +1,3 @@
-import { missingS3Env } from '#config/drive'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import PurgeExpiredPdfExportsJob from '#jobs/purge_expired_pdf_exports_job'
 import PdfExport from '#models/pdf_export'
@@ -13,15 +12,20 @@ import {
 } from '#services/pdf_storage_service'
 import { PDF_EXPORT_RETENTION_DAYS, PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { createAdvisor, createEmployeeFor } from '#tests/support/actors'
+import {
+  type FakeCloudinary,
+  restoreCloudinary,
+  swapFakeCloudinary,
+} from '#tests/support/fake_cloudinary'
 import testUtils from '@adonisjs/core/services/test_utils'
-import drive from '@adonisjs/drive/services/main'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 import type { Readable } from 'node:stream'
 
 /**
- * Stockage des exports PDF sur le disque Drive (issue #21) : clé relative,
- * lecture/suppression limitées au préfixe `exports/`, purge des exports expirés.
+ * Stockage des exports PDF sur Cloudinary (issue #49, fake en mémoire) :
+ * `public_id` sans donnée personnelle, fichier privé, lecture/suppression
+ * limitées aux clés d'export, purge des exports expirés.
  */
 
 const PDF = new TextEncoder().encode('%PDF-1.4 test')
@@ -33,15 +37,25 @@ async function readAll(stream: Readable): Promise<string> {
 }
 
 test.group('pdf_storage_service | clés et en-têtes', () => {
-  test('la clé est relative et ne dépend que de l’id', ({ assert }) => {
-    assert.equal(pdfExportKey(42), 'exports/pdf_export_42.pdf')
-    assert.isTrue(isPdfExportKey(pdfExportKey(42)))
+  test('la clé ne dépend que des ids, sous le dossier de l’organisation', ({ assert }) => {
+    assert.equal(
+      pdfExportKey(7, 42),
+      'career-transition/dev/organizations/7/exports/pdf_export_42.pdf'
+    )
+    assert.isTrue(isPdfExportKey(pdfExportKey(7, 42)))
   })
 
-  test('refuse les clés hors du préfixe exports/', ({ assert }) => {
+  test('refuse les clés qui ne sont pas des exports', ({ assert }) => {
+    // Ancienne clé relative du stockage Drive : traitée comme absente.
+    assert.isFalse(isPdfExportKey('exports/pdf_export_42.pdf'))
     assert.isFalse(isPdfExportKey('/app/tmp/exports/Synthese.pdf'))
-    assert.isFalse(isPdfExportKey('secrets/cle.pem'))
-    assert.isFalse(isPdfExportKey('exports/../secrets/cle.pem'))
+    assert.isFalse(isPdfExportKey('career-transition/dev/organizations/7/logo/logo.png'))
+    assert.isFalse(
+      isPdfExportKey('career-transition/dev/organizations/7/exports/../documents/cv.pdf')
+    )
+    assert.isFalse(
+      isPdfExportKey('career-transition/production/organizations/7/exports/pdf_export_1.pdf')
+    )
   })
 
   test('Content-Disposition : repli ASCII et nom UTF-8', ({ assert }) => {
@@ -52,46 +66,55 @@ test.group('pdf_storage_service | clés et en-têtes', () => {
   })
 })
 
-test.group('pdf_storage_service | disque', (group) => {
-  let disk: ReturnType<typeof drive.fake>
+test.group('pdf_storage_service | stockage', (group) => {
+  let cloud: FakeCloudinary
   group.each.setup(() => {
-    disk = drive.fake()
-    return () => drive.restore()
+    cloud = swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
-  test('écrit, relit puis supprime un PDF', async ({ assert }) => {
-    const key = pdfExportKey(1)
+  test('écrit un PDF privé, le relit puis le supprime', async ({ assert }) => {
+    const key = pdfExportKey(1, 1)
 
     assert.equal(await storePdf(key, PDF), PDF.byteLength)
-    disk.assertExists(key)
+    assert.deepEqual(cloud.uploaded, [
+      { publicId: key, resourceType: 'raw', deliveryType: 'authenticated' },
+    ])
 
     const stream = await readPdfStream(key)
     assert.equal(await readAll(stream!), '%PDF-1.4 test')
 
     assert.isTrue(await deletePdf(key))
-    disk.assertMissing(key)
+    assert.isFalse(cloud.has(key))
   })
 
   test('fichier absent : lecture null, suppression false', async ({ assert }) => {
-    assert.isNull(await readPdfStream(pdfExportKey(2)))
-    assert.isFalse(await deletePdf(pdfExportKey(2)))
+    assert.isNull(await readPdfStream(pdfExportKey(1, 2)))
+    assert.isFalse(await deletePdf(pdfExportKey(1, 2)))
   })
 
-  test('ne lit ni ne supprime hors du préfixe', async ({ assert }) => {
-    await disk.put('autre/fichier.pdf', 'x')
+  test('ne lit ni ne supprime une clé qui n’est pas un export', async ({ assert }) => {
+    const other = 'career-transition/dev/organizations/1/documents/cv.pdf'
+    await cloud.uploadBuffer(PDF, {
+      publicId: other,
+      resourceType: 'raw',
+      deliveryType: 'authenticated',
+    })
 
-    assert.isNull(await readPdfStream('autre/fichier.pdf'))
-    assert.isFalse(await deletePdf('autre/fichier.pdf'))
-    disk.assertExists('autre/fichier.pdf')
+    assert.isNull(await readPdfStream(other))
+    assert.isFalse(await deletePdf(other))
+    assert.isTrue(cloud.has(other))
+    assert.lengthOf(cloud.downloaded, 0)
+    assert.lengthOf(cloud.destroyed, 0)
   })
 })
 
 test.group('pdf_storage_service | purge des exports expirés', (group) => {
-  let disk: ReturnType<typeof drive.fake>
+  let cloud: FakeCloudinary
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    disk = drive.fake()
-    return () => drive.restore()
+    cloud = swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   async function completedExport(finishedDaysAgo: number) {
@@ -104,7 +127,7 @@ test.group('pdf_storage_service | purge des exports expirés', (group) => {
       status: PDF_EXPORT_STATUSES.COMPLETED,
       finishedAt: DateTime.now().minus({ days: finishedDaysAgo }),
     }).create()
-    pdfExport.filePath = pdfExportKey(pdfExport.id)
+    pdfExport.filePath = pdfExportKey(advisor.organizationId, pdfExport.id)
     await pdfExport.save()
     await storePdf(pdfExport.filePath, PDF)
     return pdfExport
@@ -119,13 +142,13 @@ test.group('pdf_storage_service | purge des exports expirés', (group) => {
     )
 
     assert.equal(purged, 1)
-    disk.assertMissing(pdfExportKey(old.id))
-    disk.assertExists(recent.filePath!)
+    assert.isFalse(cloud.has(pdfExportKey(old.organizationId!, old.id)))
+    assert.isTrue(cloud.has(recent.filePath!))
     await old.refresh()
     assert.isNull(old.filePath)
     assert.equal(old.status, PDF_EXPORT_STATUSES.COMPLETED)
     await recent.refresh()
-    assert.equal(recent.filePath, pdfExportKey(recent.id))
+    assert.equal(recent.filePath, pdfExportKey(recent.organizationId!, recent.id))
   })
 
   test('le job applique la rétention par défaut', async ({ assert }) => {
@@ -134,8 +157,8 @@ test.group('pdf_storage_service | purge des exports expirés', (group) => {
 
     await PurgeExpiredPdfExportsJob.dispatch({}).run()
 
-    disk.assertMissing(pdfExportKey(old.id))
-    disk.assertExists(pdfExportKey(recent.id))
+    assert.isFalse(cloud.has(old.filePath!))
+    assert.isTrue(cloud.has(recent.filePath!))
     const purged = await PdfExport.findOrFail(old.id)
     assert.isNull(purged.filePath)
   })
@@ -147,22 +170,5 @@ test.group('pdf_storage_service | purge des exports expirés', (group) => {
 
     await pdfExport.refresh()
     assert.isNull(pdfExport.filePath)
-  })
-})
-
-test.group('config/drive | disque s3', () => {
-  test('aucune variable requise pour le disque fs', ({ assert }) => {
-    assert.deepEqual(
-      missingS3Env('fs', () => undefined),
-      []
-    )
-  })
-
-  test('liste les variables S3 manquantes', ({ assert }) => {
-    const values: Record<string, string> = { S3_BUCKET: 'exports', S3_ENDPOINT: 'https://r2' }
-    assert.deepEqual(
-      missingS3Env('s3', (name) => values[name]),
-      ['S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY']
-    )
   })
 })

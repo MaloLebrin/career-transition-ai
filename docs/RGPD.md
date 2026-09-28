@@ -12,9 +12,9 @@ Contact pour l'exercice des droits : `contact@francetransitioncarriere.fr`
 ## 1. Avant toute donnée réelle — checklist
 
 - [ ] **Mistral : opt-out de l'utilisation des données pour l'entraînement.**
-      Le plan gratuit *Experiment* de La Plateforme autorise Mistral à
+      Le plan gratuit _Experiment_ de La Plateforme autorise Mistral à
       utiliser les prompts pour améliorer ses modèles, sauf opt-out. Dans la
-      [console](https://console.mistral.ai/) : *Admin / Privacy* → désactiver
+      [console](https://console.mistral.ai/) : _Admin / Privacy_ → désactiver
       l'usage des données pour l'entraînement (ou passer sur un plan payant
       qui l'exclut). Vérifier les conditions à jour du plan choisi. Les pages
       légales affirment qu'**aucune donnée n'est utilisée pour
@@ -24,20 +24,21 @@ Contact pour l'exercice des droits : `contact@francetransitioncarriere.fr`
 - [ ] **Resend** : vérifier la région du compte (UE ou États-Unis) et mettre à
       jour la localisation dans `SUBPROCESSORS`.
 - [ ] **Sentry** (si `SENTRY_DSN` est défini) : organisation créée en **région EU**, stockage des IP désactivé — voir [DEPLOYMENT.md](DEPLOYMENT.md#suivi-des-erreurs-sentry).
-- [ ] **Stockage des PDF** (si `DRIVE_DISK=s3`) : bucket privé en juridiction **EU**, fournisseur (Cloudflare R2…) ajouté à `SUBPROCESSORS` — voir [DEPLOYMENT.md](DEPLOYMENT.md#stockage-des-pdf).
+- [ ] **Cloudinary** (stockage des fichiers) : région du compte (États-Unis par défaut, UE sur offre payante — issue #24) et localisation à jour dans `SUBPROCESSORS` — voir [DEPLOYMENT.md](DEPLOYMENT.md#stockage-des-fichiers-cloudinary).
 - [ ] Mentions légales (`LegalNoticePage.tsx`) : éditeur, hébergeur.
 
 ## 2. Sous-traitants et flux de données
 
-| Sous-traitant | Données | Depuis | Mesure |
-|---|---|---|---|
-| **Mistral AI** (France) | Profil (poste, résumé, compétences, expériences, formations) et réponses aux exercices | Serveur : `AnalyzeExerciseQualitativeJob` (queue `ai`) | **Pseudonymisé** : `buildEmployeeAiProfile` n'inclut ni nom ni e-mail, et `pseudonymizeForAi` remplace le nom (complet, prénom, nom) et l'e-mail par `[candidat]` dans tout le texte libre, profil **et** données d'exercice (`shared/helpers/ai/exercise_profile.ts`). |
-| **Mistral AI** (France) | **CV complet** (OCR `mistral-ocr-latest`) et son texte, pour pré-remplir le profil | Serveur : `POST /dashboard/ai/cv` (`#services/ai_assist_service`) | Non pseudonymisable : extraire nom, e-mail et parcours du CV est le but de l'import. Déclenché uniquement par l'utilisateur connecté qui importe son CV ; fichier non conservé (fichier temporaire de l'upload). |
-| **Mistral AI** (France) | Récit libre (cartographie), compétences et poste visé (ciblage) | Serveur : `POST /dashboard/ai/skill-mapping`, `/dashboard/ai/targets` | Récit **pseudonymisé** avec l'identité de l'utilisateur connecté (`pseudonymizeForAi`) ; le ciblage n'envoie aucune donnée identifiante. |
-| **Resend** | Nom, e-mail du destinataire, contenu des e-mails (invitation, notifications, formulaire de contact) | Serveur (`app/services/mail/`) | `MAIL_PROVIDER=console` en dev/test. |
-| **Hébergeur** (UE, à choisir) | Toute la base PostgreSQL, PDF générés (disque Drive : `storage/` ou bucket S3/R2) | — | Voir [hosting.md](hosting.md). |
-| **Sentry** (région EU) | Message et pile d'appels des erreurs 5xx et des jobs en échec, méthode et route, **id** de l'utilisateur | Serveur et worker (`#services/error_tracking_service`) | Actif seulement avec `SENTRY_DSN`. `scrubEvent` retire nom, e-mail, IP, cookies, corps de requête et query string ; le payload des jobs n'est jamais envoyé. |
-| **Google Fonts** | Adresse IP du visiteur | Navigateur | Auto-héberger les polices supprimerait ce transfert. |
+| Sous-traitant                          | Données                                                                                                  | Depuis                                                                        | Mesure                                                                                                                                                                                                                                                                  |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mistral AI** (France)                | Profil (poste, résumé, compétences, expériences, formations) et réponses aux exercices                   | Serveur : `AnalyzeExerciseQualitativeJob` (queue `ai`)                        | **Pseudonymisé** : `buildEmployeeAiProfile` n'inclut ni nom ni e-mail, et `pseudonymizeForAi` remplace le nom (complet, prénom, nom) et l'e-mail par `[candidat]` dans tout le texte libre, profil **et** données d'exercice (`shared/helpers/ai/exercise_profile.ts`). |
+| **Mistral AI** (France)                | **CV complet** (OCR `mistral-ocr-latest`) et son texte, pour pré-remplir le profil                       | Serveur : `POST /dashboard/ai/cv` (`#services/ai_assist_service`)             | Non pseudonymisable : extraire nom, e-mail et parcours du CV est le but de l'import. Déclenché uniquement par l'utilisateur connecté qui importe son CV ; fichier non conservé (fichier temporaire de l'upload).                                                        |
+| **Mistral AI** (France)                | Récit libre (cartographie), compétences et poste visé (ciblage)                                          | Serveur : `POST /dashboard/ai/skill-mapping`, `/dashboard/ai/targets`         | Récit **pseudonymisé** avec l'identité de l'utilisateur connecté (`pseudonymizeForAi`) ; le ciblage n'envoie aucune donnée identifiante.                                                                                                                                |
+| **Resend**                             | Nom, e-mail du destinataire, contenu des e-mails (invitation, notifications, formulaire de contact)      | Serveur (`app/services/mail/`)                                                | `MAIL_PROVIDER=console` en dev/test.                                                                                                                                                                                                                                    |
+| **Hébergeur** (UE, à choisir)          | Toute la base PostgreSQL                                                                                 | —                                                                             | Voir [hosting.md](hosting.md).                                                                                                                                                                                                                                          |
+| **Cloudinary** (États-Unis par défaut) | Synthèses PDF exportées (nom du candidat dans le contenu, jamais dans l'identifiant du fichier)          | Worker (écriture), serveur (lecture relayée) — `#services/cloudinary_service` | Fichiers **privés** (`authenticated`) : aucune URL publique, téléchargement relayé par le serveur après contrôle d'accès (URL signée de 5 min). Purge à 30 jours et à l'effacement. Voir [CLOUDINARY.md](CLOUDINARY.md).                                                |
+| **Sentry** (région EU)                 | Message et pile d'appels des erreurs 5xx et des jobs en échec, méthode et route, **id** de l'utilisateur | Serveur et worker (`#services/error_tracking_service`)                        | Actif seulement avec `SENTRY_DSN`. `scrubEvent` retire nom, e-mail, IP, cookies, corps de requête et query string ; le payload des jobs n'est jamais envoyé.                                                                                                            |
+| **Google Fonts**                       | Adresse IP du visiteur                                                                                   | Navigateur                                                                    | Auto-héberger les polices supprimerait ce transfert.                                                                                                                                                                                                                    |
 
 Règle de code : **aucun nom ni e-mail de candidat dans un prompt IA**. Tout
 nouvel appel serveur à un fournisseur IA passe ses données par
@@ -48,13 +49,13 @@ nouvel appel serveur à un fournisseur IA passe ses données par
 
 Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
 
-| Données | Durée |
-|---|---|
-| Dossier candidat (profil, exercices, notes, plan) | Accompagnement, puis 3 ans après sa fin |
-| Comptes utilisateurs des cabinets | Contrat, puis 3 ans |
-| Demandes de contact (prospection B2B) | 3 ans après le dernier contact |
-| Exports PDF générés | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`) |
-| Journaux techniques et de sécurité | 1 an |
+| Données                                           | Durée                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| Dossier candidat (profil, exercices, notes, plan) | Accompagnement, puis 3 ans après sa fin                            |
+| Comptes utilisateurs des cabinets                 | Contrat, puis 3 ans                                                |
+| Demandes de contact (prospection B2B)             | 3 ans après le dernier contact                                     |
+| Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`) |
+| Journaux techniques et de sécurité                | 1 an                                                               |
 
 Seuls les exports PDF sont purgés automatiquement. Pour le reste, il n'existe **pas encore de purge automatique** : à l'échéance, appliquer la
 procédure d'effacement ci-dessous (ou le SQL du §5 pour les demandes de
@@ -106,8 +107,8 @@ Suppression **définitive**, en une transaction :
   supprimé par cette commande ;
 - les notifications des conseillers qui portent sur ce candidat
   (`meta.employeeId`, leur titre contient son nom) ;
-- après validation de la transaction, les PDF générés sur le disque Drive
-  (`pdf_exports.file_path`, local ou S3).
+- après validation de la transaction, les PDF générés sur Cloudinary
+  (`pdf_exports.file_path`, supprimés avec invalidation du cache CDN).
 
 Restent hors de portée de la commande, à traiter à la main si nécessaire :
 les **sauvegardes** de la base (l'effacement y devient effectif à leur

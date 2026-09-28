@@ -52,19 +52,13 @@ envVarGroups:
       - key: MISTRAL_MODEL
         value: mistral-small-latest
 
-      # Stockage des PDF (config/drive.ts) : web et worker sont deux services sans
-      # disque commun, donc bucket S3 compatible (Cloudflare R2, juridiction EU).
-      - key: DRIVE_DISK
-        value: s3
-      - key: S3_REGION
-        value: auto
-      - key: S3_BUCKET
+      # Stockage des fichiers (config/cloudinary.ts) : web et worker sont deux
+      # services sans disque commun. Requis en production.
+      - key: CLOUDINARY_CLOUD_NAME
         sync: false
-      - key: S3_ENDPOINT
+      - key: CLOUDINARY_API_KEY
         sync: false
-      - key: S3_ACCESS_KEY_ID
-        sync: false
-      - key: S3_SECRET_ACCESS_KEY
+      - key: CLOUDINARY_API_SECRET
         sync: false
 
       # Suivi des erreurs (Sentry, région EU). Release = RENDER_GIT_COMMIT (fourni par Render).

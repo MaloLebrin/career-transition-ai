@@ -51,9 +51,9 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       const bytes = await pdfService.generateShareablePdf({ payload })
 
       const fileName = `Synthese_${employee.name.replace(/\s+/g, '_')}_${pdfExport.id}.pdf`
-      // Clé relative sur le disque Drive (local ou S3) : lisible par le web
-      // même quand le worker tourne sur une autre machine.
-      const key = pdfExportKey(pdfExport.id)
+      // `public_id` Cloudinary : lisible par le web même quand le worker
+      // tourne sur une autre machine.
+      const key = pdfExportKey(pdfExport.organizationId!, pdfExport.id)
       const size = await storePdf(key, bytes)
 
       pdfExport.filePath = key

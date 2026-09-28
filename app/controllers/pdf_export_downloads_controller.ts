@@ -49,8 +49,8 @@ export default class PdfExportDownloadsController {
       return ctx.response.notFound()
     }
 
-    // Lu depuis le disque Drive (local ou S3) : le fichier a pu être écrit par
-    // le worker sur une autre machine.
+    // Relayé depuis Cloudinary (URL signée côté serveur, jamais transmise au
+    // navigateur) : le fichier a pu être écrit par le worker sur une autre machine.
     const stream = await readPdfStream(key)
     if (!stream) {
       return ctx.response.notFound('Le fichier PDF est introuvable sur le serveur.')

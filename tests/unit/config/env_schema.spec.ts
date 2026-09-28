@@ -1,3 +1,4 @@
+import { missingCloudinaryEnv } from '#config/cloudinary'
 import queueConfig from '#config/queue'
 import { envSchema } from '#start/env_schema'
 import { EnvParser } from '@adonisjs/core/env'
@@ -101,15 +102,22 @@ for (const file of ['.env.production.example', 'deploy/.env.example']) {
       assert.isString(parsed.MAIL_FROM_EMAIL)
       assert.isNotEmpty(parsed.MAIL_FROM_EMAIL)
     })
+
+    test('fournit les identifiants Cloudinary exigés au démarrage', async ({ assert }) => {
+      const { parsed } = validate(await parseEnvFile(file))
+      assert.deepEqual(
+        missingCloudinaryEnv((name) => parsed[name] as string | undefined),
+        []
+      )
+    })
   })
 }
 
 test.group('Env — deploy/.env.example (compose)', () => {
-  test('Postgres du compose sans TLS, PDF sur S3 (aucun volume)', async ({ assert }) => {
+  test('Postgres du compose sans TLS, file d’attente en base', async ({ assert }) => {
     const { parsed } = validate(await parseEnvFile('deploy/.env.example'))
     assert.equal(parsed.DB_HOST, 'postgres')
     assert.equal(parsed.DB_SSL, false)
-    assert.equal(parsed.DRIVE_DISK, 's3')
     assert.equal(parsed.QUEUE_DRIVER, 'database')
   })
 })

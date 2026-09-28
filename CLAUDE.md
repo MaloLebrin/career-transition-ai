@@ -98,7 +98,7 @@ scripts/
   ci_test_shards.mjs  # génère la matrice de shards du job test-backend (CI)
   smoke_prod_build.mjs  # test de fumée du build de prod (job smoke-prod-build, CI)
   smoke_compose_prod.sh # test de fumée du compose de prod (job docker-image, CI)
-deploy/           # compose de production (Caddy, migrate/seed, backup.sh) — PDF sur S3/R2, aucun volume app/worker
+deploy/           # compose de production (Caddy, migrate/seed, backup.sh) — fichiers sur Cloudinary, aucun volume app/worker
 start/
   routes/         # fichiers de routes par domaine
   kernel.ts       # middlewares nommés
@@ -275,7 +275,7 @@ Jobs existants :
 
 Suivi des erreurs : Sentry si `SENTRY_DSN` (`config/error_tracking.ts`, `#services/error_tracking_service`) — 5xx via `HttpExceptionHandler.report()`, jobs en échec définitif via `watchQueueFailures`. Envoyer par `reportError` (utilisateur = id seulement), jamais `Sentry.*` directement. Vérif : `node ace error-tracking:test`.
 
-Fichiers générés (PDF) : via Drive (`config/drive.ts`, `DRIVE_DISK=fs|s3`) et `#services/pdf_storage_service` — clé relative `exports/…` en base, jamais de chemin absolu ni de `node:fs` direct ; en test `drive.fake()` / `drive.restore()`. Purge nocturne `PurgeExpiredPdfExportsJob` (`start/scheduler.ts`).
+Fichiers (PDF) : Cloudinary est le seul stockage (`config/cloudinary.ts`, `#services/cloudinary_service`, `docs/CLOUDINARY.md`) — `public_id` dérivé d'ids (jamais de nom de candidat), fichiers candidat privés (`authenticated`, téléchargement relayé par le serveur), jamais de disque local ni de `node:fs` ; exports via `#services/pdf_storage_service`. En test : `swapFakeCloudinary()` / `restoreCloudinary()` (`#tests/support/fake_cloudinary`), aucun appel réseau. Garde `tests/unit/hygiene/file_storage.spec.ts` (ni Drive ni S3). Purge nocturne `PurgeExpiredPdfExportsJob` (`start/scheduler.ts`).
 
 Variables d'env : déclarées dans `start/env_schema.ts` (+ `.env.example`, validé par `tests/unit/config/env_schema.spec.ts`), lues via `env.get` (`#start/env`) — jamais `process.env` dans `app/`, `config/`, `database/`, `start/` ; `NODE_ENV` via `app.inProduction`/`app.inTest`. En test : `overrideEnv`/`withEnv` (`#tests/utils/env`).
 

@@ -1,11 +1,7 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import PrivacyPolicy from '../../../inertia/pages/PrivacyPolicy'
-import {
-  PRIVACY_CONTACT_EMAIL,
-  RETENTION_PERIODS,
-  SUBPROCESSORS,
-} from '#shared/constants/legal'
+import { PRIVACY_CONTACT_EMAIL, RETENTION_PERIODS, SUBPROCESSORS } from '#shared/constants/legal'
 
 vi.mock('@inertiajs/react', () => ({
   Head: ({ children }: { title?: string; children?: React.ReactNode }) => <>{children}</>,
@@ -47,6 +43,8 @@ describe('PrivacyPolicy page', () => {
     }
     expect(screen.getByText('Mistral AI')).toBeInTheDocument()
     expect(screen.getByText('Resend')).toBeInTheDocument()
+    // Stockage des exports PDF (issue #49).
+    expect(screen.getByText('Cloudinary')).toBeInTheDocument()
   })
 
   test('affiche les durées de conservation', () => {

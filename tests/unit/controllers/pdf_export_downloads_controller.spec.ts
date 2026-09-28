@@ -8,7 +8,7 @@ import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
-import drive from '@adonisjs/drive/services/main'
+import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import type { Readable } from 'node:stream'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ function makeCtx(overrides: Partial<any> = {}) {
       badRequest: (_msg?: string) => ({ status: 400 }),
       notFound: () => ({ status: 404 }),
       header: () => {},
-      // Consomme le flux avant que le disque factice soit nettoyé.
+      // Consomme le flux avant que le Cloudinary factice soit restauré.
       stream: async (stream: Readable) => {
         await drain(stream)
         return { status: 200 }
@@ -43,9 +43,9 @@ async function drain(stream: Readable): Promise<string> {
   return Buffer.concat(chunks).toString()
 }
 
-/** PDF déposé sur le disque Drive factice ; renvoie sa clé. */
+/** PDF déposé dans le Cloudinary factice ; renvoie sa clé. */
 async function createFakePdfFile(): Promise<string> {
-  const key = pdfExportKey(1_000_000 + ++pdfCounter)
+  const key = pdfExportKey(1, 1_000_000 + ++pdfCounter)
   await storePdf(key, new TextEncoder().encode('%PDF-1.4 fake'))
   return key
 }
@@ -107,8 +107,8 @@ async function seedCompletedExport(
 test.group('PdfExportDownloadsController.show — acces non authentifie', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('retourne 401 si aucun utilisateur authentifie', async ({ assert }) => {
@@ -130,8 +130,8 @@ test.group('PdfExportDownloadsController.show — acces non authentifie', (group
 test.group('PdfExportDownloadsController.show — export non complete', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('retourne 400 si le statut est pending', async ({ assert }) => {
@@ -179,8 +179,8 @@ test.group('PdfExportDownloadsController.show — export non complete', (group) 
 test.group('PdfExportDownloadsController.show — acces admin', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('admin de la meme orga peut telecharger', async ({ assert }) => {
@@ -218,8 +218,8 @@ test.group('PdfExportDownloadsController.show — acces admin', (group) => {
 test.group('PdfExportDownloadsController.show — acces super admin', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('super admin peut telecharger nimporte quel export', async ({ assert }) => {
@@ -243,8 +243,8 @@ test.group('PdfExportDownloadsController.show — acces super admin', (group) =>
 test.group('PdfExportDownloadsController.show — acces candidat', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   test('candidat peut telecharger son propre export', async ({ assert }) => {
@@ -282,13 +282,13 @@ test.group('PdfExportDownloadsController.show — acces candidat', (group) => {
   })
 })
 
-// ─── tests : lecture depuis le stockage Drive (issue #21) ─────────────────────
+// ─── tests : lecture depuis Cloudinary (issue #49) ──────────────────────────
 
 test.group('PdfExportDownloadsController.show — stockage', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => {
-    drive.fake()
-    return () => drive.restore()
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
   })
 
   async function adminWithExport(prefix: string, filePath: string) {
@@ -327,7 +327,7 @@ test.group('PdfExportDownloadsController.show — stockage', (group) => {
 
   test('clé absente du stockage : 404', async ({ assert }) => {
     const controller = new PdfExportDownloadsController()
-    const { adminUser, pdfExport } = await adminWithExport('dl-missing', pdfExportKey(987_654))
+    const { adminUser, pdfExport } = await adminWithExport('dl-missing', pdfExportKey(1, 987_654))
 
     const ctx = makeCtx({ auth: { user: adminUser }, params: { id: String(pdfExport.id) } })
     const result = await controller.show(ctx as any)
