@@ -15,3 +15,16 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
 
 /** Description de l’option « tous les rôles » dans un filtre. */
 export const ROLE_FILTER_ALL_DESCRIPTION = 'Affiche tous les comptes sans filtrer par type de rôle.'
+
+/**
+ * Rôles qu’un super admin peut attribuer (création et changement de rôle) :
+ * jamais `super_admin`, qui ne s’attribue pas depuis l’interface.
+ */
+export const SUPER_ADMIN_ASSIGNABLE_ROLES = [
+  USERS_ROLES.ADVISOR,
+  USERS_ROLES.ADMIN,
+  USERS_ROLES.EXPERT,
+  USERS_ROLES.EMPLOYEE,
+] as const satisfies readonly UserRole[]
+
+export type SuperAdminAssignableRole = (typeof SUPER_ADMIN_ASSIGNABLE_ROLES)[number]

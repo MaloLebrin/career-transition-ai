@@ -1,12 +1,11 @@
 import { useForm } from '@inertiajs/react'
 import React, { useCallback, useEffect } from 'react'
+import { SUPER_ADMIN_ASSIGNABLE_ROLES } from '#shared/constants/roles'
 import { ROLE_LABELS } from '#shared/helpers/roles'
 import type { UserRole } from '#shared/types/advisor/roles'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
-
-const SUPER_ADMIN_CREATABLE_ROLES = ['advisor', 'admin', 'expert', 'employee'] as const satisfies readonly UserRole[]
 
 interface OrganizationOption {
   id: number
@@ -66,9 +65,9 @@ export const CreateUserModal: React.FC<Props> = ({ isOpen, onClose, organization
 
   const canSubmit = Boolean(
     String(data.organizationId).trim() &&
-      data.name.trim() &&
-      data.email.trim() &&
-      organizations.length > 0
+    data.name.trim() &&
+    data.email.trim() &&
+    organizations.length > 0
   )
 
   return (
@@ -138,7 +137,9 @@ export const CreateUserModal: React.FC<Props> = ({ isOpen, onClose, organization
                 ))}
               </select>
               {errors.organizationId && (
-                <p className="text-[10px] font-bold text-rose-500 mt-1 px-2">{errors.organizationId}</p>
+                <p className="text-[10px] font-bold text-rose-500 mt-1 px-2">
+                  {errors.organizationId}
+                </p>
               )}
             </div>
 
@@ -169,7 +170,7 @@ export const CreateUserModal: React.FC<Props> = ({ isOpen, onClose, organization
                 onChange={(e) => setData('role', e.target.value as UserRole)}
                 className="w-full border border-brand-navy/10 rounded-2xl text-sm px-4 py-3 text-brand-navy bg-white outline-none focus:ring-2 focus:ring-brand-sage/30"
               >
-                {SUPER_ADMIN_CREATABLE_ROLES.map((r) => (
+                {SUPER_ADMIN_ASSIGNABLE_ROLES.map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABELS[r]}
                   </option>

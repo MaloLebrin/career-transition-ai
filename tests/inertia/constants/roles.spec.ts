@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { ROLE_DESCRIPTIONS, ROLE_FILTER_ALL_DESCRIPTION } from '#shared/constants/roles'
+import {
+  ROLE_DESCRIPTIONS,
+  ROLE_FILTER_ALL_DESCRIPTION,
+  SUPER_ADMIN_ASSIGNABLE_ROLES,
+} from '#shared/constants/roles'
 import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
 import { expectConsistentEnum } from './enum_contract.js'
 
@@ -30,5 +34,11 @@ describe('shared/constants/roles', () => {
   test('la description du super admin évoque l’administration globale', () => {
     expect(ROLE_DESCRIPTIONS[USERS_ROLES.SUPER_ADMIN]).toMatch(/globale/)
     expect(ROLE_DESCRIPTIONS[USERS_ROLES.ADMIN]).toMatch(/organisation/)
+  })
+
+  test('rôles attribuables par le super admin : tous sauf super_admin', () => {
+    expect([...SUPER_ADMIN_ASSIGNABLE_ROLES].sort()).toEqual(
+      userRolesValues.filter((r) => r !== USERS_ROLES.SUPER_ADMIN).sort()
+    )
   })
 })
