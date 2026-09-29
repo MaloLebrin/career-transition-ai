@@ -26,16 +26,23 @@ class FakeNotificationService {
 }
 
 function makeResponse() {
-  return {
-    noContentCalled: false,
-    noContent() {
-      this.noContentCalled = true
+  const response = {
+    redirectedBack: false,
+    redirect() {
+      return {
+        back() {
+          response.redirectedBack = true
+        },
+      }
     },
   }
+  return response
 }
 
 test.group('NotificationsController.markAsRead', () => {
-  test("marque la notification comme lue pour l'utilisateur connecté (204)", async ({ assert }) => {
+  test("marque la notification comme lue pour l'utilisateur connecté (redirection vers la page courante)", async ({
+    assert,
+  }) => {
     const service = new FakeNotificationService()
     const controller = new NotificationsController(service as any)
     const response = makeResponse()
@@ -43,10 +50,10 @@ test.group('NotificationsController.markAsRead', () => {
     await controller.markAsRead({ auth: { user: USER }, params: { id: '8' }, response } as any)
 
     assert.deepEqual(service.markAsReadCalls, [{ notificationId: 8, userId: USER.id }])
-    assert.isTrue(response.noContentCalled)
+    assert.isTrue(response.redirectedBack)
   })
 
-  test("propage l'erreur du service sans répondre 204", async ({ assert }) => {
+  test("propage l'erreur du service sans rediriger", async ({ assert }) => {
     const service = new FakeNotificationService()
     service.error = new Error('db down')
     const controller = new NotificationsController(service as any)
@@ -56,12 +63,14 @@ test.group('NotificationsController.markAsRead', () => {
       () => controller.markAsRead({ auth: { user: USER }, params: { id: '8' }, response } as any),
       'db down'
     )
-    assert.isFalse(response.noContentCalled)
+    assert.isFalse(response.redirectedBack)
   })
 })
 
 test.group('NotificationsController.markAllAsRead', () => {
-  test("marque toutes les notifications de l'utilisateur connecté (204)", async ({ assert }) => {
+  test("marque toutes les notifications de l'utilisateur connecté (redirection vers la page courante)", async ({
+    assert,
+  }) => {
     const service = new FakeNotificationService()
     const controller = new NotificationsController(service as any)
     const response = makeResponse()
@@ -69,10 +78,10 @@ test.group('NotificationsController.markAllAsRead', () => {
     await controller.markAllAsRead({ auth: { user: USER }, response } as any)
 
     assert.deepEqual(service.markAllAsReadCalls, [USER.id])
-    assert.isTrue(response.noContentCalled)
+    assert.isTrue(response.redirectedBack)
   })
 
-  test("propage l'erreur du service sans répondre 204", async ({ assert }) => {
+  test("propage l'erreur du service sans rediriger", async ({ assert }) => {
     const service = new FakeNotificationService()
     service.error = new Error('db down')
     const controller = new NotificationsController(service as any)
@@ -82,6 +91,6 @@ test.group('NotificationsController.markAllAsRead', () => {
       () => controller.markAllAsRead({ auth: { user: USER }, response } as any),
       'db down'
     )
-    assert.isFalse(response.noContentCalled)
+    assert.isFalse(response.redirectedBack)
   })
 })

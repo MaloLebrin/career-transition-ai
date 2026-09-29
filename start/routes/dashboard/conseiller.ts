@@ -14,7 +14,8 @@ router
      * General routes
      */
     router.get('/', [DashboardController, 'advisorHome'])
-    router.on('/profile').renderInertia('dashboard/conseiller/profile/Home', {}) // TODO put in his controller
+    // Le profil (nom, e-mail, mot de passe) se modifie dans les réglages.
+    router.get('/profile', ({ response }) => response.redirect('/dashboard/conseiller/settings'))
     router.put('/profile', [AuthController, 'updateFromDashboard'])
     router.get('/pdf-exports', [PdfExportsController, 'index']).as('pdf_exports.index')
 

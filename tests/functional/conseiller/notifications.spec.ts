@@ -1,7 +1,8 @@
 import { NotificationFactory } from '#database/factories/notification_factory'
 import Notification from '#models/notification'
 import { NOTIFICATION_STATUSES } from '#shared/constants/notifications'
-import { createAdvisor, createCandidate } from '#tests/support/actors'
+import { createAdvisor, createCandidate, createSuperAdmin, createUser } from '#tests/support/actors'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
 
@@ -10,8 +11,11 @@ import { test } from '@japa/runner'
  * - PATCH /dashboard/notifications/:id/read
  * - PATCH /dashboard/notifications/read-all
  *
- * Endpoints JSON (appelés hors Inertia) : 204 sans corps.
+ * Appelés par la cloche via `router.patch` (Inertia) : redirection vers la page
+ * courante. Rôles : `receivesNotifications()` (advisor, admin, super admin).
  */
+const PAGE = '/dashboard/conseiller'
+
 function unread(userId: number) {
   return NotificationFactory.merge({
     userId,
@@ -30,9 +34,13 @@ test.group('Conseiller — notifications', (group) => {
 
     const response = await client
       .patch(`/dashboard/notifications/${notification.id}/read`)
+      .header('referer', PAGE)
       .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
 
-    response.assertStatus(204)
+    response.assertStatus(303)
+    response.assertHeader('location', PAGE)
     await notification.refresh()
     assert.equal(notification.status, NOTIFICATION_STATUSES.READ)
     assert.isNotNull(notification.readAt)
@@ -47,10 +55,14 @@ test.group('Conseiller — notifications', (group) => {
 
     const response = await client
       .patch(`/dashboard/notifications/${foreign.id}/read`)
+      .header('referer', PAGE)
       .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
 
     // Pas de fuite d'existence : même réponse que pour sa propre notification
-    response.assertStatus(204)
+    response.assertStatus(303)
+    response.assertHeader('location', PAGE)
     await foreign.refresh()
     assert.equal(foreign.status, NOTIFICATION_STATUSES.UNREAD)
     assert.isNull(foreign.readAt)
@@ -66,14 +78,54 @@ test.group('Conseiller — notifications', (group) => {
     await unread(advisor.id)
     const foreign = await unread(other.id)
 
-    const response = await client.patch('/dashboard/notifications/read-all').loginAs(advisor)
+    const response = await client
+      .patch('/dashboard/notifications/read-all')
+      .header('referer', PAGE)
+      .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
 
-    response.assertStatus(204)
+    response.assertStatus(303)
+    response.assertHeader('location', PAGE)
     const mine = await Notification.query().where('userId', advisor.id)
     assert.lengthOf(mine, 2)
     assert.isTrue(mine.every((n) => n.status === NOTIFICATION_STATUSES.READ && n.readAt !== null))
     await foreign.refresh()
     assert.equal(foreign.status, NOTIFICATION_STATUSES.UNREAD)
+  })
+
+  test('le super admin marque ses notifications comme lues (même rôles que la cloche)', async ({
+    client,
+    assert,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const notification = await unread(superAdmin.id)
+
+    const response = await client
+      .patch(`/dashboard/notifications/${notification.id}/read`)
+      .header('referer', '/dashboard/super-admin')
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(303)
+    response.assertHeader('location', '/dashboard/super-admin')
+    await notification.refresh()
+    assert.equal(notification.status, NOTIFICATION_STATUSES.READ)
+  })
+
+  test("un expert, qui n'a pas de cloche, est refusé (403)", async ({ client, assert }) => {
+    const expert = await createUser(USERS_ROLES.EXPERT)
+    const notification = await unread(expert.id)
+
+    const response = await client
+      .patch(`/dashboard/notifications/${notification.id}/read`)
+      .loginAs(expert)
+      .redirects(0)
+
+    response.assertStatus(403)
+    await notification.refresh()
+    assert.equal(notification.status, NOTIFICATION_STATUSES.UNREAD)
   })
 
   test('un candidat est refusé par le middleware (403)', async ({ client, assert }) => {

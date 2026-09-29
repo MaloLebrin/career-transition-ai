@@ -1,24 +1,25 @@
 import User from '#models/user'
 import { createAdvisor } from '#tests/support/actors'
-import { assertPage } from '#tests/support/inertia_page'
 import { inertiaErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
 
 /**
- * Profil du conseiller connecté : GET/PUT /dashboard/conseiller/profile
+ * Profil du conseiller connecté : GET (redirection vers les réglages) / PUT
+ * /dashboard/conseiller/profile
  */
 const PROFILE = '/dashboard/conseiller/profile'
 
 test.group('Conseiller — profil', (group) => {
   group.each.setup(() => truncateDb())
 
-  test('rend la page profil', async ({ client, assert }) => {
+  test('redirige vers les réglages, où se modifie le profil (#69)', async ({ client }) => {
     const advisor = await createAdvisor()
 
-    const response = await client.get(PROFILE).loginAs(advisor).withInertia()
+    const response = await client.get(PROFILE).loginAs(advisor).redirects(0)
 
-    assertPage(assert, response, 'dashboard/conseiller/profile/Home')
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/conseiller/settings')
   })
 
   test('met à jour le nom et l’email puis redirige vers les paramètres', async ({

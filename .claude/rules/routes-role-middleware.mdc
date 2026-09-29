@@ -17,7 +17,8 @@ alwaysApply: false
 - `middleware.auth()` — utilisateur connecté (sinon redirection login).
 - `middleware.superAdmin()` — super admin uniquement (`#middleware/super_admin_middleware`, helper `isSuperAdmin`).
 - `middleware.admin()` — admin ou super admin.
-- `middleware.advisorOrAdmin()` — advisor, admin ou super admin.
+- `middleware.advisorOrAdmin()` — advisor, admin ou expert (`isConseillerDashboardRole`, super admin **exclu** : il a son espace dédié).
+- `middleware.notificationRecipient()` — rôles qui reçoivent des notifications (`receivesNotifications` : advisor, admin, super admin), mêmes rôles que la cloche.
 - `middleware.candidate()` — parcours candidat.
 - `middleware.guest()` — invité uniquement.
 - `middleware.checkOnboarding()` — onboarding selon les règles du projet.

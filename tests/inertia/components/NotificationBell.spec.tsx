@@ -9,7 +9,13 @@ const { mockRouterPatch } = vi.hoisted(() => ({
 vi.mock('@inertiajs/react', () => ({
   usePage: vi.fn(() => ({
     props: {
-      user: { id: 1, role: 'advisor', name: 'Advisor', email: 'advisor@example.com', organizationId: 1 },
+      user: {
+        id: 1,
+        role: 'advisor',
+        name: 'Advisor',
+        email: 'advisor@example.com',
+        organizationId: 1,
+      },
       notifications: [],
       unreadNotificationsCount: 0,
     },
@@ -75,7 +81,16 @@ describe('NotificationBell', () => {
       props: {
         user: { id: 1, role: 'advisor', name: 'Advisor', email: 'a@a.com', organizationId: 1 },
         notifications: [
-          { id: 1, type: 'exercise_completed', status: 'unread', title: 'Test notif', body: null, meta: null, readAt: null, createdAt: new Date().toISOString() },
+          {
+            id: 1,
+            type: 'exercise_completed',
+            status: 'unread',
+            title: 'Test notif',
+            body: null,
+            meta: null,
+            readAt: null,
+            createdAt: new Date().toISOString(),
+          },
         ],
         unreadNotificationsCount: 1,
       },
@@ -88,15 +103,43 @@ describe('NotificationBell', () => {
     expect(mockRouterPatch).toHaveBeenCalledWith(
       '/dashboard/notifications/read-all',
       {},
-      { preserveState: true }
+      { preserveState: true, preserveScroll: true }
     )
   })
 
-  test("ne rend rien pour le rôle employee", async () => {
+  test('ne rend rien pour le rôle employee', async () => {
     const { usePage } = await import('@inertiajs/react')
     vi.mocked(usePage).mockReturnValue({
       props: {
         user: { id: 2, role: 'employee', name: 'Candidate', email: 'c@c.com', organizationId: 1 },
+        notifications: [],
+        unreadNotificationsCount: 0,
+      },
+    } as any)
+
+    const { container } = render(<NotificationBell />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  test('affiche la cloche pour le super admin', async () => {
+    const { usePage } = await import('@inertiajs/react')
+    vi.mocked(usePage).mockReturnValue({
+      props: {
+        user: { id: 3, role: 'super_admin', name: 'Root', email: 'r@r.com', organizationId: null },
+        notifications: [],
+        unreadNotificationsCount: 0,
+      },
+    } as any)
+
+    render(<NotificationBell />)
+    expect(screen.getByTitle('Notifications')).toBeInTheDocument()
+  })
+
+  test('ne rend rien pour le rôle expert (routes refusées)', async () => {
+    const { usePage } = await import('@inertiajs/react')
+    vi.mocked(usePage).mockReturnValue({
+      props: {
+        user: { id: 4, role: 'expert', name: 'Expert', email: 'e@e.com', organizationId: 1 },
         notifications: [],
         unreadNotificationsCount: 0,
       },

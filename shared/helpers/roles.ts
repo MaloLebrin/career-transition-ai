@@ -17,7 +17,15 @@ export function isAdvisorOrAdmin(role: UserRole | undefined | null): boolean {
   return role === USERS_ROLES.ADVISOR || isAdmin(role)
 }
 
-export function isSuperAdmin(role: UserRole): boolean {
+/**
+ * Roles that receive notifications: the bell, the `notifications` Inertia
+ * props and the `/dashboard/notifications/*` routes all rely on this helper.
+ */
+export function receivesNotifications(role: UserRole | undefined | null): boolean {
+  return isAdvisorOrAdmin(role)
+}
+
+export function isSuperAdmin(role: UserRole | undefined | null): boolean {
   return role === USERS_ROLES.SUPER_ADMIN
 }
 

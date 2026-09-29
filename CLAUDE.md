@@ -117,16 +117,17 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 
 ## Middlewares disponibles (start/kernel.ts)
 
-| Middleware                      | Rôle                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------- |
-| `middleware.auth()`             | Utilisateur connecté                                                             |
-| `middleware.guest()`            | Invité uniquement                                                                |
-| `middleware.superAdmin()`       | Super admin uniquement                                                           |
-| `middleware.admin()`            | Admin ou super admin                                                             |
-| `middleware.advisorOrAdmin()`   | Advisor, admin ou super admin                                                    |
-| `middleware.candidate()`        | Candidat                                                                         |
-| `middleware.checkOnboarding()`  | Vérification onboarding                                                          |
-| `middleware.registrationOpen()` | Inscription publique ouverte (`REGISTRATION_ENABLED`, fermée par défaut en prod) |
+| Middleware                           | Rôle                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------- |
+| `middleware.auth()`                  | Utilisateur connecté                                                                |
+| `middleware.guest()`                 | Invité uniquement                                                                   |
+| `middleware.superAdmin()`            | Super admin uniquement                                                              |
+| `middleware.admin()`                 | Admin ou super admin                                                                |
+| `middleware.advisorOrAdmin()`        | Advisor, admin ou expert (super admin exclu : espace dédié)                         |
+| `middleware.notificationRecipient()` | Destinataires de notifications (`receivesNotifications`, mêmes rôles que la cloche) |
+| `middleware.candidate()`             | Candidat                                                                            |
+| `middleware.checkOnboarding()`       | Vérification onboarding                                                             |
+| `middleware.registrationOpen()`      | Inscription publique ouverte (`REGISTRATION_ENABLED`, fermée par défaut en prod)    |
 
 Ordre standard : `auth()` → middleware de rôle.
 

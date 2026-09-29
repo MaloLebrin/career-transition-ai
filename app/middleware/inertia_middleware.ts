@@ -3,6 +3,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import Employee from '#models/employee'
 import { NotificationService } from '#services/notification_service'
+import { receivesNotifications } from '#shared/helpers/roles'
 import config from '@adonisjs/core/services/config'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
@@ -34,7 +35,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 
     let notifications: any[] = []
     let unreadNotificationsCount = 0
-    if (user && ['advisor', 'admin', 'super_admin'].includes(user.role)) {
+    if (user && receivesNotifications(user.role)) {
       const notifService = new NotificationService()
       notifications = await notifService.getRecentForUser(user.id, 20)
       unreadNotificationsCount = notifications.filter((n: any) => n.status === 'unread').length
