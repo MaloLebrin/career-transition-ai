@@ -55,12 +55,12 @@ describe('role helpers (inertia)', () => {
     expect(isConseillerDashboardRole(null)).toBe(false)
   })
 
-  test('receivesNotifications: advisor, admin and super_admin (bell and routes)', () => {
+  test('receivesNotifications: advisor, admin, super_admin and candidates (bell and routes)', () => {
     expect(receivesNotifications('advisor')).toBe(true)
     expect(receivesNotifications('admin')).toBe(true)
     expect(receivesNotifications('super_admin')).toBe(true)
+    expect(receivesNotifications('employee')).toBe(true)
     expect(receivesNotifications('expert')).toBe(false)
-    expect(receivesNotifications('employee')).toBe(false)
     expect(receivesNotifications(undefined)).toBe(false)
     expect(receivesNotifications(null)).toBe(false)
   })

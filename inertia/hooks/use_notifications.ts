@@ -1,3 +1,5 @@
+import { NOTIFICATION_STATUSES } from '#shared/constants/notifications'
+import { notificationHref } from '#shared/helpers/notification_links'
 import { Transmit } from '@adonisjs/transmit-client'
 import { router, usePage } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
@@ -58,5 +60,20 @@ export function useNotifications() {
     )
   }
 
-  return { notifications, unreadCount, markAsRead, markAllAsRead }
+  /** Ouvre la page liée (`meta.href`, #70), après l'avoir marquée comme lue. */
+  const openNotification = (notification: NotificationItem) => {
+    const href = notificationHref(notification.meta)
+    if (!href) return
+    if (notification.status !== NOTIFICATION_STATUSES.UNREAD) {
+      router.visit(href)
+      return
+    }
+    router.patch(
+      `/dashboard/notifications/${notification.id}/read`,
+      {},
+      { preserveScroll: true, onFinish: () => router.visit(href) }
+    )
+  }
+
+  return { notifications, unreadCount, markAsRead, markAllAsRead, openNotification }
 }

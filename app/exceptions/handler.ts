@@ -56,6 +56,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_SUPER_ADMIN_ROLE_LOCKED',
     'E_INVALID_CURRENT_PASSWORD',
     'E_INVALID_PASSWORD_RESET_TOKEN',
+    'E_CANDIDATE_PROFILE_NOT_FOUND',
+    'E_ERASURE_ALREADY_REQUESTED',
   ]
 
   /**

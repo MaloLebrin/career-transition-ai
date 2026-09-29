@@ -1,10 +1,13 @@
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { Head, usePage } from '@inertiajs/react'
+import type { CandidateDataRights } from '#shared/types/candidate_data/requests'
 import type { CandidateDocumentDto } from '#shared/types/media/documents'
 import NotesSection from '~/components/dashboard/NotesSection'
 import { CandidateDocuments } from '~/components/dashboard/employee/profile/documents/CandidateDocuments'
 import { Skills } from '~/components/dashboard/employee/profile/Skills'
+import { DataRights } from '~/components/dashboard/employee/profile/data_rights/DataRights'
+import { IdentityForm } from '~/components/dashboard/employee/profile/identity/IdentityForm'
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
 import type { Note } from '~/types/note'
@@ -29,6 +32,8 @@ interface EmployeeProfileProps {
   documents?: CandidateDocumentDto[]
   /** Base des routes de documents : espace candidat ou fiche conseiller. */
   documentsBaseUrl?: string
+  /** Droits RGPD (#70) : fourni seulement sur le profil du candidat connecté. */
+  dataRights?: CandidateDataRights | null
 }
 
 export default function EmployeeProfile({
@@ -38,6 +43,7 @@ export default function EmployeeProfile({
   notes = [],
   documents = [],
   documentsBaseUrl,
+  dataRights = null,
 }: EmployeeProfileProps) {
   const { url } = usePage()
   const { user } = useAuth()
@@ -141,6 +147,15 @@ export default function EmployeeProfile({
           </div>
         </Card>
 
+        {isOwnProfile && (
+          <Card className="p-10 space-y-6">
+            <h2 className="text-sm font-bold text-brand-navy uppercase tracking-[0.2em]">
+              Mon identité
+            </h2>
+            <IdentityForm employee={employee} />
+          </Card>
+        )}
+
         {employee.summary && (
           <div className="bg-brand-sage/5 p-10 rounded-[40px] border border-brand-sage/10">
             <h2 className="text-sm font-bold text-brand-sage uppercase tracking-[0.2em] mb-6">
@@ -166,6 +181,15 @@ export default function EmployeeProfile({
               Mot de passe
             </h2>
             <PasswordForm />
+          </Card>
+        )}
+
+        {isOwnProfile && dataRights && (
+          <Card className="p-10 space-y-6">
+            <h2 className="text-sm font-bold text-brand-navy uppercase tracking-[0.2em]">
+              Mes données
+            </h2>
+            <DataRights rights={dataRights} />
           </Card>
         )}
 

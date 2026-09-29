@@ -6,11 +6,17 @@ import { USERS_ROLES } from '#shared/types/advisor/roles'
 const FORBIDDEN = { message: 'Accès réservé aux destinataires de notifications.' }
 
 /**
- * Mêmes rôles que la cloche (`receivesNotifications()`) : advisor, admin et
- * super admin. Le super admin y est inclus, contrairement à `advisorOrAdmin()`.
+ * Mêmes rôles que la cloche (`receivesNotifications()`) : advisor, admin,
+ * super admin et candidat (#70). Le super admin y est inclus, contrairement à
+ * `advisorOrAdmin()` ; l'expert reste exclu.
  */
 test.group('NotificationRecipientMiddleware', () => {
-  for (const role of [USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.SUPER_ADMIN]) {
+  for (const role of [
+    USERS_ROLES.ADVISOR,
+    USERS_ROLES.ADMIN,
+    USERS_ROLES.SUPER_ADMIN,
+    USERS_ROLES.EMPLOYEE,
+  ]) {
     test(`laisse passer le rôle ${role}`, async ({ assert }) => {
       const { ctx, forbidden } = makeCtx({ user: { id: 1, role } })
       const { next, calls } = makeNext()
@@ -32,7 +38,7 @@ test.group('NotificationRecipientMiddleware', () => {
     assert.deepEqual(forbidden, [FORBIDDEN])
   })
 
-  for (const role of [USERS_ROLES.EXPERT, USERS_ROLES.EMPLOYEE]) {
+  for (const role of [USERS_ROLES.EXPERT]) {
     test(`refuse le rôle ${role}`, async ({ assert }) => {
       const { ctx, forbidden } = makeCtx({ user: { id: 1, role } })
       const { next, calls } = makeNext()

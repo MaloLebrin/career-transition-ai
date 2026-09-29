@@ -165,16 +165,22 @@ test.group('InertiaMiddleware.share', () => {
     assert.equal(props.unreadNotificationsCount, 1)
   })
 
-  test('candidat : ni candidats ni notifications partagés', async ({ assert }) => {
+  test('candidat : pas de candidats, mais ses notifications (#70)', async ({ assert }) => {
     const { user } = await createCandidate()
-    await NotificationFactory.merge({ userId: user.id }).create()
+    const other = await createCandidate()
+    await NotificationFactory.merge({
+      userId: user.id,
+      status: NOTIFICATION_STATUSES.UNREAD,
+      readAt: null,
+    }).create()
+    await NotificationFactory.merge({ userId: other.user.id }).create()
 
     const props = await share(makeShareCtx({ user }))
 
     assert.equal(props.user.role, 'employee')
     assert.deepEqual(props.employees, [])
-    assert.deepEqual(props.notifications, [])
-    assert.equal(props.unreadNotificationsCount, 0)
+    assert.lengthOf(props.notifications, 1)
+    assert.equal(props.unreadNotificationsCount, 1)
   })
 })
 

@@ -22,6 +22,7 @@ vi.mock('@inertiajs/react', () => ({
   })),
   router: {
     patch: mockRouterPatch,
+    visit: vi.fn(),
   },
 }))
 
@@ -107,7 +108,7 @@ describe('NotificationBell', () => {
     )
   })
 
-  test('ne rend rien pour le rôle employee', async () => {
+  test('affiche la cloche pour un candidat (#70)', async () => {
     const { usePage } = await import('@inertiajs/react')
     vi.mocked(usePage).mockReturnValue({
       props: {
@@ -117,8 +118,41 @@ describe('NotificationBell', () => {
       },
     } as any)
 
-    const { container } = render(<NotificationBell />)
-    expect(container.firstChild).toBeNull()
+    render(<NotificationBell />)
+    expect(screen.getByTitle('Notifications')).toBeInTheDocument()
+  })
+
+  test('ouvrir une notification liée la marque lue puis visite la page (#70)', async () => {
+    const { usePage, router } = await import('@inertiajs/react')
+    mockRouterPatch.mockClear()
+    vi.mocked(usePage).mockReturnValue({
+      props: {
+        user: { id: 2, role: 'employee', name: 'Candidate', email: 'c@c.com', organizationId: 1 },
+        notifications: [
+          {
+            id: 12,
+            type: 'synthesis_shared',
+            status: 'unread',
+            title: 'Votre synthèse est disponible',
+            body: null,
+            meta: { href: '/dashboard/candidat/synthesis' },
+            readAt: null,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        unreadNotificationsCount: 1,
+      },
+    } as any)
+
+    render(<NotificationBell />)
+    fireEvent.click(screen.getByTitle('Notifications'))
+    fireEvent.click(screen.getByRole('button', { name: 'Votre synthèse est disponible' }))
+
+    expect(mockRouterPatch).toHaveBeenCalledOnce()
+    const [url, , options] = mockRouterPatch.mock.calls[0]
+    expect(url).toBe('/dashboard/notifications/12/read')
+    options.onFinish()
+    expect(router.visit).toHaveBeenCalledWith('/dashboard/candidat/synthesis')
   })
 
   test('affiche la cloche pour le super admin', async () => {

@@ -11,6 +11,7 @@ import {
   advisorDocumentsUrl,
 } from '#services/candidate_documents_service'
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
+import type { CandidateDataRights } from '#shared/types/candidate_data/requests'
 import { EmployeesService } from '#services/employees_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
@@ -178,6 +179,13 @@ export default class EmployeesController {
       documents,
       documentsBaseUrl:
         employeeIdFromParam === null ? CANDIDATE_DOCUMENTS_URL : advisorDocumentsUrl(employee.id),
+      // Droits RGPD en libre-service (#70) : seulement sur son propre profil.
+      dataRights:
+        employeeIdFromParam === null
+          ? ({
+              erasureRequestedAt: employee.erasureRequestedAt?.toISO() ?? null,
+            } satisfies CandidateDataRights)
+          : null,
       notes: sharedNotes.map((note) => ({
         id: note.id,
         content: note.content,

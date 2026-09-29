@@ -1,4 +1,5 @@
 import { middleware } from '#start/kernel'
+import { throttleDataExport } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const EmployeesController = () => import('#controllers/employees_controller')
@@ -8,6 +9,7 @@ const ExerciseResultsController = () => import('#controllers/exercise_results_co
 const CandidatOnboardingController = () => import('#controllers/candidat_onboarding_controller')
 const EmployeeSynthesesController = () => import('#controllers/employee_syntheses_controller')
 const CandidateDocumentsController = () => import('#controllers/candidate_documents_controller')
+const CandidateDataController = () => import('#controllers/candidate_data_controller')
 
 // Dashboard candidat (employee only)
 router
@@ -53,6 +55,14 @@ router
     router.get('/onboarding', [DashboardController, 'candidatOnboarding'])
     router.put('/onboarding', [CandidatOnboardingController, 'complete'])
     router.put('/profile', [AuthController, 'updateProfileCandidat'])
+    // Droits RGPD en libre-service (#70)
+    router
+      .get('/data/export', [CandidateDataController, 'export'])
+      .use(throttleDataExport)
+      .as('candidat.data.export')
+    router
+      .post('/data/erasure-request', [CandidateDataController, 'requestErasure'])
+      .as('candidat.data.erasureRequest')
     router.post('/skills', [() => import('#controllers/employee_skills_controller'), 'store'])
     router.put('/skills', [() => import('#controllers/employee_skills_controller'), 'update'])
   })

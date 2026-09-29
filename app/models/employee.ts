@@ -62,6 +62,10 @@ export default class Employee extends BaseModel {
   @column.dateTime()
   declare deletedAt: DateTime | null
 
+  /** Demande d'effacement RGPD faite depuis l'app (#70), traitée par `candidate:purge`. */
+  @column.dateTime()
+  declare erasureRequestedAt: DateTime | null
+
   @belongsTo(() => Organization)
   declare organization: BelongsTo<typeof Organization>
 

@@ -146,6 +146,7 @@ export class EmployeeSchema extends BaseModel {
     'currentRole',
     'deletedAt',
     'email',
+    'erasureRequestedAt',
     'id',
     'name',
     'onboarded',
@@ -169,6 +170,8 @@ export class EmployeeSchema extends BaseModel {
   declare deletedAt: DateTime | null
   @column()
   declare email: string
+  @column.dateTime()
+  declare erasureRequestedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()

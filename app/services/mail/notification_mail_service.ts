@@ -2,7 +2,7 @@ import type Notification from '#models/notification'
 import type User from '#models/user'
 import { MailService } from '#services/mail/mail_service'
 import type { MailAddress } from '#services/mail/types'
-import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
+import { NOTIFICATION_TYPES, type NotificationType } from '#shared/constants/notifications'
 import env from '#start/env'
 import { inject } from '@adonisjs/core'
 import app from '@adonisjs/core/services/app'
@@ -22,10 +22,14 @@ function resolveFromAddress(): MailAddress {
   throw new Error('MAIL_FROM_EMAIL is required in production to send notification emails.')
 }
 
-const SUBJECT_BY_TYPE: Record<string, string> = {
+const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.PDF_EXPORT_COMPLETED]: 'Votre export PDF est prêt',
   [NOTIFICATION_TYPES.EXERCISE_COMPLETED]: 'Un candidat a terminé un exercice',
   [NOTIFICATION_TYPES.AI_SYNTHESIS_READY]: 'Analyse IA disponible pour un candidat',
+  [NOTIFICATION_TYPES.STEP_UNLOCKED]: 'Une nouvelle étape de votre parcours est disponible',
+  [NOTIFICATION_TYPES.APPOINTMENT_SCHEDULED]: 'Un rendez-vous a été planifié',
+  [NOTIFICATION_TYPES.SYNTHESIS_SHARED]: 'Votre synthèse est disponible',
+  [NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED]: 'Demande d’effacement de données à traiter',
 }
 
 type NotificationWithUser = Notification & { user: User }

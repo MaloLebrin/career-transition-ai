@@ -15,6 +15,14 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
 vi.mock('../../../inertia/components/profile/PasswordForm', () => ({
   PasswordForm: () => <form aria-label="Changer mon mot de passe" />,
 }))
+vi.mock('../../../inertia/components/dashboard/employee/profile/identity/IdentityForm', () => ({
+  IdentityForm: () => <form aria-label="Modifier mon identité" />,
+}))
+vi.mock('../../../inertia/components/dashboard/employee/profile/data_rights/DataRights', () => ({
+  DataRights: ({ rights }: { rights: { erasureRequestedAt: string | null } }) => (
+    <div data-testid="data-rights" data-requested={rights.erasureRequestedAt ?? ''} />
+  ),
+}))
 
 // Sections sans rapport avec les documents : remplacées pour isoler la page.
 vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
@@ -95,5 +103,40 @@ describe('Profil candidat (dashboard/employee/profile/Home)', () => {
     render(<EmployeeProfile employeeId="3" employee={employee} />)
 
     expect(screen.queryByRole('form', { name: 'Changer mon mot de passe' })).not.toBeInTheDocument()
+  })
+
+  /** #70 : identité modifiable et droits RGPD sur son propre profil. */
+  test('le candidat voit son formulaire d’identité et ses droits sur ses données', () => {
+    pageProps.current = {
+      user: { id: 9, role: 'employee', name: 'Élodie', email: 'e@example.com' },
+    }
+    render(
+      <EmployeeProfile
+        employeeId="3"
+        employee={employee}
+        dataRights={{ erasureRequestedAt: '2026-09-01T10:00:00.000Z' }}
+      />
+    )
+
+    expect(screen.getByRole('form', { name: 'Modifier mon identité' })).toBeInTheDocument()
+    expect(screen.getByText('Mes données')).toBeInTheDocument()
+    expect(screen.getByTestId('data-rights')).toHaveAttribute(
+      'data-requested',
+      '2026-09-01T10:00:00.000Z'
+    )
+  })
+
+  test('le conseiller ne voit ni l’identité modifiable ni les droits du candidat', () => {
+    pageProps.current = { user: { id: 2, role: 'advisor', name: 'Paul', email: 'p@example.com' } }
+    render(
+      <EmployeeProfile
+        employeeId="3"
+        employee={employee}
+        dataRights={{ erasureRequestedAt: null }}
+      />
+    )
+
+    expect(screen.queryByRole('form', { name: 'Modifier mon identité' })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('data-rights')).not.toBeInTheDocument()
   })
 })
