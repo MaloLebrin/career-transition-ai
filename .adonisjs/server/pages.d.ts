@@ -41,7 +41,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/employee/onboarding/Onboarding': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/onboarding/Onboarding.tsx'))['default']>
     'dashboard/employee/profile/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/profile/Home.tsx'))['default']>
     'dashboard/EmployeeDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeDetail.tsx'))['default']>
-    'dashboard/EmployeeProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/EmployeeProfile.tsx'))['default']>
     'dashboard/Employees': ExtractProps<(typeof import('../../inertia/pages/dashboard/Employees.tsx'))['default']>
     'dashboard/ExerciseResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/ExerciseResultDetail.tsx'))['default']>
     'dashboard/exercises/CircleOfControl': ExtractProps<(typeof import('../../inertia/pages/dashboard/exercises/CircleOfControl.tsx'))['default']>

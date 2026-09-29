@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import EmployeeProfile from '../../../../inertia/pages/dashboard/EmployeeProfile'
+import EmployeeProfile from '../../../../inertia/pages/dashboard/employee/profile/Home'
 
 vi.mock('../../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
