@@ -43,11 +43,19 @@ export function useNotifications() {
   }, [user?.id])
 
   const markAsRead = (id: number) => {
-    router.patch(`/dashboard/notifications/${id}/read`, {}, { preserveState: true })
+    router.patch(
+      `/dashboard/notifications/${id}/read`,
+      {},
+      { preserveState: true, preserveScroll: true }
+    )
   }
 
   const markAllAsRead = () => {
-    router.patch('/dashboard/notifications/read-all', {}, { preserveState: true })
+    router.patch(
+      '/dashboard/notifications/read-all',
+      {},
+      { preserveState: true, preserveScroll: true }
+    )
   }
 
   return { notifications, unreadCount, markAsRead, markAllAsRead }

@@ -32,11 +32,9 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/conseiller/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/List.tsx'))['default']>
     'dashboard/conseiller/exercises/ResultDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/exercises/ResultDetail.tsx'))['default']>
     'dashboard/conseiller/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/home/Home.tsx'))['default']>
-    'dashboard/conseiller/profile/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/profile/Home.tsx'))['default']>
     'dashboard/conseiller/settings/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/settings/Home.tsx'))['default']>
     'dashboard/ConseillerExercise': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerExercise.tsx'))['default']>
     'dashboard/ConseillerHome': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerHome.tsx'))['default']>
-    'dashboard/ConseillerProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/ConseillerProfile.tsx'))['default']>
     'dashboard/employee/exercises/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/Home.tsx'))['default']>
     'dashboard/employee/exercises/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/exercises/List.tsx'))['default']>
     'dashboard/employee/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/employee/home/Home.tsx'))['default']>

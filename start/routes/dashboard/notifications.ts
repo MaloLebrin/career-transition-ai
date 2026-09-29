@@ -8,5 +8,5 @@ router
     router.patch('/notifications/:id/read', [NotificationsController, 'markAsRead'])
     router.patch('/notifications/read-all', [NotificationsController, 'markAllAsRead'])
   })
-  .use([middleware.auth(), middleware.advisorOrAdmin()])
+  .use([middleware.auth(), middleware.notificationRecipient()])
   .prefix('/dashboard')

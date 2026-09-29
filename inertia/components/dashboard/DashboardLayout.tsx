@@ -24,7 +24,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const userRole = user?.role || 'employee'
   const isAdvisor = isConseillerDashboardRole(userRole)
   const superAdmin = isSuperAdmin(userRole)
-  const showSidebar = isAdvisor && !hideSidebar
+  // Le super admin a sa propre navigation (liens de supervision de la sidebar).
+  const showSidebar = (isAdvisor || superAdmin) && !hideSidebar
 
   useEffect(() => {
     if (!user || !showSidebar) return
@@ -45,11 +46,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           setPdfJobStatuses((prev) => ({ ...prev, [id]: status }))
         })
       })
-      .catch(() => { })
+      .catch(() => {})
 
     return () => {
       if (unsubscribe) unsubscribe()
-      subscription.delete().catch(() => { })
+      subscription.delete().catch(() => {})
     }
   }, [showSidebar, user?.id])
 
@@ -58,15 +59,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }
 
   return (
-    <Layout userRole={userRole} onRoleChange={() => { }} onLogout={logout} userName={user.name}>
+    <Layout userRole={userRole} onRoleChange={() => {}} onLogout={logout} userName={user.name}>
       {showSidebar ? (
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 flex-1 min-h-0">
           <AdvisorSidebar
             selectedEmployeeId={selectedEmployeeId}
             showSuperAdminLinks={superAdmin}
-            activePdfJobsCount={Object.values(pdfJobStatuses).filter(
-              (s) => s === 'pending' || s === 'processing'
-            ).length}
+            activePdfJobsCount={
+              Object.values(pdfJobStatuses).filter((s) => s === 'pending' || s === 'processing')
+                .length
+            }
           />
           <div className="lg:col-span-5">{children}</div>
         </div>
