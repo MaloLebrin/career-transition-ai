@@ -5,6 +5,7 @@ import { RATE_LIMIT_ERROR_KEY, rateLimitMessage } from '#shared/helpers/rate_lim
 import { PASSWORD, SESSION_KEY, withPassword } from '#tests/functional/auth/helpers'
 import { createAdvisor } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
+import hash from '@adonisjs/core/services/hash'
 import { test } from '@japa/runner'
 
 /**
@@ -316,5 +317,90 @@ test.group('Rate limiting — POST /onboarding/:token (functional)', (group) => 
       .redirects(0)
 
     response.assertStatus(429)
+  })
+})
+
+const FORGOT_PASSWORD_LIMIT = 5
+const PASSWORD_RESET_LIMIT = 10
+const CHANGE_PASSWORD_LIMIT = 5
+
+test.group('Rate limiting — mots de passe, #68 (functional)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test(`POST /auth/forgot-password : la ${FORGOT_PASSWORD_LIMIT + 1}ᵉ demande renvoie 429`, async ({
+    client,
+  }) => {
+    for (let i = 0; i < FORGOT_PASSWORD_LIMIT; i++) {
+      const response = await client
+        .post('/auth/forgot-password')
+        .header('X-Forwarded-For', '203.0.113.50')
+        .form({ email: `personne-${i}@example.com` })
+        .redirects(0)
+      response.assertStatus(302)
+    }
+
+    const response = await client
+      .post('/auth/forgot-password')
+      .header('X-Forwarded-For', '203.0.113.50')
+      .form({ email: 'personne@example.com' })
+      .redirects(0)
+
+    response.assertStatus(429)
+  })
+
+  test(`/auth/password-reset/:token : GET et POST partagent ${PASSWORD_RESET_LIMIT} essais par minute`, async ({
+    client,
+  }) => {
+    for (let i = 0; i < PASSWORD_RESET_LIMIT; i++) {
+      const response = await client
+        .get(`/auth/password-reset/jeton-invente-${i}`)
+        .header('X-Forwarded-For', '203.0.113.51')
+        .redirects(0)
+      response.assertStatus(200)
+    }
+
+    const response = await client
+      .post('/auth/password-reset/jeton-invente-final')
+      .header('X-Forwarded-For', '203.0.113.51')
+      .form({ password: 'nouveau-mot-de-passe', password_confirmation: 'nouveau-mot-de-passe' })
+      .redirects(0)
+
+    response.assertStatus(429)
+  })
+
+  test(`PUT /dashboard/password : le ${CHANGE_PASSWORD_LIMIT + 1}ᵉ essai renvoie 429, même avec le bon mot de passe`, async ({
+    assert,
+    client,
+  }) => {
+    const advisor = await withPassword(await createAdvisor())
+
+    for (let i = 0; i < CHANGE_PASSWORD_LIMIT; i++) {
+      const response = await client
+        .put('/dashboard/password')
+        .loginAs(advisor)
+        .header('Accept', 'application/json')
+        .json({
+          current_password: `faux-${i}`,
+          password: 'nouveau-mdp-1',
+          password_confirmation: 'nouveau-mdp-1',
+        })
+        .redirects(0)
+      assert.notEqual(response.status(), 429)
+    }
+
+    const response = await client
+      .put('/dashboard/password')
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+      .json({
+        current_password: PASSWORD,
+        password: 'nouveau-mdp-1',
+        password_confirmation: 'nouveau-mdp-1',
+      })
+      .redirects(0)
+
+    response.assertStatus(429)
+    const reloaded = await User.findOrFail(advisor.id)
+    assert.isTrue(await hash.verify(reloaded.password, PASSWORD))
   })
 })

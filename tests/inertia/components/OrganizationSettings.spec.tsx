@@ -73,6 +73,20 @@ describe('OrganizationSettings', () => {
     expect(screen.getByText('Mon Équipe')).toBeInTheDocument()
   })
 
+  /** #68 : conseillers, admins et super admins changent leur mot de passe ici. */
+  test('propose le changement de mot de passe', () => {
+    render(
+      <OrganizationSettings
+        organization={mockOrganization}
+        members={mockMembers}
+        onBack={mockOnBack}
+      />
+    )
+
+    expect(screen.getByRole('form', { name: 'Changer mon mot de passe' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Changer mon mot de passe' })).toBeInTheDocument()
+  })
+
   test('renders with empty members list and shows no collaborator message', () => {
     render(
       <OrganizationSettings organization={mockOrganization} members={[]} onBack={mockOnBack} />

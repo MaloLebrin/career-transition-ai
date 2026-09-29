@@ -176,36 +176,4 @@ test.group('AuthService', (group) => {
       assert.include(error.message, 'déjà utilisé')
     }
   })
-
-  test('resetPasswordForUser resets password and returns temporary password', async ({
-    assert,
-  }) => {
-    const org = await Organization.create({
-      name: 'Org Reset',
-      slug: `org-reset-${Date.now()}`,
-    })
-
-    const email = `reset-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-
-    const user = await User.create({
-      organizationId: org.id,
-      email,
-      name: 'Reset User',
-      password: await hash.make('old-password'),
-      role: USERS_ROLES.ADVISOR,
-    })
-
-    const service = new AuthService()
-    const result = await service.resetPasswordForUser(user.id)
-
-    assert.isNotNull(result)
-    assert.equal(result!.user.id, user.id)
-    assert.isTrue(result!.temporaryPassword.length > 0)
-  })
-
-  test('resetPasswordForUser returns null for missing user', async ({ assert }) => {
-    const service = new AuthService()
-    const result = await service.resetPasswordForUser(999999)
-    assert.isNull(result)
-  })
 })

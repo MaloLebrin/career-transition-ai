@@ -178,46 +178,6 @@ test.group('AuthController super admin actions', (group) => {
     assert.equal(response.redirectUrl, '/dashboard/super-admin')
     assert.deepEqual(session.flashes, [['error', "Utilisateur introuvable pour l'impersonation."]])
   })
-
-  test('resetPassword sets a temporary password and flashes it', async ({ assert }) => {
-    const target = await createTarget()
-    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
-    const response = makeResponse()
-    const session = makeSession()
-
-    // @ts-expect-error minimal context
-    await controller.resetPassword({
-      params: { id: target.id },
-      response: response as any,
-      session: session as any,
-    })
-
-    assert.equal(response.redirectUrl, '/dashboard/super-admin')
-    assert.lengthOf(session.flashes, 1)
-    const [key, message] = session.flashes[0]
-    assert.equal(key, 'success')
-    const temporaryPassword = message.split('Nouveau mot de passe temporaire: ')[1]
-    await target.refresh()
-    assert.isTrue(await hash.verify(target.password, temporaryPassword))
-  })
-
-  test('resetPassword flashes an error for an unknown user', async ({ assert }) => {
-    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
-    const response = makeResponse()
-    const session = makeSession()
-
-    // @ts-expect-error minimal context
-    await controller.resetPassword({
-      params: { id: 999999 },
-      response: response as any,
-      session: session as any,
-    })
-
-    assert.equal(response.redirectUrl, '/dashboard/super-admin')
-    assert.deepEqual(session.flashes, [
-      ['error', 'Utilisateur introuvable pour la réinitialisation.'],
-    ])
-  })
 })
 
 test.group('AuthController.updateProfileCandidat', (group) => {

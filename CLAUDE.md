@@ -130,11 +130,13 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 
 Ordre standard : `auth()` → middleware de rôle.
 
-Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding` (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
+Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding`, `throttleForgotPassword`, `throttlePasswordReset`, `throttleChangePassword` (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
 
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 
 IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.
+
+Mots de passe (#68) : `#services/passwords_service` — oubli (`/auth/forgot-password`, lien haché 1 h `PasswordResetToken`, même réponse que le compte existe ou non), changement connecté (`PUT /dashboard/password`, e-mail de confirmation), lien envoyé par le super admin ; jamais de mot de passe généré ni affiché.
 
 RGPD (`docs/RGPD.md`) : aucun nom ni e-mail de candidat dans un prompt IA — passer les données par `pseudonymizeForAi` (`#shared/helpers/ai/exercise_profile`). Sous-traitants, durées de conservation et contact : `shared/constants/legal.ts` (source des pages `/confidentialite` et `/securite`). Droits d'accès/effacement : `node ace candidate:export <id>` / `node ace candidate:purge <id>` (`app/commands/`, enregistrées via `app/commands/main.ts` dans `adonisrc.ts` — jamais dans `./commands`, cf. commentaire du fichier ; `#services/candidate_data_service`).
 

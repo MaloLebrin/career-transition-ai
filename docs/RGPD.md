@@ -106,7 +106,7 @@ Suppression **définitive**, en une transaction :
   synthèses, exports PDF ;
 - le compte `users` lié s'il a le rôle candidat (`employees.user_id` est en
   `SET NULL`, donc non couvert par la cascade) et, en cascade, ses jetons
-  d'onboarding et notifications — un compte conseiller/admin n'est jamais
+  d'onboarding, jetons de réinitialisation de mot de passe et notifications — un compte conseiller/admin n'est jamais
   supprimé par cette commande ;
 - les notifications des conseillers qui portent sur ce candidat
   (`meta.employeeId`, leur titre contient son nom) ;

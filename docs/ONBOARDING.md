@@ -183,6 +183,11 @@ Dans `AuthController.updateProfileCandidat` :
 
 Ces routes sont **publiques** (pas de middleware auth).
 
+Mot de passe oublié ensuite (#68) : `GET/POST /auth/forgot-password` puis
+`/auth/password-reset/:token` (`PasswordsController`, lien haché valable 1 h).
+Un lien d'onboarding expiré peut aussi être remplacé par ce parcours : il
+termine l'onboarding du compte comme le lien d'origine.
+
 ---
 
 ## Tester l’onboarding
