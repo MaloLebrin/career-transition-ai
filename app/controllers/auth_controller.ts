@@ -50,25 +50,6 @@ export default class AuthController {
   }
 
   /**
-   * Super admin only: reset another user's password to a temporary one.
-   * In un contexte réel, on enverrait un email de réinitialisation ; ici, on fixe un mot de passe simple.
-   */
-  public async resetPassword({ params, response, session }: HttpContext) {
-    const targetId = Number(params.id)
-    const result = await this.authService.resetPasswordForUser(targetId)
-    if (!result) {
-      session.flash('error', 'Utilisateur introuvable pour la réinitialisation.')
-      return response.redirect('/dashboard/super-admin')
-    }
-
-    session.flash(
-      'success',
-      `Mot de passe réinitialisé pour ${result.user.name}. Nouveau mot de passe temporaire: ${result.temporaryPassword}`
-    )
-    return response.redirect('/dashboard/super-admin')
-  }
-
-  /**
    * Inertia form: update current user's profile (name, email) then redirect with flash.
    */
   public async updateFromDashboard({ auth, request, response, session }: HttpContext) {

@@ -22,6 +22,7 @@ export const controllers = {
   Onboarding: () => import('#controllers/onboarding_controller'),
   OrganizationLogos: () => import('#controllers/organization_logos_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
+  Passwords: () => import('#controllers/passwords_controller'),
   PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),
   PdfExports: () => import('#controllers/pdf_exports_controller'),
   Robots: () => import('#controllers/robots_controller'),

@@ -65,6 +65,48 @@ export const throttleOnboarding = limiter.define('onboarding', ({ request }: Htt
 })
 
 /**
+ * « Mot de passe oublié » (#68) : chaque demande peut envoyer un e-mail (quota
+ * Resend, harcèlement d'une boîte) : 5 / 15 min par IP.
+ */
+export const throttleForgotPassword = limiter.define(
+  'forgot_password',
+  ({ request }: HttpContext) => {
+    return limiter
+      .allowRequests(5)
+      .every('15 minutes')
+      .usingKey(clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/** Énumération des liens de réinitialisation (GET et POST) : 10/min par IP. */
+export const throttlePasswordReset = limiter.define(
+  'password_reset',
+  ({ request }: HttpContext) => {
+    return limiter
+      .allowRequests(10)
+      .every('1 minute')
+      .usingKey(clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
+ * Changement de mot de passe connecté (#68) : devinette du mot de passe
+ * actuel depuis une session volée. 5 / 15 min par compte.
+ */
+export const throttleChangePassword = limiter.define(
+  'change_password',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(5)
+      .every('15 minutes')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
  * Appels au fournisseur IA (quota et facturation) : 20/min par utilisateur.
  * Appliqué après `auth()`, d'où la clé sur l'identifiant du compte.
  */

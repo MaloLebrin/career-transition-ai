@@ -50,4 +50,11 @@ describe('Login page', () => {
 
     expect(screen.getByText(/Les inscriptions sont fermées/)).toBeInTheDocument()
   })
+
+  test('transmet le flash de succès (après réinitialisation du mot de passe)', () => {
+    pageProps.current = { flash: { success: 'Mot de passe modifié. Vous pouvez vous connecter.' } }
+    render(<Login />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Mot de passe modifié.')
+  })
 })

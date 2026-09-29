@@ -54,6 +54,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_PDF_EXPORT_NOT_READY',
     'E_SUPER_ADMIN_USER_NOT_FOUND',
     'E_SUPER_ADMIN_ROLE_LOCKED',
+    'E_INVALID_CURRENT_PASSWORD',
+    'E_INVALID_PASSWORD_RESET_TOKEN',
   ]
 
   /**

@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react'
 import React, { useCallback, useState } from 'react'
 import { hasErrors, validateLogin, type LoginErrors } from '../../helpers/auth_validation'
 import PublicLayout from '../layout/PublicLayout'
+import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
@@ -9,42 +10,43 @@ import Input from '../ui/Input'
 interface LoginPageProps {
   csrfToken?: string
   error: string | null
+  /** Message de succès (ex. après réinitialisation du mot de passe). */
+  success?: string | null
   onBackToLanding: () => void
   /** Absent quand l'inscription publique est fermée : le lien est masqué. */
   onGoToRegister?: () => void
 }
 
-export default function LoginPage({
-  csrfToken,
-  error,
-  onGoToRegister,
-}: LoginPageProps) {
+export default function LoginPage({ csrfToken, error, success, onGoToRegister }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    const data = { email: email.trim(), password }
-    const nextErrors = validateLogin(data)
-    setErrors(nextErrors)
-    if (hasErrors(nextErrors)) {
-      return
-    }
-    setIsLoading(true)
-    router.post(
-      '/auth/login',
-      {
-        email: data.email,
-        password: data.password,
-        ...(csrfToken ? { _csrf: csrfToken } : {}),
-      },
-      {
-        onFinish: () => setIsLoading(false),
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      const data = { email: email.trim(), password }
+      const nextErrors = validateLogin(data)
+      setErrors(nextErrors)
+      if (hasErrors(nextErrors)) {
+        return
       }
-    )
-  }, [email, password, csrfToken, router])
+      setIsLoading(true)
+      router.post(
+        '/auth/login',
+        {
+          email: data.email,
+          password: data.password,
+          ...(csrfToken ? { _csrf: csrfToken } : {}),
+        },
+        {
+          onFinish: () => setIsLoading(false),
+        }
+      )
+    },
+    [email, password, csrfToken, router]
+  )
 
   return (
     <PublicLayout
@@ -108,6 +110,15 @@ export default function LoginPage({
             </div>
           )}
 
+          {success && (
+            <p
+              role="status"
+              className="mb-8 p-4 bg-brand-sage/10 border border-brand-sage/30 rounded-2xl text-xs font-bold text-brand-navy"
+            >
+              {success}
+            </p>
+          )}
+
           <form
             action="/auth/login"
             method="POST"
@@ -138,6 +149,14 @@ export default function LoginPage({
               onChange={(e) => setPassword(e.target.value)}
               error={errors.password}
             />
+            <div className="-mt-2 text-right">
+              <AppLink
+                href="/auth/forgot-password"
+                className="text-xs font-semibold text-brand-sage hover:underline"
+              >
+                Mot de passe oublié ?
+              </AppLink>
+            </div>
             <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
               Se connecter
             </Button>

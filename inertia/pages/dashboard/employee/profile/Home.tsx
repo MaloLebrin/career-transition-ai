@@ -1,4 +1,5 @@
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { Head, usePage } from '@inertiajs/react'
 import type { CandidateDocumentDto } from '#shared/types/media/documents'
 import NotesSection from '~/components/dashboard/NotesSection'
@@ -11,6 +12,8 @@ import { EmployeeData } from '~/types'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import Card from '~/components/ui/Card'
+import { PasswordForm } from '~/components/profile/PasswordForm'
+import { useAuth } from '~/hooks/use_auth'
 
 interface AvailableSkill {
   id: number
@@ -37,6 +40,10 @@ export default function EmployeeProfile({
   documentsBaseUrl,
 }: EmployeeProfileProps) {
   const { url } = usePage()
+  const { user } = useAuth()
+  // Le conseiller voit aussi cette page (fiche candidat) : le mot de passe
+  // n'est modifiable que par le candidat lui-même.
+  const isOwnProfile = user?.role === USERS_ROLES.EMPLOYEE
   const backHref =
     typeof url === 'string' && url.startsWith('/dashboard/conseiller/employees/')
       ? `/dashboard/conseiller/employees/${employeeId}`
@@ -151,6 +158,15 @@ export default function EmployeeProfile({
 
         {documentsBaseUrl && (
           <CandidateDocuments documents={documents} baseUrl={documentsBaseUrl} />
+        )}
+
+        {isOwnProfile && (
+          <Card className="p-10 space-y-6">
+            <h2 className="text-sm font-bold text-brand-navy uppercase tracking-[0.2em]">
+              Mot de passe
+            </h2>
+            <PasswordForm />
+          </Card>
         )}
 
         <NotesSection

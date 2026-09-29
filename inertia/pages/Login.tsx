@@ -4,7 +4,7 @@ import LoginPage from '../components/auth/LoginPage'
 export default function Login() {
   const { props } = usePage<{
     csrfToken?: string
-    flash?: { error?: string }
+    flash?: { error?: string; success?: string }
     registrationEnabled?: boolean
   }>()
   const flashError = props.flash?.error
@@ -15,6 +15,7 @@ export default function Login() {
       <LoginPage
         csrfToken={props.csrfToken}
         error={flashError ?? null}
+        success={props.flash?.success ?? null}
         onBackToLanding={() => router.visit('/offre')}
         onGoToRegister={
           props.registrationEnabled ? () => router.visit('/auth/register') : undefined

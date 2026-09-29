@@ -187,7 +187,7 @@ export default function OrganizationsAdmin({ organizations }: OrganizationsAdmin
                             })
                           }
                         >
-                          Reset mot de passe
+                          Envoyer un lien de réinitialisation
                         </Button>
                         <Button
                           type="button"

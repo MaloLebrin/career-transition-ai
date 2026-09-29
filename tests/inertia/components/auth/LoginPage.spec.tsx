@@ -41,10 +41,15 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))
 
     await waitFor(() => {
-      expect(screen.getByText((content) => content.includes('email est requis'))).toBeInTheDocument()
+      expect(
+        screen.getByText((content) => content.includes('email est requis'))
+      ).toBeInTheDocument()
     })
     // Form has action for when valid (backend redirect)
-    expect(screen.getByRole('button', { name: /Se connecter/ }).closest('form')).toHaveAttribute('action', '/auth/login')
+    expect(screen.getByRole('button', { name: /Se connecter/ }).closest('form')).toHaveAttribute(
+      'action',
+      '/auth/login'
+    )
   })
 
   test('shows validation error when email format is invalid', async () => {
@@ -59,7 +64,9 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Se connecter/ }))
 
     await waitFor(() => {
-      expect(screen.getByText((content) => content.includes("pas valide") && content.includes("email"))).toBeInTheDocument()
+      expect(
+        screen.getByText((content) => content.includes('pas valide') && content.includes('email'))
+      ).toBeInTheDocument()
     })
     const form = screen.getByRole('button', { name: /Se connecter/ }).closest('form')!
     expect(form).toHaveAttribute('action', '/auth/login')
@@ -94,5 +101,21 @@ describe('LoginPage', () => {
   test('uses PublicLayout with back to landing', () => {
     render(<LoginPage {...defaultProps} />)
     expect(screen.getByText(/Retour à l'accueil/)).toBeInTheDocument()
+  })
+
+  /** #68 : parcours « mot de passe oublié » accessible depuis la connexion. */
+  test('propose le lien « Mot de passe oublié ? »', () => {
+    render(<LoginPage {...defaultProps} />)
+    expect(screen.getByRole('link', { name: 'Mot de passe oublié ?' })).toHaveAttribute(
+      'href',
+      '/auth/forgot-password'
+    )
+  })
+
+  test('affiche le message de succès (mot de passe réinitialisé)', () => {
+    render(
+      <LoginPage {...defaultProps} success="Mot de passe modifié. Vous pouvez vous connecter." />
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('Mot de passe modifié.')
   })
 })

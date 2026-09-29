@@ -4,6 +4,7 @@ import { GeneralInfoForm } from '~/components/dashboard/settings/organisation/in
 import { VisualIdentity } from '~/components/dashboard/settings/organisation/visual-identity/VisualIdentity'
 import { TeamCard } from '~/components/dashboard/settings/team/TeamCard'
 import { UsageCompletionCard } from '~/components/dashboard/settings/usage/UsageCompletionCard'
+import { PasswordForm } from '~/components/profile/PasswordForm'
 import { ProfileForm } from '~/components/profile/ProfileForm'
 import { UserSession } from '~/types/auth'
 import { MAX_LICENSES_ADVISORS } from '../../../shared/constants/organisation'
@@ -87,6 +88,16 @@ const OrganizationSettings: React.FC<Props> = ({
               Mon Profil Personnel
             </h3>
             <ProfileForm user={user as UserSession} setSuccess={setSuccess} />
+          </Card>
+
+          <Card className="space-y-8 p-10 border-2 border-violet-100 bg-white">
+            <h3 className="text-xl font-black text-slate-900 flex items-center">
+              <span className="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center mr-3">
+                🔒
+              </span>
+              Mot de passe
+            </h3>
+            <PasswordForm />
           </Card>
 
           <GeneralInfoForm organization={org} readOnly={!canManage} />

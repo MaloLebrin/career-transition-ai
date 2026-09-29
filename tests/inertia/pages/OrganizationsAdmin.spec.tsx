@@ -148,10 +148,10 @@ describe('OrganizationsAdmin page', () => {
     )
   })
 
-  test('posts password reset for the organization owner user, not the organization id', () => {
+  test('posts a password reset link request for the organization owner user, not the organization id', () => {
     render(<OrganizationsAdmin organizations={[orgWithOwner]} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Reset mot de passe/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer un lien de réinitialisation/i }))
 
     expect(postMock).toHaveBeenCalledTimes(1)
     expect(postMock).toHaveBeenCalledWith(
@@ -165,7 +165,7 @@ describe('OrganizationsAdmin page', () => {
     render(<OrganizationsAdmin organizations={[{ ...orgWithOwner, ownerId: null }]} />)
 
     const impersonate = screen.getByRole('button', { name: /Impersonation/i })
-    const reset = screen.getByRole('button', { name: /Reset mot de passe/i })
+    const reset = screen.getByRole('button', { name: /Envoyer un lien de réinitialisation/i })
     expect(impersonate).toBeDisabled()
     expect(reset).toBeDisabled()
 

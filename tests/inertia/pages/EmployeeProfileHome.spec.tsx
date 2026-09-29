@@ -1,15 +1,20 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import EmployeeProfile from '../../../inertia/pages/dashboard/employee/profile/Home'
+
+const { pageProps } = vi.hoisted(() => ({ pageProps: { current: {} as Record<string, unknown> } }))
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = (await importOriginal()) as object
   return {
     ...actual,
     Head: () => null,
-    usePage: () => ({ url: '/dashboard/candidat/profile', props: {} }),
+    usePage: () => ({ url: '/dashboard/candidat/profile', props: pageProps.current }),
   }
 })
+vi.mock('../../../inertia/components/profile/PasswordForm', () => ({
+  PasswordForm: () => <form aria-label="Changer mon mot de passe" />,
+}))
 
 // Sections sans rapport avec les documents : remplacées pour isoler la page.
 vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
@@ -49,6 +54,10 @@ const employee = {
 } as any
 
 describe('Profil candidat (dashboard/employee/profile/Home)', () => {
+  beforeEach(() => {
+    pageProps.current = {}
+  })
+
   test('affiche la section Documents avec la base de routes fournie', () => {
     render(
       <EmployeeProfile
@@ -69,5 +78,22 @@ describe('Profil candidat (dashboard/employee/profile/Home)', () => {
 
     expect(screen.queryByTestId('documents')).not.toBeInTheDocument()
     expect(screen.getByText('Élodie Martin')).toBeInTheDocument()
+  })
+
+  /** #68 : le candidat change son mot de passe depuis son profil, pas le conseiller qui le consulte. */
+  test('le candidat voit le formulaire de mot de passe', () => {
+    pageProps.current = {
+      user: { id: 9, role: 'employee', name: 'Élodie', email: 'e@example.com' },
+    }
+    render(<EmployeeProfile employeeId="3" employee={employee} />)
+
+    expect(screen.getByRole('form', { name: 'Changer mon mot de passe' })).toBeInTheDocument()
+  })
+
+  test('le conseiller qui consulte la fiche ne le voit pas', () => {
+    pageProps.current = { user: { id: 2, role: 'advisor', name: 'Paul', email: 'p@example.com' } }
+    render(<EmployeeProfile employeeId="3" employee={employee} />)
+
+    expect(screen.queryByRole('form', { name: 'Changer mon mot de passe' })).not.toBeInTheDocument()
   })
 })
