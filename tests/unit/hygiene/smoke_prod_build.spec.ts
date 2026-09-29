@@ -13,14 +13,14 @@ import { readFileSync } from 'node:fs'
 
 // Spécifieur non littéral : le module est un .mjs sans déclarations de types.
 const scriptUrl = new URL('../../../scripts/smoke_prod_build.mjs', import.meta.url).href
-const { findLogProblems, checkInertiaShell, extractAssetPaths, SMOKE_PAGES } = (await import(
-  scriptUrl
-)) as {
-  findLogProblems: (output: string) => string[]
-  checkInertiaShell: (html: string) => string[]
-  extractAssetPaths: (html: string) => string[]
-  SMOKE_PAGES: string[]
-}
+const { findLogProblems, checkInertiaShell, extractAssetPaths, missingPageEntries, SMOKE_PAGES } =
+  (await import(scriptUrl)) as {
+    findLogProblems: (output: string) => string[]
+    checkInertiaShell: (html: string) => string[]
+    extractAssetPaths: (html: string) => string[]
+    missingPageEntries: (manifest: Record<string, unknown>, pages: string[]) => string[]
+    SMOKE_PAGES: string[]
+  }
 
 const line = (entry: Record<string, unknown>) => JSON.stringify({ time: 1, pid: 1, ...entry })
 
@@ -97,5 +97,36 @@ test.group('smoke_prod_build | câblage', () => {
     assert.include(workflow, 'smoke-prod-build:')
     assert.include(workflow, 'node scripts/smoke_prod_build.mjs')
     assert.include(workflow, 'NODE_ENV: production')
+  })
+})
+
+test.group('smoke_prod_build | missingPageEntries', () => {
+  test('aucune page manquante quand chacune a son entrée', ({ assert }) => {
+    const manifest = { 'inertia/pages/home.tsx': {}, 'inertia/pages/auth/Login.tsx': {} }
+
+    assert.deepEqual(
+      missingPageEntries(manifest, ['inertia/pages/home.tsx', 'inertia/pages/auth/Login.tsx']),
+      []
+    )
+  })
+
+  /** Cas réel : une page ré-exportée par une autre, fusionnées en un chunk `_Nom-hash.js`. */
+  test('remonte les pages fusionnées dans un chunk sans chemin source', ({ assert }) => {
+    const manifest = {
+      '_EmployeeProfile-Bx01yorx.js': { file: 'assets/EmployeeProfile-Bx01yorx.js' },
+      'inertia/pages/home.tsx': {},
+    }
+
+    assert.deepEqual(
+      missingPageEntries(manifest, [
+        'inertia/pages/home.tsx',
+        'inertia/pages/dashboard/employee/profile/Home.tsx',
+        'inertia/pages/dashboard/EmployeeProfile.tsx',
+      ]),
+      [
+        'inertia/pages/dashboard/EmployeeProfile.tsx',
+        'inertia/pages/dashboard/employee/profile/Home.tsx',
+      ]
+    )
   })
 })

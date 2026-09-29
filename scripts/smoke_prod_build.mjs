@@ -11,6 +11,9 @@
  * - `GET /health` ne répond pas 200 dans le délai imparti ;
  * - `GET /` ou `GET /auth/login` ne répond pas 200, ou ne contient pas la
  *   racine Inertia rendue par le SSR (`<div id="app" data-page=…>` non vide) ;
+ * - une page Inertia (fichier de `inertia/pages/`) n'a pas son entrée dans le
+ *   manifest Vite : `@vite` la cherche par son chemin source et répond 500
+ *   (cas d'une page ré-exportée par une autre, fusionnées en un seul chunk) ;
  * - un asset référencé par la page (`/assets/…`, issu du manifest Vite) ne
  *   répond pas 200 ;
  * - le worker de queue s'arrête pendant la fenêtre d'observation ;
@@ -31,6 +34,7 @@
  *   --worker-window=<s> durée d'observation du worker (défaut : 5)
  */
 import { spawn } from 'node:child_process'
+import { glob, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
@@ -166,11 +170,30 @@ async function checkPages(baseUrl) {
   return failures
 }
 
+/** Pages Inertia sans entrée à leur chemin source dans le manifest Vite. */
+export function missingPageEntries(manifest, pages) {
+  return pages.filter((page) => !Object.hasOwn(manifest, page)).sort()
+}
+
+async function checkManifest(appDir) {
+  const manifestPath = resolve(appDir, 'public/assets/.vite/manifest.json')
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'))
+  const pages = await Array.fromAsync(glob('inertia/pages/**/*.tsx'))
+  if (pages.length === 0)
+    return ['aucune page inertia/pages/**/*.tsx trouvée (lancer depuis la racine)']
+  return missingPageEntries(manifest, pages).map(
+    (page) => `${page} absente du manifest Vite (@vite répondrait 500 sur cette page)`
+  )
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const appDir = resolve(options.appDir)
   const baseUrl = `http://127.0.0.1:${process.env.PORT ?? 3333}`
   const failures = []
+
+  console.log('▶ Manifest Vite : une entrée par page Inertia')
+  failures.push(...(await checkManifest(appDir)))
 
   console.log(`▶ Serveur de production depuis ${appDir}`)
   const server = start('server', ['bin/server.js'], appDir)
@@ -211,7 +234,7 @@ async function main() {
     for (const failure of failures) console.error(`  - ${failure}`)
     process.exit(1)
   }
-  console.log('\n✔ Build de production : /health, pages SSR, assets et worker OK')
+  console.log('\n✔ Build de production : manifest, /health, pages SSR, assets et worker OK')
 }
 
 // Exécuté seulement en ligne de commande : le test d'hygiène importe les
