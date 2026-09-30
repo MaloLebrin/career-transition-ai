@@ -17,6 +17,7 @@ import {
 } from '#tests/support/actors'
 import { createStepValidator } from '#validators/support_plan_step/create_step_validator'
 import { updateStepValidator } from '#validators/support_plan_step/update_step_validator'
+import { DateTime } from 'luxon'
 
 /**
  * Unit — `SupportPlanStepsController`. Le contrôleur n'a pas encore de service
@@ -78,12 +79,24 @@ function makeContext(user: User, params: Record<string, unknown>, payload: unkno
   return { ctx, session, response, validators }
 }
 
-const controller = new SupportPlanStepsController()
+/** Notifications du candidat (#70) enregistrées au lieu d'être envoyées. */
+const notified: Array<[string, number]> = []
+const fakeCandidateNotifications = {
+  async stepUnlocked(_employee: Employee, step: SupportPlanStep) {
+    notified.push(['stepUnlocked', step.id])
+  },
+  async appointmentScheduled(_employee: Employee, step: SupportPlanStep) {
+    notified.push(['appointmentScheduled', step.id])
+  },
+}
+
+const controller = new SupportPlanStepsController(fakeCandidateNotifications as any)
 
 let advisor: User
 let employee: Employee
 
 async function seed() {
+  notified.length = 0
   advisor = await createAdvisor()
   employee = await createEmployeeFor(advisor)
 }
@@ -456,5 +469,92 @@ test.group('SupportPlanStepsController.unlock / lock', (group) => {
     const lock = makeContext(advisor, params)
     await controller.lock(lock.ctx)
     assert.deepEqual(lock.response.state.notFound, { message: 'Step not found' })
+  })
+})
+
+test.group('SupportPlanStepsController — notifications du candidat (#70)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(seed)
+
+  function stepContext(step: SupportPlanStep, payload: unknown = {}) {
+    return makeContext(advisor, { id: String(employee.id), stepId: String(step.id) }, payload)
+  }
+
+  test('store : RDV déverrouillé et planifié → étape débloquée + rendez-vous', async ({
+    assert,
+  }) => {
+    const { ctx } = makeContext(
+      advisor,
+      { id: String(employee.id) },
+      { title: 'Bilan', isLocked: false, scheduledAt: '2026-10-01T10:00:00.000Z' }
+    )
+
+    await controller.store(ctx)
+
+    const step = await SupportPlanStep.query().where('employeeId', employee.id).firstOrFail()
+    assert.deepEqual(notified, [
+      ['stepUnlocked', step.id],
+      ['appointmentScheduled', step.id],
+    ])
+  })
+
+  test('store : RDV verrouillé sans date → aucune notification', async ({ assert }) => {
+    const { ctx } = makeContext(advisor, { id: String(employee.id) }, { title: 'Bilan' })
+
+    await controller.store(ctx)
+
+    assert.deepEqual(notified, [])
+  })
+
+  test('update : déverrouillage et nouvelle date notifient, le reste non', async ({ assert }) => {
+    const step = await createStep({ isLocked: true, scheduledAt: null })
+
+    await controller.update(
+      stepContext(step, { isLocked: false, scheduledAt: '2026-10-01T10:00:00.000Z' }).ctx
+    )
+    assert.deepEqual(notified, [
+      ['stepUnlocked', step.id],
+      ['appointmentScheduled', step.id],
+    ])
+
+    notified.length = 0
+    // Même date, étape déjà ouverte : rien de nouveau pour le candidat.
+    await controller.update(
+      stepContext(step, {
+        title: 'Renommé',
+        isLocked: false,
+        scheduledAt: '2026-10-01T10:00:00.000Z',
+      }).ctx
+    )
+    assert.deepEqual(notified, [])
+  })
+
+  test('update : rendez-vous déplacé → nouvelle notification', async ({ assert }) => {
+    const step = await createStep({
+      isLocked: false,
+      scheduledAt: DateTime.fromISO('2026-10-01T10:00:00.000Z'),
+    })
+
+    await controller.update(stepContext(step, { scheduledAt: '2026-11-05T09:30:00.000Z' }).ctx)
+
+    assert.deepEqual(notified, [['appointmentScheduled', step.id]])
+  })
+
+  test('unlock : notifie seulement si l’étape était verrouillée', async ({ assert }) => {
+    const locked = await createStep({ isLocked: true })
+    const open = await createStep({ isLocked: false })
+
+    await controller.unlock(stepContext(locked).ctx)
+    await controller.unlock(stepContext(open).ctx)
+
+    assert.deepEqual(notified, [['stepUnlocked', locked.id]])
+  })
+
+  test('lock ne notifie pas', async ({ assert }) => {
+    const step = await createStep({ isLocked: false })
+
+    await controller.lock(stepContext(step).ctx)
+
+    assert.deepEqual(notified, [])
   })
 })

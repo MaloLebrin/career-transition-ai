@@ -117,3 +117,18 @@ export const throttleAi = limiter.define('ai', ({ auth, request }: HttpContext) 
     .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
     .limitExceeded(frenchMessage)
 })
+
+/**
+ * Export RGPD du candidat (#70) : génère un PDF et relit ses documents sur
+ * Cloudinary. 5 / heure par compte.
+ */
+export const throttleDataExport = limiter.define(
+  'data_export',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(5)
+      .every('1 hour')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)

@@ -76,6 +76,7 @@ export default class AuthController {
     await this.candidatProfileService.updateForUser(auth.user, payload as any)
 
     session.flash('success', 'Profil mis à jour.')
-    return response.redirect('/dashboard/candidat')
+    // Formulaire d'identité de la page profil (#70) : on y reste.
+    return response.redirect().back()
   }
 }

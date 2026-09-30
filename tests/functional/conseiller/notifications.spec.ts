@@ -12,7 +12,8 @@ import { test } from '@japa/runner'
  * - PATCH /dashboard/notifications/read-all
  *
  * Appelés par la cloche via `router.patch` (Inertia) : redirection vers la page
- * courante. Rôles : `receivesNotifications()` (advisor, admin, super admin).
+ * courante. Rôles : `receivesNotifications()` (advisor, admin, super admin,
+ * candidat depuis #70).
  */
 const PAGE = '/dashboard/conseiller'
 
@@ -128,18 +129,24 @@ test.group('Conseiller — notifications', (group) => {
     assert.equal(notification.status, NOTIFICATION_STATUSES.UNREAD)
   })
 
-  test('un candidat est refusé par le middleware (403)', async ({ client, assert }) => {
+  test('un candidat marque ses propres notifications comme lues (#70)', async ({
+    client,
+    assert,
+  }) => {
     const { user } = await createCandidate()
     const notification = await unread(user.id)
 
     const response = await client
       .patch(`/dashboard/notifications/${notification.id}/read`)
+      .header('referer', '/dashboard/candidat')
       .loginAs(user)
+      .withInertia()
       .redirects(0)
 
-    response.assertStatus(403)
+    response.assertStatus(303)
+    response.assertHeader('location', '/dashboard/candidat')
     await notification.refresh()
-    assert.equal(notification.status, NOTIFICATION_STATUSES.UNREAD)
+    assert.equal(notification.status, NOTIFICATION_STATUSES.READ)
   })
 
   test('sans session, la requête est refusée', async ({ client }) => {

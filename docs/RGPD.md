@@ -64,6 +64,12 @@ contact).
 
 ## 4. Demande d'accès / portabilité (candidat)
 
+**En libre-service (#70).** Le candidat connecté télécharge lui-même la même
+archive depuis son profil (« Mes données » → « Télécharger mes données »,
+`GET /dashboard/candidat/data/export`, 5 exports par heure) : aucune action de
+l'équipe. La procédure ci-dessous reste pour une demande reçue par e-mail ou
+un candidat qui n'a plus accès à son compte.
+
 1. Vérifier l'identité du demandeur (réponse depuis l'adresse e-mail du compte).
 2. Retrouver l'identifiant de la fiche candidat (`employees.id`) :
 
@@ -93,6 +99,24 @@ contact).
 ## 5. Demande d'effacement
 
 ### Candidat
+
+**Demande faite depuis l'app (#70).** Le bouton « Demander l'effacement de
+mes données » du profil (`POST /dashboard/candidat/data/erasure-request`)
+enregistre la date dans `employees.erasure_requested_at` et envoie une
+notification (cloche + e-mail) « Demande d'effacement des données — candidat #<employeeId> » à chaque super admin et au conseiller du candidat. La
+notification ne porte que l'identifiant, jamais le nom ni l'e-mail. Le délai
+d'un mois court à partir de cette date. Pour les demandes en attente :
+
+```sql
+SELECT id, organization_id, erasure_requested_at
+FROM employees
+WHERE erasure_requested_at IS NOT NULL
+ORDER BY erasure_requested_at;
+```
+
+L'identité est déjà établie (le candidat était connecté) : appliquer
+directement la commande ci-dessous. Elle supprime la fiche, donc la demande,
+ainsi que les notifications liées (`meta.employeeId`).
 
 ```bash
 node ace candidate:purge <employeeId>          # affiche ce qui sera supprimé, demande confirmation

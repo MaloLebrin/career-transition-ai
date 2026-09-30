@@ -45,8 +45,12 @@ function makeResponse() {
       this.statusCode = 403
       return this
     },
-    redirect(url: string) {
-      this.redirectUrl = url
+    redirect(url?: string) {
+      if (url !== undefined) this.redirectUrl = url
+      return this
+    },
+    back() {
+      this.redirectUrl = 'back'
       return this
     },
     json(data: any) {
@@ -335,7 +339,8 @@ test.group('AuthController.updateProfileCandidat', (group) => {
     assert.isNotNull(pivot)
     assert.equal(pivot!.level, 4)
 
-    assert.equal(response.redirectUrl, '/dashboard/candidat')
+    // Formulaire d'identité de la page profil (#70) : retour sur la page.
+    assert.equal(response.redirectUrl, 'back')
     assert.deepEqual(session.flashes, [['success', 'Profil mis à jour.']])
   })
 })

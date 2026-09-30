@@ -109,10 +109,20 @@ function makeContext(
   return { ctx, flashes, state, rendered }
 }
 
+/** Notifications du candidat (#70) enregistrées au lieu d'être envoyées. */
+class FakeCandidateNotifications {
+  public synthesisSharedFor: number[] = []
+
+  async synthesisShared(sharedEmployee: Employee) {
+    this.synthesisSharedFor.push(sharedEmployee.id)
+  }
+}
+
 function setup() {
   const service = new FakeSynthesisService()
-  const controller = new EmployeeSynthesesController(service as any)
-  return { service, controller }
+  const notifications = new FakeCandidateNotifications()
+  const controller = new EmployeeSynthesesController(service as any, notifications as any)
+  return { service, notifications, controller }
 }
 
 async function expectRowNotFound(assert: any, run: () => Promise<unknown>) {
@@ -293,7 +303,7 @@ test.group('EmployeeSynthesesController.share / unshare', (group) => {
   group.each.setup(seedAdvisor)
 
   test('share passe la synthèse en partagée et trace le conseiller', async ({ assert }) => {
-    const { controller } = setup()
+    const { controller, notifications } = setup()
     const { ctx, flashes, state } = makeContext(advisor, { id: String(employee.id) })
 
     await controller.share(ctx)
@@ -304,6 +314,23 @@ test.group('EmployeeSynthesesController.share / unshare', (group) => {
     assert.equal(row.sharedByUserId, advisor.id)
     assert.deepEqual(flashes, [['success', 'Synthèse partagée au talent.']])
     assert.isTrue(state.redirectedBack)
+    assert.deepEqual(notifications.synthesisSharedFor, [employee.id])
+  })
+
+  test('share d’une synthèse déjà partagée ne renotifie pas le candidat', async ({ assert }) => {
+    await EmployeeSynthesisFactory.merge({
+      organizationId: advisor.organizationId,
+      employeeId: employee.id,
+      shareStatus: EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED,
+      sharedAt: DateTime.now(),
+      sharedByUserId: advisor.id,
+    }).create()
+    const { controller, notifications } = setup()
+    const { ctx } = makeContext(advisor, { id: String(employee.id) })
+
+    await controller.share(ctx)
+
+    assert.deepEqual(notifications.synthesisSharedFor, [])
   })
 
   test('unshare repasse la synthèse en brouillon', async ({ assert }) => {

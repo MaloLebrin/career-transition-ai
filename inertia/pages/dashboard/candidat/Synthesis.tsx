@@ -1,7 +1,9 @@
+import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Card from '~/components/ui/Card'
 import Button from '~/components/ui/Button'
+import { useLivePdfExport, type LivePdfExport } from '~/hooks/use_live_pdf_export'
 import type { Employee } from '~/types/employee'
 
 type CandidateSynthesisProps =
@@ -24,11 +26,7 @@ type CandidateSynthesisProps =
         executiveSummaryOverride: string | null
       }
       latestCompletedByType: Record<string, number>
-      latestPdfJob: null | {
-        id: number
-        status: string
-        downloadUrl: string | null
-      }
+      latestPdfJob: LivePdfExport
     }
 
 export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
@@ -41,14 +39,28 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
             Synthèse
           </div>
           <div className="mt-2 text-brand-navy">
-            Votre synthèse n’est pas encore partagée par votre expert.
+            Votre synthèse n’est pas encore partagée par votre expert. Vous recevrez une
+            notification dès qu’elle sera disponible.
           </div>
         </Card>
       </DashboardLayout>
     )
   }
 
-  const { employee, synthesis } = props
+  return <SharedSynthesis {...props} />
+}
+
+function SharedSynthesis({
+  employeeId,
+  employee,
+  synthesis,
+  latestPdfJob,
+}: Extract<CandidateSynthesisProps, { shared: true }>) {
+  // Statut du PDF poussé par Transmit : pas besoin de recharger la page (#70).
+  const pdfJob = useLivePdfExport(employeeId, latestPdfJob)
+  const pdfInProgress =
+    pdfJob?.status === PDF_EXPORT_STATUSES.PENDING ||
+    pdfJob?.status === PDF_EXPORT_STATUSES.PROCESSING
 
   return (
     <DashboardLayout>
@@ -61,20 +73,34 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
           <div className="mt-2 text-2xl font-bold text-brand-navy">{employee.name}</div>
           <div className="text-sm text-brand-navy/60">{employee.currentRole}</div>
           <div className="mt-4">
-            {props.latestPdfJob?.downloadUrl ? (
-              <a href={props.latestPdfJob.downloadUrl}>
-                <Button variant="emphasis" size="sm">
-                  Télécharger le PDF
-                </Button>
-              </a>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.post('/dashboard/candidat/synthesis/pdf')}
+            {pdfJob?.downloadUrl ? (
+              <a
+                href={pdfJob.downloadUrl}
+                className="inline-flex items-center justify-center rounded-xl bg-brand-sage px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
               >
-                Générer le PDF (async)
-              </Button>
+                Télécharger le PDF
+              </a>
+            ) : pdfInProgress ? (
+              <p role="status" className="text-sm text-brand-navy/70">
+                Génération du PDF en cours… Le lien apparaîtra ici dès qu’il sera prêt.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {pdfJob?.status === PDF_EXPORT_STATUSES.FAILED && (
+                  <p role="alert" className="text-sm text-rose-600 font-medium">
+                    La génération du PDF a échoué. Vous pouvez réessayer.
+                  </p>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.post('/dashboard/candidat/synthesis/pdf', {}, { preserveScroll: true })
+                  }
+                >
+                  Générer le PDF
+                </Button>
+              </div>
             )}
           </div>
         </Card>
@@ -102,4 +128,3 @@ export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
     </DashboardLayout>
   )
 }
-

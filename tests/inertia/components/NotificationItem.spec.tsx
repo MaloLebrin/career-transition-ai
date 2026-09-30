@@ -31,7 +31,7 @@ describe('NotificationItem', () => {
     expect(dot).toBeInTheDocument()
   })
 
-  test('n\'affiche pas le point non-lu pour une notification lue', () => {
+  test("n'affiche pas le point non-lu pour une notification lue", () => {
     const readNotif: NotificationItemType = {
       ...baseNotification,
       status: 'read',
@@ -41,16 +41,43 @@ describe('NotificationItem', () => {
     expect(screen.queryByTitle('Marquer comme lu')).not.toBeInTheDocument()
   })
 
-  test('appelle onMarkAsRead avec l\'id quand le point est cliqué', () => {
+  test("appelle onMarkAsRead avec l'id quand le point est cliqué", () => {
     const onMarkAsRead = vi.fn()
     render(<NotificationItem notification={baseNotification} onMarkAsRead={onMarkAsRead} />)
     fireEvent.click(screen.getByTitle('Marquer comme lu'))
     expect(onMarkAsRead).toHaveBeenCalledWith(1)
   })
 
-  test('n\'affiche pas le body quand absent', () => {
+  test("n'affiche pas le body quand absent", () => {
     const noBody: NotificationItemType = { ...baseNotification, body: null }
     render(<NotificationItem notification={noBody} onMarkAsRead={vi.fn()} />)
     expect(screen.queryByText(/L'exercice motivation/)).not.toBeInTheDocument()
+  })
+
+  test('titre cliquable quand la notification pointe vers une page (#70)', () => {
+    const onOpen = vi.fn()
+    const linked: NotificationItemType = {
+      ...baseNotification,
+      type: 'step_unlocked',
+      title: 'Nouvelle étape disponible',
+      meta: { href: '/dashboard/candidat/steps/4' },
+    }
+    render(<NotificationItem notification={linked} onMarkAsRead={vi.fn()} onOpen={onOpen} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle étape disponible' }))
+    expect(onOpen).toHaveBeenCalledWith(linked)
+  })
+
+  test('titre en texte simple sans lien interne valide', () => {
+    const external: NotificationItemType = {
+      ...baseNotification,
+      meta: { href: 'https://evil.example/' },
+    }
+    render(<NotificationItem notification={external} onMarkAsRead={vi.fn()} onOpen={vi.fn()} />)
+
+    expect(
+      screen.queryByRole('button', { name: 'Exercice terminé par Jean Dupont' })
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Exercice terminé par Jean Dupont')).toBeInTheDocument()
   })
 })

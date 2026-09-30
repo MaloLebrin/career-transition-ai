@@ -6,7 +6,8 @@ import { NotificationItem } from './NotificationItem'
 
 export function NotificationBell() {
   const { user } = useAuth()
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, openNotification } =
+    useNotifications()
   const [open, setOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -67,6 +68,10 @@ export function NotificationBell() {
                     onMarkAsRead={(id) => {
                       markAsRead(id)
                       setOpen(false)
+                    }}
+                    onOpen={(notification) => {
+                      setOpen(false)
+                      openNotification(notification)
                     }}
                   />
                 ))

@@ -167,10 +167,12 @@ test.group('Candidat — profil : mise à jour (PUT)', (group) => {
         targetRole: 'Contrôleuse de gestion',
         summary: 'Reconversion vers le contrôle de gestion',
       })
+      .header('referer', URL)
       .redirects(0)
 
+    // Formulaire d'identité de la page profil (#70) : retour sur la page.
     response.assertStatus(302)
-    response.assertHeader('location', '/dashboard/candidat')
+    response.assertHeader('location', URL)
     response.assertFlashMessage('success', 'Profil mis à jour.')
 
     await user.refresh()
@@ -259,6 +261,7 @@ test.group('Candidat — profil : mise à jour (PUT)', (group) => {
       .put(URL)
       .loginAs(user)
       .json({ currentRole: 'Vendeur' })
+      .header('referer', '/dashboard/candidat')
       .redirects(0)
 
     response.assertStatus(302)

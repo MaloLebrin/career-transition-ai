@@ -1,6 +1,7 @@
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import PdfExport from '#models/pdf_export'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
@@ -10,7 +11,10 @@ import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 
 @inject()
 export default class EmployeeSynthesesController {
-  constructor(private synthesisService: EmployeeSynthesisService) {}
+  constructor(
+    private synthesisService: EmployeeSynthesisService,
+    private candidateNotifications: CandidateNotificationsService
+  ) {}
 
   /**
    * Advisor view (Inertia): synthesis + editable notes.
@@ -98,7 +102,7 @@ export default class EmployeeSynthesesController {
     const user = ctx.auth.user!
     const employeeId = Number(ctx.params.id)
 
-    await Employee.query()
+    const employee = await Employee.query()
       .where('id', employeeId)
       .where('organizationId', user.organizationId)
       .firstOrFail()
@@ -108,12 +112,14 @@ export default class EmployeeSynthesesController {
       employeeId,
     })
 
+    const wasShared = synthesis.shareStatus === EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED
     synthesis.merge({
       shareStatus: EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED,
       sharedAt: DateTime.now(),
       sharedByUserId: user.id,
     })
     await synthesis.save()
+    if (!wasShared) await this.candidateNotifications.synthesisShared(employee)
 
     ctx.session.flash('success', 'Synthèse partagée au talent.')
     return ctx.response.redirect().back()

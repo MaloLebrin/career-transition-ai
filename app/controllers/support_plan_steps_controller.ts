@@ -1,14 +1,19 @@
 import Employee from '#models/employee'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createStepValidator } from '#validators/support_plan_step/create_step_validator'
 import { updateStepValidator } from '#validators/support_plan_step/update_step_validator'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
+@inject()
 export default class SupportPlanStepsController {
+  constructor(private candidateNotifications: CandidateNotificationsService) {}
+
   /**
    * Create a new step (advisor only).
    */
@@ -64,6 +69,9 @@ export default class SupportPlanStepsController {
       )
     }
 
+    if (!step.isLocked) await this.candidateNotifications.stepUnlocked(employee, step)
+    if (step.scheduledAt) await this.candidateNotifications.appointmentScheduled(employee, step)
+
     session.flash('success', 'RDV créé')
     return response.redirect().back()
   }
@@ -100,6 +108,8 @@ export default class SupportPlanStepsController {
     }
 
     const payload = await request.validateUsing(updateStepValidator)
+    const wasLocked = step.isLocked
+    const previousScheduledAt = step.scheduledAt?.toMillis() ?? null
 
     if (payload.title !== undefined) step.title = payload.title ?? null
     if (payload.description !== undefined) step.description = payload.description ?? null
@@ -131,6 +141,13 @@ export default class SupportPlanStepsController {
           }))
         )
       }
+    }
+
+    if (wasLocked && !step.isLocked) {
+      await this.candidateNotifications.stepUnlocked(employee, step)
+    }
+    if (step.scheduledAt && step.scheduledAt.toMillis() !== previousScheduledAt) {
+      await this.candidateNotifications.appointmentScheduled(employee, step)
     }
 
     session.flash('success', 'RDV mis à jour')
@@ -205,8 +222,10 @@ export default class SupportPlanStepsController {
       return response.notFound({ message: 'Step not found' })
     }
 
+    const wasLocked = step.isLocked
     step.isLocked = false
     await step.save()
+    if (wasLocked) await this.candidateNotifications.stepUnlocked(employee, step)
 
     session.flash('success', 'RDV déverrouillé')
     return response.redirect().back()

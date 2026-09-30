@@ -1,13 +1,12 @@
 import { Head, router } from '@inertiajs/react'
-import { Transmit } from '@adonisjs/transmit-client'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import { EXERCISE_COLORS, EXERCISE_LIST, EXERCISE_SLUGS } from '~/config/exercises'
 import type { ExerciseType } from '~/types'
-import { useAuth } from '~/hooks/use_auth'
+import { useLivePdfExport } from '~/hooks/use_live_pdf_export'
 import type { Employee } from '~/types/employee'
 
 type SynthesisProps = {
@@ -35,57 +34,23 @@ export default function EmployeeSynthesisPage({
   latestCompletedByType,
   latestPdfJob,
 }: SynthesisProps) {
-  const { user } = useAuth()
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
-  const [livePdfJob, setLivePdfJob] = useState<SynthesisProps['latestPdfJob']>(latestPdfJob)
-  const [expertCommentsShared, setExpertCommentsShared] = useState(synthesis.expertCommentsShared ?? '')
-  const [expertNotesInternal, setExpertNotesInternal] = useState(synthesis.expertNotesInternal ?? '')
+  const livePdfJob = useLivePdfExport(employeeId, latestPdfJob)
+  const [expertCommentsShared, setExpertCommentsShared] = useState(
+    synthesis.expertCommentsShared ?? ''
+  )
+  const [expertNotesInternal, setExpertNotesInternal] = useState(
+    synthesis.expertNotesInternal ?? ''
+  )
   const [executiveSummaryOverride, setExecutiveSummaryOverride] = useState(
     synthesis.executiveSummaryOverride ?? ''
   )
 
   const isShared = synthesis.shareStatus === 'shared'
 
-  useEffect(() => {
-    setLivePdfJob(latestPdfJob)
-  }, [latestPdfJob])
-
-  useEffect(() => {
-    if (!user || typeof window === 'undefined') return
-
-    const transmit = new Transmit({ baseUrl: window.location.origin })
-    const subscription = transmit.subscription(`users/${user.id}/pdf-exports`)
-    let unsubscribe: (() => void) | null = null
-
-    subscription
-      .create()
-      .then(() => {
-        unsubscribe = subscription.onMessage((data: any) => {
-          const exportId = Number(data?.id)
-          const status = String(data?.status ?? '')
-          const exportEmployeeId = Number(data?.employeeId)
-
-          if (!exportId || !status) return
-          if (exportEmployeeId !== Number(employeeId)) return
-
-          setLivePdfJob({
-            id: exportId,
-            status,
-            downloadUrl: status === 'completed' ? `/dashboard/pdf-exports/${exportId}/download` : null,
-          })
-        })
-      })
-      .catch(() => {})
-
-    return () => {
-      if (unsubscribe) unsubscribe()
-      subscription.delete().catch(() => {})
-    }
-  }, [employeeId, user])
-
   const latestResults = useMemo(() => {
-    const byType = new Map<string, typeof employee.exercises[0]>()
+    const byType = new Map<string, (typeof employee.exercises)[0]>()
     for (const res of employee.exercises) {
       const key = (res.type as string).toLowerCase()
       const existing = byType.get(key)
@@ -148,9 +113,15 @@ export default function EmployeeSynthesisPage({
           </div>
           <div className="flex flex-wrap gap-2 items-center">
             <AppLink href={`/dashboard/conseiller/employees/${employeeId}`}>
-              <Button variant="outline" size="sm">Retour</Button>
+              <Button variant="outline" size="sm">
+                Retour
+              </Button>
             </AppLink>
-            <Button variant={isShared ? 'outline' : 'emphasis'} size="sm" onClick={handleShareToggle}>
+            <Button
+              variant={isShared ? 'outline' : 'emphasis'}
+              size="sm"
+              onClick={handleShareToggle}
+            >
               {isShared ? 'Désactiver le partage' : 'Partager au talent'}
             </Button>
             {livePdfJob?.downloadUrl ? (
@@ -191,7 +162,8 @@ export default function EmployeeSynthesisPage({
                 placeholder="Message au talent, recommandations, angles de lecture…"
               />
               <div className="mt-3 text-xs text-brand-navy/50">
-                Statut partage: <span className="font-bold">{isShared ? 'Partagé' : 'Brouillon'}</span>
+                Statut partage:{' '}
+                <span className="font-bold">{isShared ? 'Partagé' : 'Brouillon'}</span>
               </div>
             </Card>
 
@@ -212,7 +184,9 @@ export default function EmployeeSynthesisPage({
                 Résultats (derniers complétés par type)
               </h3>
               {latestResults.length === 0 ? (
-                <p className="text-sm text-brand-navy/60">Aucun exercice complété pour l’instant.</p>
+                <p className="text-sm text-brand-navy/60">
+                  Aucun exercice complété pour l’instant.
+                </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {latestResults.map((res) => {
@@ -221,7 +195,9 @@ export default function EmployeeSynthesisPage({
                       (res.type as string).toLowerCase()
                     const title =
                       EXERCISE_LIST.find((e) => e.slug === slug)?.title ?? (res.type as string)
-                    const isLatestCompleted = Boolean(latestCompletedByType[(res.type as string).toLowerCase()])
+                    const isLatestCompleted = Boolean(
+                      latestCompletedByType[(res.type as string).toLowerCase()]
+                    )
                     const colors = EXERCISE_COLORS[res.type as ExerciseType]
                     return (
                       <AppLink
@@ -231,7 +207,11 @@ export default function EmployeeSynthesisPage({
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}>{title}</div>
+                            <div
+                              className={`font-bold ${colors ? colors.text : 'text-brand-navy'}`}
+                            >
+                              {title}
+                            </div>
                             <div className="text-xs text-brand-navy/50 mt-1">
                               Score: {res.quantitativeScore ?? 0}
                             </div>
@@ -271,4 +251,3 @@ export default function EmployeeSynthesisPage({
     </DashboardLayout>
   )
 }
-

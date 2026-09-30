@@ -1,6 +1,11 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import Synthesis from '../../../../../inertia/pages/dashboard/candidat/Synthesis'
+
+const transmitMock = vi.hoisted(() => ({
+  channels: [] as string[],
+  handler: null as null | ((data: unknown) => void),
+}))
 
 // ─── mocks ────────────────────────────────────────────────────────────────────
 
@@ -12,6 +17,26 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
     router: { post: vi.fn() },
   }
 })
+
+vi.mock('../../../../../inertia/hooks/use_auth', () => ({
+  useAuth: () => ({ user: { id: 5, role: 'employee', name: 'Jean Dupont' } }),
+}))
+
+vi.mock('@adonisjs/transmit-client', () => ({
+  Transmit: vi.fn().mockImplementation(() => ({
+    subscription: (channel: string) => {
+      transmitMock.channels.push(channel)
+      return {
+        create: () => Promise.resolve(),
+        delete: () => Promise.resolve(),
+        onMessage: (handler: (data: unknown) => void) => {
+          transmitMock.handler = handler
+          return () => {}
+        },
+      }
+    },
+  })),
+}))
 
 vi.mock('../../../../../inertia/components/dashboard/DashboardLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => (
@@ -46,7 +71,12 @@ const sharedSynthesis = {
 // ─── tests ────────────────────────────────────────────────────────────────────
 
 describe('CandidateSynthesisPage — bouton PDF', () => {
-  test('affiche "Générer le PDF (async)" quand latestPdfJob est null', () => {
+  beforeEach(() => {
+    transmitMock.channels = []
+    transmitMock.handler = null
+  })
+
+  test('affiche "Générer le PDF" quand latestPdfJob est null', () => {
     render(
       <Synthesis
         shared={true}
@@ -58,11 +88,11 @@ describe('CandidateSynthesisPage — bouton PDF', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /Générer le PDF \(async\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Générer le PDF/i })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Télécharger le PDF/i })).not.toBeInTheDocument()
   })
 
-  test("affiche \"Générer le PDF (async)\" quand latestPdfJob existe mais sans downloadUrl", () => {
+  test('affiche la génération en cours quand le dernier export est en attente', () => {
     render(
       <Synthesis
         shared={true}
@@ -74,8 +104,50 @@ describe('CandidateSynthesisPage — bouton PDF', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /Générer le PDF \(async\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/Génération du PDF en cours/i)
+    expect(screen.queryByRole('button', { name: /Générer/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Télécharger le PDF/i })).not.toBeInTheDocument()
+  })
+
+  test('propose de réessayer quand la génération a échoué', () => {
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={{ id: 7, status: 'failed', downloadUrl: null }}
+      />
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/a échoué/i)
+    expect(screen.getByRole('button', { name: /Générer le PDF/i })).toBeInTheDocument()
+  })
+
+  test('affiche le lien dès que Transmit annonce le PDF prêt (#70)', async () => {
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={{ id: 9, status: 'processing', downloadUrl: null }}
+      />
+    )
+    await act(async () => {})
+    expect(transmitMock.channels).toEqual(['users/5/pdf-exports'])
+
+    // Export d'un autre candidat : ignoré.
+    act(() => transmitMock.handler?.({ id: 10, status: 'completed', employeeId: 2 }))
+    expect(screen.queryByRole('link', { name: /Télécharger le PDF/i })).not.toBeInTheDocument()
+
+    act(() => transmitMock.handler?.({ id: 9, status: 'completed', employeeId: 1 }))
+    expect(screen.getByRole('link', { name: /Télécharger le PDF/i })).toHaveAttribute(
+      'href',
+      '/dashboard/pdf-exports/9/download'
+    )
   })
 
   test('affiche le lien de téléchargement quand downloadUrl est défini', () => {
@@ -115,9 +187,13 @@ describe('CandidateSynthesisPage — bouton PDF', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /Générer le PDF \(async\)/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Générer le PDF/i }))
     expect(router.post).toHaveBeenCalledOnce()
-    expect(router.post).toHaveBeenCalledWith('/dashboard/candidat/synthesis/pdf')
+    expect(router.post).toHaveBeenCalledWith(
+      '/dashboard/candidat/synthesis/pdf',
+      {},
+      { preserveScroll: true }
+    )
   })
 })
 

@@ -23,7 +23,6 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
     'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
     'dashboard/candidat/Synthesis': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/Synthesis.tsx'))['default']>
-    'dashboard/CandidatProfile': ExtractProps<(typeof import('../../inertia/pages/dashboard/CandidatProfile.tsx'))['default']>
     'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
     'dashboard/conseiller/employees/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/List.tsx'))['default']>
     'dashboard/conseiller/employees/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/StepDetail.tsx'))['default']>

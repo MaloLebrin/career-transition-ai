@@ -7,7 +7,7 @@ import User from '#models/user'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
-import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
+import type { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import { test } from '@japa/runner'
@@ -93,11 +93,11 @@ async function seedAdvisorWithEmployee(prefix: string) {
   return { org, advisorUser, candidateUser, employee }
 }
 
-// Minimal controller instance — les services PDF ne sont pas appelés dans ces méthodes
+// Minimal controller instance — ni la synthèse ni les notifications ne sont appelées ici
 function makeController() {
   return new EmployeeSynthesesController(
     {} as EmployeeSynthesisService,
-    {} as EmployeeSynthesisPdfService
+    {} as CandidateNotificationsService
   )
 }
 

@@ -116,7 +116,9 @@ describe('EmployeeHome — contenu', () => {
   }
 
   test('affiche un loader sans accompagné', () => {
-    const { container } = render(<EmployeeHome {...baseProps} employee={null as unknown as EmployeeData} />)
+    const { container } = render(
+      <EmployeeHome {...baseProps} employee={null as unknown as EmployeeData} />
+    )
     expect(container.querySelector('.animate-spin')).toBeInTheDocument()
   })
 
@@ -156,6 +158,11 @@ describe('EmployeeHome — contenu', () => {
     expect(screen.getByRole('link', { name: /Mon Profil Vitaminé/ })).toHaveAttribute(
       'href',
       '/dashboard/candidat/profile'
+    )
+    // #70 : la synthèse partagée est accessible depuis l'accueil.
+    expect(screen.getByRole('link', { name: /Ma synthèse/ })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/synthesis'
     )
   })
 

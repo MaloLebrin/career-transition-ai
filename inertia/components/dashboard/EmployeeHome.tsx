@@ -36,18 +36,20 @@ export default function EmployeeHome({
           </h2>
           <p className="text-white/60 text-lg opacity-90 max-w-xl">
             Votre transition vers{' '}
-            <span className="text-white font-bold">{employee.targetRole}</span> est boostée
-            à l'IA.
+            <span className="text-white font-bold">{employee.targetRole}</span> est boostée à l'IA.
           </p>
-          <AppLink href="/dashboard/candidat/profile">
-            <Button
-              variant="outline"
-              className="mt-10 bg-white text-brand-navy border-none"
-              size="lg"
-            >
-              Mon Profil Vitaminé
-            </Button>
-          </AppLink>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <AppLink href="/dashboard/candidat/profile">
+              <Button variant="outline" className="bg-white text-brand-navy border-none" size="lg">
+                Mon Profil Vitaminé
+              </Button>
+            </AppLink>
+            <AppLink href="/dashboard/candidat/synthesis">
+              <Button variant="outline" className="border-white/30 text-white" size="lg">
+                Ma synthèse
+              </Button>
+            </AppLink>
+          </div>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
