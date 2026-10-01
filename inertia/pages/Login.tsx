@@ -16,7 +16,6 @@ export default function Login() {
         csrfToken={props.csrfToken}
         error={flashError ?? null}
         success={props.flash?.success ?? null}
-        onBackToLanding={() => router.visit('/offre')}
         onGoToRegister={
           props.registrationEnabled ? () => router.visit('/auth/register') : undefined
         }

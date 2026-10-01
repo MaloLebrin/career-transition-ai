@@ -4,7 +4,6 @@ import RegisterPage from '../../../../inertia/components/auth/RegisterPage'
 
 const defaultProps = {
   csrfToken: 'test-csrf-token',
-  onBackToLanding: vi.fn(),
   onGoToLogin: vi.fn(),
   error: null as string | null,
 }
