@@ -11,7 +11,7 @@ describe('Card', () => {
   test('applies default variant styles', () => {
     const { container } = render(<Card>X</Card>)
     const div = container.firstElementChild
-    expect(div).toHaveClass('rounded-3xl', 'p-8')
+    expect(div).toHaveClass('rounded-xl', 'p-8', 'bg-surface')
   })
 
   test('applies variant and className', () => {
@@ -21,7 +21,30 @@ describe('Card', () => {
       </Card>
     )
     const div = container.firstElementChild
-    expect(div).toHaveClass('bg-brand-navy', 'custom')
+    expect(div).toHaveClass('bg-ink', 'custom')
+  })
+
+  test('applies padding and interactive options', () => {
+    const { container } = render(
+      <Card padding="md" interactive>
+        P
+      </Card>
+    )
+    const div = container.firstElementChild
+    expect(div).toHaveClass('p-6', 'hover:shadow-raised')
+    expect(div).not.toHaveClass('p-8')
+  })
+
+  test('maps deprecated variants onto the new tones', () => {
+    const { container } = render(
+      <>
+        <Card variant="amber">A</Card>
+        <Card variant="sage">S</Card>
+      </>
+    )
+    const [amber, sage] = Array.from(container.children)
+    expect(amber).toHaveClass('bg-accent-warm-soft')
+    expect(sage).toHaveClass('bg-primary-soft')
   })
 
   test('forwards other div props', () => {

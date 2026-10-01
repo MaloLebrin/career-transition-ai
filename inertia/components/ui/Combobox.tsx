@@ -81,26 +81,33 @@ export default function Combobox<T extends ComboboxOption>({
 
   const filteredOptions = useMemo(() => {
     if (!query.trim()) return options.slice(0, maxDisplayed)
-    
+
     const lowerQuery = query.toLowerCase().trim()
     return options
-      .filter((option) =>
-        option.label.toLowerCase().includes(lowerQuery) ||
-        option.description?.toLowerCase().includes(lowerQuery)
+      .filter(
+        (option) =>
+          option.label.toLowerCase().includes(lowerQuery) ||
+          option.description?.toLowerCase().includes(lowerQuery)
       )
       .slice(0, maxDisplayed)
   }, [options, query, maxDisplayed])
 
-  const handleClear = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    onChange(null)
-    setQuery('')
-  }, [onChange])
+  const handleClear = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onChange(null)
+      setQuery('')
+    },
+    [onChange]
+  )
 
-  const handleChange = useCallback((option: T | null) => {
-    onChange(option)
-    setQuery('')
-  }, [onChange])
+  const handleChange = useCallback(
+    (option: T | null) => {
+      onChange(option)
+      setQuery('')
+    },
+    [onChange]
+  )
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value)
@@ -116,7 +123,9 @@ export default function Combobox<T extends ComboboxOption>({
       ? 'border-rose-300 bg-rose-50 focus-within:border-rose-400 focus-within:ring-rose-400/10'
       : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
     disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : '',
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   const inputClassName = [
     'flex-1 min-w-0 border-0 rounded-none bg-transparent outline-none font-medium',
@@ -133,16 +142,15 @@ export default function Combobox<T extends ComboboxOption>({
         >
           {label}
           {required && (
-            <span className="text-rose-500" aria-hidden="true"> *</span>
+            <span className="text-rose-500" aria-hidden="true">
+              {' '}
+              *
+            </span>
           )}
         </label>
       )}
 
-      <HeadlessCombobox
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-      >
+      <HeadlessCombobox value={value} onChange={handleChange} disabled={disabled}>
         <div className="relative">
           <div className={wrapperClassName}>
             <ComboboxInput
@@ -171,13 +179,9 @@ export default function Combobox<T extends ComboboxOption>({
             </div>
           </div>
 
-          <ComboboxOptions
-            className="absolute left-0 right-0 z-[300] mt-2 max-h-60 overflow-auto rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none"
-          >
+          <ComboboxOptions className="absolute left-0 right-0 z-[300] mt-2 max-h-60 overflow-auto rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none">
             {filteredOptions.length === 0 && !showCreateOption ? (
-              <div className="px-4 py-3 text-sm text-slate-500 italic">
-                {emptyMessage}
-              </div>
+              <div className="px-4 py-3 text-sm text-slate-500 italic">{emptyMessage}</div>
             ) : (
               <>
                 {filteredOptions.map((option) => (
@@ -225,11 +229,7 @@ export default function Combobox<T extends ComboboxOption>({
           {error}
         </p>
       )}
-      {hint && !error && (
-        <p className="text-[9px] font-medium text-slate-400 px-2">
-          {hint}
-        </p>
-      )}
+      {hint && !error && <p className="text-[9px] font-medium text-slate-400 px-2">{hint}</p>}
     </div>
   )
 }

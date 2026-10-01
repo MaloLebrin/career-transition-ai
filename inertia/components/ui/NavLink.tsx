@@ -1,7 +1,15 @@
 import { Link, usePage } from '@inertiajs/react'
 import React, { memo } from 'react'
 
-export type NavLinkIcon = 'dashboard' | 'users' | 'settings' | 'palette' | 'building' | 'user' | 'target' | 'pdf'
+export type NavLinkIcon =
+  | 'dashboard'
+  | 'users'
+  | 'settings'
+  | 'palette'
+  | 'building'
+  | 'user'
+  | 'target'
+  | 'pdf'
 
 export interface NavLinkProps {
   'href': string
@@ -110,9 +118,11 @@ const NavLink = memo(function NavLink({
   badgeCount,
 }: NavLinkProps) {
   const { url } = usePage()
-  const isAreaRoot = ['/dashboard/conseiller', '/dashboard/candidat', '/dashboard/super-admin'].includes(
-    href
-  )
+  const isAreaRoot = [
+    '/dashboard/conseiller',
+    '/dashboard/candidat',
+    '/dashboard/super-admin',
+  ].includes(href)
   const active =
     href === '/dashboard'
       ? url === '/dashboard' || url === '/dashboard/'
@@ -121,22 +131,25 @@ const NavLink = memo(function NavLink({
   return (
     <Link
       href={href}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${active
-        ? 'bg-brand-sage/10 text-brand-sage font-bold'
-        : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
-        }`}
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${
+        active
+          ? 'bg-brand-sage/10 text-brand-sage font-bold'
+          : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
+      }`}
       aria-current={active ? 'page' : undefined}
       aria-label={ariaLabel ?? label}
     >
       <div
-        className={`transition-colors duration-200 ${active ? 'text-brand-sage' : 'text-brand-navy/20 group-hover:text-brand-navy/40'
-          }`}
+        className={`transition-colors duration-200 ${
+          active ? 'text-brand-sage' : 'text-brand-navy/20 group-hover:text-brand-navy/40'
+        }`}
       >
         {ICONS[icon]}
       </div>
       <span
-        className={`text-[11px] uppercase tracking-wider transition-colors duration-200 ${active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
-          }`}
+        className={`text-[11px] uppercase tracking-wider transition-colors duration-200 ${
+          active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
+        }`}
       >
         {label}
       </span>

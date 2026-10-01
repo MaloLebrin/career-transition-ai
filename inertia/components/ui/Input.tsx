@@ -1,5 +1,16 @@
 import React, { forwardRef, useState, useCallback, memo } from 'react'
-import { Eye, EyeOff, X } from 'lucide-react'
+import { InputActions } from './input/InputActions'
+import {
+  ADDON_CLASSES,
+  ERROR_MESSAGE_CLASSES,
+  HINT_MESSAGE_CLASSES,
+  LABEL_CLASSES,
+  REQUIRED_MARK_CLASSES,
+  fieldClassName,
+  innerFieldClassName,
+  wrapperClassName,
+  type FieldSize,
+} from './input/input_classes'
 
 /** Types d'input courants pour formulaires (évite les typos et améliore l'autocomplétion) */
 export type InputType =
@@ -60,7 +71,7 @@ export interface InputProps extends Omit<
   /** Texte d'aide sous le champ (hors erreur) */
   'hint'?: string
   /** Taille visuelle du champ */
-  'sizeVariant'?: 'sm' | 'md' | 'lg'
+  'sizeVariant'?: FieldSize
   /** Élément optionnel à gauche du champ (icône, préfixe) */
   'leftAddon'?: React.ReactNode
   /** Élément optionnel à droite du champ (icône, suffixe) */
@@ -90,19 +101,6 @@ const CLEARABLE_TYPES = new Set<InputType>([
   'week',
   'time',
 ])
-
-const sizeClasses = {
-  sm: 'py-2 px-3 text-xs',
-  md: 'py-3 px-4 text-sm',
-  lg: 'py-4 px-5 text-base',
-} as const
-
-/** Hauteur min. du conteneur pour aligner visuellement tous les champs (avec ou sans bouton d’action). */
-const minHeightBySize = {
-  sm: 'min-h-[42px]',
-  md: 'min-h-[54px]',
-  lg: 'min-h-[62px]',
-} as const
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
@@ -146,10 +144,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const showClear = showClearButton !== false && isClearableType && hasValue && !disabled
     const showPasswordBtn = isPassword && showPasswordToggle && !disabled
 
-    // Structure stable : wrapper dès qu’on peut avoir des actions (évite remount de l’input au 2e caractère)
-    const canHaveActions =
+    // Structure stable : conteneur dès qu'on peut avoir des actions (évite un remount de l'input)
+    const hasActions =
       showPasswordBtn || (isClearableType && showClearButton !== false && !disabled)
-    const hasActions = canHaveActions
 
     const effectiveType: React.InputHTMLAttributes<HTMLInputElement>['type'] =
       isPassword && showPassword ? 'text' : type
@@ -174,60 +171,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const handleTogglePassword = useCallback(() => setShowPassword((p) => !p), [])
 
-    // Accessibilité : décrire par erreur et/ou hint pour les lecteurs d'écran
     const describedByIds =
       [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') || undefined
 
-    const baseInputClasses = [
-      'w-full bg-white border rounded-2xl outline-none font-medium transition-all',
-      'placeholder:text-brand-navy/20',
-      'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50',
-      sizeClasses[sizeVariant],
-      minHeightBySize[sizeVariant],
-    ]
-
-    const stateClasses = error
-      ? 'border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-4 focus:ring-rose-400/10'
-      : success
-        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-        : 'border-brand-navy/10 focus:border-brand-sage focus:ring-4 focus:ring-brand-sage/5'
-
-    const standaloneInputClassName = [...baseInputClasses, stateClasses, className]
-      .filter(Boolean)
-      .join(' ')
-
-    const addonInputClassName = [
-      'flex-1 min-w-0 border-0 rounded-none focus:ring-0 bg-transparent outline-none font-medium',
-      'placeholder:text-brand-navy/20 disabled:opacity-50 disabled:cursor-not-allowed',
-      sizeClasses[sizeVariant],
-    ].join(' ')
-
-    const wrapperClassName = [
-      'flex items-stretch rounded-2xl border overflow-hidden bg-white',
-      'focus-within:ring-4 focus-within:outline-none',
-      error
-        ? 'border-rose-300 bg-rose-50 focus-within:border-rose-400 focus-within:ring-rose-400/10'
-        : success
-          ? 'border-emerald-300 focus-within:border-emerald-500 focus-within:ring-emerald-500/10'
-          : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
-    ].join(' ')
-
-    const inputClassName = hasAddons || hasActions ? addonInputClassName : standaloneInputClassName
-    // Wrapper sans padding : même hauteur que l'input seul (padding porté par l'input à l'intérieur)
-    const actionsWrapperClassName = hasActions
-      ? [
-          'flex items-stretch rounded-2xl border overflow-hidden bg-white outline-none font-medium transition-all',
-          'focus-within:ring-4 focus-within:outline-none',
-          error
-            ? 'border-rose-300 bg-rose-50 focus-within:border-rose-400 focus-within:ring-rose-400/10'
-            : success
-              ? 'border-emerald-300 focus-within:border-emerald-500 focus-within:ring-emerald-500/10'
-              : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
-          minHeightBySize[sizeVariant],
-          className,
-        ].join(' ')
-      : ''
-
+    const state = { error: Boolean(error), success }
+    const wrapped = hasAddons || hasActions
     const inputEl = (
       <input
         ref={ref}
@@ -237,7 +185,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         autoComplete={autoComplete}
         disabled={disabled}
         required={required}
-        className={inputClassName}
+        className={
+          wrapped
+            ? innerFieldClassName(sizeVariant)
+            : fieldClassName({ size: sizeVariant, ...state, className })
+        }
         aria-invalid={Boolean(error)}
         aria-required={required}
         aria-describedby={describedByIds}
@@ -248,39 +200,26 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       />
     )
 
-    const actionButtons = (
-      <div className="flex items-center gap-0.5 shrink-0 pr-2">
-        {showClear && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
-            aria-label="Vider le champ"
-          >
-            <X className="w-4 h-4" aria-hidden />
-          </button>
-        )}
-        {showPasswordBtn && (
-          <button
-            type="button"
-            onClick={handleTogglePassword}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
-            aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-          >
-            {showPassword ? (
-              <EyeOff className="w-4 h-4" aria-hidden />
-            ) : (
-              <Eye className="w-4 h-4" aria-hidden />
-            )}
-          </button>
-        )}
-      </div>
+    const actions = (
+      <InputActions
+        showClear={showClear}
+        onClear={handleClear}
+        showPasswordToggle={showPasswordBtn}
+        passwordVisible={showPassword}
+        onTogglePassword={handleTogglePassword}
+      />
     )
 
     const fieldContent = hasActions ? (
-      <div className={hasAddons ? 'flex flex-1 min-w-0' : actionsWrapperClassName}>
+      <div
+        className={
+          hasAddons
+            ? 'flex flex-1 min-w-0'
+            : wrapperClassName({ size: sizeVariant, ...state, className })
+        }
+      >
         {inputEl}
-        {actionButtons}
+        {actions}
       </div>
     ) : (
       inputEl
@@ -295,14 +234,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         aria-labelledby={label ? labelId : undefined}
       >
         {label && (
-          <label
-            id={labelId}
-            htmlFor={id}
-            className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block"
-          >
+          <label id={labelId} htmlFor={id} className={LABEL_CLASSES}>
             {label}
             {required && (
-              <span className="text-rose-500" aria-hidden="true">
+              <span className={REQUIRED_MARK_CLASSES} aria-hidden="true">
                 {' '}
                 *
               </span>
@@ -310,29 +245,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         {hasAddons ? (
-          <div className={wrapperClassName}>
-            {leftAddon && (
-              <div className="flex items-center pl-4 text-brand-navy/40 bg-slate-50/50">
-                {leftAddon}
-              </div>
-            )}
+          <div className={wrapperClassName({ size: sizeVariant, ...state, className })}>
+            {leftAddon && <div className={`${ADDON_CLASSES} pl-3.5`}>{leftAddon}</div>}
             {fieldContent}
-            {rightAddon && (
-              <div className="flex items-center pr-4 text-brand-navy/40 bg-slate-50/50">
-                {rightAddon}
-              </div>
-            )}
+            {rightAddon && <div className={`${ADDON_CLASSES} pr-3.5`}>{rightAddon}</div>}
           </div>
         ) : (
           fieldContent
         )}
         {error && (
-          <p id={`${id}-error`} className="text-[9px] font-bold text-rose-500 px-2" role="alert">
+          <p id={`${id}-error`} className={ERROR_MESSAGE_CLASSES} role="alert">
             {error}
           </p>
         )}
         {hint && !error && (
-          <p id={`${id}-hint`} className="text-[9px] font-medium text-slate-400 px-2">
+          <p id={`${id}-hint`} className={HINT_MESSAGE_CLASSES}>
             {hint}
           </p>
         )}

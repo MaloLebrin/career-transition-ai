@@ -196,7 +196,9 @@ const DateTimePicker = memo(function DateTimePicker({
           aria-required={required ? 'true' : 'false'}
           aria-describedby={describedBy}
         >
-          <option value="">{dateLabel ? 'Choisir une heure' : 'Sélectionnez une date d’abord'}</option>
+          <option value="">
+            {dateLabel ? 'Choisir une heure' : 'Sélectionnez une date d’abord'}
+          </option>
           {timeOptions.map((t) => (
             <option key={t} value={t}>
               {t}
@@ -221,4 +223,3 @@ const DateTimePicker = memo(function DateTimePicker({
 DateTimePicker.displayName = 'DateTimePicker'
 
 export default DateTimePicker
-

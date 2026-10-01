@@ -27,7 +27,10 @@ export interface MarkdownContentProps {
 /**
  * Renders markdown safely (no raw HTML). Styled for long-form copy in tinted panels.
  */
-const MarkdownContent = memo(function MarkdownContent({ children, className }: MarkdownContentProps) {
+const MarkdownContent = memo(function MarkdownContent({
+  children,
+  className,
+}: MarkdownContentProps) {
   const rootClass = [
     'relative z-10 text-sm font-medium leading-relaxed text-violet-900',
     '[&_p]:mb-3 [&_p:last-child]:mb-0',

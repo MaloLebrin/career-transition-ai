@@ -16,10 +16,7 @@ const Breadcrumb = memo(function Breadcrumb({ items, className = '' }: Breadcrum
   if (items.length === 0) return null
 
   return (
-    <nav
-      aria-label="Fil d'Ariane"
-      className={`w-full py-4 ${className}`}
-    >
+    <nav aria-label="Fil d'Ariane" className={`w-full py-4 ${className}`}>
       <ol className="flex items-center gap-2 text-sm">
         {items.map((item, index) => {
           const isLast = index === items.length - 1
@@ -27,9 +24,7 @@ const Breadcrumb = memo(function Breadcrumb({ items, className = '' }: Breadcrum
 
           return (
             <li key={index} className="flex items-center gap-2">
-              {index > 0 && (
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-              )}
+              {index > 0 && <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />}
               {isLast ? (
                 <span className="font-semibold text-slate-900 truncate max-w-[200px]">
                   {item.label}
@@ -43,9 +38,7 @@ const Breadcrumb = memo(function Breadcrumb({ items, className = '' }: Breadcrum
                   <span className="truncate max-w-[150px]">{item.label}</span>
                 </AppLink>
               ) : (
-                <span className="text-slate-400 truncate max-w-[150px]">
-                  {item.label}
-                </span>
+                <span className="text-slate-400 truncate max-w-[150px]">{item.label}</span>
               )}
             </li>
           )

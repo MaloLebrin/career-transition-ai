@@ -3,7 +3,16 @@ import { render, screen } from '@testing-library/react'
 import AppLink from '../../../../inertia/components/ui/AppLink'
 
 vi.mock('@inertiajs/react', () => ({
-  Link: ({ href, className, children, ...rest }: { href: string; className?: string; children: React.ReactNode }) => (
+  Link: ({
+    href,
+    className,
+    children,
+    ...rest
+  }: {
+    href: string
+    className?: string
+    children: React.ReactNode
+  }) => (
     <a href={href} className={className} data-inertia-link="true" {...rest}>
       {children}
     </a>
