@@ -1,6 +1,8 @@
 import React from 'react'
 import { ShowcaseSection } from './ShowcaseSection'
 
+const TINTS = ['sun', 'apricot', 'meadow', 'lake', 'lavender', 'blossom', 'sky'] as const
+
 interface ColorToken {
   name: string
   usage: string
@@ -11,9 +13,10 @@ const GROUPS: { title: string; tokens: ColorToken[] }[] = [
   {
     title: 'Surfaces',
     tokens: [
-      { name: 'canvas', usage: 'Fond de page' },
+      { name: 'canvas', usage: 'Fond de page, ivoire' },
       { name: 'surface', usage: 'Cartes, champs' },
       { name: 'surface-soft', usage: 'Bandes alternées' },
+      { name: 'surface-strong', usage: 'Fonds désactivés' },
       { name: 'hairline', usage: 'Bordures 1 px' },
       { name: 'hairline-strong', usage: 'Champs, outline' },
     ],
@@ -25,16 +28,22 @@ const GROUPS: { title: string; tokens: ColorToken[] }[] = [
       { name: 'ink-soft', usage: 'Texte courant', onInk: true },
       { name: 'muted', usage: 'Texte secondaire', onInk: true },
       { name: 'muted-soft', usage: 'Placeholders', onInk: true },
+      { name: 'on-ink-soft', usage: 'Texte sur ink' },
     ],
   },
   {
     title: 'Action',
     tokens: [
-      { name: 'primary', usage: 'Bouton principal, liens', onInk: true },
+      { name: 'primary', usage: 'Bouton principal (encre)', onInk: true },
       { name: 'primary-pressed', usage: 'Survol', onInk: true },
-      { name: 'primary-soft', usage: 'Fonds de badge' },
-      { name: 'accent-warm', usage: 'CTA chaud, avertissements', onInk: true },
-      { name: 'accent-warm-soft', usage: 'Fonds chauds' },
+      { name: 'primary-soft', usage: 'Lignes sélectionnées' },
+      { name: 'accent', usage: 'Liens, focus, sur-titres', onInk: true },
+      { name: 'accent-pressed', usage: 'Survol des liens', onInk: true },
+      { name: 'accent-soft', usage: 'État actif, tuiles' },
+      { name: 'accent-on-ink', usage: 'Teal sur ink' },
+      { name: 'sun', usage: 'Bouton secondaire, texte encre' },
+      { name: 'sun-pressed', usage: 'Survol' },
+      { name: 'sun-soft', usage: 'Tuiles, carte sun' },
     ],
   },
   {
@@ -47,15 +56,12 @@ const GROUPS: { title: string; tokens: ColorToken[] }[] = [
     ],
   },
   {
-    title: 'Teintes pastel',
-    tokens: [
-      { name: 'tint-sage', usage: 'Catégorie' },
-      { name: 'tint-teal', usage: 'Catégorie' },
-      { name: 'tint-sand', usage: 'Catégorie' },
-      { name: 'tint-terracotta', usage: 'Catégorie' },
-      { name: 'tint-lavender', usage: 'Catégorie' },
-      { name: 'tint-sky', usage: 'Catégorie' },
-    ],
+    title: 'Teintes expressives (fond + texte -ink)',
+    tokens: TINTS.map((tint) => ({ name: `tint-${tint}`, usage: 'Catégorie, badge' })),
+  },
+  {
+    title: 'Teintes vives (décor, jamais de texte)',
+    tokens: TINTS.map((tint) => ({ name: `tint-${tint}-bold`, usage: 'Illustration, graphique' })),
   },
 ]
 

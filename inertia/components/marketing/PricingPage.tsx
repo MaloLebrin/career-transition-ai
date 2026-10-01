@@ -116,7 +116,7 @@ export default function PricingPage() {
         title="Affinons le bon niveau pour votre cabinet."
         description="Décrivez votre organisation et votre volume : nous revenons vers vous avec une grille tarifaire adaptée (sièges, bilans, options)."
       >
-        <AppLink href="/offre" className="text-sm font-medium text-primary hover:underline">
+        <AppLink href="/offre" className="text-sm font-medium text-accent hover:underline">
           Voir l’offre détaillée
         </AppLink>
       </MarketingDemoSection>
@@ -126,7 +126,7 @@ export default function PricingPage() {
         description="Écrivez-nous ou demandez une démo : nous vous proposons une grille claire, sans surprise."
         actions={
           <>
-            <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+            <a href="#demo" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
               Demander un devis
             </a>
             <AppLink

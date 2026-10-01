@@ -25,7 +25,7 @@ export default function ForgotPassword() {
         title="Mot de passe oublié"
         subtitle="Saisissez l’adresse e-mail de votre compte : nous vous envoyons un lien pour choisir un nouveau mot de passe."
         footer={
-          <AppLink href="/auth/login" className="font-medium text-primary hover:underline">
+          <AppLink href="/auth/login" className="font-medium text-accent hover:underline">
             Retour à la connexion
           </AppLink>
         }

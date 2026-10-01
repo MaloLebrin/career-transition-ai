@@ -18,6 +18,6 @@ describe('StatCard', () => {
   test('applies color variant', () => {
     const { container } = render(<StatCard label="X" value="99%" color="sage" />)
     const article = container.querySelector('article')
-    expect(article?.querySelector('[class*="bg-brand-sage"]')).toBeInTheDocument()
+    expect(article?.querySelector('[class*="bg-accent-soft"]')).toBeInTheDocument()
   })
 })

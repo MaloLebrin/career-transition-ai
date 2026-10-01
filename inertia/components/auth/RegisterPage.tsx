@@ -56,7 +56,7 @@ export default function RegisterPage({ csrfToken, onGoToLogin, error }: Register
           <button
             type="button"
             onClick={onGoToLogin}
-            className="font-medium text-primary hover:underline cursor-pointer"
+            className="font-medium text-accent hover:underline cursor-pointer"
           >
             Se connecter
           </button>

@@ -16,7 +16,7 @@ describe('FeatureCard', () => {
     expect(screen.getByText('Vous passez plus de temps sur l’écoute.')).toBeInTheDocument()
     const tile = screen.getByTestId('icon').parentElement
     expect(tile).toHaveAttribute('aria-hidden', 'true')
-    expect(tile).toHaveClass('bg-primary-soft', 'text-primary')
+    expect(tile).toHaveClass('bg-tint-sun', 'text-ink')
     expect(container.firstChild).toHaveClass('rounded-xl')
   })
 })

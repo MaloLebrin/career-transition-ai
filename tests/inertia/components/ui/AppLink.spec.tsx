@@ -64,13 +64,13 @@ describe('AppLink', () => {
 
   test('merges custom className and always includes cursor-pointer', () => {
     render(
-      <AppLink href="/profile" className="text-brand-sage font-bold">
+      <AppLink href="/profile" className="text-accent font-bold">
         Profil
       </AppLink>
     )
     const link = screen.getByRole('link', { name: 'Profil' })
     expect(link).toHaveClass('cursor-pointer')
-    expect(link).toHaveClass('text-brand-sage')
+    expect(link).toHaveClass('text-accent')
     expect(link).toHaveClass('font-bold')
   })
 

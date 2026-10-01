@@ -8,7 +8,7 @@ export const ExerciseCatalogue: React.FC = () => (
     {EXERCISE_LIST.map((exercise, index) => (
       <li key={exercise.slug}>
         <Card padding="md" className="flex h-full flex-col gap-3">
-          <span className="text-caption text-primary">Exercice {index + 1}</span>
+          <span className="text-caption text-accent">Exercice {index + 1}</span>
           <h3 className="text-title-sm">{exercise.title}</h3>
           <p className="text-sm leading-relaxed text-muted">{exercise.description}</p>
         </Card>

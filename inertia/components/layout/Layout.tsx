@@ -27,8 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-brand-ivory">
-      <header className="bg-white border-b border-brand-navy/5 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <header className="bg-surface border-b border-hairline sticky top-0 z-50 shadow-card">
         <div className="max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 h-20 flex justify-between items-center">
           <button
             type="button"
@@ -37,10 +37,8 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
           >
             <Logo size="md" showText={false} />
             <div className="text-left">
-              <h1 className="text-lg font-bold tracking-tight text-brand-navy leading-none">
-                {APP_NAME}
-              </h1>
-              <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest mt-1">
+              <h1 className="text-lg font-bold tracking-tight text-ink leading-none">{APP_NAME}</h1>
+              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mt-1">
                 Accompagnement Expert
               </p>
             </div>
@@ -54,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
               onClick={() => setShowLogoutModal(true)}
               variant="outline"
               size="sm"
-              className="group border-rose-100 text-rose-500 hover:bg-rose-50 hover:border-rose-200"
+              className="group border-danger/20 text-danger hover:bg-danger-soft hover:border-danger/40"
               title="Déconnexion"
               icon={
                 <svg
@@ -83,8 +81,8 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
       <main className="grow flex flex-col max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 py-10 w-full min-h-0">
         {children}
       </main>
-      <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
-        <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
+      <footer className="bg-surface border-t border-hairline p-8 text-center">
+        <div className="text-[10px] font-bold text-muted-soft uppercase tracking-[0.2em]">
           {APP_NAME} &copy; 2026
         </div>
       </footer>

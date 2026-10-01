@@ -33,8 +33,8 @@ export default function FlashBanner() {
       role="alert"
       className={
         isSuccess
-          ? 'bg-brand-sage/10 border-brand-sage/30 text-brand-sage border'
-          : 'bg-rose-50 border-rose-200 text-rose-800 border'
+          ? 'bg-success-soft border-success/30 text-success border'
+          : 'bg-danger-soft border-danger/30 text-danger border'
       }
     >
       <div className="max-w-7xl 2xl:max-w-[var(--width-app-container)] mx-auto px-6 py-3 flex items-center justify-between gap-4">
@@ -44,8 +44,8 @@ export default function FlashBanner() {
           onClick={() => setDismissed(true)}
           className={
             isSuccess
-              ? 'text-brand-sage/70 hover:text-brand-sage p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
-              : 'text-rose-500/70 hover:text-rose-600 p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
+              ? 'text-success/70 hover:text-success p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
+              : 'text-danger/70 hover:text-danger p-1 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed'
           }
           aria-label="Fermer"
         >

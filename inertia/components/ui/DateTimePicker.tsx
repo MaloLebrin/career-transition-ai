@@ -140,12 +140,12 @@ const DateTimePicker = memo(function DateTimePicker({
   )
 
   const inputClasses = [
-    'w-full bg-white border rounded-2xl outline-none font-medium transition-all text-sm h-[54px] pl-2',
-    'placeholder:text-brand-navy/20',
-    'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50',
+    'w-full bg-surface border rounded-2xl outline-none font-medium transition-all text-sm h-[54px] pl-2',
+    'placeholder:text-muted-soft',
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-soft',
     error
-      ? 'border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-4 focus:ring-rose-400/10'
-      : 'border-brand-navy/10 focus:border-brand-sage focus:ring-4 focus:ring-brand-sage/5',
+      ? 'border-danger bg-danger-soft focus:border-danger focus:ring-2 focus:ring-danger/25'
+      : 'border-hairline-strong focus:border-accent focus:ring-2 focus:ring-accent/25',
   ].join(' ')
 
   return (
@@ -158,11 +158,11 @@ const DateTimePicker = memo(function DateTimePicker({
         <label
           id={labelId}
           htmlFor={id}
-          className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block"
+          className="text-[10px] font-black text-muted uppercase tracking-widest px-2 block"
         >
           {label}
           {required && (
-            <span className="text-rose-500" aria-hidden="true">
+            <span className="text-danger" aria-hidden="true">
               {' '}
               *
             </span>
@@ -207,12 +207,12 @@ const DateTimePicker = memo(function DateTimePicker({
         </select>
       </div>
       {error && (
-        <p id={`${id}-error`} className="text-[9px] font-bold text-rose-500 px-2" role="alert">
+        <p id={`${id}-error`} className="text-[9px] font-bold text-danger px-2" role="alert">
           {error}
         </p>
       )}
       {hint && !error && (
-        <p id={`${id}-hint`} className="text-[9px] font-medium text-slate-400 px-2">
+        <p id={`${id}-hint`} className="text-[9px] font-medium text-muted px-2">
           {hint}
         </p>
       )}

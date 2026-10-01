@@ -7,7 +7,7 @@ import {
 import { LegalDocument } from './LegalDocument'
 import { LegalSection, Term } from './LegalSection'
 
-const MAIL_LINK_CLASS = 'font-medium text-primary underline-offset-4 hover:underline'
+const MAIL_LINK_CLASS = 'font-medium text-accent underline-offset-4 hover:underline'
 
 export default function PrivacyPolicyPage() {
   return (

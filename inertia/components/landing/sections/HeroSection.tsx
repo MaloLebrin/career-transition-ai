@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react'
 import React from 'react'
+import { LandscapeArt } from '~/components/marketing/LandscapeArt'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
 import { ProductMockup } from '~/components/marketing/ProductMockup'
 import AppLink from '~/components/ui/AppLink'
@@ -12,9 +13,18 @@ const PROOF_POINTS = [
   'Hébergement et traitements dans l’Union européenne',
 ]
 
-/** Hero de la page d'accueil : promesse, deux actions, points de preuve, aperçu du produit. */
+/**
+ * Hero de la page d'accueil : un paysage apaisant en panorama, puis la promesse, deux
+ * actions, les points de preuve et l'aperçu du produit.
+ */
 export const HeroSection: React.FC = () => (
-  <MarketingSection tone="canvas" className="pt-12 md:pt-20">
+  <MarketingSection tone="canvas" className="pt-8 md:pt-12">
+    <div
+      className="mb-12 aspect-[16/9] overflow-hidden rounded-2xl border border-hairline shadow-card md:aspect-[3/1] lg:mb-16"
+      data-testid="hero-landscape"
+    >
+      <LandscapeArt variant="hero" />
+    </div>
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
       <div className="space-y-8 lg:col-span-7">
         <SectionHeading
@@ -38,7 +48,7 @@ export const HeroSection: React.FC = () => (
         <ul className="flex flex-col gap-2 border-t border-hairline pt-6 text-sm text-muted sm:flex-row sm:flex-wrap sm:gap-x-6">
           {PROOF_POINTS.map((point) => (
             <li key={point} className="flex items-center gap-2">
-              <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <Check className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
               {point}
             </li>
           ))}

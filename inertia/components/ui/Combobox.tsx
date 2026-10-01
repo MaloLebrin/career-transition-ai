@@ -116,20 +116,20 @@ export default function Combobox<T extends ComboboxOption>({
   const showCreateOption = allowCreate && query.trim() && filteredOptions.length === 0
 
   const wrapperClassName = [
-    'flex items-stretch rounded-2xl border overflow-hidden bg-white transition-all',
+    'flex items-stretch rounded-2xl border overflow-hidden bg-surface transition-all',
     'focus-within:ring-4 focus-within:outline-none',
     minHeightBySize[sizeVariant],
     error
-      ? 'border-rose-300 bg-rose-50 focus-within:border-rose-400 focus-within:ring-rose-400/10'
-      : 'border-brand-navy/10 focus-within:border-brand-sage focus-within:ring-brand-sage/5',
-    disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : '',
+      ? 'border-danger bg-danger-soft focus-within:border-danger focus-within:ring-danger/25'
+      : 'border-hairline-strong focus-within:border-accent focus-within:ring-accent/25',
+    disabled ? 'opacity-50 cursor-not-allowed bg-surface-soft' : '',
   ]
     .filter(Boolean)
     .join(' ')
 
   const inputClassName = [
     'flex-1 min-w-0 border-0 rounded-none bg-transparent outline-none font-medium',
-    'placeholder:text-brand-navy/20 disabled:cursor-not-allowed',
+    'placeholder:text-muted-soft disabled:cursor-not-allowed',
     sizeClasses[sizeVariant],
   ].join(' ')
 
@@ -138,11 +138,11 @@ export default function Combobox<T extends ComboboxOption>({
       {label && (
         <label
           htmlFor={id}
-          className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block"
+          className="text-[10px] font-black text-muted uppercase tracking-widest px-2 block"
         >
           {label}
           {required && (
-            <span className="text-rose-500" aria-hidden="true">
+            <span className="text-danger" aria-hidden="true">
               {' '}
               *
             </span>
@@ -167,28 +167,28 @@ export default function Combobox<T extends ComboboxOption>({
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-soft transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 cursor-pointer disabled:cursor-not-allowed"
                   aria-label="Effacer la sélection"
                 >
                   <X className="w-4 h-4" aria-hidden />
                 </button>
               )}
-              <ComboboxButton className="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-sage/50 cursor-pointer disabled:cursor-not-allowed">
+              <ComboboxButton className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-surface-soft transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 cursor-pointer disabled:cursor-not-allowed">
                 <ChevronDown className="w-4 h-4" aria-hidden />
               </ComboboxButton>
             </div>
           </div>
 
-          <ComboboxOptions className="absolute left-0 right-0 z-[300] mt-2 max-h-60 overflow-auto rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none">
+          <ComboboxOptions className="absolute left-0 right-0 z-[300] mt-2 max-h-60 overflow-auto rounded-xl bg-surface shadow-raised ring-1 ring-hairline focus:outline-none">
             {filteredOptions.length === 0 && !showCreateOption ? (
-              <div className="px-4 py-3 text-sm text-slate-500 italic">{emptyMessage}</div>
+              <div className="px-4 py-3 text-sm text-muted italic">{emptyMessage}</div>
             ) : (
               <>
                 {filteredOptions.map((option) => (
                   <ComboboxOption
                     key={option.id}
                     value={option}
-                    className="group cursor-pointer select-none px-4 py-3 text-sm text-brand-navy data-focus:bg-brand-sage/10 data-selected:bg-brand-sage/5 transition-colors"
+                    className="group cursor-pointer select-none px-4 py-3 text-sm text-ink data-focus:bg-accent-soft data-selected:bg-surface-soft transition-colors"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -196,13 +196,13 @@ export default function Combobox<T extends ComboboxOption>({
                           {option.label}
                         </span>
                         {option.description && (
-                          <span className="text-xs text-slate-400 block truncate">
+                          <span className="text-xs text-muted block truncate">
                             {option.description}
                           </span>
                         )}
                       </div>
                       <Check
-                        className="w-4 h-4 text-brand-sage shrink-0 opacity-0 group-data-selected:opacity-100"
+                        className="w-4 h-4 text-accent shrink-0 opacity-0 group-data-selected:opacity-100"
                         aria-hidden
                       />
                     </div>
@@ -213,7 +213,7 @@ export default function Combobox<T extends ComboboxOption>({
                   <button
                     type="button"
                     onClick={() => onCreate(query.trim())}
-                    className="w-full cursor-pointer disabled:cursor-not-allowed select-none px-4 py-3 text-sm text-brand-navy hover:bg-brand-sage/10 transition-colors text-left border-t border-slate-100"
+                    className="w-full cursor-pointer disabled:cursor-not-allowed select-none px-4 py-3 text-sm text-ink hover:bg-accent-soft transition-colors text-left border-t border-hairline"
                   >
                     <span className="font-medium">Créer « {query.trim()} »</span>
                   </button>
@@ -225,11 +225,11 @@ export default function Combobox<T extends ComboboxOption>({
       </HeadlessCombobox>
 
       {error && (
-        <p className="text-[9px] font-bold text-rose-500 px-2" role="alert">
+        <p className="text-[9px] font-bold text-danger px-2" role="alert">
           {error}
         </p>
       )}
-      {hint && !error && <p className="text-[9px] font-medium text-slate-400 px-2">{hint}</p>}
+      {hint && !error && <p className="text-[9px] font-medium text-muted px-2">{hint}</p>}
     </div>
   )
 }

@@ -4,8 +4,10 @@
 /*
  * Design system « Transition Carrière » — contrat lisible dans DESIGN.md (racine).
  *
- * Direction : éditorial chaleureux (canvas crème, encre bleu nuit, un seul accent
- * d'action dérivé du teal du logo, bordures hairline, deux ombres, rayons 8/12/16 px).
+ * Direction « Duna × Ditto » : canvas ivoire, encre bleu nuit, un bouton d'action en encre,
+ * un bouton soleil (jaune, texte encre) pour le CTA secondaire, le teal du logo comme accent
+ * de signal (liens, focus, sur-titres) et une famille de teintes expressives à trois niveaux
+ * (`tint-x` fond pastel, `tint-x-ink` texte, `tint-x-bold` aplat de décor, jamais de texte).
  * Règles : rôles sémantiques nommés (jamais `slate-*`/`rose-*` bruts), casse de phrase
  * (jamais d'uppercase micro-texte), jamais `font-black`.
  *
@@ -18,66 +20,80 @@
   --font-display: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* ---- Surfaces ---- */
-  --color-canvas: #faf8f4; /* fond de page, crème chaud */
+  --color-canvas: #f7f5ee; /* fond de page, ivoire chaud */
   --color-surface: #ffffff; /* cartes, champs, en-tête */
-  --color-surface-soft: #f3efe8; /* bandes alternées, cartes plates, survol de ligne */
-  --color-surface-strong: #e9e4db; /* fonds désactivés */
-  --color-hairline: #e6e1d8; /* bordures 1px des cartes et sections */
-  --color-hairline-strong: #d3cec4; /* champs, boutons outline */
+  --color-surface-soft: #f0ede2; /* bandes alternées, cartes plates, survol de ligne */
+  --color-surface-strong: #e5e1d3; /* fonds désactivés */
+  --color-hairline: #e2ded0; /* bordures 1px des cartes et sections */
+  --color-hairline-strong: #cdc8b7; /* champs, boutons outline */
 
   /* ---- Encre ---- */
-  --color-ink: #1e2f3f; /* titres + la seule surface sombre (footer, tier mis en avant, bande CTA) */
-  --color-ink-elevated: #28394b; /* carte imbriquée sur une surface ink */
-  --color-ink-soft: #3d4852; /* texte courant — 9,3:1 sur blanc */
-  --color-muted: #5f6b76; /* texte secondaire — 5,4:1 blanc, 5,1:1 crème */
-  --color-muted-soft: #7d8790; /* ≥ 18px ou décoratif seulement — 3,7:1 */
+  --color-ink: #1b2140; /* titres, bouton principal, la seule surface sombre — 14,4:1 sur ivoire */
+  --color-ink-elevated: #272e52; /* carte imbriquée sur une surface ink, bouton principal pressé */
+  --color-ink-soft: #3a4060; /* texte courant — 10,1:1 blanc, 9,3:1 ivoire */
+  --color-muted: #5f6680; /* texte secondaire — 5,7:1 blanc, 5,2:1 ivoire */
+  --color-muted-soft: #767c91; /* ≥ 18px ou placeholders seulement — 4,2:1 blanc, 3,8:1 ivoire */
   --color-on-ink: #ffffff;
-  --color-on-ink-soft: #b5c0c8; /* liens du footer sur ink */
-  --color-on-ink-muted: #8a97a3; /* méta du footer sur ink */
+  --color-on-ink-soft: #b9bdd3; /* liens du footer sur ink — 8,4:1 */
+  --color-on-ink-muted: #9298b5; /* méta du footer sur ink — 5,5:1 */
 
-  /* ---- Action — dérivée du teal du logo (#0f5964 / #478280) ---- */
-  --color-primary: #1d6a70; /* 6,3:1 sur blanc, 5,9:1 sur crème */
-  --color-primary-pressed: #0f5964; /* teal profond du logo : survol / pressé */
-  --color-primary-soft: #e3efee; /* fonds de badge, tuiles d'icône, lignes sélectionnées */
-  --color-primary-on-ink: #7fc4c6; /* teal lisible sur fond ink */
+  /* ---- Action principale : l'encre (bouton primary, lignes sélectionnées) ---- */
+  --color-primary: var(--color-ink);
+  --color-primary-pressed: var(--color-ink-elevated);
+  --color-primary-soft: #eceef5; /* lignes sélectionnées, fond de badge « primary » */
   --color-on-primary: #ffffff;
 
-  /* ---- Accent chaud (terracotta : CTA secondaire, avertissements) ---- */
-  --color-accent-warm: #a85a38; /* 5,0:1 en blanc-sur-fond ; l'ancien #c47652 était à 3,5:1 */
-  --color-accent-warm-pressed: #8f4a2d;
-  --color-accent-warm-soft: #f6e9e2;
+  /* ---- Accent de signal — le teal du logo : liens, focus, sur-titres, état actif ---- */
+  --color-accent: #1d6a70; /* 6,3:1 sur blanc, 5,8:1 sur ivoire */
+  --color-accent-pressed: #0f5964; /* survol des liens */
+  --color-accent-soft: #dcedf0; /* état actif de navigation, tuiles d'icône discrètes */
+  --color-accent-on-ink: #7fc4c6; /* teal lisible sur fond ink — 7,9:1 */
+
+  /* ---- Soleil — bouton secondaire / CTA sur fond ink ; texte toujours `text-ink` ---- */
+  --color-sun: #f3c53d; /* encre dessus : 9,6:1 */
+  --color-sun-pressed: #e5b528; /* encre dessus : 8,2:1 */
+  --color-sun-soft: #fbf0c8; /* tuiles d'icône, carte `sun`, sélection de texte */
 
   /* ---- Sémantique ---- */
-  --color-success: #1e7b4f;
+  --color-success: #1b734a; /* 5,1:1 sur success-soft */
   --color-success-soft: #e3f3ea;
-  --color-warning: #9a5b00;
-  --color-warning-soft: #fbf0dc;
+  --color-warning: #8f5400; /* 5,0:1 sur warning-soft */
+  --color-warning-soft: #fce4cc; /* pêche, distinct de sun-soft */
   --color-danger: #b42318;
   --color-danger-soft: #fbe9e7;
   --color-info: #2b5f9e;
   --color-info-soft: #e6eef8;
 
-  /* ---- Teintes pastel (catégories d'exercices, badges) ---- */
-  --color-tint-sage: #e4efe8;
-  --color-tint-sage-ink: #2f5a45;
-  --color-tint-teal: #dff0f0;
-  --color-tint-teal-ink: #0f5964;
-  --color-tint-sand: #f5ecdc;
-  --color-tint-sand-ink: #6e4f12;
-  --color-tint-terracotta: #f8e4dc;
-  --color-tint-terracotta-ink: #8f4a2d;
-  --color-tint-lavender: #ebe7f6;
-  --color-tint-lavender-ink: #4a3f8a;
-  --color-tint-sky: #e3edf8;
-  --color-tint-sky-ink: #2b4f7e;
+  /* ---- Teintes expressives : `tint-x` fond pastel, `tint-x-ink` texte dessus (≥ 6,2:1),
+     `tint-x-bold` aplat saturé pour illustrer (LandscapeArt, graphiques) — jamais de texte. ---- */
+  --color-tint-sun: var(--color-sun-soft);
+  --color-tint-sun-ink: #6b4a00;
+  --color-tint-sun-bold: var(--color-sun);
+  --color-tint-apricot: #fde5d4;
+  --color-tint-apricot-ink: #8a3f12;
+  --color-tint-apricot-bold: #f09a5c;
+  --color-tint-meadow: #ddefdf;
+  --color-tint-meadow-ink: #22613a;
+  --color-tint-meadow-bold: #5aaa6a;
+  --color-tint-lake: #d9eef0;
+  --color-tint-lake-ink: var(--color-accent-pressed);
+  --color-tint-lake-bold: #2a8d96;
+  --color-tint-lavender: #e9e4f8;
+  --color-tint-lavender-ink: #45348f;
+  --color-tint-lavender-bold: #8b76d6;
+  --color-tint-blossom: #fbe1ec;
+  --color-tint-blossom-ink: #8c2459;
+  --color-tint-blossom-bold: #e1609f;
+  --color-tint-sky: #e0e9fb;
+  --color-tint-sky-ink: #1f3f8c;
+  --color-tint-sky-bold: #3f78dd;
 
   /* ---- Alias legacy — dashboard uniquement. À SUPPRIMER EN PHASE 4 (grep `brand-`). ---- */
   --color-brand-navy: var(--color-ink);
-  --color-brand-sage: var(--color-primary);
-  --color-brand-terracotta: var(--color-accent-warm);
+  --color-brand-sage: var(--color-accent);
+  --color-brand-terracotta: var(--color-tint-apricot-ink);
   --color-brand-ivory: var(--color-canvas);
   --color-brand-gray: var(--color-muted);
-  --color-brand-violet: #7c3aed; /* inchangé jusqu'à la refonte des outils d'exercices */
   --color-brand-emerald: var(--color-success);
   --color-brand-amber: var(--color-warning);
 
@@ -184,12 +200,12 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--color-primary-soft);
+    background: var(--color-sun-soft);
   }
 
   @media (prefers-reduced-motion: reduce) {
