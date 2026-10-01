@@ -11,7 +11,7 @@ import './css/app.css'
 const appName = import.meta.env.VITE_APP_NAME || APP_NAME
 
 createInertiaApp({
-  progress: { color: '#5468FF' },
+  progress: { color: '#1d6a70' }, // = --color-primary (inertia/css/app.css)
 
   title: (title) => `${title} - ${appName}`,
 
