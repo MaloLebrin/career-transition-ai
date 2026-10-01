@@ -6,7 +6,7 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
 /** Slug stable de l’organisation plateforme (recherche idempotente). */
 export const PLATFORM_ORG_SLUG = 'ai-transition-carriere'
-/** Email du compte super admin créé par ce seeder. */
+/** Email par défaut du super admin créé par ce seeder (surchargeable via `ADMIN_EMAIL`). */
 export const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
 
 export default class AdminSeeder extends BaseSeeder {
@@ -17,6 +17,8 @@ export default class AdminSeeder extends BaseSeeder {
         'ADMIN_PASSWORD est requis pour exécuter AdminSeeder (définir la variable d’environnement).'
       )
     }
+
+    const adminEmail = env.get('ADMIN_EMAIL')?.trim().toLowerCase() || PLATFORM_ADMIN_EMAIL
 
     const adminOrganizationData = {
       name: 'AI transition carrière',
@@ -30,10 +32,10 @@ export default class AdminSeeder extends BaseSeeder {
     )
 
     await User.updateOrCreate(
-      { organizationId: organization.id, email: PLATFORM_ADMIN_EMAIL },
+      { organizationId: organization.id, email: adminEmail },
       {
         organizationId: organization.id,
-        email: PLATFORM_ADMIN_EMAIL,
+        email: adminEmail,
         password,
         name: 'Malo Lebrin',
         role: USERS_ROLES.SUPER_ADMIN,
