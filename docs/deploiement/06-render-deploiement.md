@@ -44,9 +44,9 @@ serveur. Un redémarrage ne rejoue que les migrations en attente.
 
 ## Domaine personnalisé (optionnel)
 
-**Settings → Custom Domains** : ajouter `app.votredomaine.fr`, créer l'enregistrement CNAME
+**Settings → Custom Domains** : ajouter `transitioncarriere.fr`, créer l'enregistrement CNAME
 indiqué chez votre registrar, attendre le certificat TLS automatique, puis mettre
-`APP_URL=https://app.votredomaine.fr` et redéployer. Non nécessaire pour un test.
+`APP_URL=https://transitioncarriere.fr` et redéployer. Non nécessaire pour un test.
 
 ## Redéploiements
 

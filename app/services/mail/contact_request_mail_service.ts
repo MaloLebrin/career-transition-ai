@@ -2,8 +2,8 @@ import { MailService } from '#services/mail/mail_service'
 import env from '#start/env'
 import { inject } from '@adonisjs/core'
 
-export const DEFAULT_ADMIN_CONTACT_EMAIL = 'contact@francetransitioncarriere.fr'
-export const DEFAULT_CONTACT_FROM_EMAIL = 'noreply@francetransitioncarriere.fr'
+export const DEFAULT_ADMIN_CONTACT_EMAIL = 'contact@transitioncarriere.fr'
+export const DEFAULT_CONTACT_FROM_EMAIL = 'noreply@transitioncarriere.fr'
 export const DEFAULT_CONTACT_FROM_NAME = 'France Transition Carrière'
 
 /** Lu à l'envoi (et non au chargement du module) pour suivre `env`. */

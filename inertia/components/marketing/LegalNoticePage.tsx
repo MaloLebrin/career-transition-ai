@@ -1,6 +1,7 @@
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { motion } from 'motion/react'
 import React from 'react'
+import { PRIVACY_CONTACT_EMAIL } from '#shared/constants/legal'
 import PublicLayout from '../layout/PublicLayout'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -103,7 +104,7 @@ export default function LegalNoticePage({
               </li>
               <li>
                 <span className="font-bold text-brand-navy">Email</span>:{' '}
-                <span className="text-brand-navy/60">contact@francetransitioncarriere.fr</span>
+                <span className="text-brand-navy/60">{PRIVACY_CONTACT_EMAIL}</span>
               </li>
               <li>
                 <span className="font-bold text-brand-navy">SIRET</span>:{' '}

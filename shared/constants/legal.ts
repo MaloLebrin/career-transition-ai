@@ -5,7 +5,7 @@
  */
 
 /** Adresse pour exercer ses droits (accès, rectification, effacement…). */
-export const PRIVACY_CONTACT_EMAIL = 'contact@francetransitioncarriere.fr'
+export const PRIVACY_CONTACT_EMAIL = 'contact@transitioncarriere.fr'
 
 /** Délai légal de réponse à une demande d'exercice de droits (art. 12 RGPD). */
 export const PRIVACY_REQUEST_DELAY = 'un mois'

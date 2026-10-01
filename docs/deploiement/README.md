@@ -56,7 +56,7 @@ Celles de `render.yaml` marquées `sync: false` sont à saisir dans Render. Sch�
 | `CLOUDINARY_API_KEY`             | clé API                               | non    | [02](02-cloudinary-fichiers.md)  |
 | `CLOUDINARY_API_SECRET`          | secret API                            | oui    | [02](02-cloudinary-fichiers.md)  |
 | `RESEND_API_KEY`                 | clé API Resend                        | oui    | [03](03-resend-emails.md)        |
-| `MAIL_FROM_EMAIL`                | `no-reply@votredomaine.fr`            | non    | [03](03-resend-emails.md)        |
+| `MAIL_FROM_EMAIL`                | `no-reply@transitioncarriere.fr`            | non    | [03](03-resend-emails.md)        |
 | `MISTRAL_API_KEY`                | clé API Mistral                       | oui    | [04](04-mistral-ia.md)           |
 | `APP_KEY`                        | 32+ caractères aléatoires             | oui    | [05](05-secrets.md)              |
 | `APP_URL`                        | `https://<service>.onrender.com`      | non    | [06](06-render-deploiement.md)   |
