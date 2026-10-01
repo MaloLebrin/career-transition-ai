@@ -1,11 +1,12 @@
-export default function ServerError(props: { error: any }) {
-  return (
-    <>
-      <div className="container">
-        <div className="title">Server Error</div>
+import { ErrorPage } from '~/components/errors/ErrorPage'
 
-        <span>{props.error.message}</span>
-      </div>
-    </>
+/** Le détail de l'erreur reste côté serveur (Sentry) : jamais `error.message` dans le DOM. */
+export default function ServerError(_props: { error?: { message?: string } }) {
+  return (
+    <ErrorPage
+      code={500}
+      title="Une erreur est survenue"
+      message="Nos équipes sont prévenues. Réessayez dans quelques instants."
+    />
   )
 }
