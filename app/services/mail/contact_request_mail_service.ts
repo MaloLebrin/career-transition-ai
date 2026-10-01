@@ -4,7 +4,7 @@ import { inject } from '@adonisjs/core'
 
 export const DEFAULT_ADMIN_CONTACT_EMAIL = 'contact@transitioncarriere.fr'
 export const DEFAULT_CONTACT_FROM_EMAIL = 'noreply@transitioncarriere.fr'
-export const DEFAULT_CONTACT_FROM_NAME = 'France Transition Carrière'
+export const DEFAULT_CONTACT_FROM_NAME = 'Transition Carrière'
 
 /** Lu à l'envoi (et non au chargement du module) pour suivre `env`. */
 function resolveAddresses() {
@@ -49,7 +49,7 @@ export class ContactRequestMailService {
     await this.mailService.send({
       from: { email: fromEmail, name: fromName },
       to: { email: data.email, name: data.name },
-      subject: `Votre ${typeLabel} a bien été reçu — France Transition Carrière`,
+      subject: `Votre ${typeLabel} a bien été reçu — Transition Carrière`,
       html: buildConfirmationHtml(data, typeLabel),
       text: buildConfirmationText(data, typeLabel),
       tags: ['contact-confirmation', data.type],
@@ -106,7 +106,7 @@ function buildConfirmationHtml(data: ContactRequestData, typeLabel: string): str
   <hr style="margin: 16px 0; border: none; border-top: 1px solid #e5e7eb;" />
   <p style="color: #6b7280; font-size: 14px;">Récapitulatif de votre message :</p>
   <p style="white-space: pre-wrap; background: #f9fafb; padding: 16px; border-radius: 8px; font-size: 14px;">${escapeHtml(data.message)}</p>
-  <p style="margin-top: 24px;">À bientôt,<br /><strong>L'équipe France Transition Carrière</strong></p>
+  <p style="margin-top: 24px;">À bientôt,<br /><strong>L'équipe Transition Carrière</strong></p>
 </body>
 </html>
 `
@@ -122,7 +122,7 @@ function buildConfirmationText(data: ContactRequestData, typeLabel: string): str
     data.message,
     '',
     'À bientôt,',
-    "L'équipe France Transition Carrière",
+    "L'équipe Transition Carrière",
   ].join('\n')
 }
 

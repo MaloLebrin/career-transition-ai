@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import Button from '../../../../inertia/components/ui/Button'
+import Button, { buttonClassName } from '../../../../inertia/components/ui/Button'
 
 describe('Button', () => {
   test('renders children and default variant/size', () => {
@@ -38,5 +38,29 @@ describe('Button', () => {
   test('supports type submit', () => {
     render(<Button type="submit">Envoyer</Button>)
     expect(screen.getByRole('button')).toHaveAttribute('type', 'submit')
+  })
+
+  test('applies the primary tone and never uppercases small sizes', () => {
+    render(<Button size="sm">Petit</Button>)
+    const btn = screen.getByRole('button', { name: 'Petit' })
+    expect(btn).toHaveClass('bg-primary', 'h-9', 'rounded-lg')
+    expect(btn).not.toHaveClass('uppercase')
+  })
+
+  test('maps the deprecated emphasis variant and xs size onto secondary / sm', () => {
+    render(
+      <Button variant="emphasis" size="xs">
+        Ancien
+      </Button>
+    )
+    const btn = screen.getByRole('button', { name: 'Ancien' })
+    expect(btn).toHaveClass('bg-ink', 'h-9')
+  })
+
+  test('buttonClassName exposes the same classes for link-shaped buttons', () => {
+    const classes = buttonClassName({ variant: 'outline', size: 'lg', className: 'w-full' })
+    expect(classes).toContain('border-hairline-strong')
+    expect(classes).toContain('h-12')
+    expect(classes).toContain('w-full')
   })
 })

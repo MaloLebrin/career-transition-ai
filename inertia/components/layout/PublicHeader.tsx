@@ -1,92 +1,120 @@
-import { router } from '@inertiajs/react'
-import React from 'react'
+import { usePage } from '@inertiajs/react'
+import { Menu } from 'lucide-react'
+import React, { useCallback, useState } from 'react'
+import {
+  DEMO_ACTION,
+  HOME_ACTION,
+  LOGIN_ACTION,
+  MARKETING_NAV,
+  type ActionItem,
+  type NavItem,
+} from '~/config/marketing'
 import AppLink from '~/components/ui/AppLink'
-import Button from '../ui/Button'
-import { Logo } from '../ui/Logo'
+import { buttonClassName } from '~/components/ui/Button'
+import { Container } from '~/components/ui/Container'
+import { Logo } from '~/components/ui/Logo'
+import { MobileMenu } from './MobileMenu'
 
 export interface PublicHeaderProps {
-  onOfferClick?: () => void
-  onTarifsClick?: () => void
-  onMethodologyClick?: () => void
-  onAiClick?: () => void
-  onActionClick?: () => void
-  actionLabel?: string
-  showAction?: boolean
+  /** Liens de navigation (défaut : `MARKETING_NAV`). */
+  nav?: NavItem[]
+  /** Action principale (défaut : demander une démo) ; `null` pour la masquer. */
+  primaryAction?: ActionItem | null
+  /** Action secondaire (défaut : se connecter) ; `null` pour la masquer. */
+  secondaryAction?: ActionItem | null
+  /** En-tête réduit (auth, onboarding) : logo + retour à l'accueil, sans menu. */
+  minimal?: boolean
 }
 
+function isCurrent(url: string, href: string): boolean {
+  const path = url.split(/[?#]/)[0]
+  if (href === '/') return path === '/'
+  return path === href || path.startsWith(`${href}/`)
+}
+
+const NAV_LINK_CLASS =
+  'text-sm font-medium text-ink-soft hover:text-ink transition-colors aria-[current=page]:text-primary'
+
 const PublicHeader: React.FC<PublicHeaderProps> = ({
-  onOfferClick,
-  onTarifsClick,
-  onMethodologyClick,
-  onAiClick,
-  onActionClick,
-  actionLabel = 'Accès Expert',
-  showAction = true,
+  nav = MARKETING_NAV,
+  primaryAction = DEMO_ACTION,
+  secondaryAction = LOGIN_ACTION,
+  minimal = false,
 }) => {
+  const { url } = usePage()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+
   return (
-    <nav className="fixed top-0 w-full z-100 bg-white/80 backdrop-blur-xl border-b border-brand-navy/5 px-6 py-4">
-      <div className="max-w-7xl 2xl:max-w-(--width-app-container) mx-auto flex justify-between items-center">
-        <AppLink
-          href="/"
-          className="flex items-center space-x-3 cursor-pointer disabled:cursor-not-allowed group border-none bg-transparent p-0"
-        >
+    <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/90 backdrop-blur">
+      <Container
+        as="nav"
+        aria-label="Navigation principale"
+        className="flex h-16 items-center justify-between gap-6"
+      >
+        <AppLink href="/" className="shrink-0" aria-label="Accueil">
           <Logo size="md" />
         </AppLink>
 
-        <div className="hidden md:flex items-center space-x-8">
-          {onOfferClick && (
+        {minimal ? (
+          <AppLink href={HOME_ACTION.href} className={NAV_LINK_CLASS}>
+            {HOME_ACTION.label}
+          </AppLink>
+        ) : (
+          <>
+            <ul className="hidden items-center gap-8 lg:flex">
+              {nav.map((item) => (
+                <li key={item.href}>
+                  <AppLink
+                    href={item.href}
+                    className={NAV_LINK_CLASS}
+                    aria-current={isCurrent(url, item.href) ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </AppLink>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden items-center gap-3 lg:flex">
+              {secondaryAction && (
+                <AppLink
+                  href={secondaryAction.href}
+                  className={buttonClassName({ variant: 'outline', size: 'sm' })}
+                >
+                  {secondaryAction.label}
+                </AppLink>
+              )}
+              {primaryAction && (
+                <AppLink
+                  href={primaryAction.href}
+                  className={buttonClassName({ variant: 'primary', size: 'sm' })}
+                >
+                  {primaryAction.label}
+                </AppLink>
+              )}
+            </div>
+
             <button
               type="button"
-              onClick={onOfferClick}
-              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
+              onClick={() => setMenuOpen(true)}
+              className="rounded-lg p-2 text-ink-soft hover:bg-surface-soft hover:text-ink lg:hidden cursor-pointer"
+              aria-label="Ouvrir le menu"
+              aria-expanded={menuOpen}
             >
-              Offre
+              <Menu className="h-5 w-5" aria-hidden />
             </button>
-          )}
-          {onTarifsClick && (
-            <button
-              type="button"
-              onClick={onTarifsClick}
-              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
-            >
-              Tarifs
-            </button>
-          )}
-          {onMethodologyClick && (
-            <button
-              type="button"
-              onClick={onMethodologyClick}
-              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
-            >
-              Méthodologie
-            </button>
-          )}
-          {onAiClick && (
-            <button
-              type="button"
-              onClick={onAiClick}
-              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-navy/40 hover:text-brand-sage transition-colors"
-            >
-              Intelligence Artificielle
-            </button>
-          )}
-          {showAction && onActionClick && (
-            <Button onClick={onActionClick} variant="emphasis" size="sm">
-              {actionLabel}
-            </Button>
-          )}
-          {!showAction && (
-            <button
-              type="button"
-              onClick={() => router.visit('/')}
-              className="cursor-pointer disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest text-brand-sage hover:underline"
-            >
-              Retour à l'accueil
-            </button>
-          )}
-        </div>
-      </div>
-    </nav>
+            <MobileMenu
+              open={menuOpen}
+              onClose={closeMenu}
+              items={nav}
+              primaryAction={primaryAction}
+              secondaryAction={secondaryAction}
+            />
+          </>
+        )}
+      </Container>
+    </header>
   )
 }
 

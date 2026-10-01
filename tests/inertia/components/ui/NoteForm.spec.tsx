@@ -58,9 +58,7 @@ describe('NoteForm', () => {
   })
 
   test('en chargement : champs désactivés et libellé « Enregistrement... »', () => {
-    renderWithUser(
-      <NoteForm initialContent="x" isLoading onSubmit={vi.fn()} onCancel={vi.fn()} />
-    )
+    renderWithUser(<NoteForm initialContent="x" isLoading onSubmit={vi.fn()} onCancel={vi.fn()} />)
     expect(screen.getByRole('button', { name: 'Enregistrement...' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Annuler' })).toBeDisabled()
     expect(screen.getByPlaceholderText('Écris ta note ici...')).toBeDisabled()

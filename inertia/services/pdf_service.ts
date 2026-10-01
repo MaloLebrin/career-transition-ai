@@ -5,7 +5,7 @@ import { Employee } from '~/types/employee'
 import { ExerciseType } from '../types'
 
 /**
- * Service de génération de PDF "Expert" pour France Transition Carrière.
+ * Service de génération de PDF "Expert" pour Transition Carrière.
  * Inclut désormais la page de Systémie du Rebond.
  */
 export async function generateComprehensivePDF(employee: Employee) {

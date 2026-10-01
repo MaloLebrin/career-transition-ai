@@ -69,8 +69,7 @@ export default function ExercisesUsageAdmin({
           <div className="max-w-xl mx-auto text-center py-24 space-y-4">
             <h1 className="text-3xl font-bold text-brand-navy">Accès réservé</h1>
             <p className="text-brand-navy/60 text-sm font-medium">
-              Cette section est réservée aux administrateurs de la plateforme France Transition
-              Carrière.
+              Cette section est réservée aux administrateurs de la plateforme Transition Carrière.
             </p>
           </div>
         </DashboardLayout>

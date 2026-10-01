@@ -11,7 +11,11 @@ const options: ComboboxOption[] = [
   { id: 3, label: 'Communication' },
 ]
 
-function Controlled(props: Partial<ComboboxProps<ComboboxOption>> & { onChangeSpy?: (o: ComboboxOption | null) => void }) {
+function Controlled(
+  props: Partial<ComboboxProps<ComboboxOption>> & {
+    onChangeSpy?: (o: ComboboxOption | null) => void
+  }
+) {
   const { onChangeSpy, ...rest } = props
   const [value, setValue] = useState<ComboboxOption | null>(props.value ?? null)
   return (
@@ -34,7 +38,10 @@ describe('Combobox', () => {
     expect(screen.getByText('Compétence')).toBeInTheDocument()
     expect(screen.getByText('*')).toBeInTheDocument()
     expect(screen.getByText('Tape pour rechercher')).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: /Compétence/ })).toHaveAttribute('placeholder', 'Chercher...')
+    expect(screen.getByRole('combobox', { name: /Compétence/ })).toHaveAttribute(
+      'placeholder',
+      'Chercher...'
+    )
   })
 
   test('affiche l’erreur à la place du hint', () => {

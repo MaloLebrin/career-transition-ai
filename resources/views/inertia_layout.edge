@@ -1,18 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Transition Carrière IA" />
-    <meta name="keywords" content="Transition Carrière IA, Transition Carrière, IA, Transition, Carrière" />
-    <meta name="author" content="France Transition Carrière" />
+    <meta
+      name="description"
+      content="Logiciel de bilan de compétences et de transition professionnelle pour les cabinets d'outplacement."
+    />
+    <meta name="theme-color" content="#faf8f4" />
+    <meta
+      name="keywords"
+      content="Transition Carrière, bilan de compétences, outplacement, transition professionnelle, cabinet"
+    />
+    <meta name="author" content="Transition Carrière" />
     <meta name="robots" content="{{ seo.robots() }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
     />
 
     <link rel="icon" href="/favicon.ico" />
@@ -25,7 +32,7 @@
     @end
     
     <title inertia>
-      Transition Carrière IA
+      Transition Carrière
     </title>
 
     @stack('dumper')
@@ -34,7 +41,7 @@
     @vite(['inertia/app.tsx', `inertia/pages/${page.component}.tsx`], { nonce: cspNonce })
   </head>
 
-  <body class="min-h-screen w-screen font-sans">
+  <body class="min-h-screen">
     @inertia()
   </body>
 

@@ -41,4 +41,3 @@ describe('DateTimePicker', () => {
     expect(timePart).toMatch(/^\d{2}:\d{2}$/)
   })
 })
-

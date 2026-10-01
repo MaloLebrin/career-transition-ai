@@ -10,7 +10,7 @@ vi.mock('@inertiajs/react', () => ({
 describe('Layout', () => {
   const defaultProps = {
     userRole: 'advisor' as const,
-    onRoleChange: () => { },
+    onRoleChange: () => {},
     onLogout: vi.fn(),
     userName: 'Test User',
   }
@@ -33,9 +33,7 @@ describe('Layout', () => {
         <div>Content</div>
       </Layout>
     )
-    expect(
-      screen.getByText(/Career Transition AI .* Clarté Stratégique Humaine/)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Transition Carrière © 2026/)).toBeInTheDocument()
   })
 
   test('clicking Quitter opens logout confirmation modal', () => {

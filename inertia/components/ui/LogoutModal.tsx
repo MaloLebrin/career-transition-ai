@@ -1,5 +1,5 @@
-import Button from '~/components/ui/Button';
-import Card from '~/components/ui/Card';
+import Button from '~/components/ui/Button'
+import Card from '~/components/ui/Card'
 
 interface LogoutModalProps {
   onClose: () => void
@@ -22,11 +22,7 @@ export const LogoutModal = ({ onClose, onLogout }: LogoutModalProps) => {
           Êtes-vous sûr de vouloir vous déconnecter ?
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <Button
-            variant="outline"
-            size="md"
-            onClick={onClose}
-          >
+          <Button variant="outline" size="md" onClick={onClose}>
             Annuler
           </Button>
           <Button variant="danger" size="md" onClick={onLogout}>
@@ -35,5 +31,5 @@ export const LogoutModal = ({ onClose, onLogout }: LogoutModalProps) => {
         </div>
       </Card>
     </div>
-  );
-};
+  )
+}

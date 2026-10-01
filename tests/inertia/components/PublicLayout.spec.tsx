@@ -1,74 +1,53 @@
-import { describe, test, expect } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import PublicLayout from '../../../inertia/components/layout/PublicLayout'
+import { resetInertiaMock } from '../support/inertia_mock'
+
+vi.mock('@inertiajs/react', async () => {
+  const { inertiaMock } = await import('../support/inertia_mock')
+  return inertiaMock()
+})
 
 describe('PublicLayout', () => {
-  test('renders wrapper with base classes and children', () => {
+  beforeEach(() => resetInertiaMock())
+
+  test('renders wrapper with base classes, header, main and footer', () => {
     render(
-      <PublicLayout
-        headerProps={{
-          onLogoClick: () => {},
-          onMethodologyClick: () => {},
-          onAiClick: () => {},
-          onActionClick: () => {},
-        }}
-      >
+      <PublicLayout>
         <span data-testid="child">Contenu public</span>
       </PublicLayout>
     )
 
-    expect(screen.getByTestId('child')).toBeInTheDocument()
     expect(screen.getByText('Contenu public')).toBeInTheDocument()
-
-    const wrapper = screen.getByTestId('child').parentElement
-    expect(wrapper).toHaveClass('min-h-screen')
-    expect(wrapper).toHaveClass('bg-brand-ivory')
+    const wrapper = screen.getByRole('main').parentElement
+    expect(wrapper).toHaveClass('min-h-screen', 'bg-canvas')
+    expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Se connecter' })[0]).toHaveAttribute(
+      'href',
+      '/auth/login'
+    )
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('© 2026 Transition Carrière')
   })
 
   test('applies optional className to wrapper', () => {
     render(
-      <PublicLayout headerProps={{ onLogoClick: () => {} }} className="flex flex-col">
+      <PublicLayout className="lg:flex-row">
         <span data-testid="child">Child</span>
       </PublicLayout>
     )
 
-    const wrapper = screen.getByTestId('child').parentElement
-    expect(wrapper).toHaveClass('flex')
-    expect(wrapper).toHaveClass('flex-col')
+    expect(screen.getByRole('main').parentElement).toHaveClass('lg:flex-row')
   })
 
-  test('renders PublicHeader with correct label', () => {
+  test('minimal header and no footer for auth screens', () => {
     render(
-      <PublicLayout
-        headerProps={{
-          onLogoClick: () => {},
-          actionLabel: 'Accès Expert',
-          showAction: true,
-          onActionClick: () => {},
-        }}
-      >
-        <span data-testid="child">Child</span>
+      <PublicLayout header={{ minimal: true }} footer={false}>
+        <span>Child</span>
       </PublicLayout>
     )
 
-    expect(screen.getByRole('button', { name: /Accès Expert/i })).toBeInTheDocument()
-  })
-
-  test('renders PublicFooter when footerProps is provided', () => {
-    render(
-      <PublicLayout
-        headerProps={{ onLogoClick: () => {} }}
-        footerProps={{
-          variant: 'marketing',
-          onEnterApp: () => {},
-          footerLine: 'France Transition Carrière © 2026 • Test',
-        }}
-      >
-        <span data-testid="child">Child</span>
-      </PublicLayout>
-    )
-
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
-    expect(screen.getByText(/France Transition Carrière © 2026 • Test/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: "Retour à l'accueil" })).toHaveAttribute('href', '/')
+    expect(screen.queryByRole('link', { name: 'Se connecter' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
   })
 })

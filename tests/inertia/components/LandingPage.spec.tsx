@@ -1,33 +1,51 @@
-import { describe, test, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { EXERCISE_LIST } from '#shared/constants/exercises'
 import LandingPage from '../../../inertia/components/landing/LandingPage'
+import { resetInertiaMock } from '../support/inertia_mock'
+
+vi.mock('@inertiajs/react', async () => {
+  const { inertiaMock } = await import('../support/inertia_mock')
+  return inertiaMock()
+})
 
 describe('LandingPage', () => {
-  test('renders hero and uses PublicLayout', () => {
-    const onEnterApp = vi.fn()
+  beforeEach(() => resetInertiaMock())
 
-    render(<LandingPage onEnterApp={onEnterApp} />)
+  test('renders the hero with its promise and the two actions', () => {
+    render(<LandingPage />)
 
-    expect(screen.getByText(/L'IA qui structure le/)).toBeInTheDocument()
-    expect(screen.getByText(/Potentiel Travail\./)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Lancer le Portail/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Découvrir la méthode/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Structurez vos bilans de compétences/ })
+    ).toBeInTheDocument()
+    const demoLinks = screen.getAllByRole('link', { name: 'Demander une démo' })
+    expect(demoLinks.map((link) => link.getAttribute('href'))).toContain('#demo')
+    expect(screen.getByRole('link', { name: 'Voir la méthodologie' })).toHaveAttribute(
+      'href',
+      '/methodologie'
+    )
+    expect(screen.getByRole('img', { name: /Aperçu du tableau de bord/ })).toBeInTheDocument()
   })
 
-  test('onEnterApp is called when clicking Lancer le Portail', async () => {
-    const onEnterApp = vi.fn()
-    render(<LandingPage onEnterApp={onEnterApp} />)
+  test('shows the real exercise catalogue, the method and the AI sections', () => {
+    render(<LandingPage />)
 
-    screen.getByRole('button', { name: /Lancer le Portail/i }).click()
-
-    expect(onEnterApp).toHaveBeenCalledTimes(1)
+    for (const exercise of EXERCISE_LIST) {
+      expect(screen.getAllByText(exercise.title).length).toBeGreaterThan(0)
+    }
+    expect(screen.getByText(/Plus qu’un outil/)).toBeInTheDocument()
+    expect(screen.getByText(/L’IA comme copilote/)).toBeInTheDocument()
+    expect(screen.getByText(/Mistral AI/)).toBeInTheDocument()
+    expect(screen.queryByText(/Gemini/)).not.toBeInTheDocument()
   })
 
-  test('renders methodology and AI sections', () => {
-    render(<LandingPage onEnterApp={() => {}} />)
+  test('ends with the demo form and the call-to-action band', () => {
+    render(<LandingPage />)
 
-    expect(screen.getByText(/Plus qu'un outil/)).toBeInTheDocument()
-    expect(screen.getByText(/L'IA qui comprend/)).toBeInTheDocument()
-    expect(screen.getAllByText(/Gemini/).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByRole('button', { name: 'Demander une démo' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /Prêt à structurer vos accompagnements/ })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Voir les tarifs' })).toHaveAttribute('href', '/tarifs')
   })
 })

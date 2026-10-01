@@ -20,12 +20,12 @@ Resend. Détails : [`../MAIL.md`](../MAIL.md).
 
 ## À renseigner dans Render
 
-| Variable          | Valeur                                            | Secret  |
-| ----------------- | ------------------------------------------------- | ------- |
-| `MAIL_PROVIDER`   | `resend` (déjà dans `render.yaml`)                | non     |
-| `RESEND_API_KEY`  | clé API                                           | **oui** |
+| Variable          | Valeur                                                  | Secret  |
+| ----------------- | ------------------------------------------------------- | ------- |
+| `MAIL_PROVIDER`   | `resend` (déjà dans `render.yaml`)                      | non     |
+| `RESEND_API_KEY`  | clé API                                                 | **oui** |
 | `MAIL_FROM_EMAIL` | `no-reply@mail.transitioncarriere.fr` (domaine vérifié) | non     |
-| `MAIL_FROM_NAME`  | `Career Transition AI` (déjà dans `render.yaml`)  | non     |
+| `MAIL_FROM_NAME`  | `Transition Carrière` (déjà dans `render.yaml`)         | non     |
 
 `MAIL_FROM_EMAIL` est exigé en production à l'envoi : l'adresse doit appartenir au domaine
 vérifié, sinon Resend refuse.

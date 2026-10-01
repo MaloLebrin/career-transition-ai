@@ -43,7 +43,9 @@ describe('NoteModal', () => {
   test('édition : pré-remplit la note et propose « Mettre à jour »', async () => {
     const onSubmit = vi.fn()
     const note = makeNote({ content: 'Ancien texte', visibility: 'shared' })
-    const { user } = renderWithUser(<NoteModal isOpen note={note} onSubmit={onSubmit} onCancel={vi.fn()} />)
+    const { user } = renderWithUser(
+      <NoteModal isOpen note={note} onSubmit={onSubmit} onCancel={vi.fn()} />
+    )
 
     expect(screen.getByRole('heading', { name: 'Modifier la note' })).toBeInTheDocument()
     const textarea = screen.getByPlaceholderText('Écris ta note ici...')

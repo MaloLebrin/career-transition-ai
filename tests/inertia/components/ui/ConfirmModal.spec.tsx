@@ -3,14 +3,7 @@ import { test, expect, vi } from 'vitest'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 
 test('ConfirmModal does not render when closed', () => {
-  render(
-    <ConfirmModal
-      isOpen={false}
-      title="Delete"
-      onCancel={vi.fn()}
-      onConfirm={vi.fn()}
-    />
-  )
+  render(<ConfirmModal isOpen={false} title="Delete" onCancel={vi.fn()} onConfirm={vi.fn()} />)
   expect(screen.queryByText('Delete')).not.toBeInTheDocument()
 })
 
@@ -64,4 +57,3 @@ test('ConfirmModal shows error message in error state', () => {
 
   expect(screen.getByRole('alert')).toHaveTextContent('Impossible.')
 })
-

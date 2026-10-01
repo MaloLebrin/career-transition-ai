@@ -80,10 +80,12 @@ const Layout: React.FC<LayoutProps> = ({ children, userRole, onLogout, userName 
       {showLogoutModal && (
         <LogoutModal onClose={() => setShowLogoutModal(false)} onLogout={handleLogoutConfirm} />
       )}
-      <main className="grow flex flex-col max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 py-10 w-full min-h-0">{children}</main>
+      <main className="grow flex flex-col max-w-7xl 2xl:max-w-(--width-app-container) mx-auto px-6 py-10 w-full min-h-0">
+        {children}
+      </main>
       <footer className="bg-white border-t border-brand-navy/5 p-8 text-center">
         <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-[0.2em]">
-          {APP_NAME} &copy; 2026 • Clarté Stratégique Humaine
+          {APP_NAME} &copy; 2026
         </div>
       </footer>
     </div>

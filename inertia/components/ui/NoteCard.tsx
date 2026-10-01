@@ -38,18 +38,14 @@ const NoteCard = memo(function NoteCard({
   return (
     <div
       className={`group relative rounded-2xl p-5 transition-all hover:shadow-md ${
-        isShared
-          ? 'bg-rose-50 border-2 border-rose-200'
-          : 'bg-slate-50 border border-slate-200'
+        isShared ? 'bg-rose-50 border-2 border-rose-200' : 'bg-slate-50 border border-slate-200'
       }`}
     >
       {/* Indicateur de visibilité - très visible */}
       {showVisibilityBadge && (
         <div
           className={`absolute -top-2 -left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
-            isShared
-              ? 'bg-rose-200 text-rose-800'
-              : 'bg-slate-700 text-white'
+            isShared ? 'bg-rose-200 text-rose-800' : 'bg-slate-700 text-white'
           }`}
         >
           {isShared ? (
@@ -75,7 +71,9 @@ const NoteCard = memo(function NoteCard({
           >
             {note.authorName.charAt(0).toUpperCase()}
           </div>
-          <span className={`text-xs font-semibold ${isShared ? 'text-rose-800' : 'text-slate-600'}`}>
+          <span
+            className={`text-xs font-semibold ${isShared ? 'text-rose-800' : 'text-slate-600'}`}
+          >
             {note.authorName}
           </span>
         </div>
@@ -110,11 +108,15 @@ const NoteCard = memo(function NoteCard({
         )}
       </div>
 
-      <p className={`text-sm whitespace-pre-wrap leading-relaxed ${isShared ? 'text-rose-900' : 'text-slate-700'}`}>
+      <p
+        className={`text-sm whitespace-pre-wrap leading-relaxed ${isShared ? 'text-rose-900' : 'text-slate-700'}`}
+      >
         {note.content}
       </p>
 
-      <div className={`mt-3 flex items-center gap-2 text-[10px] ${isShared ? 'text-rose-500' : 'text-slate-400'}`}>
+      <div
+        className={`mt-3 flex items-center gap-2 text-[10px] ${isShared ? 'text-rose-500' : 'text-slate-400'}`}
+      >
         <span>{formattedDate}</span>
         {formattedUpdateDate && (
           <>

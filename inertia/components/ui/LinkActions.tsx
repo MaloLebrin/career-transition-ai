@@ -34,10 +34,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-const LinkActions = memo(function LinkActions({
-  value,
-  className = '',
-}: LinkActionsProps) {
+const LinkActions = memo(function LinkActions({ value, className = '' }: LinkActionsProps) {
   const url = useMemo(() => value.trim(), [value])
   const isLink = useMemo(() => Boolean(url) && isUrl(url), [url])
   const [copied, setCopied] = useState(false)
@@ -67,7 +64,11 @@ const LinkActions = memo(function LinkActions({
         aria-label="Copier le lien"
         title="Copier le lien"
       >
-        {copied ? <Check className="w-4 h-4" aria-hidden /> : <Copy className="w-4 h-4" aria-hidden />}
+        {copied ? (
+          <Check className="w-4 h-4" aria-hidden />
+        ) : (
+          <Copy className="w-4 h-4" aria-hidden />
+        )}
       </Button>
       <Button
         type="button"
@@ -86,4 +87,3 @@ const LinkActions = memo(function LinkActions({
 LinkActions.displayName = 'LinkActions'
 
 export default LinkActions
-

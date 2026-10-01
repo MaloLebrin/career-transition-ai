@@ -10,21 +10,21 @@ export type SelectFieldOption<V extends string = string> = {
 
 export type SelectFieldProps<V extends string> = {
   /** Libellé visible au-dessus du select (sinon utiliser `aria-label`). */
-  label?: string
+  'label'?: string
   /** Texte d’aide du champ (Headless `Description`), affiché sous le label. */
-  description?: string
-  options: SelectFieldOption<V>[]
-  value: V
-  onChange: (value: V) => void
-  name?: string
-  disabled?: boolean
-  invalid?: boolean
-  error?: string
-  className?: string
-  selectClassName?: string
+  'description'?: string
+  'options': SelectFieldOption<V>[]
+  'value': V
+  'onChange': (value: V) => void
+  'name'?: string
+  'disabled'?: boolean
+  'invalid'?: boolean
+  'error'?: string
+  'className'?: string
+  'selectClassName'?: string
   /** Affiche la description de l’option actuellement sélectionnée sous le select. */
-  showSelectedOptionDescription?: boolean
-  id?: string
+  'showSelectedOptionDescription'?: boolean
+  'id'?: string
   'aria-label'?: string
 }
 
@@ -52,17 +52,14 @@ export default function SelectField<V extends string>({
   className = '',
   selectClassName = '',
   showSelectedOptionDescription = false,
-  id: idProp,
+  'id': idProp,
   'aria-label': ariaLabel,
 }: SelectFieldProps<V>) {
   const reactId = useId()
   const fieldId = idProp ?? reactId
   const selectedDescId = `${fieldId}-selected-option-desc`
 
-  const selected = useMemo(
-    () => options.find((o) => o.value === value),
-    [options, value]
-  )
+  const selected = useMemo(() => options.find((o) => o.value === value), [options, value])
 
   const describedBy =
     [error ? `${fieldId}-error` : undefined, selected?.description ? selectedDescId : undefined]
@@ -105,12 +102,19 @@ export default function SelectField<V extends string>({
         ))}
       </Select>
       {error ? (
-        <p id={`${fieldId}-error`} className="text-[10px] font-bold text-rose-500 mt-1 px-0.5" role="alert">
+        <p
+          id={`${fieldId}-error`}
+          className="text-[10px] font-bold text-rose-500 mt-1 px-0.5"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
       {showSelectedOptionDescription && selected?.description ? (
-        <p id={selectedDescId} className="text-[10px] font-medium text-brand-navy/50 mt-1.5 max-w-xs leading-snug">
+        <p
+          id={selectedDescId}
+          className="text-[10px] font-medium text-brand-navy/50 mt-1.5 max-w-xs leading-snug"
+        >
           {selected.description}
         </p>
       ) : null}

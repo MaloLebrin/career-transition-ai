@@ -17,11 +17,7 @@ describe('MarkdownContent', () => {
   })
 
   test('renders list items', () => {
-    render(
-      <MarkdownContent>
-        {`- first\n- second`}
-      </MarkdownContent>
-    )
+    render(<MarkdownContent>{`- first\n- second`}</MarkdownContent>)
     expect(screen.getByText('first')).toBeInTheDocument()
     expect(screen.getByText('second')).toBeInTheDocument()
     const list = document.querySelector('ul')
@@ -45,9 +41,7 @@ describe('MarkdownContent', () => {
   })
 
   test('merges optional className on root', () => {
-    const { container } = render(
-      <MarkdownContent className="extra-root">x</MarkdownContent>
-    )
+    const { container } = render(<MarkdownContent className="extra-root">x</MarkdownContent>)
     expect(container.firstElementChild).toHaveClass('extra-root')
   })
 })

@@ -7,8 +7,7 @@ function isExternalHref(href: string): boolean {
   return href.startsWith('http:') || href.startsWith('https:') || href.startsWith('//')
 }
 
-export interface AppLinkProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+export interface AppLinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   href: string
   children: React.ReactNode
   /** Set to true for external links to open in new tab with rel="noopener noreferrer" */

@@ -54,7 +54,7 @@ const DatePicker = memo(function DatePicker({
 
   const selectedDate = useMemo(() => {
     if (!value) return null
-    
+
     // Try parseISO first as it's the most common format from server
     const isoDate = parseISO(value)
     if (isValid(isoDate)) return isoDate
@@ -64,7 +64,7 @@ const DatePicker = memo(function DatePicker({
       const parsedMonth = parse(value, 'yyyy-MM', new Date())
       if (isValid(parsedMonth)) return parsedMonth
     }
-    
+
     return null
   }, [value, isMonth])
 
@@ -110,8 +110,8 @@ const DatePicker = memo(function DatePicker({
         disabled={disabled}
         className={inputClassName}
         wrapperClassName="w-full"
-        aria-invalid={error ? "true" : "false"}
-        aria-required={required ? "true" : "false"}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-required={required ? 'true' : 'false'}
         aria-describedby={
           [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') || undefined
         }

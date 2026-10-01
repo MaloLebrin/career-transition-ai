@@ -41,7 +41,13 @@ const mockOrganization = {
   createdAt: '2025-01-01T00:00:00.000Z',
 }
 
-const mockMembers: { id: number; organizationId: number; email: string; name: string; role: string }[] = []
+const mockMembers: {
+  id: number
+  organizationId: number
+  email: string
+  name: string
+  role: string
+}[] = []
 
 describe('Dashboard Settings page', () => {
   test('renders settings page with organization and members without crashing', () => {
@@ -53,7 +59,13 @@ describe('Dashboard Settings page', () => {
 
   test('passes members to OrganizationSettings so team is displayed', () => {
     const membersWithOne = [
-      { id: 2, organizationId: 1, email: 'collegue@example.com', name: 'Marie Dupont', role: 'consultant' as const },
+      {
+        id: 2,
+        organizationId: 1,
+        email: 'collegue@example.com',
+        name: 'Marie Dupont',
+        role: 'consultant' as const,
+      },
     ]
     render(<Settings organization={mockOrganization} members={membersWithOne} />)
 

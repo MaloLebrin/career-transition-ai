@@ -1,176 +1,87 @@
-import { ArrowRight, ShieldCheck } from 'lucide-react'
-import { motion } from 'motion/react'
-import React from 'react'
 import { PRIVACY_CONTACT_EMAIL } from '#shared/constants/legal'
-import PublicLayout from '../layout/PublicLayout'
-import Badge from '../ui/Badge'
-import Button from '../ui/Button'
+import AppLink from '~/components/ui/AppLink'
+import { LegalDocument } from './LegalDocument'
+import { LegalSection, Placeholder, Term } from './LegalSection'
 
-interface LegalNoticePageProps {
-  onEnterApp: () => void
-  onBackToHome?: () => void
-  onOffer?: () => void
-  onTarifs?: () => void
-  onMethodology?: () => void
-}
-
-export default function LegalNoticePage({
-  onEnterApp,
-  onBackToHome,
-  onOffer,
-  onTarifs,
-  onMethodology,
-}: LegalNoticePageProps) {
+export default function LegalNoticePage() {
   return (
-    <PublicLayout
-      headerProps={{
-        onLogoClick: onBackToHome ?? (() => {}),
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-        showAction: true,
-        actionLabel: 'Accès Expert',
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Mentions légales',
-      }}
+    <LegalDocument
+      eyebrow="Légal"
+      title="Mentions légales"
+      lead="Cette page fournit les informations légales relatives à l'éditeur du site et au traitement des contenus. Les informations ci-dessous sont à compléter avec les données exactes de l'entité éditrice et de l'hébergeur."
     >
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="space-y-8"
+      <LegalSection title="Éditeur du site">
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <Term>Dénomination</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Forme juridique</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Adresse</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Email</Term> :{' '}
+            <a
+              href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              {PRIVACY_CONTACT_EMAIL}
+            </a>
+          </li>
+          <li>
+            <Term>SIRET</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Directeur de la publication</Term> : <Placeholder />
+          </li>
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="Hébergement">
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <Term>Hébergeur</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Adresse</Term> : <Placeholder />
+          </li>
+          <li>
+            <Term>Téléphone</Term> : <Placeholder />
+          </li>
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="Propriété intellectuelle">
+        <p>
+          L&apos;ensemble du site, sa structure et ses contenus (textes, images, marques, éléments
+          graphiques, bases de données, etc.) sont protégés par le droit de la propriété
+          intellectuelle. Toute reproduction, représentation ou exploitation non autorisée est
+          interdite.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Responsabilité">
+        <p>
+          Les informations fournies sur le site sont données à titre indicatif. L&apos;éditeur ne
+          saurait être tenu responsable d&apos;une mauvaise utilisation du service ou d&apos;une
+          interruption temporaire.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Données personnelles">
+        <p>
+          Pour plus d&apos;informations sur le traitement des données, consultez la{' '}
+          <AppLink
+            href="/confidentialite"
+            className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            <div className="flex items-center gap-3">
-              <Badge variant="slate">Légal</Badge>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/40">
-                Mentions légales
-              </span>
-            </div>
-
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tighter leading-[0.95] text-brand-navy">
-              Mentions légales
-            </h1>
-
-            <p className="text-lg text-brand-navy/60 font-medium leading-relaxed">
-              Cette page fournit les informations légales relatives à l&apos;éditeur du site et au
-              traitement des contenus. Les informations ci-dessous sont à compléter avec les données
-              exactes de l&apos;entité éditrice et de l&apos;hébergeur.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={onEnterApp}
-                size="lg"
-                className="w-full sm:w-auto px-10 py-6 bg-brand-navy text-white hover:bg-brand-navy/90 shadow-xl shadow-brand-navy/10 group"
-              >
-                Accès Expert
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              {onBackToHome && (
-                <button
-                  type="button"
-                  onClick={onBackToHome}
-                  className="w-full sm:w-auto px-10 py-6 text-brand-navy font-bold hover:bg-brand-navy/5 rounded-2xl transition-colors cursor-pointer disabled:cursor-not-allowed"
-                >
-                  Retour à l&apos;accueil
-                </button>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="px-6 py-20 bg-white border-y border-brand-navy/5">
-        <div className="max-w-5xl mx-auto space-y-10">
-          <LegalBlock title="Éditeur du site">
-            <ul className="space-y-2">
-              <li>
-                <span className="font-bold text-brand-navy">Dénomination</span>:{' '}
-                <span className="text-brand-navy/60">[à compléter]</span>
-              </li>
-              <li>
-                <span className="font-bold text-brand-navy">Forme juridique</span>:{' '}
-                <span className="text-brand-navy/60">[à compléter]</span>
-              </li>
-              <li>
-                <span className="font-bold text-brand-navy">Adresse</span>:{' '}
-                <span className="text-brand-navy/60">[à compléter]</span>
-              </li>
-              <li>
-                <span className="font-bold text-brand-navy">Email</span>:{' '}
-                <span className="text-brand-navy/60">{PRIVACY_CONTACT_EMAIL}</span>
-              </li>
-              <li>
-                <span className="font-bold text-brand-navy">SIRET</span>:{' '}
-                <span className="text-brand-navy/60">[à compléter]</span>
-              </li>
-              <li>
-                <span className="font-bold text-brand-navy">Directeur de la publication</span>:{' '}
-                <span className="text-brand-navy/60">[à compléter]</span>
-              </li>
-            </ul>
-          </LegalBlock>
-
-          <LegalBlock title="Hébergement">
-            <p className="text-brand-navy/60 font-medium leading-relaxed">
-              <span className="font-bold text-brand-navy">Hébergeur</span>: [à compléter]
-              <br />
-              <span className="font-bold text-brand-navy">Adresse</span>: [à compléter]
-              <br />
-              <span className="font-bold text-brand-navy">Téléphone</span>: [à compléter]
-            </p>
-          </LegalBlock>
-
-          <LegalBlock title="Propriété intellectuelle">
-            <p className="text-brand-navy/60 font-medium leading-relaxed">
-              L&apos;ensemble du site, sa structure et ses contenus (textes, images, marques, éléments
-              graphiques, bases de données, etc.) sont protégés par le droit de la propriété
-              intellectuelle. Toute reproduction, représentation ou exploitation non autorisée est
-              interdite.
-            </p>
-          </LegalBlock>
-
-          <LegalBlock title="Responsabilité">
-            <p className="text-brand-navy/60 font-medium leading-relaxed">
-              Les informations fournies sur le site sont données à titre indicatif. L&apos;éditeur ne
-              saurait être tenu responsable d&apos;une mauvaise utilisation du service ou d&apos;une
-              interruption temporaire.
-            </p>
-          </LegalBlock>
-
-          <div className="p-8 rounded-[32px] bg-brand-ivory/50 border border-brand-navy/5">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-brand-sage/10 flex items-center justify-center text-brand-sage shrink-0">
-                <ShieldCheck size={20} />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-brand-navy">Données personnelles</h3>
-                <p className="text-sm text-brand-navy/55 font-medium leading-relaxed">
-                  Pour plus d&apos;informations sur le traitement des données, consultez la page{' '}
-                  <span className="font-bold text-brand-navy">Politique de confidentialité</span>{' '}
-                  (à créer).
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </PublicLayout>
+            politique de confidentialité
+          </AppLink>
+          .
+        </p>
+      </LegalSection>
+    </LegalDocument>
   )
 }
-
-function LegalBlock({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="p-10 rounded-[40px] bg-white border border-brand-navy/5 shadow-sm">
-      <h2 className="text-xl font-bold text-brand-navy mb-4">{title}</h2>
-      <div className="text-sm">{children}</div>
-    </div>
-  )
-}
-

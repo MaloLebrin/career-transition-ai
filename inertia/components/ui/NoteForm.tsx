@@ -41,7 +41,7 @@ const NoteForm = memo(function NoteForm({
         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 block">
           Qui peut voir cette note ?
         </label>
-        
+
         <div className="grid grid-cols-2 gap-3">
           {/* Option Privée */}
           <button
@@ -59,7 +59,9 @@ const NoteForm = memo(function NoteForm({
             </div>
             <div className="text-center">
               <div className="font-bold text-sm">Privée</div>
-              <div className={`text-[10px] mt-0.5 ${!isShared ? 'text-white/70' : 'text-slate-400'}`}>
+              <div
+                className={`text-[10px] mt-0.5 ${!isShared ? 'text-white/70' : 'text-slate-400'}`}
+              >
                 Moi uniquement
               </div>
             </div>
@@ -86,7 +88,9 @@ const NoteForm = memo(function NoteForm({
             </div>
             <div className="text-center">
               <div className="font-bold text-sm">Partagée</div>
-              <div className={`text-[10px] mt-0.5 ${isShared ? 'text-rose-600' : 'text-slate-400'}`}>
+              <div
+                className={`text-[10px] mt-0.5 ${isShared ? 'text-rose-600' : 'text-slate-400'}`}
+              >
                 Visible par l'accompagné
               </div>
             </div>
@@ -133,8 +137,8 @@ const NoteForm = memo(function NoteForm({
         <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isLoading || !content.trim()}
           className={isShared ? '!bg-rose-200 !text-rose-800 hover:!bg-rose-300' : ''}
         >

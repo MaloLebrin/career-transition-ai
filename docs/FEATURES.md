@@ -1,4 +1,4 @@
-# Cartographie fonctionnelle – France Transition Carrière
+# Cartographie fonctionnelle – Transition Carrière
 
 ## 1. Acquisition & image de marque
 
@@ -222,7 +222,7 @@
 - **Indicateurs**
   - Nombre total d’organisations clientes.
   - Nombre total d’utilisateurs (par rôle).
-  - Nombre d’instances FTC (si multi-instance).
+  - Nombre d’instances (si multi-instance).
 
 ### 6.2 Usage des exercices par organisation
 

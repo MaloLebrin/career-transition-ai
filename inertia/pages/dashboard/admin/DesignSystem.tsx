@@ -18,13 +18,7 @@ export default function DashboardDesignSystem() {
       <Head title="Design System" />
       <DashboardLayout>
         <div className="animate-fadeIn">
-          <DesignSystem
-            onBack={() =>
-              router.visit(
-                '/dashboard/super-admin/design-system'
-              )
-            }
-          />
+          <DesignSystem onBack={() => router.visit('/dashboard/super-admin')} />
         </div>
       </DashboardLayout>
     </>

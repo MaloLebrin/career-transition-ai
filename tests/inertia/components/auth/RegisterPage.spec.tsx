@@ -4,7 +4,6 @@ import RegisterPage from '../../../../inertia/components/auth/RegisterPage'
 
 const defaultProps = {
   csrfToken: 'test-csrf-token',
-  onBackToLanding: vi.fn(),
   onGoToLogin: vi.fn(),
   error: null as string | null,
 }
@@ -14,7 +13,7 @@ describe('RegisterPage', () => {
     render(<RegisterPage {...defaultProps} />)
 
     expect(screen.getAllByText('Création de compte')[0]).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/France Transition Paris/)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/Cabinet Horizon Paris/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Jean Dupont/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/votre@email/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Créer mon compte/ })).toBeInTheDocument()
@@ -34,7 +33,7 @@ describe('RegisterPage', () => {
   test('shows validation errors and does not call register when name is empty', async () => {
     render(<RegisterPage {...defaultProps} />)
 
-    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+    fireEvent.change(screen.getByPlaceholderText(/Cabinet Horizon Paris/), {
       target: { value: 'Mon Cabinet' },
     })
     fireEvent.change(screen.getByPlaceholderText(/votre@email/), {
@@ -53,7 +52,7 @@ describe('RegisterPage', () => {
   test('shows validation error when email is invalid', async () => {
     render(<RegisterPage {...defaultProps} />)
 
-    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+    fireEvent.change(screen.getByPlaceholderText(/Cabinet Horizon Paris/), {
       target: { value: 'Mon Cabinet' },
     })
     fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {
@@ -68,14 +67,16 @@ describe('RegisterPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Créer mon compte/ }))
 
     await waitFor(() => {
-      expect(screen.getByText((content) => content.includes("pas valide") && content.includes("email"))).toBeInTheDocument()
+      expect(
+        screen.getByText((content) => content.includes('pas valide') && content.includes('email'))
+      ).toBeInTheDocument()
     })
   })
 
   test('shows validation error when password is too short', async () => {
     render(<RegisterPage {...defaultProps} />)
 
-    fireEvent.change(screen.getByPlaceholderText(/France Transition Paris/), {
+    fireEvent.change(screen.getByPlaceholderText(/Cabinet Horizon Paris/), {
       target: { value: 'Mon Cabinet' },
     })
     fireEvent.change(screen.getByPlaceholderText(/Jean Dupont/), {

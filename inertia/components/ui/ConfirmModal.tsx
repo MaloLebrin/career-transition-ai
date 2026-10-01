@@ -77,10 +77,7 @@ export default function ConfirmModal({
         if (closeOnBackdrop) onCancel()
       }}
     >
-      <Card
-        className="w-full max-w-md p-8 animate-slideUp"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <Card className="w-full max-w-md p-8 animate-slideUp" onClick={(e) => e.stopPropagation()}>
         <h2 id="confirm-modal-title" className="text-xl font-bold text-brand-navy mb-2">
           {title}
         </h2>
@@ -95,7 +92,9 @@ export default function ConfirmModal({
             }`}
             role={isError ? 'alert' : undefined}
           >
-            {isError ? errorMessage ?? 'Une erreur est survenue.' : successMessage ?? 'Terminé.'}
+            {isError
+              ? (errorMessage ?? 'Une erreur est survenue.')
+              : (successMessage ?? 'Terminé.')}
           </div>
         )}
 
@@ -117,4 +116,3 @@ export default function ConfirmModal({
     </div>
   )
 }
-

@@ -138,9 +138,7 @@ const NoteModal = memo(function NoteModal({
               <div className="flex items-start gap-3 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl animate-fadeIn">
                 <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm text-rose-800 font-semibold">
-                    Attention : note partagée
-                  </p>
+                  <p className="text-sm text-rose-800 font-semibold">Attention : note partagée</p>
                   <p className="text-xs text-rose-600 mt-0.5">
                     L'accompagné pourra lire cette note dans son espace personnel.
                   </p>
@@ -186,11 +184,7 @@ const NoteModal = memo(function NoteModal({
               size="lg"
               className={isShared ? '!bg-rose-200 !text-rose-800 hover:!bg-rose-300' : ''}
             >
-              {isLoading
-                ? 'Enregistrement...'
-                : isEditing
-                  ? 'Mettre à jour'
-                  : 'Ajouter la note'}
+              {isLoading ? 'Enregistrement...' : isEditing ? 'Mettre à jour' : 'Ajouter la note'}
             </Button>
           </div>
         </form>

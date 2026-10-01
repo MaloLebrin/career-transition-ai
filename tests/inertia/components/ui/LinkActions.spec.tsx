@@ -15,7 +15,9 @@ describe('LinkActions', () => {
   test('renders copy and open buttons when value is a URL', () => {
     render(<LinkActions value="https://example.com/meet" />)
     expect(screen.getByRole('button', { name: /Copier le lien/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Ouvrir le lien dans un nouvel onglet/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Ouvrir le lien dans un nouvel onglet/i })
+    ).toBeInTheDocument()
   })
 
   test('copies to clipboard when clicking copy', async () => {
@@ -34,10 +36,13 @@ describe('LinkActions', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
     render(<LinkActions value="https://example.com/meet" />)
     fireEvent.click(screen.getByRole('button', { name: /Ouvrir le lien dans un nouvel onglet/i }))
-    expect(openSpy).toHaveBeenCalledWith('https://example.com/meet', '_blank', 'noopener,noreferrer')
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://example.com/meet',
+      '_blank',
+      'noopener,noreferrer'
+    )
   })
 })
-
 
 describe('LinkActions — copie', () => {
   const originalExecCommand = document.execCommand
@@ -67,7 +72,9 @@ describe('LinkActions — copie', () => {
   })
 
   test('sans API clipboard, utilise le repli execCommand et nettoie le textarea temporaire', async () => {
-    Object.assign(navigator, { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } })
+    Object.assign(navigator, {
+      clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+    })
     const execCommand = vi.fn().mockReturnValue(true)
     document.execCommand = execCommand
 
@@ -84,7 +91,9 @@ describe('LinkActions — copie', () => {
   })
 
   test('si le repli échoue aussi, l’icône ne change pas', async () => {
-    Object.assign(navigator, { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } })
+    Object.assign(navigator, {
+      clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+    })
     document.execCommand = vi.fn(() => {
       throw new Error('unsupported')
     })
@@ -99,7 +108,9 @@ describe('LinkActions — copie', () => {
   })
 
   test('si execCommand renvoie false, l’icône ne change pas', async () => {
-    Object.assign(navigator, { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } })
+    Object.assign(navigator, {
+      clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+    })
     document.execCommand = vi.fn().mockReturnValue(false)
 
     render(<LinkActions value="https://example.com/meet" />)

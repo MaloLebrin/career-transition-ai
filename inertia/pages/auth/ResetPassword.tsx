@@ -1,10 +1,10 @@
 import { Head, useForm } from '@inertiajs/react'
+import { TriangleAlert } from 'lucide-react'
 import React from 'react'
 import { rateLimitError } from '#shared/helpers/rate_limit'
-import PublicLayout from '~/components/layout/PublicLayout'
+import { AuthShell } from '~/components/auth/AuthShell'
 import AppLink from '~/components/ui/AppLink'
-import Button from '~/components/ui/Button'
-import Card from '~/components/ui/Card'
+import Button, { buttonClassName } from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
 
 interface ResetPasswordProps {
@@ -18,13 +18,7 @@ export default function ResetPassword({ token, expired }: ResetPasswordProps) {
   return (
     <>
       <Head title="Nouveau mot de passe" />
-      <PublicLayout headerProps={{ showAction: false }}>
-        <div className="min-h-[80vh] flex items-center justify-center p-4">
-          <Card className="w-full max-w-md p-8">
-            {token ? <ResetForm token={token} /> : <InvalidLink expired={expired} />}
-          </Card>
-        </div>
-      </PublicLayout>
+      {token ? <ResetForm token={token} /> : <InvalidLink expired={expired} />}
     </>
   )
 }
@@ -42,16 +36,13 @@ function ResetForm({ token }: { token: string }) {
   const throttled = rateLimitError(errors)
 
   return (
-    <>
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-brand-navy tracking-tight">Nouveau mot de passe</h1>
-        <p className="text-brand-navy/60 text-sm mt-2">
-          Choisissez le mot de passe que vous utiliserez pour vous connecter.
-        </p>
-      </div>
+    <AuthShell
+      title="Nouveau mot de passe"
+      subtitle="Choisissez le mot de passe que vous utiliserez pour vous connecter."
+    >
       <form onSubmit={handleSubmit} className="space-y-6">
         {throttled && (
-          <p role="alert" className="text-sm text-rose-600 font-medium">
+          <p role="alert" className="text-sm text-danger">
             {throttled}
           </p>
         )}
@@ -80,28 +71,31 @@ function ResetForm({ token }: { token: string }) {
           {processing ? 'Enregistrement…' : 'Enregistrer mon mot de passe'}
         </Button>
       </form>
-    </>
+    </AuthShell>
   )
 }
 
 function InvalidLink({ expired }: { expired: boolean }) {
   return (
-    <div className="text-center">
-      <h1 className="text-2xl font-bold text-brand-navy tracking-tight">
-        {expired ? 'Lien expiré' : 'Lien invalide'}
-      </h1>
-      <p className="text-brand-navy/60 text-sm mt-3">
-        {expired
+    <AuthShell
+      title={expired ? 'Lien expiré' : 'Lien invalide'}
+      subtitle={
+        expired
           ? 'Ce lien de réinitialisation a expiré. Faites une nouvelle demande.'
-          : 'Ce lien est invalide ou a déjà été utilisé.'}
-      </p>
-      <div className="mt-6">
-        <AppLink href="/auth/forgot-password">
-          <Button variant="outline" size="md">
-            Demander un nouveau lien
-          </Button>
+          : 'Ce lien est invalide ou a déjà été utilisé.'
+      }
+      icon={<TriangleAlert size={24} />}
+      iconTone="warning"
+      accent="warm"
+    >
+      <div className="text-center">
+        <AppLink
+          href="/auth/forgot-password"
+          className={buttonClassName({ variant: 'outline', size: 'md' })}
+        >
+          Demander un nouveau lien
         </AppLink>
       </div>
-    </div>
+    </AuthShell>
   )
 }
