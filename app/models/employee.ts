@@ -5,6 +5,7 @@ import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
+import type { AccountType } from '#shared/constants/b2c'
 import type { EmployeeStatus } from '#shared/constants/employee'
 import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
@@ -47,6 +48,10 @@ export default class Employee extends BaseModel {
 
   @column()
   declare status: EmployeeStatus
+
+  /** `b2b` : invité par un cabinet ; `b2c` : particulier inscrit seul (#92). */
+  @column()
+  declare accountType: AccountType
 
   @column({
     consume: (value) => Boolean(value),

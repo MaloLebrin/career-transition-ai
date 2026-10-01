@@ -12,6 +12,7 @@ export const OrganizationFactory = factory
       slug: `${baseSlug}-${faker.string.alphanumeric(6).toLowerCase()}`,
       logoUrl: null,
       logoPublicId: null,
+      isPlatform: false,
     }
   })
   .build()

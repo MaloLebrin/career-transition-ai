@@ -32,6 +32,7 @@ test.group('AdminSeeder', (group) => {
 
     const orgs = await Organization.query().where('slug', PLATFORM_ORG_SLUG)
     assert.lengthOf(orgs, 1)
+    assert.isTrue(orgs[0].isPlatform, 'l’organisation seedée est la plateforme (#92)')
 
     const users = await User.query().where('email', PLATFORM_ADMIN_EMAIL)
     assert.lengthOf(users, 1)

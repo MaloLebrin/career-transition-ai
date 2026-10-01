@@ -8,10 +8,12 @@ import { NOTIFICATION_STATUSES } from '#shared/constants/notifications'
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createCandidate,
   createEmployeeFor,
   createOrganization,
   createSuperAdmin,
+  createUser,
 } from '#tests/support/actors'
 
 /**
@@ -120,6 +122,7 @@ test.group('InertiaMiddleware.share', () => {
       email: advisor.email,
       name: advisor.name,
       role: 'advisor',
+      accountType: null,
     })
     assert.deepEqual(
       props.employees.map((e: { name: string }) => e.name),
@@ -178,9 +181,28 @@ test.group('InertiaMiddleware.share', () => {
     const props = await share(makeShareCtx({ user }))
 
     assert.equal(props.user.role, 'employee')
+    assert.equal(props.user.accountType, 'b2b')
     assert.deepEqual(props.employees, [])
     assert.lengthOf(props.notifications, 1)
     assert.equal(props.unreadNotificationsCount, 1)
+  })
+
+  test('particulier B2C : accountType b2c (#92)', async ({ assert }) => {
+    const { user } = await createB2cCandidate()
+
+    const props = await share(makeShareCtx({ user }))
+
+    assert.equal(props.user.role, 'employee')
+    assert.equal(props.user.accountType, 'b2c')
+    assert.deepEqual(props.employees, [])
+  })
+
+  test('compte employee sans fiche : accountType null', async ({ assert }) => {
+    const user = await createUser('employee')
+
+    const props = await share(makeShareCtx({ user }))
+
+    assert.isNull(props.user.accountType)
   })
 })
 

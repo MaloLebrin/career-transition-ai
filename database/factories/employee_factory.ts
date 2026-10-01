@@ -1,4 +1,5 @@
 import Employee from '#models/employee'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import factory from '@adonisjs/lucid/factories'
 
 export const EmployeeFactory = factory
@@ -18,6 +19,7 @@ export const EmployeeFactory = factory
         | 'completed'
         | 'on-hold',
       onboarded: faker.datatype.boolean(),
+      accountType: ACCOUNT_TYPES.B2B,
     }
   })
   .build()

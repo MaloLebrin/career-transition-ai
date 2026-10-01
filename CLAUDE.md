@@ -113,6 +113,8 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 `EmployeeSkill`, `EmployeeSynthesis`, `ExerciseResult`, `SupportPlanStep`,
 `SupportPlanStepExercise`, `PdfExport`, `Note`, `Media`, `OnboardingToken`
 
+Organisation plateforme (épic B2C #90, `docs/epics/b2c.md`) : `organizations.is_platform` (unique), lue via `#services/platform_organization_service` — jamais via le `organizationId` du super admin connecté. Fiches candidat : `employees.account_type` (`ACCOUNT_TYPES` de `#shared/constants/b2c`, `b2b` par défaut, `b2c` = particulier inscrit seul) ; règles d'accès B2C pures dans `#shared/helpers/b2c_access`.
+
 ---
 
 ## Middlewares disponibles (start/kernel.ts)

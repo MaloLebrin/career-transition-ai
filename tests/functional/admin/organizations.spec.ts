@@ -13,6 +13,7 @@ import {
   createAdvisor,
   createEmployeeFor,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
 } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
@@ -259,8 +260,8 @@ test.group('Super admin — organisations : suppression', (group) => {
     await db.assertHas('organizations', { id: org.id })
   })
 
-  test('refuse de supprimer l’organisation du super admin', async ({ client, assert, db }) => {
-    const org = await createOrganization()
+  test('refuse de supprimer l’organisation plateforme', async ({ client, assert, db }) => {
+    const org = await createPlatformOrganization()
     const superAdmin = await createSuperAdmin(org)
 
     const response = await client
@@ -273,7 +274,7 @@ test.group('Super admin — organisations : suppression', (group) => {
     response.assertHeader('location', ORGS)
     assert.equal(
       response.flashMessage('error'),
-      'Vous ne pouvez pas supprimer votre propre organisation.'
+      'Vous ne pouvez pas supprimer l’organisation plateforme.'
     )
     await db.assertHas('organizations', { id: org.id })
   })
