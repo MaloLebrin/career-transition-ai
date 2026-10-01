@@ -62,7 +62,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
           </AppLink>
         ) : (
           <>
-            <ul className="hidden items-center gap-8 md:flex">
+            <ul className="hidden items-center gap-8 lg:flex">
               {nav.map((item) => (
                 <li key={item.href}>
                   <AppLink
@@ -76,7 +76,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
               ))}
             </ul>
 
-            <div className="hidden items-center gap-3 md:flex">
+            <div className="hidden items-center gap-3 lg:flex">
               {secondaryAction && (
                 <AppLink
                   href={secondaryAction.href}
@@ -98,7 +98,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              className="rounded-lg p-2 text-ink-soft hover:bg-surface-soft hover:text-ink md:hidden cursor-pointer"
+              className="rounded-lg p-2 text-ink-soft hover:bg-surface-soft hover:text-ink lg:hidden cursor-pointer"
               aria-label="Ouvrir le menu"
               aria-expanded={menuOpen}
             >

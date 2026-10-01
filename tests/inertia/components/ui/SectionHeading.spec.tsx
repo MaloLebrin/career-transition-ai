@@ -22,7 +22,7 @@ describe('SectionHeading', () => {
       <SectionHeading level={1} size="display-xl" align="center" tone="inverse" title="Titre" />
     )
     const heading = screen.getByRole('heading', { level: 1, name: 'Titre' })
-    expect(heading).toHaveClass('md:text-display-xl', 'text-on-ink')
+    expect(heading).toHaveClass('lg:text-display-xl', 'text-on-ink')
     expect(heading.parentElement).toHaveClass('text-center')
   })
 })

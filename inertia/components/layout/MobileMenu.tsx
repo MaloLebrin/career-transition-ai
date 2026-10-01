@@ -15,7 +15,7 @@ export interface MobileMenuProps {
   secondaryAction?: ActionItem | null
 }
 
-/** Panneau de navigation plein écran (< md), fermé à la navigation et à Échap. */
+/** Panneau de navigation (< lg), fermé à la navigation et à Échap. */
 export const MobileMenu: React.FC<MobileMenuProps> = ({
   open,
   onClose,
@@ -29,7 +29,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   }, [open, onClose])
 
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50 md:hidden">
+    <Dialog open={open} onClose={onClose} className="relative z-50 lg:hidden">
       <DialogBackdrop className="fixed inset-0 bg-ink/40" />
       <DialogPanel className="fixed inset-y-0 right-0 flex w-full max-w-sm flex-col bg-canvas shadow-raised">
         <div className="flex h-16 items-center justify-between border-b border-hairline px-6">

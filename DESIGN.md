@@ -173,7 +173,7 @@ spinner dans le bouton. Mouvement : `animate-fade-in`, `animate-slide-up`,
 | ≥ 1024 px        | Hero 7/5, grilles 3 ou 4 colonnes, conteneur 1200 px.                                                                                                                    |
 
 Cibles tactiles ≥ 40 px (boutons `md`), 44 px pour les champs `lg`. Aucun défilement
-horizontal à 375 px : pas de largeur fixe, pas de `w-screen`.
+horizontal à 375 px : pas de largeur fixe, pas de `w-screen`, titres en `break-words`.
 
 ---
 

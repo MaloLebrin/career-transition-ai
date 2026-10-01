@@ -16,8 +16,8 @@ export interface SectionHeadingProps {
 }
 
 const SIZES: Record<SectionHeadingSize, string> = {
-  'display-xl': 'text-display-lg md:text-display-xl',
-  'display-lg': 'text-display-md md:text-display-lg',
+  'display-xl': 'text-display-md md:text-display-lg lg:text-display-xl',
+  'display-lg': 'text-display-sm md:text-display-md lg:text-display-lg',
   'display-md': 'text-display-sm md:text-display-md',
   'display-sm': 'text-title-lg md:text-display-sm',
 }
@@ -41,7 +41,9 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
   return (
     <div className={`flex flex-col gap-3 ${alignClass} ${className}`.trim()}>
       {eyebrow && <Eyebrow tone={eyebrowTone}>{eyebrow}</Eyebrow>}
-      <Heading className={`${SIZES[size]} max-w-3xl ${inverse ? 'text-on-ink' : 'text-ink'}`}>
+      <Heading
+        className={`${SIZES[size]} max-w-3xl text-balance break-words ${inverse ? 'text-on-ink' : 'text-ink'}`}
+      >
         {title}
       </Heading>
       {description && (
