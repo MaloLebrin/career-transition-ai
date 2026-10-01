@@ -1,4 +1,4 @@
-# Blueprint Render — déploiement de test gratuit (docs/DEPLOYMENT_TEST.md).
+# Blueprint Render — déploiement de test gratuit (docs/deploiement/README.md).
 # Render Free (web, build depuis le Dockerfile) + Neon Free (Postgres, hors Render).
 # Variables `sync: false` : à saisir dans le tableau de bord Render, jamais ici.
 services:
@@ -6,6 +6,8 @@ services:
     name: career-transition-ai
     runtime: docker
     plan: free
+    # Même région que la base Neon (eu-central-1) pour limiter la latence.
+    region: frankfurt
     dockerfilePath: ./Dockerfile
     # Pas de pré-déploiement sur le plan gratuit : on migre au démarrage.
     dockerCommand: /entrypoint.sh migrate-and-serve
