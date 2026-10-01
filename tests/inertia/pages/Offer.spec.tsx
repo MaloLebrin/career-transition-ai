@@ -15,6 +15,6 @@ describe('Offer page', () => {
       screen.getByRole('heading', { level: 1, name: /Un portail expert/i })
     ).toBeInTheDocument()
     expect(screen.getAllByText(/Demander une démo/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('button', { name: /Accès Expert/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Se connecter' }).length).toBeGreaterThan(0)
   })
 })

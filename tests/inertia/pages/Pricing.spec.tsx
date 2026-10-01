@@ -19,6 +19,6 @@ describe('Pricing page', () => {
     expect(screen.getByRole('heading', { name: /^Cabinet\+$/i })).toBeInTheDocument()
     expect(screen.getByText(/Questions fréquentes/i)).toBeInTheDocument()
     expect(screen.getAllByText(/Demander un devis/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('button', { name: /Accès Expert/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Se connecter' }).length).toBeGreaterThan(0)
   })
 })

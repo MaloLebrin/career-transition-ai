@@ -12,11 +12,11 @@ describe('Methodology page', () => {
     render(<Methodology />)
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /Une méthode d'accompagnement/i })
+      screen.getByRole('heading', { level: 1, name: /Une méthode d.accompagnement/i })
     ).toBeInTheDocument()
     expect(screen.getByText(/Cadre scientifique/i)).toBeInTheDocument()
     expect(screen.getByText(/Pour le conseiller/i)).toBeInTheDocument()
     expect(screen.getByText(/Éthique & limites/i)).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: /Accès Expert/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Se connecter' }).length).toBeGreaterThan(0)
   })
 })
