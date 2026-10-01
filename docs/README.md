@@ -39,3 +39,4 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 
 - **[Checklist de PR](process/pr-checklist.md)** — ce que l'auteur et le reviewer vérifient.
 - **[Changelog](changelog/README.md)** — un fichier par modification (`YYYY-MM-DD-HHMM-slug.md`).
+- **[Épic B2C](epics/b2c.md)** — décisions produit, phases, workflow de la branche `epic/b2c`.
