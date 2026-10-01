@@ -49,10 +49,7 @@ export default function LoginPage({ csrfToken, error, success, onGoToRegister }:
   )
 
   return (
-    <PublicLayout
-      headerProps={{ showAction: false }}
-      className="flex flex-col lg:flex-row overflow-hidden"
-    >
+    <PublicLayout header={{ minimal: true }} footer={false} className="lg:flex-row">
       <div className="hidden lg:flex lg:w-1/2 bg-brand-navy relative items-center justify-center p-20 overflow-hidden pt-32">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand-sage/10 blur-[120px] rounded-full -mr-96 -mt-96" />
         <div className="relative z-10 max-w-lg space-y-12">

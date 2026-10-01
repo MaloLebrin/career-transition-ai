@@ -2,33 +2,10 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Methodology from '../../../inertia/pages/Methodology'
 
-vi.mock('@inertiajs/react', () => ({
-  Head: ({ children }: { title?: string; children?: React.ReactNode }) => <>{children}</>,
-  Link: ({
-    href,
-    className,
-    children,
-    ...rest
-  }: {
-    href: string
-    className?: string
-    children: React.ReactNode
-  }) => (
-    <a href={href} className={className} data-inertia-link="true" {...rest}>
-      {children}
-    </a>
-  ),
-  router: { visit: vi.fn() },
-  useForm: () => ({
-    data: { name: '', email: '', phone: '', organization: '', message: '', type: 'contact' },
-    setData: vi.fn(),
-    post: vi.fn(),
-    processing: false,
-    errors: {},
-    wasSuccessful: false,
-    reset: vi.fn(),
-  }),
-}))
+vi.mock('@inertiajs/react', async () => {
+  const { inertiaMock } = await import('../support/inertia_mock')
+  return inertiaMock()
+})
 
 describe('Methodology page', () => {
   test('renders core marketing sections and CTA', () => {
@@ -43,4 +20,3 @@ describe('Methodology page', () => {
     expect(screen.getAllByRole('button', { name: /Accès Expert/i }).length).toBeGreaterThan(0)
   })
 })
-

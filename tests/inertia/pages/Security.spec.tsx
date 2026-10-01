@@ -2,24 +2,10 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Security from '../../../inertia/pages/Security'
 
-vi.mock('@inertiajs/react', () => ({
-  Head: ({ children }: { title?: string; children?: React.ReactNode }) => <>{children}</>,
-  Link: ({
-    href,
-    className,
-    children,
-    ...rest
-  }: {
-    href: string
-    className?: string
-    children: React.ReactNode
-  }) => (
-    <a href={href} className={className} data-inertia-link="true" {...rest}>
-      {children}
-    </a>
-  ),
-  router: { visit: vi.fn() },
-}))
+vi.mock('@inertiajs/react', async () => {
+  const { inertiaMock } = await import('../support/inertia_mock')
+  return inertiaMock()
+})
 
 describe('Security page', () => {
   test('renders security page title and sections', () => {

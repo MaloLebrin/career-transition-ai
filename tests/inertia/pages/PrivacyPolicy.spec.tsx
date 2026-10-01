@@ -3,24 +3,10 @@ import { render, screen } from '@testing-library/react'
 import PrivacyPolicy from '../../../inertia/pages/PrivacyPolicy'
 import { PRIVACY_CONTACT_EMAIL, RETENTION_PERIODS, SUBPROCESSORS } from '#shared/constants/legal'
 
-vi.mock('@inertiajs/react', () => ({
-  Head: ({ children }: { title?: string; children?: React.ReactNode }) => <>{children}</>,
-  Link: ({
-    href,
-    className,
-    children,
-    ...rest
-  }: {
-    href: string
-    className?: string
-    children: React.ReactNode
-  }) => (
-    <a href={href} className={className} data-inertia-link="true" {...rest}>
-      {children}
-    </a>
-  ),
-  router: { visit: vi.fn() },
-}))
+vi.mock('@inertiajs/react', async () => {
+  const { inertiaMock } = await import('../support/inertia_mock')
+  return inertiaMock()
+})
 
 describe('PrivacyPolicy page', () => {
   test('renders privacy policy title and key blocks', () => {

@@ -22,22 +22,7 @@ export default function LegalNoticePage({
   onMethodology,
 }: LegalNoticePageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onLogoClick: onBackToHome ?? (() => {}),
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-        showAction: true,
-        actionLabel: 'Accès Expert',
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Mentions légales',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -129,18 +114,18 @@ export default function LegalNoticePage({
 
           <LegalBlock title="Propriété intellectuelle">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              L&apos;ensemble du site, sa structure et ses contenus (textes, images, marques, éléments
-              graphiques, bases de données, etc.) sont protégés par le droit de la propriété
-              intellectuelle. Toute reproduction, représentation ou exploitation non autorisée est
-              interdite.
+              L&apos;ensemble du site, sa structure et ses contenus (textes, images, marques,
+              éléments graphiques, bases de données, etc.) sont protégés par le droit de la
+              propriété intellectuelle. Toute reproduction, représentation ou exploitation non
+              autorisée est interdite.
             </p>
           </LegalBlock>
 
           <LegalBlock title="Responsabilité">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              Les informations fournies sur le site sont données à titre indicatif. L&apos;éditeur ne
-              saurait être tenu responsable d&apos;une mauvaise utilisation du service ou d&apos;une
-              interruption temporaire.
+              Les informations fournies sur le site sont données à titre indicatif. L&apos;éditeur
+              ne saurait être tenu responsable d&apos;une mauvaise utilisation du service ou
+              d&apos;une interruption temporaire.
             </p>
           </LegalBlock>
 
@@ -153,8 +138,8 @@ export default function LegalNoticePage({
                 <h3 className="font-bold text-brand-navy">Données personnelles</h3>
                 <p className="text-sm text-brand-navy/55 font-medium leading-relaxed">
                   Pour plus d&apos;informations sur le traitement des données, consultez la page{' '}
-                  <span className="font-bold text-brand-navy">Politique de confidentialité</span>{' '}
-                  (à créer).
+                  <span className="font-bold text-brand-navy">Politique de confidentialité</span> (à
+                  créer).
                 </p>
               </div>
             </div>
@@ -173,4 +158,3 @@ function LegalBlock({ title, children }: { title: string; children: React.ReactN
     </div>
   )
 }
-

@@ -22,21 +22,7 @@ export default function OfferPage({
   onMethodology,
 }: OfferPageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onActionClick: onEnterApp,
-        actionLabel: 'Accès Expert',
-        showAction: true,
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Offre cabinets',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -56,8 +42,9 @@ export default function OfferPage({
               </h1>
 
               <p className="text-lg text-brand-navy/60 font-medium leading-relaxed">
-                Standardisez votre méthode, améliorez la qualité des livrables et gagnez du temps sur
-                la synthèse. L&apos;IA vous assiste comme copilote, le conseiller reste le décideur.
+                Standardisez votre méthode, améliorez la qualité des livrables et gagnez du temps
+                sur la synthèse. L&apos;IA vous assiste comme copilote, le conseiller reste le
+                décideur.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -79,9 +66,18 @@ export default function OfferPage({
               </div>
 
               <div className="flex flex-wrap items-center gap-6 pt-2">
-                <MiniProof icon={<ShieldCheck size={16} className="text-brand-sage" />} text="Approche RGPD (résumé + pages légales)" />
-                <MiniProof icon={<Users size={16} className="text-brand-terracotta" />} text="Pensé pour les cabinets et conseillers" />
-                <MiniProof icon={<Sparkles size={16} className="text-brand-navy" />} text="Rigueur + livrables actionnables" />
+                <MiniProof
+                  icon={<ShieldCheck size={16} className="text-brand-sage" />}
+                  text="Approche RGPD (résumé + pages légales)"
+                />
+                <MiniProof
+                  icon={<Users size={16} className="text-brand-terracotta" />}
+                  text="Pensé pour les cabinets et conseillers"
+                />
+                <MiniProof
+                  icon={<Sparkles size={16} className="text-brand-navy" />}
+                  text="Rigueur + livrables actionnables"
+                />
               </div>
             </motion.div>
 
@@ -181,10 +177,16 @@ export default function OfferPage({
                 <AppLink href="/methodologie" className="text-brand-sage hover:underline">
                   Lire la méthodologie →
                 </AppLink>
-                <AppLink href="#" className="text-brand-navy/50 hover:text-brand-sage transition-colors">
+                <AppLink
+                  href="#"
+                  className="text-brand-navy/50 hover:text-brand-sage transition-colors"
+                >
                   RGPD (à compléter)
                 </AppLink>
-                <AppLink href="#" className="text-brand-navy/50 hover:text-brand-sage transition-colors">
+                <AppLink
+                  href="#"
+                  className="text-brand-navy/50 hover:text-brand-sage transition-colors"
+                >
                   Mentions légales (à compléter)
                 </AppLink>
               </div>
@@ -267,15 +269,7 @@ function MockRow({ title, value }: { title: string; value: string }) {
   )
 }
 
-function OfferCard({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode
-  title: string
-  desc: string
-}) {
+function OfferCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="p-8 bg-brand-ivory/50 rounded-[32px] border border-brand-navy/5 hover:border-brand-sage/30 hover:bg-white hover:shadow-2xl hover:shadow-brand-navy/5 transition-all duration-500">
       <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-6">
@@ -300,4 +294,3 @@ function Bullet({ title, desc }: { title: string; desc: string }) {
     </div>
   )
 }
-

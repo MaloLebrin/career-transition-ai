@@ -8,11 +8,21 @@ import {
   ShieldCheck,
   Target,
   Users,
-  Zap
+  Zap,
 } from 'lucide-react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import React from 'react'
-import { AiAnalisys, Appointnement, Certification, CoachFeedback, Disc, Matching, Purposes, Skills, SoftSkills } from '~/components/landing/floating-popups'
+import {
+  AiAnalisys,
+  Appointnement,
+  Certification,
+  CoachFeedback,
+  Disc,
+  Matching,
+  Purposes,
+  Skills,
+  SoftSkills,
+} from '~/components/landing/floating-popups'
 import { ContactDemoForm } from '../marketing/ContactDemoForm'
 import PublicLayout from '../layout/PublicLayout'
 import Badge from '../ui/Badge'
@@ -34,22 +44,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
   }
 
   return (
-    <PublicLayout
-      headerProps={{
-        onLogoClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
-        onOfferClick: () => router.visit('/offre'),
-        onTarifsClick: () => router.visit('/tarifs'),
-        onMethodologyClick: () => router.visit('/methodologie'),
-        onAiClick: () => scrollToSection('ai-engine'),
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'landing',
-        onEnterApp,
-        onAiClick: () => scrollToSection('ai-engine'),
-        footerLine: 'France Transition Travail © 2026 • Design High-Fidelity',
-      }}
-    >
+    <PublicLayout>
       {/* --- HERO SECTION --- */}
       <section className="relative pt-32 pb-64 overflow-hidden">
         {/* Abstract Background Shapes */}
@@ -79,12 +74,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               <span className="text-[10px] font-bold uppercase tracking-widest text-brand-navy/60">
                 Disponible pour les Cabinets Experts
               </span>
-          </div>
+            </div>
 
             <h1 className="text-6xl md:text-[120px] font-bold tracking-tighter leading-[0.85] text-brand-navy">
               L&apos;IA qui structure le <br />
               <span className="text-brand-sage italic">Potentiel Travail.</span>
-          </h1>
+            </h1>
 
             <p className="text-xl md:text-2xl text-brand-navy/60 max-w-3xl leading-relaxed font-medium">
               France Transition Travail fusionne la rigueur des sciences comportementales avec la
@@ -93,14 +88,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button 
-              onClick={onEnterApp} 
-              size="lg" 
+              <Button
+                onClick={onEnterApp}
+                size="lg"
                 className="w-full sm:w-auto px-10 py-6 bg-brand-navy text-white hover:bg-brand-navy/90 shadow-xl shadow-brand-navy/10 group"
-            >
-              Lancer le Portail
+              >
+                Lancer le Portail
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+              </Button>
               <button
                 type="button"
                 onClick={() => scrollToSection('methodology')}
@@ -108,7 +103,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               >
                 Découvrir la méthode
               </button>
-        </div>
+            </div>
 
             <div className="flex items-center space-x-8 pt-8 border-t border-brand-navy/5">
               <div className="flex -space-x-3">
@@ -145,8 +140,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <div className="w-2 h-2 rounded-full bg-brand-navy/10" />
                   <div className="w-2 h-2 rounded-full bg-brand-navy/10" />
                 </div>
-             </div>
-             
+              </div>
+
               <div className="bg-white grid grid-cols-12 min-h-[500px]">
                 <div className="col-span-3 border-r border-brand-navy/5 p-6 space-y-6 hidden md:block">
                   <Logo size="sm" />
@@ -170,7 +165,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                       <div className="h-2 w-8 bg-brand-navy/10 rounded-full mb-2" />
                       <div className="h-4 w-16 bg-brand-sage/20 rounded-md" />
                     </div>
-                      </div>
+                  </div>
                   <div className="h-40 bg-brand-navy/5 rounded-[32px] p-6 flex items-end gap-2">
                     {[40, 70, 45, 90, 65, 80, 50, 85, 60, 75].map((h, i) => (
                       <div
@@ -198,12 +193,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                           </div>
                           <div className="h-6 w-12 bg-brand-sage/10 rounded-lg" />
                         </div>
-                       ))}
+                      ))}
                     </div>
                   </div>
                 </div>
-             </div>
-                 </div>
+              </div>
+            </div>
 
             {/* Floating Popups */}
             <AiAnalisys />
@@ -211,12 +206,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <Matching />
             <Certification />
             <SoftSkills />
-            <Disc />  
+            <Disc />
             <CoachFeedback />
             <Appointnement />
             <Skills />
           </motion.div>
-               </div>
+        </div>
       </section>
 
       {/* --- TRUST LOGOS --- */}
@@ -242,10 +237,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div className="space-y-8">
-            <Badge variant="slate">Rigueur Scientifique</Badge>
-            <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-brand-navy leading-tight">
+              <Badge variant="slate">Rigueur Scientifique</Badge>
+              <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-brand-navy leading-tight">
                 Plus qu&apos;un outil, <br className="hidden md:block" /> une méthode structurée.
-            </h2>
+              </h2>
               <p className="text-lg text-brand-navy/60 font-medium leading-relaxed">
                 Nous avons digitalisé les meilleurs outils du bilan de compétences pour offrir une
                 expérience fluide, structurante et hautement qualitative.
@@ -275,12 +270,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   </div>
                 </div>
               </div>
-          </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FeatureCard
                 icon={<BarChart3 className="text-brand-sage" />}
-              title="Matrice de Pairage" 
+                title="Matrice de Pairage"
                 desc="Élimine les biais de désirabilité sociale par comparaison forcée."
                 delay={0.1}
                 className="sm:col-span-2"
@@ -337,18 +332,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </p>
 
             <div className="grid grid-cols-2 gap-12 pt-8">
-               <div className="space-y-2">
+              <div className="space-y-2">
                 <div className="text-5xl font-bold text-white">99.2%</div>
                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                   Précision Sémantique
                 </div>
-               </div>
-               <div className="space-y-2">
+              </div>
+              <div className="space-y-2">
                 <div className="text-5xl font-bold text-white">-65%</div>
                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                   Temps de Synthèse
                 </div>
-               </div>
+              </div>
             </div>
           </div>
 
@@ -356,7 +351,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="absolute inset-0 bg-brand-sage/20 blur-[120px] rounded-full scale-110" />
             <div className="bg-white/5 p-1 rounded-[48px] backdrop-blur-3xl border border-white/10 relative overflow-hidden">
               <div className="p-12 space-y-10">
-                   <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4">
                   <div className="w-3 h-3 rounded-full bg-brand-terracotta" />
                   <div className="w-3 h-3 rounded-full bg-brand-sage" />
                   <div className="w-3 h-3 rounded-full bg-white/10" />
@@ -366,7 +361,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   <div className="space-y-3">
                     <div className="h-3 w-3/4 bg-white/10 rounded-full animate-pulse" />
                     <div className="h-3 w-1/2 bg-white/10 rounded-full animate-pulse [animation-delay:200ms]" />
-                   </div>
+                  </div>
 
                   <div className="bg-brand-sage/10 border border-brand-sage/20 rounded-3xl p-8 font-mono text-sm space-y-2">
                     <p className="text-brand-sage flex items-center">
@@ -380,8 +375,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     <p className="text-white flex items-center">
                       <span className="mr-3 opacity-50">03</span>
                       GENERATING SYNERGY_REPORT...
-                         </p>
-                      </div>
+                    </p>
+                  </div>
 
                   <div className="flex items-center space-x-4 pt-4">
                     <div className="w-12 h-12 rounded-2xl bg-brand-sage/20 flex items-center justify-center text-brand-sage">
@@ -393,10 +388,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                       </p>
                       <p className="text-sm font-bold text-white">Analyse en temps réel active</p>
                     </div>
-                   </div>
+                  </div>
                 </div>
-             </div>
-          </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -446,21 +441,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           >
             <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tighter leading-none">
               Prêt à passer <br /> à la vitesse supérieure ?
-          </h2>
+            </h2>
             <p className="text-white/60 text-xl font-medium max-w-xl mx-auto">
               Rejoignez les coachs et experts qui ont déjà automatisé leurs bilans avec France
               Transition Travail.
-          </p>
+            </p>
             <div className="flex justify-center pt-6">
-            <Button 
-              onClick={onEnterApp} 
-              size="lg" 
+              <Button
+                onClick={onEnterApp}
+                size="lg"
                 className="group bg-brand-sage text-white hover:bg-brand-sage/90 hover:scale-[1.05] hover:-translate-y-1.5 border-none px-20 py-7 text-lg transition-all duration-500 shadow-2xl shadow-brand-sage/20"
-            >
+              >
                 Accéder au Portail
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+              </Button>
+            </div>
             <div className="flex justify-center items-center space-x-8 pt-8">
               <div className="flex items-center space-x-2">
                 <ShieldCheck size={16} className="text-brand-sage" />

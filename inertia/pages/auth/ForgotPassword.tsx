@@ -22,7 +22,7 @@ export default function ForgotPassword() {
   return (
     <>
       <Head title="Mot de passe oublié" />
-      <PublicLayout headerProps={{ showAction: false }}>
+      <PublicLayout header={{ minimal: true }} footer={false}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8">
             <div className="text-center mb-8">

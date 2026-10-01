@@ -18,7 +18,7 @@ export default function ResetPassword({ token, expired }: ResetPasswordProps) {
   return (
     <>
       <Head title="Nouveau mot de passe" />
-      <PublicLayout headerProps={{ showAction: false }}>
+      <PublicLayout header={{ minimal: true }} footer={false}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8">
             {token ? <ResetForm token={token} /> : <InvalidLink expired={expired} />}

@@ -13,22 +13,14 @@ interface MethodologyPageProps {
   onTarifs?: () => void
 }
 
-export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onTarifs }: MethodologyPageProps) {
+export default function MethodologyPage({
+  onEnterApp,
+  onBackToHome,
+  onOffer,
+  onTarifs,
+}: MethodologyPageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        showAction: true,
-        actionLabel: 'Accès Expert',
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Rigueur & accompagnement',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
@@ -43,14 +35,15 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
 
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.95] text-brand-navy">
               Une méthode d&apos;accompagnement <br />
-              <span className="text-brand-sage italic">scientifique</span>, pilotée par l&apos;humain.
+              <span className="text-brand-sage italic">scientifique</span>, pilotée par
+              l&apos;humain.
             </h1>
 
             <p className="text-lg md:text-xl text-brand-navy/60 font-medium leading-relaxed max-w-3xl mx-auto">
               France Transition Carrière structure le bilan autour d&apos;outils issus des sciences
-              comportementales et de l&apos;entretien, avec une IA utilisée comme copilote de synthèse
-              (pas comme juge). L&apos;objectif: réduire les biais, augmenter la qualité, et rendre le
-              travail du conseiller plus fluide et traçable.
+              comportementales et de l&apos;entretien, avec une IA utilisée comme copilote de
+              synthèse (pas comme juge). L&apos;objectif: réduire les biais, augmenter la qualité,
+              et rendre le travail du conseiller plus fluide et traçable.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -87,8 +80,8 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
               </h2>
               <p className="text-brand-navy/60 font-medium leading-relaxed">
                 La méthode combine questionnaires structurés, verbalisation guidée et synthèse
-                actionnable. Le cadre vise la cohérence interne, la comparabilité, et une restitution
-                utile à la décision.
+                actionnable. Le cadre vise la cohérence interne, la comparabilité, et une
+                restitution utile à la décision.
               </p>
             </div>
 
@@ -153,9 +146,9 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
                 Un accompagnement plus fluide, sans perdre la nuance.
               </h2>
               <p className="text-brand-navy/60 font-medium leading-relaxed">
-                La plateforme n&apos;automatise pas la relation. Elle standardise la mécanique (étapes,
-                supports, restitutions) pour libérer du temps d&apos;écoute et améliorer la qualité de
-                sortie.
+                La plateforme n&apos;automatise pas la relation. Elle standardise la mécanique
+                (étapes, supports, restitutions) pour libérer du temps d&apos;écoute et améliorer la
+                qualité de sortie.
               </p>
             </div>
 
@@ -188,9 +181,9 @@ export default function MethodologyPage({ onEnterApp, onBackToHome, onOffer, onT
               L&apos;IA comme copilote, pas comme verdict.
             </h2>
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              La valeur vient de l&apos;alliance: outils structurés + expertise du conseiller + synthèse
-              accélérée. La page “méthodologie” n&apos;est pas une promesse d&apos;infaillibilité, mais un
-              cadre de qualité et de transparence.
+              La valeur vient de l&apos;alliance: outils structurés + expertise du conseiller +
+              synthèse accélérée. La page “méthodologie” n&apos;est pas une promesse
+              d&apos;infaillibilité, mais un cadre de qualité et de transparence.
             </p>
           </div>
 
@@ -280,15 +273,7 @@ function Step({ label, title, desc }: { label: string; title: string; desc: stri
   )
 }
 
-function Card({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode
-  title: string
-  desc: string
-}) {
+function Card({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="p-6 bg-white rounded-[28px] border border-brand-navy/5 hover:border-brand-sage/30 transition-colors">
       <div className="flex items-center gap-3">

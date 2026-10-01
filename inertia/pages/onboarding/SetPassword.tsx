@@ -26,13 +26,22 @@ export default function SetPassword({ token, userName }: SetPasswordProps) {
   return (
     <>
       <Head title="Créer votre mot de passe" />
-      <PublicLayout headerProps={{ showAction: false }}>
+      <PublicLayout header={{ minimal: true }} footer={false}>
         <div className="min-h-[80vh] flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8">
             <div className="text-center mb-8">
               <div className="w-14 h-14 rounded-2xl bg-brand-sage/10 text-brand-sage flex items-center justify-center mx-auto mb-5">
-                <svg className="w-7 h-7 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                <svg
+                  className="w-7 h-7 stroke-[1.5]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                  />
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-brand-navy tracking-tight">

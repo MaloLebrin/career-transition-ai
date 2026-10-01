@@ -1,25 +1,28 @@
 import React from 'react'
-import PublicFooter, { type PublicFooterProps } from './PublicFooter'
-import PublicHeader, { PublicHeaderProps } from './PublicHeader'
+import PublicFooter from './PublicFooter'
+import PublicHeader, { type PublicHeaderProps } from './PublicHeader'
 
 interface PublicLayoutProps {
-  headerProps: PublicHeaderProps
-  footerProps?: PublicFooterProps
+  /** Options de l'en-tête ; omis = navigation marketing complète. */
+  header?: PublicHeaderProps
+  /** Pied de page sombre (défaut : affiché). */
+  footer?: boolean
   children: React.ReactNode
   className?: string
 }
 
-const PublicLayout: React.FC<PublicLayoutProps> = ({ headerProps, footerProps, children, className }) => {
+/** Coquille des pages publiques : en-tête collant, contenu, footer ink. */
+const PublicLayout: React.FC<PublicLayoutProps> = ({
+  header,
+  footer = true,
+  children,
+  className,
+}) => {
   return (
-    <div
-      className={
-        'min-h-screen bg-brand-ivory text-brand-navy selection:bg-brand-sage/20 overflow-x-hidden font-sans ' +
-        (className ?? '')
-      }
-    >
-      <PublicHeader {...headerProps} />
-      {children}
-      {footerProps ? <PublicFooter {...footerProps} /> : null}
+    <div className={`min-h-screen flex flex-col bg-canvas text-ink-soft ${className ?? ''}`.trim()}>
+      <PublicHeader {...header} />
+      <main className="flex-1">{children}</main>
+      {footer && <PublicFooter />}
     </div>
   )
 }

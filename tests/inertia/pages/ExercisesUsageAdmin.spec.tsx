@@ -73,7 +73,9 @@ describe('ExercisesUsageAdmin page', () => {
 
     render(<ExercisesUsageAdmin {...props} />)
 
-    const dateInputs = document.querySelectorAll('input[type="date"]') as NodeListOf<HTMLInputElement>
+    const dateInputs = document.querySelectorAll(
+      'input[type="date"]'
+    ) as NodeListOf<HTMLInputElement>
     const fromInput = dateInputs[0]
     const toInput = dateInputs[1]
     const submitButton = screen.getByRole('button', { name: /Mettre à jour/i })

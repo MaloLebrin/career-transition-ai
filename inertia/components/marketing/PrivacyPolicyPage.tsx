@@ -27,21 +27,7 @@ export default function PrivacyPolicyPage({
   onMethodology,
 }: PrivacyPolicyPageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-        showAction: true,
-        actionLabel: 'Accès Expert',
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Politique de confidentialité',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -94,15 +80,16 @@ export default function PrivacyPolicyPage({
         <div className="max-w-5xl mx-auto space-y-10">
           <PolicyBlock title="Responsable de traitement">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              <span className="font-bold text-brand-navy">France Transition Carrière</span> — contact :{' '}
+              <span className="font-bold text-brand-navy">France Transition Carrière</span> —
+              contact :{' '}
               <a
                 href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
                 className="font-bold text-brand-navy underline"
               >
                 {PRIVACY_CONTACT_EMAIL}
               </a>
-              . Pour les candidats accompagnés, le cabinet ou l&apos;organisation qui vous suit
-              agit comme responsable de traitement ; la plateforme intervient pour son compte.
+              . Pour les candidats accompagnés, le cabinet ou l&apos;organisation qui vous suit agit
+              comme responsable de traitement ; la plateforme intervient pour son compte.
             </p>
           </PolicyBlock>
 
@@ -137,7 +124,8 @@ export default function PrivacyPolicyPage({
             <ul className="space-y-2 text-brand-navy/60 font-medium">
               {RETENTION_PERIODS.map((period) => (
                 <li key={period.data}>
-                  - {period.data} : <span className="font-bold text-brand-navy">{period.duration}</span>
+                  - {period.data} :{' '}
+                  <span className="font-bold text-brand-navy">{period.duration}</span>
                 </li>
               ))}
             </ul>
@@ -196,4 +184,3 @@ function PolicyBlock({ title, children }: { title: string; children: React.React
     </div>
   )
 }
-

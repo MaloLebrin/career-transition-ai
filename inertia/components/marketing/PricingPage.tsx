@@ -23,22 +23,7 @@ export default function PricingPage({
   onMethodology,
 }: PricingPageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onLogoClick: onBackToHome ?? (() => {}),
-        onActionClick: onEnterApp,
-        actionLabel: 'Accès Expert',
-        showAction: true,
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Tarifs',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-16 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <motion.div
@@ -123,7 +108,9 @@ export default function PricingPage({
             <div className="w-10 h-10 rounded-xl bg-brand-sage/10 flex items-center justify-center text-brand-sage">
               <HelpCircle size={22} />
             </div>
-            <h2 className="text-2xl font-bold text-brand-navy tracking-tight">Questions fréquentes</h2>
+            <h2 className="text-2xl font-bold text-brand-navy tracking-tight">
+              Questions fréquentes
+            </h2>
           </div>
           <ul className="space-y-6">
             <FaqItem
@@ -165,11 +152,7 @@ export default function PricingPage({
           </div>
 
           <div className="bg-brand-ivory/50 border border-brand-navy/5 rounded-[40px] p-10">
-            <ContactDemoForm
-              variant="demo"
-              title=""
-              description=""
-            />
+            <ContactDemoForm variant="demo" title="" description="" />
           </div>
         </div>
       </section>
@@ -289,4 +272,3 @@ function FaqItem({ q, a }: { q: string; a: string }) {
     </li>
   )
 }
-

@@ -21,21 +21,7 @@ export default function SecurityPage({
   onMethodology,
 }: SecurityPageProps) {
   return (
-    <PublicLayout
-      headerProps={{
-        onOfferClick: onOffer,
-        onTarifsClick: onTarifs,
-        onMethodologyClick: onMethodology,
-        showAction: true,
-        actionLabel: 'Accès Expert',
-        onActionClick: onEnterApp,
-      }}
-      footerProps={{
-        variant: 'marketing',
-        onEnterApp,
-        footerLine: 'France Transition Carrière © 2026 • Sécurité',
-      }}
-    >
+    <PublicLayout>
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -56,8 +42,8 @@ export default function SecurityPage({
             </h1>
 
             <p className="text-lg text-brand-navy/60 font-medium leading-relaxed">
-              Cette page résume les pratiques de sécurité et de confidentialité. Les points ci-dessous
-              sont à compléter selon votre infrastructure et vos procédures internes.
+              Cette page résume les pratiques de sécurité et de confidentialité. Les points
+              ci-dessous sont à compléter selon votre infrastructure et vos procédures internes.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -132,12 +118,14 @@ export default function SecurityPage({
           </Block>
           <Block title="Sauvegardes & continuité">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              Politique de sauvegarde, tests de restauration, objectifs RPO/RTO. <span className="text-brand-navy/60">[à compléter]</span>
+              Politique de sauvegarde, tests de restauration, objectifs RPO/RTO.{' '}
+              <span className="text-brand-navy/60">[à compléter]</span>
             </p>
           </Block>
           <Block title="Gestion des incidents">
             <p className="text-brand-navy/60 font-medium leading-relaxed">
-              Process de notification, analyse, remédiation et communication. <span className="text-brand-navy/60">[à compléter]</span>
+              Process de notification, analyse, remédiation et communication.{' '}
+              <span className="text-brand-navy/60">[à compléter]</span>
             </p>
           </Block>
         </div>
@@ -166,4 +154,3 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
     </div>
   )
 }
-
