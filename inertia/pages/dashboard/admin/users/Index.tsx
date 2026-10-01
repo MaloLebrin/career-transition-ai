@@ -1,7 +1,7 @@
 import {
   ROLE_DESCRIPTIONS,
   ROLE_FILTER_ALL_DESCRIPTION,
-  SUPER_ADMIN_ASSIGNABLE_ROLES,
+  SUPER_ADMIN_CREATABLE_ROLES,
 } from '#shared/constants/roles'
 import { ROLE_LABELS, isSuperAdmin } from '#shared/helpers/roles'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
@@ -105,10 +105,10 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
     []
   )
 
-  // `super_admin` ne s'attribue pas depuis l'interface (refusé côté serveur, #66).
+  // Ni `super_admin` (#66) ni `employee` (#96) ne s'attribuent depuis l'interface (refusés côté serveur).
   const roleRowSelectOptions = useMemo<SelectFieldOption<UserRole>[]>(
     () =>
-      SUPER_ADMIN_ASSIGNABLE_ROLES.map((r) => ({
+      SUPER_ADMIN_CREATABLE_ROLES.map((r) => ({
         value: r,
         label: ROLE_LABELS[r],
         description: ROLE_DESCRIPTIONS[r],
