@@ -51,4 +51,18 @@ test.group('AdminSeeder', (group) => {
     assert.isTrue(await hash.verify(user.password, 'rotated-admin-seeder-password'))
     assert.isFalse(await hash.verify(user.password, 'first-admin-seeder-password'))
   })
+
+  test('ADMIN_EMAIL remplace l’e-mail par défaut du super admin', async ({ assert, cleanup }) => {
+    cleanup(
+      overrideEnv({
+        ADMIN_PASSWORD: 'admin-email-override-password',
+        ADMIN_EMAIL: ' Testeur@Example.test ',
+      })
+    )
+    await new AdminSeeder(db.connection()).run()
+
+    const user = await User.findByOrFail('email', 'testeur@example.test')
+    assert.equal(user.role, USERS_ROLES.SUPER_ADMIN)
+    assert.isNull(await User.findBy('email', PLATFORM_ADMIN_EMAIL))
+  })
 })

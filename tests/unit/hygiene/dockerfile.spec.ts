@@ -53,6 +53,16 @@ test.group('Hygiène — image Docker', () => {
     assert.match(modeBranch(entrypoint, 'seed')!, /db:seed --files database\/seeders\/admin_seeder/)
   })
 
+  test('migrate-and-serve migre puis exécute le serveur (hébergeurs sans pré-déploiement)', async ({
+    assert,
+  }) => {
+    const entrypoint = await read('docker/entrypoint.sh')
+    const branch = modeBranch(entrypoint, 'migrate-and-serve')
+
+    assert.isNotNull(branch)
+    assert.match(branch!, /migration:run --force[\s\S]*exec node bin\/server\.js/)
+  })
+
   test('le serveur ne lance pas les migrations au démarrage', async ({ assert }) => {
     const entrypoint = await read('docker/entrypoint.sh')
 

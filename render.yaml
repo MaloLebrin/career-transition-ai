@@ -1,0 +1,64 @@
+# Blueprint Render — déploiement de test gratuit (docs/deploiement/README.md).
+# Render Free (web, build depuis le Dockerfile) + Neon Free (Postgres, hors Render).
+# Variables `sync: false` : à saisir dans le tableau de bord Render, jamais ici.
+services:
+  - type: web
+    name: career-transition-ai
+    runtime: docker
+    plan: free
+    # Même région que la base Neon (eu-central-1) pour limiter la latence.
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    # Pas de pré-déploiement sur le plan gratuit : on migre au démarrage.
+    dockerCommand: /entrypoint.sh migrate-and-serve
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Europe/Paris
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '10000'
+      - key: LOG_LEVEL
+        value: info
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
+      - key: SESSION_DRIVER
+        value: cookie
+      # Neon se met en veille : pas de worker, jobs exécutés dans le process web.
+      - key: QUEUE_DRIVER
+        value: sync
+      - key: DB_SSL
+        value: 'true'
+      - key: REGISTRATION_ENABLED
+        value: 'false'
+      - key: SEO_INDEXING
+        value: 'false'
+      - key: MAIL_PROVIDER
+        value: resend
+      - key: MAIL_FROM_NAME
+        value: Career Transition AI
+      - key: AI_PROVIDER
+        value: mistral
+      - key: MISTRAL_MODEL
+        value: mistral-small-latest
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: DB_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false

@@ -16,11 +16,17 @@ case "$MODE" in
   migrate)
     exec node ace.js migration:run --force
     ;;
+  # Hébergeurs sans étape de pré-déploiement (Render Free, docs/DEPLOYMENT_TEST.md) :
+  # migrations idempotentes puis serveur. Le compose de prod garde `migrate` explicite.
+  migrate-and-serve)
+    node ace.js migration:run --force
+    exec node bin/server.js
+    ;;
   seed)
     exec node ace.js db:seed --files database/seeders/admin_seeder
     ;;
   *)
-    echo "Unknown mode: $MODE. Use one of: server, worker, migrate, seed."
+    echo "Unknown mode: $MODE. Use one of: server, worker, migrate, migrate-and-serve, seed."
     exit 1
     ;;
 esac

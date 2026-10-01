@@ -132,6 +132,8 @@ export const envSchema = {
   | Compte super admin — database/seeders/admin_seeder.ts
   |----------------------------------------------------------
   | Requis seulement pour `node ace db:seed --files …admin_seeder`.
+  | `ADMIN_EMAIL` remplace l'e-mail par défaut du super admin.
   */
   ADMIN_PASSWORD: Env.schema.string.optional(),
+  ADMIN_EMAIL: Env.schema.string.optional(),
 }
