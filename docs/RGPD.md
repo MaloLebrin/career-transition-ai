@@ -6,7 +6,7 @@ même information depuis `shared/constants/legal.ts` (sous-traitants, durées de
 conservation, contact) : **toute modification se fait d'abord dans ce fichier**,
 puis ici.
 
-Contact pour l'exercice des droits : `contact@francetransitioncarriere.fr`
+Contact pour l'exercice des droits : `contact@transitioncarriere.fr`
 (`PRIVACY_CONTACT_EMAIL`). Délai de réponse légal : **un mois** (art. 12).
 
 ## 1. Avant toute donnée réelle — checklist

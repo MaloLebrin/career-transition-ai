@@ -8,7 +8,7 @@ Resend. Détails : [`../MAIL.md`](../MAIL.md).
 
 1. Créer un compte sur <https://resend.com>.
 2. **Domains → Add Domain** : saisir votre domaine (ou un sous-domaine d'envoi, par exemple
-   `mail.votredomaine.fr`, recommandé pour ne pas mélanger avec votre messagerie).
+   `mail.transitioncarriere.fr`, recommandé pour ne pas mélanger avec votre messagerie).
 3. Resend affiche des enregistrements DNS à créer chez votre registrar / hébergeur DNS :
    - **SPF** (TXT),
    - **DKIM** (TXT, `resend._domainkey…`),
@@ -24,7 +24,7 @@ Resend. Détails : [`../MAIL.md`](../MAIL.md).
 | ----------------- | ------------------------------------------------- | ------- |
 | `MAIL_PROVIDER`   | `resend` (déjà dans `render.yaml`)                | non     |
 | `RESEND_API_KEY`  | clé API                                           | **oui** |
-| `MAIL_FROM_EMAIL` | `no-reply@mail.votredomaine.fr` (domaine vérifié) | non     |
+| `MAIL_FROM_EMAIL` | `no-reply@mail.transitioncarriere.fr` (domaine vérifié) | non     |
 | `MAIL_FROM_NAME`  | `Career Transition AI` (déjà dans `render.yaml`)  | non     |
 
 `MAIL_FROM_EMAIL` est exigé en production à l'envoi : l'adresse doit appartenir au domaine

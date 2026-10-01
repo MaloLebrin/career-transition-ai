@@ -56,7 +56,7 @@ Mode **test-first** (sans domaine vérifié) : si `MAIL_FROM_EMAIL` est absent e
 
 ### `ADMIN_CONTACT_EMAIL`
 
-Destinataire des demandes de contact et de démo (formulaire public). Défaut : `contact@francetransitioncarriere.fr`. Lue à chaque envoi, comme `MAIL_FROM_*`.
+Destinataire des demandes de contact et de démo (formulaire public). Défaut : `contact@transitioncarriere.fr`. Lue à chaque envoi, comme `MAIL_FROM_*`.
 
 ```bash
 ADMIN_CONTACT_EMAIL="contact@ton-domaine.fr"
