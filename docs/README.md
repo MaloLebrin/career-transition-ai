@@ -5,6 +5,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 ## Démarrer (dev)
 
 - **[README du projet](../README.md)** — installation, base de test, commandes de tests.
+- **[Design system](../DESIGN.md)** — rôles de couleur, typographie, espacement, composants, responsive, lacunes connues.
 - **[Conventions et architecture](../CLAUDE.md)** — stack AdonisJS + Inertia/React, arborescence, alias d'import, règles (contrôleurs fins, services, erreurs de domaine, tests).
 - **Variables d'environnement** — schéma validé au boot dans [`start/env_schema.ts`](../start/env_schema.ts), valeurs de dev dans [`.env.example`](../.env.example), référence production dans [DEPLOYMENT.md §5](DEPLOYMENT.md#5-référence--variables-denvironnement-de-production).
 - **Schéma de données** — généré par les migrations : [`database/schema.ts`](../database/schema.ts) (ne pas éditer à la main).

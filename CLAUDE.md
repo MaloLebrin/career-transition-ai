@@ -149,6 +149,10 @@ RGPD (`docs/RGPD.md`) : aucun nom ni e-mail de candidat dans un prompt IA — pa
 
 Toujours `pnpm`, jamais `npm run` ou `yarn`.
 
+### Design system
+
+Tokens et règles dans `DESIGN.md` (racine) : rôles de couleur nommés (jamais `slate-*`/`rose-*`/`brand-*` dans du code nouveau), casse de phrase (pas d'uppercase micro-texte, pas de `font-black`), rayons `lg/xl/2xl/full` seulement, ombres `shadow-card`/`shadow-raised`. Primitives dans `inertia/components/ui/`, blocs marketing dans `inertia/components/marketing/`.
+
 ### Tests obligatoires
 
 - Tout bugfix → test de non-régression (avant ou avec le fix).
