@@ -22,6 +22,16 @@ router
 
 router.post('/contact-requests', [ContactRequestsController, 'store']).use(throttleContactRequests)
 
+// Hors du groupe `guest` : les conditions se relisent connecté (case CGU de
+// l'inscription, consentements du paiement, lien du pied de page). `silentAuth`
+// expose l'utilisateur connecté aux props partagées sans jamais refuser l'accès.
+router
+  .group(() => {
+    router.on('/cgu').renderInertia('TermsOfService', {})
+    router.on('/cgv').renderInertia('TermsOfSale', {})
+  })
+  .use([middleware.silentAuth()])
+
 // Hors du groupe `guest` : sondé sans session par Docker, Render, UptimeRobot…
 router.get('/health', [HealthChecksController])
 

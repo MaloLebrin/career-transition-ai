@@ -56,4 +56,5 @@ export const middleware = router.named({
   superAdmin: () => import('#middleware/super_admin_middleware'),
   notificationRecipient: () => import('#middleware/notification_recipient_middleware'),
   registrationOpen: () => import('#middleware/registration_open_middleware'),
+  silentAuth: () => import('#middleware/silent_auth_middleware'),
 })

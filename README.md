@@ -48,4 +48,4 @@ Détails (isolation, shards de CI, couverture) dans [docs/TESTING.md](docs/TESTI
 
 - [ ] **Ressources / Blog** (`/ressources`) — articles courts orientés SEO (bilan, transition, sciences comportementales)
 - [ ] **Support / Centre d’aide** (`/support`) — docs d’usage, guides, contact support
-- [ ] **CGU / CGV** (`/cgu`, `/cgv`) — selon le modèle commercial (SaaS, abonnement, prestation)
+- [x] **CGU / CGV** (`/cgu`, `/cgv`) — rédigées pour le forfait particuliers (#95), textes marqués « à valider par un conseil juridique », identité du vendeur à compléter dans `shared/constants/legal.ts`
