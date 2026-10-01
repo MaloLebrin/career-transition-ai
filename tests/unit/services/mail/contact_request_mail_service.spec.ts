@@ -105,7 +105,7 @@ test.group('ContactRequestMailService.sendConfirmationToRequester', () => {
     assert.lengthOf(sent, 1)
     const [mail] = sent
     assert.deepEqual(mail.to, { email: 'jeanne@example.com', name: 'Jeanne Dupont' })
-    assert.equal(mail.subject, 'Votre demande de démo a bien été reçu — France Transition Carrière')
+    assert.equal(mail.subject, 'Votre demande de démo a bien été reçu — Transition Carrière')
     assert.deepEqual(mail.tags, ['contact-confirmation', 'demo'])
     assert.include(mail.html!, 'Bonjour Jeanne Dupont,')
     assert.include(mail.text!, 'Nous avons bien reçu votre demande de démo')
@@ -123,7 +123,7 @@ test.group('ContactRequestMailService.sendConfirmationToRequester', () => {
     })
 
     const [mail] = sent
-    assert.equal(mail.subject, 'Votre message a bien été reçu — France Transition Carrière')
+    assert.equal(mail.subject, 'Votre message a bien été reçu — Transition Carrière')
     assert.deepEqual(mail.tags, ['contact-confirmation', 'contact'])
     assert.include(mail.html!, 'Bonjour &lt;i&gt;Paul&lt;/i&gt;,')
     assert.include(mail.html!, 'a &lt; b')

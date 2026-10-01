@@ -120,7 +120,7 @@ export default function RegisterPage({ csrfToken, onGoToLogin, error }: Register
             {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
             <Input
               label="Organisation / Cabinet"
-              placeholder="France Transition Paris"
+              placeholder="Cabinet Horizon Paris"
               required
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
@@ -156,7 +156,8 @@ export default function RegisterPage({ csrfToken, onGoToLogin, error }: Register
               hint="Au moins 6 caractères."
             />
             <p className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2">
-              Création de compte <span className="text-brand-sage">Conseiller / Cabinet Expert</span>
+              Création de compte{' '}
+              <span className="text-brand-sage">Conseiller / Cabinet Expert</span>
             </p>
             <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
               Créer mon compte

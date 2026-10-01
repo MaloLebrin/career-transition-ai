@@ -39,7 +39,7 @@ services:
       - key: MAIL_PROVIDER
         value: resend
       - key: MAIL_FROM_NAME
-        value: Career Transition AI
+        value: Transition Carrière
       - key: AI_PROVIDER
         value: mistral
       - key: MISTRAL_MODEL

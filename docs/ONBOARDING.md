@@ -154,7 +154,7 @@ Dans `AuthController.updateProfileCandidat` :
 
 - **Service actuel** : `OnboardingMailService` (`app/services/onboarding_mail_service.ts`) ; `sendOnboardingEmail(user, token)` (`onboarding_notify_service.ts`) n'en est qu'un raccourci.
 - **Comportement par défaut** : log du lien en console (dev / debug).
-- **Pour la production** : remplacer par un envoi réel (ex. `@adonisjs/mail`), en utilisant une vue ou un template d’email avec le lien `{APP_URL}/onboarding/{token}` et un court texte du type « Votre espace France Transition Carrière est prêt, créez votre mot de passe via le lien ci-dessous ».
+- **Pour la production** : remplacer par un envoi réel (ex. `@adonisjs/mail`), en utilisant une vue ou un template d’email avec le lien `{APP_URL}/onboarding/{token}` et un court texte du type « Votre espace Transition Carrière est prêt, créez votre mot de passe via le lien ci-dessous ».
 - **Base URL** : variable d’environnement obligatoire `APP_URL` (`appUrl()`, `#utils/app_url`). Jamais dérivée de la requête : avec `trustProxy`, `Host` / `X-Forwarded-Host` sont fournis par le client et permettraient d’envoyer un lien piégé (#64, test `tests/functional/security/email_links.spec.ts`).
 
 ---

@@ -1,4 +1,4 @@
-# Plan de tests manuels – France Transition Carrière
+# Plan de tests manuels – Transition Carrière
 
 Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalités décrites dans `FEATURES.md`.
 
@@ -416,4 +416,3 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
 
 Ce document doit être utilisé comme **checklist de recette manuelle**.  
 Pour chaque scénario, tu peux noter : _OK_, _KO_, commentaires, date de test, et version de l’application.
-

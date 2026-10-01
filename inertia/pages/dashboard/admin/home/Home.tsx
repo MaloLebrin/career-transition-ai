@@ -28,11 +28,13 @@ export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
             </p>
           </div>
 
-          {stats && <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard label="Organisations actives" value={stats.organizations} color="navy" />
-            <StatCard label="Utilisateurs" value={stats.users} color="sage" />
-            <StatCard label="Instances FTC" value={1} color="terracotta" />
-          </div>}
+          {stats && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard label="Organisations actives" value={stats.organizations} color="navy" />
+              <StatCard label="Utilisateurs" value={stats.users} color="sage" />
+              <StatCard label="Instances" value={1} color="terracotta" />
+            </div>
+          )}
         </div>
       </DashboardLayout>
     </>

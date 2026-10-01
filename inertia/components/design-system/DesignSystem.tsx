@@ -18,9 +18,7 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <h1 className="text-5xl font-bold text-brand-navy tracking-tighter mb-2">
               Design System
             </h1>
-            <p className="text-brand-navy/60 font-medium">
-              France Transition Carrière (FTC) - UI Kit & Brand Guidelines
-            </p>
+            <p className="text-brand-navy/60 font-medium">Transition Carrière — UI Kit & charte</p>
           </div>
           <Button onClick={onBack} variant="secondary" size="sm">
             Retour au Bureau
@@ -79,9 +77,9 @@ const DesignSystem: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 Body Text
               </p>
               <p className="text-brand-navy/70 leading-relaxed max-w-2xl font-medium">
-                FTC accompagne les cadres et dirigeants dans leur transition professionnelle. Notre
-                approche combine expertise humaine et puissance technologique pour des résultats
-                concrets.
+                Transition Carrière accompagne les cadres et dirigeants dans leur transition
+                professionnelle. Notre approche combine expertise humaine et puissance technologique
+                pour des résultats concrets.
               </p>
             </div>
             <div>

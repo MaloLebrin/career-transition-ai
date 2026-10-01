@@ -39,7 +39,7 @@ export const GeneralInfoForm = ({ organization: org, readOnly = false }: General
           label="Nom du Cabinet"
           value={orgForm.data.name}
           onChange={(e) => orgForm.setData('name', e.target.value)}
-          placeholder="Ex: FTC Paris"
+          placeholder="Ex : Cabinet Horizon Paris"
           error={orgForm.errors.name}
           disabled={readOnly}
         />
