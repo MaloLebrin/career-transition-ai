@@ -25,7 +25,7 @@ export default function LegalNoticePage() {
             <Term>Email</Term> :{' '}
             <a
               href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
-              className="font-medium text-primary underline-offset-4 hover:underline"
+              className="font-medium text-accent underline-offset-4 hover:underline"
             >
               {PRIVACY_CONTACT_EMAIL}
             </a>
@@ -75,7 +75,7 @@ export default function LegalNoticePage() {
           Pour plus d&apos;informations sur le traitement des données, consultez la{' '}
           <AppLink
             href="/confidentialite"
-            className="font-medium text-primary underline-offset-4 hover:underline"
+            className="font-medium text-accent underline-offset-4 hover:underline"
           >
             politique de confidentialité
           </AppLink>

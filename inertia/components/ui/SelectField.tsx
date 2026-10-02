@@ -29,9 +29,9 @@ export type SelectFieldProps<V extends string> = {
 }
 
 const selectBaseClass =
-  'w-full border border-brand-navy/10 rounded-xl text-xs px-3 py-2 text-brand-navy/80 bg-white ' +
-  'outline-none transition-shadow data-focus:ring-2 data-focus:ring-brand-sage/30 data-focus:border-brand-sage/40 ' +
-  'data-hover:border-brand-navy/15 data-invalid:border-rose-300 data-invalid:ring-rose-200/50'
+  'w-full border border-hairline-strong rounded-xl text-xs px-3 py-2 text-ink bg-surface ' +
+  'outline-none transition-shadow data-focus:ring-2 data-focus:ring-accent/25 data-focus:border-accent ' +
+  'data-hover:border-muted-soft data-invalid:border-danger data-invalid:ring-danger/25'
 
 /**
  * Select stylé avec [@headlessui/react Select](https://headlessui.com/react/select),
@@ -73,13 +73,13 @@ export default function SelectField<V extends string>({
       {label ? (
         <Label
           htmlFor={fieldId}
-          className="text-[10px] font-black text-brand-navy/40 uppercase tracking-widest px-0.5 mb-1 block"
+          className="text-[10px] font-black text-muted uppercase tracking-widest px-0.5 mb-1 block"
         >
           {label}
         </Label>
       ) : null}
       {description && !error ? (
-        <Description className="text-[10px] font-medium text-brand-navy/45 mb-1.5 px-0.5">
+        <Description className="text-[10px] font-medium text-muted mb-1.5 px-0.5">
           {description}
         </Description>
       ) : null}
@@ -104,7 +104,7 @@ export default function SelectField<V extends string>({
       {error ? (
         <p
           id={`${fieldId}-error`}
-          className="text-[10px] font-bold text-rose-500 mt-1 px-0.5"
+          className="text-[10px] font-bold text-danger mt-1 px-0.5"
           role="alert"
         >
           {error}
@@ -113,7 +113,7 @@ export default function SelectField<V extends string>({
       {showSelectedOptionDescription && selected?.description ? (
         <p
           id={selectedDescId}
-          className="text-[10px] font-medium text-brand-navy/50 mt-1.5 max-w-xs leading-snug"
+          className="text-[10px] font-medium text-muted mt-1.5 max-w-xs leading-snug"
         >
           {selected.description}
         </p>

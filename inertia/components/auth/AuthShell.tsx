@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react'
+import { LandscapeArt } from '../marketing/LandscapeArt'
 import PublicLayout from '../layout/PublicLayout'
 import Card from '../ui/Card'
 
@@ -14,23 +15,23 @@ export interface AuthShellProps {
   children: ReactNode
   /** Zone sous la carte (lien de retour, bascule connexion/inscription). */
   footer?: ReactNode
-  /** `warm` : filet terracotta en haut de la carte (liens invalides, avertissements). */
+  /** `warm` : filet apricot en haut de la carte (liens invalides, avertissements). */
   accent?: AuthShellAccent
 }
 
 const ICON_TONES: Record<AuthShellIconTone, string> = {
-  primary: 'bg-primary-soft text-primary',
+  primary: 'bg-tint-sun text-ink',
   warning: 'bg-warning-soft text-warning',
 }
 
 const ACCENTS: Record<AuthShellAccent, string> = {
   none: '',
-  warm: 'border-t-2 border-t-accent-warm',
+  warm: 'border-t-2 border-t-tint-apricot-bold',
 }
 
 /**
  * Coquille commune des écrans d'authentification et d'onboarding (DESIGN.md) :
- * en-tête minimal, carte centrée, titre, sous-titre et pied de carte.
+ * en-tête minimal, carte centrée sur un horizon pastel, titre, sous-titre et pied de carte.
  */
 export const AuthShell: React.FC<AuthShellProps> = ({
   title,
@@ -42,8 +43,11 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   accent = 'none',
 }) => (
   <PublicLayout header={{ minimal: true }} footer={false}>
-    <div className="flex flex-1 items-center justify-center px-6 py-12 md:py-16">
-      <Card padding="lg" className={`w-full max-w-md ${ACCENTS[accent]}`.trim()}>
+    <div className="relative flex flex-1 items-center justify-center overflow-hidden px-6 py-12 md:py-16">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-40 sm:block md:h-52">
+        <LandscapeArt variant="horizon" />
+      </div>
+      <Card padding="lg" className={`relative w-full max-w-md ${ACCENTS[accent]}`.trim()}>
         <div className="mb-8 text-center">
           {icon && (
             <div

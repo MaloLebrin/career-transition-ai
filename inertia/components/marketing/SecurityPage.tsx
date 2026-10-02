@@ -51,7 +51,7 @@ export default function SecurityPage() {
           dans la{' '}
           <AppLink
             href="/confidentialite"
-            className="font-medium text-primary underline-offset-4 hover:underline"
+            className="font-medium text-accent underline-offset-4 hover:underline"
           >
             politique de confidentialité
           </AppLink>

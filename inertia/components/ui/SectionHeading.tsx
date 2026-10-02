@@ -35,7 +35,7 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
 }) => {
   const Heading = `h${level}` as const
   const inverse = tone === 'inverse'
-  const eyebrowTone: EyebrowTone = inverse ? 'inverse' : 'primary'
+  const eyebrowTone: EyebrowTone = inverse ? 'inverse' : 'accent'
   const alignClass = align === 'center' ? 'text-center items-center' : 'text-left items-start'
 
   return (

@@ -38,7 +38,7 @@ const NoteForm = memo(function NoteForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Sélection de visibilité EN PREMIER - très visible */}
       <div className="space-y-3">
-        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 block">
+        <label className="text-[10px] font-black text-muted uppercase tracking-widest px-1 block">
           Qui peut voir cette note ?
         </label>
 
@@ -50,24 +50,24 @@ const NoteForm = memo(function NoteForm({
             disabled={isLoading}
             className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
               !isShared
-                ? 'bg-slate-800 border-slate-800 text-white shadow-lg scale-[1.02]'
-                : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                ? 'bg-ink border-ink text-on-ink shadow-raised scale-[1.02]'
+                : 'bg-surface border-hairline-strong text-muted hover:border-muted-soft hover:bg-surface-soft'
             }`}
           >
-            <div className={`p-2 rounded-xl ${!isShared ? 'bg-white/20' : 'bg-slate-100'}`}>
-              <Lock className={`w-5 h-5 ${!isShared ? 'text-white' : 'text-slate-400'}`} />
+            <div className={`p-2 rounded-xl ${!isShared ? 'bg-on-ink/20' : 'bg-surface-soft'}`}>
+              <Lock className={`w-5 h-5 ${!isShared ? 'text-on-ink' : 'text-muted-soft'}`} />
             </div>
             <div className="text-center">
               <div className="font-bold text-sm">Privée</div>
               <div
-                className={`text-[10px] mt-0.5 ${!isShared ? 'text-white/70' : 'text-slate-400'}`}
+                className={`text-[10px] mt-0.5 ${!isShared ? 'text-on-ink-soft' : 'text-muted'}`}
               >
                 Moi uniquement
               </div>
             </div>
             {!isShared && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
-                <div className="w-3 h-3 bg-slate-800 rounded-full" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-surface rounded-full flex items-center justify-center shadow">
+                <div className="w-3 h-3 bg-ink rounded-full" />
               </div>
             )}
           </button>
@@ -79,24 +79,26 @@ const NoteForm = memo(function NoteForm({
             disabled={isLoading}
             className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
               isShared
-                ? 'bg-rose-200 border-rose-200 text-rose-800 shadow-lg scale-[1.02]'
-                : 'bg-white border-slate-200 text-slate-500 hover:border-rose-100 hover:bg-rose-50'
+                ? 'bg-tint-blossom border-tint-blossom-ink text-tint-blossom-ink shadow-raised scale-[1.02]'
+                : 'bg-surface border-hairline-strong text-muted hover:border-tint-blossom-ink/30 hover:bg-tint-blossom'
             }`}
           >
-            <div className={`p-2 rounded-xl ${isShared ? 'bg-rose-300/50' : 'bg-slate-100'}`}>
-              <Users className={`w-5 h-5 ${isShared ? 'text-rose-700' : 'text-slate-400'}`} />
+            <div className={`p-2 rounded-xl ${isShared ? 'bg-surface' : 'bg-surface-soft'}`}>
+              <Users
+                className={`w-5 h-5 ${isShared ? 'text-tint-blossom-ink' : 'text-muted-soft'}`}
+              />
             </div>
             <div className="text-center">
               <div className="font-bold text-sm">Partagée</div>
               <div
-                className={`text-[10px] mt-0.5 ${isShared ? 'text-rose-600' : 'text-slate-400'}`}
+                className={`text-[10px] mt-0.5 ${isShared ? 'text-tint-blossom-ink' : 'text-muted'}`}
               >
                 Visible par l'accompagné
               </div>
             </div>
             {isShared && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
-                <div className="w-3 h-3 bg-rose-300 rounded-full" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-surface rounded-full flex items-center justify-center shadow">
+                <div className="w-3 h-3 bg-tint-blossom-bold rounded-full" />
               </div>
             )}
           </button>
@@ -104,9 +106,9 @@ const NoteForm = memo(function NoteForm({
 
         {/* Avertissement si partagée */}
         {isShared && (
-          <div className="flex items-start gap-3 p-3 bg-rose-50 border border-rose-200 rounded-xl animate-fadeIn">
-            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-rose-700 font-medium">
+          <div className="flex items-start gap-3 p-3 bg-warning-soft border border-warning/30 rounded-xl animate-fadeIn">
+            <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+            <p className="text-xs text-warning font-medium">
               Cette note sera visible par l'accompagné dans son espace personnel.
             </p>
           </div>
@@ -115,7 +117,7 @@ const NoteForm = memo(function NoteForm({
 
       {/* Zone de texte */}
       <div className="space-y-2">
-        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 block">
+        <label className="text-[10px] font-black text-muted uppercase tracking-widest px-1 block">
           Contenu de la note
         </label>
         <textarea
@@ -125,8 +127,8 @@ const NoteForm = memo(function NoteForm({
           rows={4}
           className={`w-full p-4 border-2 rounded-2xl outline-none font-medium transition-all text-sm resize-none ${
             isShared
-              ? 'bg-rose-50/50 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100'
-              : 'bg-white border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-100'
+              ? 'bg-tint-blossom/40 border-tint-blossom-ink/30 focus:border-tint-blossom-ink focus:ring-2 focus:ring-tint-blossom-ink/25'
+              : 'bg-surface border-hairline-strong focus:border-accent focus:ring-2 focus:ring-accent/25'
           }`}
           disabled={isLoading}
         />
@@ -137,11 +139,7 @@ const NoteForm = memo(function NoteForm({
         <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
-        <Button
-          type="submit"
-          disabled={isLoading || !content.trim()}
-          className={isShared ? '!bg-rose-200 !text-rose-800 hover:!bg-rose-300' : ''}
-        >
+        <Button type="submit" disabled={isLoading || !content.trim()} className="">
           {isLoading ? 'Enregistrement...' : submitLabel}
         </Button>
       </div>

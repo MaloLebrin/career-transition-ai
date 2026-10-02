@@ -18,14 +18,12 @@ export const Avatar = ({ userName, userRole }: AvatarProps) => {
   return (
     <div className="hidden sm:flex items-center space-x-4 mr-2">
       <div className="text-right">
-        <div className="text-xs font-bold text-brand-navy leading-none">
-          {userName || 'Utilisateur'}
-        </div>
-        <div className="text-[9px] font-bold text-brand-sage uppercase tracking-widest mt-1">
+        <div className="text-xs font-bold text-ink leading-none">{userName || 'Utilisateur'}</div>
+        <div className="text-[9px] font-bold text-accent uppercase tracking-widest mt-1">
           {roleToDisplay}
         </div>
       </div>
-      <div className="h-10 w-10 rounded-2xl bg-brand-ivory border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
+      <div className="h-10 w-10 rounded-2xl bg-canvas border-2 border-surface shadow-card overflow-hidden flex items-center justify-center">
         <img
           src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName || 'Felix'}`}
           alt="avatar"

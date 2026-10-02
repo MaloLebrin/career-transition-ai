@@ -7,14 +7,7 @@ import Input from '~/components/ui/Input'
 import { Textarea } from '~/components/ui/Textarea'
 import { ShowcaseSection } from './ShowcaseSection'
 
-const BUTTON_VARIANTS: ButtonVariant[] = [
-  'primary',
-  'secondary',
-  'outline',
-  'ghost',
-  'danger',
-  'cta',
-]
+const BUTTON_VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'outline', 'ghost', 'danger']
 const BUTTON_SIZES: ButtonSize[] = ['sm', 'md', 'lg']
 const BADGE_TONES: BadgeTone[] = [
   'neutral',
@@ -23,11 +16,12 @@ const BADGE_TONES: BadgeTone[] = [
   'warning',
   'danger',
   'info',
-  'sage',
-  'teal',
-  'sand',
-  'terracotta',
+  'sun',
+  'apricot',
+  'meadow',
+  'lake',
   'lavender',
+  'blossom',
   'sky',
 ]
 const CARD_VARIANTS: { variant: CardVariant; label: string; usage: string }[] = [
@@ -42,7 +36,8 @@ const CARD_VARIANTS: { variant: CardVariant; label: string; usage: string }[] = 
     label: 'Carte sombre',
     usage: 'La seule surface ink : CTA, offre mise en avant.',
   },
-  { variant: 'warm', label: 'Carte chaude', usage: 'Avertissement doux.' },
+  { variant: 'sun', label: 'Carte soleil', usage: 'Mise en avant chaude.' },
+  { variant: 'accent', label: 'Carte accent', usage: 'Teinte teal, état actif.' },
   { variant: 'primary', label: 'Carte primaire', usage: 'Mise en avant discrète.' },
 ]
 
@@ -55,7 +50,7 @@ export const ComponentsShowcase: React.FC = () => {
       <ShowcaseSection
         eyebrow="03"
         title="Boutons"
-        description="Six variantes, trois tailles, jamais d'uppercase."
+        description="Cinq variantes (encre, soleil, outline, ghost, danger), trois tailles, jamais d'uppercase."
       >
         <Card padding="md" className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
@@ -80,7 +75,7 @@ export const ComponentsShowcase: React.FC = () => {
       <ShowcaseSection
         eyebrow="04"
         title="Badges"
-        description="Tons sémantiques puis teintes pastel pour les catégories."
+        description="Tons sémantiques puis teintes expressives pour les catégories."
       >
         <Card padding="md" className="flex flex-wrap gap-2">
           {BADGE_TONES.map((tone) => (
@@ -94,7 +89,7 @@ export const ComponentsShowcase: React.FC = () => {
       <ShowcaseSection
         eyebrow="05"
         title="Champs"
-        description="Label 14 px, champ 40 px, focus primaire, erreur sans fond rosé."
+        description="Label 14 px, champ 40 px, focus accent, erreur sans fond rosé."
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card padding="md" className="space-y-4">
@@ -125,7 +120,7 @@ export const ComponentsShowcase: React.FC = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {CARD_VARIANTS.map(({ variant, label, usage }) => (
             <Card key={variant} variant={variant} padding="md" className="space-y-2">
-              <Eyebrow tone={variant === 'dark' ? 'inverse' : 'primary'}>{variant}</Eyebrow>
+              <Eyebrow tone={variant === 'dark' ? 'inverse' : 'accent'}>{variant}</Eyebrow>
               <h3 className={`text-title-md ${variant === 'dark' ? 'text-on-ink' : ''}`}>
                 {label}
               </h3>

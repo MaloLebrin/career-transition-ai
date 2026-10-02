@@ -24,21 +24,19 @@ const Breadcrumb = memo(function Breadcrumb({ items, className = '' }: Breadcrum
 
           return (
             <li key={index} className="flex items-center gap-2">
-              {index > 0 && <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />}
+              {index > 0 && <ChevronRight className="w-4 h-4 text-muted-soft shrink-0" />}
               {isLast ? (
-                <span className="font-semibold text-slate-900 truncate max-w-[200px]">
-                  {item.label}
-                </span>
+                <span className="font-semibold text-ink truncate max-w-[200px]">{item.label}</span>
               ) : item.href ? (
                 <AppLink
                   href={item.href}
-                  className="flex items-center gap-1.5 text-slate-500 hover:text-brand-sage transition-colors font-medium"
+                  className="flex items-center gap-1.5 text-muted hover:text-accent transition-colors font-medium"
                 >
                   {isFirst && <Home className="w-4 h-4" />}
                   <span className="truncate max-w-[150px]">{item.label}</span>
                 </AppLink>
               ) : (
-                <span className="text-slate-400 truncate max-w-[150px]">{item.label}</span>
+                <span className="text-muted truncate max-w-[150px]">{item.label}</span>
               )}
             </li>
           )

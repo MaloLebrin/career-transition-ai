@@ -38,14 +38,16 @@ const NoteCard = memo(function NoteCard({
   return (
     <div
       className={`group relative rounded-2xl p-5 transition-all hover:shadow-md ${
-        isShared ? 'bg-rose-50 border-2 border-rose-200' : 'bg-slate-50 border border-slate-200'
+        isShared
+          ? 'bg-tint-blossom border-2 border-tint-blossom-ink/20'
+          : 'bg-surface-soft border border-hairline'
       }`}
     >
       {/* Indicateur de visibilité - très visible */}
       {showVisibilityBadge && (
         <div
           className={`absolute -top-2 -left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
-            isShared ? 'bg-rose-200 text-rose-800' : 'bg-slate-700 text-white'
+            isShared ? 'bg-tint-blossom-ink text-on-ink' : 'bg-ink text-on-ink'
           }`}
         >
           {isShared ? (
@@ -66,13 +68,13 @@ const NoteCard = memo(function NoteCard({
         <div className="flex items-center gap-2">
           <div
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-              isShared ? 'bg-rose-200 text-rose-700' : 'bg-slate-200 text-slate-600'
+              isShared ? 'bg-surface text-tint-blossom-ink' : 'bg-surface-strong text-ink-soft'
             }`}
           >
             {note.authorName.charAt(0).toUpperCase()}
           </div>
           <span
-            className={`text-xs font-semibold ${isShared ? 'text-rose-800' : 'text-slate-600'}`}
+            className={`text-xs font-semibold ${isShared ? 'text-tint-blossom-ink' : 'text-muted'}`}
           >
             {note.authorName}
           </span>
@@ -86,8 +88,8 @@ const NoteCard = memo(function NoteCard({
                 onClick={() => onEdit(note)}
                 className={`p-1.5 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed ${
                   isShared
-                    ? 'text-rose-500 hover:text-rose-700 hover:bg-rose-100'
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200'
+                    ? 'text-tint-blossom-ink hover:bg-surface'
+                    : 'text-muted hover:text-ink hover:bg-surface-strong'
                 }`}
                 title="Modifier"
               >
@@ -98,7 +100,7 @@ const NoteCard = memo(function NoteCard({
               <button
                 type="button"
                 onClick={() => onDelete(note)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg text-muted hover:text-danger hover:bg-danger-soft transition-colors cursor-pointer disabled:cursor-not-allowed"
                 title="Supprimer"
               >
                 <Trash2 className="w-4 h-4" />
@@ -108,15 +110,9 @@ const NoteCard = memo(function NoteCard({
         )}
       </div>
 
-      <p
-        className={`text-sm whitespace-pre-wrap leading-relaxed ${isShared ? 'text-rose-900' : 'text-slate-700'}`}
-      >
-        {note.content}
-      </p>
+      <p className={`text-sm whitespace-pre-wrap leading-relaxed text-ink-soft`}>{note.content}</p>
 
-      <div
-        className={`mt-3 flex items-center gap-2 text-[10px] ${isShared ? 'text-rose-500' : 'text-slate-400'}`}
-      >
+      <div className={`mt-3 flex items-center gap-2 text-[10px] text-muted`}>
         <span>{formattedDate}</span>
         {formattedUpdateDate && (
           <>

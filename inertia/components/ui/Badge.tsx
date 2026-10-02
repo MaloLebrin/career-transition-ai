@@ -1,9 +1,9 @@
 import React, { memo } from 'react'
 
 /**
- * Tons sémantiques + teintes pastel (DESIGN.md). Casse de phrase, jamais d'uppercase.
- * Les anciens noms de couleur Tailwind sont conservés comme alias dépréciés pour le
- * dashboard (phase 3 de la refonte).
+ * Tons sémantiques + teintes expressives (DESIGN.md). Casse de phrase, jamais d'uppercase.
+ * Les anciens noms de couleur Tailwind et les anciennes teintes pastel sont conservés comme
+ * alias dépréciés pour le dashboard (phase 3 de la refonte).
  */
 export type BadgeTone =
   | 'neutral'
@@ -12,14 +12,15 @@ export type BadgeTone =
   | 'warning'
   | 'danger'
   | 'info'
-  | 'sage'
-  | 'teal'
-  | 'sand'
-  | 'terracotta'
+  | 'sun'
+  | 'apricot'
+  | 'meadow'
+  | 'lake'
   | 'lavender'
+  | 'blossom'
   | 'sky'
 
-/** @deprecated anciens noms, mappés sur un ton sémantique */
+/** @deprecated anciens noms, mappés sur un ton sémantique ou une teinte */
 export type LegacyBadgeVariant =
   | 'violet'
   | 'lime'
@@ -30,6 +31,10 @@ export type LegacyBadgeVariant =
   | 'indigo'
   | 'emerald'
   | 'amber'
+  | 'sage'
+  | 'teal'
+  | 'sand'
+  | 'terracotta'
 
 export type BadgeVariant = BadgeTone | LegacyBadgeVariant
 
@@ -42,16 +47,17 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const TONES: Record<BadgeTone, string> = {
   neutral: 'bg-surface-soft text-muted border-hairline',
-  primary: 'bg-primary-soft text-primary-pressed border-primary/15',
+  primary: 'bg-primary-soft text-ink border-primary/15',
   success: 'bg-success-soft text-success border-success/15',
   warning: 'bg-warning-soft text-warning border-warning/15',
   danger: 'bg-danger-soft text-danger border-danger/15',
   info: 'bg-info-soft text-info border-info/15',
-  sage: 'bg-tint-sage text-tint-sage-ink border-transparent',
-  teal: 'bg-tint-teal text-tint-teal-ink border-transparent',
-  sand: 'bg-tint-sand text-tint-sand-ink border-transparent',
-  terracotta: 'bg-tint-terracotta text-tint-terracotta-ink border-transparent',
+  sun: 'bg-tint-sun text-tint-sun-ink border-transparent',
+  apricot: 'bg-tint-apricot text-tint-apricot-ink border-transparent',
+  meadow: 'bg-tint-meadow text-tint-meadow-ink border-transparent',
+  lake: 'bg-tint-lake text-tint-lake-ink border-transparent',
   lavender: 'bg-tint-lavender text-tint-lavender-ink border-transparent',
+  blossom: 'bg-tint-blossom text-tint-blossom-ink border-transparent',
   sky: 'bg-tint-sky text-tint-sky-ink border-transparent',
 }
 
@@ -62,9 +68,13 @@ const LEGACY: Record<LegacyBadgeVariant, BadgeTone> = {
   emerald: 'success',
   orange: 'warning',
   amber: 'warning',
-  pink: 'terracotta',
+  pink: 'blossom',
   cyan: 'info',
   slate: 'neutral',
+  sage: 'meadow',
+  teal: 'lake',
+  sand: 'sun',
+  terracotta: 'apricot',
 }
 
 export function resolveBadgeTone(variant: BadgeVariant): BadgeTone {

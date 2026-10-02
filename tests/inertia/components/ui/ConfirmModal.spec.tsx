@@ -57,3 +57,43 @@ test('ConfirmModal shows error message in error state', () => {
 
   expect(screen.getByRole('alert')).toHaveTextContent('Impossible.')
 })
+
+test('ConfirmModal maps every variant onto a real button variant (no `undefined` class)', () => {
+  const { rerender } = render(
+    <ConfirmModal
+      isOpen
+      title="?"
+      variant="warning"
+      confirmLabel="Oui"
+      onCancel={vi.fn()}
+      onConfirm={vi.fn()}
+    />
+  )
+  expect(screen.getByRole('button', { name: 'Oui' })).toHaveClass('bg-sun')
+  expect(screen.getByRole('button', { name: 'Oui' }).className).not.toContain('undefined')
+
+  rerender(
+    <ConfirmModal
+      isOpen
+      title="?"
+      variant="success"
+      confirmLabel="Oui"
+      onCancel={vi.fn()}
+      onConfirm={vi.fn()}
+    />
+  )
+  expect(screen.getByRole('button', { name: 'Oui' })).toHaveClass('bg-primary')
+  expect(screen.getByRole('button', { name: 'Oui' }).className).not.toContain('undefined')
+
+  rerender(
+    <ConfirmModal
+      isOpen
+      title="?"
+      variant="danger"
+      confirmLabel="Oui"
+      onCancel={vi.fn()}
+      onConfirm={vi.fn()}
+    />
+  )
+  expect(screen.getByRole('button', { name: 'Oui' })).toHaveClass('bg-danger')
+})

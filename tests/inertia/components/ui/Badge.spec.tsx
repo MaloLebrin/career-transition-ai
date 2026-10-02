@@ -21,12 +21,16 @@ describe('Badge', () => {
         <Badge variant="pink">Pink</Badge>
         <Badge variant="slate">Slate</Badge>
         <Badge variant="emerald">Emerald</Badge>
+        <Badge variant="sage">Sage</Badge>
+        <Badge variant="terracotta">Terracotta</Badge>
       </>
     )
-    const [pink, slate, emerald] = Array.from(container.children)
-    expect(pink).toHaveClass('text-tint-terracotta-ink')
+    const [pink, slate, emerald, sage, terracotta] = Array.from(container.children)
+    expect(pink).toHaveClass('text-tint-blossom-ink')
     expect(slate).toHaveClass('text-muted')
     expect(emerald).toHaveClass('text-success')
+    expect(sage).toHaveClass('bg-tint-meadow', 'text-tint-meadow-ink')
+    expect(terracotta).toHaveClass('bg-tint-apricot', 'text-tint-apricot-ink')
   })
 
   test('renders a status dot when asked', () => {

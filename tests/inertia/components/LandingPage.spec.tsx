@@ -25,6 +25,12 @@ describe('LandingPage', () => {
       '/methodologie'
     )
     expect(screen.getByRole('img', { name: /Aperçu du tableau de bord/ })).toBeInTheDocument()
+    const landscape = screen.getByTestId('hero-landscape')
+    expect(landscape).toHaveClass('rounded-2xl', 'overflow-hidden')
+    expect(landscape.querySelector('svg[data-variant="hero"]')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
   })
 
   test('shows the real exercise catalogue, the method and the AI sections', () => {

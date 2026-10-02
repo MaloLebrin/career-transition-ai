@@ -5,18 +5,22 @@ import React, { memo } from 'react'
  * - `default` : carte blanche, bordure hairline, ombre `card`.
  * - `flat`    : surface douce, sans ombre.
  * - `dark`    : la seule surface sombre (tier mis en avant, bande CTA).
- * - `warm`    : teinte accent chaud (ancien `amber`).
- * - `primary` : teinte primaire (ancien `sage`).
+ * - `sun`     : teinte soleil, mise en avant chaude (anciens `warm` et `amber`).
+ * - `accent`  : teinte teal de l'accent (ancien `sage`).
+ * - `primary` : teinte encre discrète.
  */
 export type CardVariant =
   | 'default'
   | 'flat'
   | 'dark'
-  | 'warm'
+  | 'sun'
+  | 'accent'
   | 'primary'
-  /** @deprecated utiliser `warm` */
+  /** @deprecated utiliser `sun` */
+  | 'warm'
+  /** @deprecated utiliser `sun` */
   | 'amber'
-  /** @deprecated utiliser `primary` */
+  /** @deprecated utiliser `accent` */
   | 'sage'
 
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg'
@@ -30,11 +34,14 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean
 }
 
-const VARIANTS: Record<Exclude<CardVariant, 'amber' | 'sage'>, string> = {
+type ResolvedCardVariant = Exclude<CardVariant, 'warm' | 'amber' | 'sage'>
+
+const VARIANTS: Record<ResolvedCardVariant, string> = {
   default: 'bg-surface border border-hairline shadow-card',
   flat: 'bg-surface-soft border border-hairline',
   dark: 'bg-ink text-on-ink',
-  warm: 'bg-accent-warm-soft border border-accent-warm/20',
+  sun: 'bg-sun-soft border border-tint-sun-ink/15',
+  accent: 'bg-accent-soft border border-accent/15',
   primary: 'bg-primary-soft border border-primary/15',
 }
 
@@ -45,9 +52,9 @@ const PADDINGS: Record<CardPadding, string> = {
   lg: 'p-8',
 }
 
-function resolveVariant(variant: CardVariant): Exclude<CardVariant, 'amber' | 'sage'> {
-  if (variant === 'amber') return 'warm'
-  if (variant === 'sage') return 'primary'
+function resolveVariant(variant: CardVariant): ResolvedCardVariant {
+  if (variant === 'warm' || variant === 'amber') return 'sun'
+  if (variant === 'sage') return 'accent'
   return variant
 }
 

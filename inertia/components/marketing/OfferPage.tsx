@@ -80,7 +80,7 @@ const LEGAL_LINKS = [
   { href: '/mentions-legales', label: 'Mentions légales' },
 ]
 
-const LINK_CLASS = 'text-sm font-medium text-primary hover:underline'
+const LINK_CLASS = 'text-sm font-medium text-accent hover:underline'
 
 export default function OfferPage() {
   return (
@@ -109,7 +109,7 @@ export default function OfferPage() {
           </div>
 
           <Card padding="md" className="lg:col-span-5">
-            <p className="text-eyebrow text-primary">Livrables structurés</p>
+            <p className="text-eyebrow text-accent">Livrables structurés</p>
             <p className="mt-1 text-title-md text-ink">Synthèse + plan d’action</p>
             <dl className="mt-6 divide-y divide-hairline">
               {DELIVERABLES.map((row) => (
@@ -171,7 +171,7 @@ export default function OfferPage() {
         description="Faites une démo, puis déployez une méthode traçable et actionnable pour vos accompagnements."
         actions={
           <>
-            <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+            <a href="#demo" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
               Demander une démo
             </a>
             <AppLink
