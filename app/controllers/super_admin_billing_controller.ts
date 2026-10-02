@@ -17,9 +17,12 @@ export default class SuperAdminBillingController {
     private payments: SuperAdminPaymentsService
   ) {}
 
-  /** GET /dashboard/super-admin/b2c */
-  public async candidates({ inertia }: HttpContext) {
-    const [candidates, stats] = await Promise.all([this.b2c.listCandidates(), this.b2c.stats()])
+  /** GET /dashboard/super-admin/b2c?page= */
+  public async candidates({ inertia, request }: HttpContext) {
+    const [candidates, stats] = await Promise.all([
+      this.b2c.listCandidates(this.b2c.parsePage(request.qs())),
+      this.b2c.stats(),
+    ])
     return inertia.render('dashboard/admin/b2c/Index', { candidates, stats })
   }
 

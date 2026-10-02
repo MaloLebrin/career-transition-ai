@@ -69,6 +69,9 @@ export class StripePaymentGateway implements PaymentGateway {
             ? session.payment_intent
             : (session.payment_intent?.id ?? null),
         status: session.status as RetrievedCheckoutSession['status'],
+        url: session.url ?? null,
+        amountTotal: session.amount_total ?? null,
+        currency: session.currency ?? null,
       }
     } catch (error) {
       if ((error as Stripe.errors.StripeError).code === 'resource_missing') return null

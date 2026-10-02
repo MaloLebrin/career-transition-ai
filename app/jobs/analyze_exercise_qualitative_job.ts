@@ -60,7 +60,9 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
 
     // Droit B2C revérifié à l'exécution (#100) : forfait remboursé ou analyse
     // gratuite déjà consommée entre la mise en file et le traitement.
-    const access = new ExerciseAccessService(new EntitlementsService())
+    const access = new ExerciseAccessService(
+      new EntitlementsService(new CandidateNotificationsService(new NotificationService()))
+    )
     const allowed = await access.shouldRunAiAnalysis(
       employee,
       result.type,

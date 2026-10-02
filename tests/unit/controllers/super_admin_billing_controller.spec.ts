@@ -11,7 +11,8 @@ import { test } from '@japa/runner'
 function fakes() {
   const calls: Record<string, unknown[]> = { grant: [], revoke: [], list: [] }
   const b2c = {
-    listCandidates: async () => [{ id: 1 }],
+    parsePage: () => 1,
+    listCandidates: async () => ({ items: [{ id: 1 }], page: 1, total: 1, lastPage: 1 }),
     stats: async () => ({ candidates: 1 }),
   } as unknown as SuperAdminB2cService
   const payments = {
@@ -80,7 +81,7 @@ test.group('SuperAdminBillingController (#107)', () => {
     await controller.candidates(candidates.ctx)
     assert.equal(candidates.state.rendered?.page, 'dashboard/admin/b2c/Index')
     assert.deepEqual(candidates.state.rendered?.props, {
-      candidates: [{ id: 1 }],
+      candidates: { items: [{ id: 1 }], page: 1, total: 1, lastPage: 1 },
       stats: { candidates: 1 },
     })
 

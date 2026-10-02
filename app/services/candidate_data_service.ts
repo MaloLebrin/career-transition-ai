@@ -160,6 +160,8 @@ export function candidateDataSnapshot(
       paidAt: payment.paidAt?.toISO() ?? null,
       refundedAt: payment.refundedAt?.toISO() ?? null,
       revokedAt: payment.revokedAt?.toISO() ?? null,
+      revokeReason: payment.revokeReason,
+      withdrawalWaivedAt: payment.withdrawalWaivedAt?.toISO() ?? null,
       createdAt: payment.createdAt?.toISO() ?? null,
     })),
     // Demandes d'accompagnement par un expert (#103) : supprimées avec la fiche.

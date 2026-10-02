@@ -1,3 +1,4 @@
+import { testNotifications } from '#tests/support/entitlements'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { StripeEventFactory } from '#database/factories/stripe_event_factory'
 import { InvalidStripeSignatureError } from '#exceptions/billing_errors'
@@ -15,7 +16,11 @@ import {
 } from '#shared/constants/billing'
 import type { PaymentGatewayWebhookEvent } from '#shared/types/billing/checkout'
 import { createB2cCandidate } from '#tests/support/actors'
-import { FAKE_STRIPE_SIGNATURE, FakeStripeGateway } from '#tests/support/fake_stripe'
+import {
+  FAKE_STRIPE_SIGNATURE,
+  FakeStripeGateway,
+  fakeStripeEvent,
+} from '#tests/support/fake_stripe'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
@@ -41,7 +46,7 @@ function event(
 }
 
 function makeService() {
-  const entitlements = new SpyEntitlements()
+  const entitlements = new SpyEntitlements(testNotifications())
   const payments = new PaymentsService(entitlements)
   const service = new StripeWebhooksService(new FakeStripeGateway(), payments)
   return { entitlements, payments, service }
@@ -199,6 +204,7 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
         event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
           id: 'ch_test_1',
           payment_intent: 'pi_refund_me',
+          refunded: true,
         })
       ),
       FAKE_STRIPE_SIGNATURE
@@ -210,6 +216,83 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
     assert.isNotNull(payment.refundedAt)
     assert.isNotNull(payment.revokedAt)
     assert.deepEqual(entitlements.revoked, [payment.id])
+  })
+
+  test('charge.refunded partiel : ignoré, droit conservé ; total par montants : révoqué', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+    payment.stripePaymentIntentId = 'pi_partial_unit'
+    await payment.save()
+    const deliver = (object: Record<string, unknown>) =>
+      service.handle(
+        JSON.stringify(
+          event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
+            payment_intent: 'pi_partial_unit',
+            ...object,
+          })
+        ),
+        FAKE_STRIPE_SIGNATURE
+      )
+
+    const partial = await deliver({ amount: 4900, amount_refunded: 1000, refunded: false })
+    assert.equal(partial.outcome, WEBHOOK_OUTCOMES.IGNORED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(payment.revokedAt)
+    assert.lengthOf(entitlements.revoked, 0)
+
+    const total = await deliver({ amount: 4900, amount_refunded: 4900 })
+    assert.equal(total.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.REFUNDED)
+    assert.deepEqual(entitlements.revoked, [payment.id])
+  })
+
+  test('checkout.session.completed incohérent (montant, devise, session) → unmatched, aucun déblocage', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const payment = await pendingPayment('cs_test_match')
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      for (const override of [
+        { amount_total: payment.amountCents - 100 },
+        { currency: 'usd' },
+        { id: 'cs_test_autre' },
+      ]) {
+        const result = await service.handle(
+          JSON.stringify(
+            event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+              id: 'cs_test_match',
+              client_reference_id: String(payment.id),
+              payment_status: 'paid',
+              amount_total: payment.amountCents,
+              currency: payment.currency,
+              ...override,
+            })
+          ),
+          FAKE_STRIPE_SIGNATURE
+        )
+        assert.equal(result.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+      }
+    } finally {
+      setErrorReporter(previous)
+    }
+
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.lengthOf(entitlements.unlocked, 0)
+    assert.lengthOf(reported, 3)
   })
 
   test('type non suivi → ignored ; paiement inconnu → unmatched ; les deux sont journalisés', async ({
@@ -243,7 +326,7 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
   test('traitement interrompu : la ligne reste ouverte, signalée, et la livraison suivante reprend', async ({
     assert,
   }) => {
-    const entitlements = new SpyEntitlements()
+    const entitlements = new SpyEntitlements(testNotifications())
     const payments = new PaymentsService(entitlements)
     let failOnce = true
     const originalMarkPaid = payments.markPaid.bind(payments)
@@ -310,5 +393,79 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
     assert.equal(result.outcome, WEBHOOK_OUTCOMES.PROCESSED)
     await open.refresh()
     assert.isTrue(open.isProcessed)
+  })
+
+  test('client_reference_id incohérent : non numérique → repli sur la session ; autre paiement → unmatched, rien n’est touché', async ({
+    assert,
+  }) => {
+    const { service } = makeService()
+    const target = await pendingPayment('cs_target')
+    const other = await pendingPayment('cs_other')
+    const run = (type: string, object: Record<string, unknown>) =>
+      service.handle(JSON.stringify(fakeStripeEvent(type, object)), FAKE_STRIPE_SIGNATURE)
+
+    const numeric = await run(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, {
+      id: 'cs_target',
+      client_reference_id: 'abc',
+    })
+    assert.equal(numeric.paymentId, target.id)
+
+    for (const type of [
+      STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED,
+      STRIPE_WEBHOOK_EVENTS.ASYNC_PAYMENT_FAILED,
+    ]) {
+      const result = await run(type, { id: 'cs_unrelated', client_reference_id: String(other.id) })
+      assert.equal(result.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+    }
+    await other.refresh()
+    assert.equal(other.status, PAYMENT_STATUSES.PENDING)
+
+    for (const reference of ['1.5', '-3', '0', '']) {
+      const result = await run(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_none',
+        client_reference_id: reference,
+        payment_status: 'paid',
+      })
+      assert.equal(result.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+    }
+  })
+
+  test('ordre inversé : expired après paid sans effet ; refund avant completed laisse le paiement ouvrir ensuite', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const paid = await pendingPayment('cs_paid_first')
+    const run = (type: string, object: Record<string, unknown>) =>
+      service.handle(JSON.stringify(fakeStripeEvent(type, object)), FAKE_STRIPE_SIGNATURE)
+
+    await run(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+      id: 'cs_paid_first',
+      client_reference_id: String(paid.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_order',
+    })
+    await run(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, {
+      id: 'cs_paid_first',
+      client_reference_id: String(paid.id),
+    })
+    await paid.refresh()
+    assert.equal(paid.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(paid.revokedAt)
+
+    const late = await pendingPayment('cs_late')
+    const refund = await run(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
+      payment_intent: 'pi_late',
+      refunded: true,
+    })
+    assert.equal(refund.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+    await run(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+      id: 'cs_late',
+      client_reference_id: String(late.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_late',
+    })
+    await late.refresh()
+    assert.equal(late.status, PAYMENT_STATUSES.PAID)
+    assert.includeMembers(entitlements.unlocked, [paid.id, late.id])
   })
 })

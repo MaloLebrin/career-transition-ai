@@ -152,6 +152,18 @@ export const throttleDataExport = limiter.define(
 )
 
 /**
+ * Départ vers Stripe Checkout (#102) : chaque appel peut créer une session
+ * chez le prestataire. 10 / heure par compte (clé userId, appliqué après `auth()`).
+ */
+export const throttleCheckout = limiter.define('checkout', ({ auth, request }: HttpContext) => {
+  return limiter
+    .allowRequests(10)
+    .every('1 hour')
+    .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+    .limitExceeded(frenchMessage)
+})
+
+/**
  * Sauvegarde d'exercice candidat (brouillon et résultat) : écritures en base
  * et, à la complétion, mise en file d'une analyse IA (quota et facturation).
  * 60/min par compte — l'enregistrement automatique reste très en deçà.

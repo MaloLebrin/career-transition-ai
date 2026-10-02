@@ -252,6 +252,10 @@ test.group('candidate_data_service | export', (group) => {
     assert.equal(snapshot.payments[0].provider, 'stripe')
     assert.isNotNull(snapshot.payments[0].paidAt)
     assert.match(snapshot.payments[0].stripeCheckoutSessionId ?? '', /^cs_test_/)
+    // Motif de révocation et renonciation au droit de rétractation exportés (#109).
+    assert.property(snapshot.payments[0], 'revokeReason')
+    assert.property(snapshot.payments[0], 'withdrawalWaivedAt')
+    assert.isNotNull(snapshot.payments[0].withdrawalWaivedAt)
   })
 
   test('l’export couvre type de compte, CGU, e-mail vérifié, effacement, synthèses et notifications', async ({

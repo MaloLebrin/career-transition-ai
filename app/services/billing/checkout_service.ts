@@ -67,6 +67,9 @@ export class CheckoutService {
       throw new EntitlementAlreadyGrantedError()
     }
 
+    const reused = await this.reusePendingSession(employee)
+    if (reused) return reused
+
     const payment = await CandidatePayment.create({
       employeeId: employee.id,
       userId: user.id,
@@ -82,21 +85,25 @@ export class CheckoutService {
       withdrawalWaivedAt: DateTime.now(),
     })
 
-    const session = await this.gateway.createCheckoutSession({
-      paymentId: payment.id,
-      employeeId: employee.id,
-      amountCents: payment.amountCents,
-      currency: payment.currency,
-      productName: RESULTS_PRODUCT_NAME,
-      customerEmail: user.email,
-      successUrl: appUrl(`${BILLING_PATHS.success}?session_id={CHECKOUT_SESSION_ID}`),
-      cancelUrl: appUrl(BILLING_PATHS.cancel),
-    })
-
-    payment.stripeCheckoutSessionId = session.id
-    await payment.save()
-
-    return { paymentId: payment.id, url: session.url }
+    try {
+      const session = await this.gateway.createCheckoutSession({
+        paymentId: payment.id,
+        employeeId: employee.id,
+        amountCents: payment.amountCents,
+        currency: payment.currency,
+        productName: RESULTS_PRODUCT_NAME,
+        customerEmail: user.email,
+        successUrl: appUrl(`${BILLING_PATHS.success}?session_id={CHECKOUT_SESSION_ID}`),
+        cancelUrl: appUrl(BILLING_PATHS.cancel),
+      })
+      payment.stripeCheckoutSessionId = session.id
+      await payment.save()
+      return { paymentId: payment.id, url: session.url }
+    } catch (error) {
+      // Pas de `pending` orphelin si Stripe a échoué.
+      await this.payments.markFailed(payment)
+      throw error
+    }
   }
 
   public async reconcile(user: User, sessionId: string): Promise<CheckoutReconcileResult> {
@@ -106,8 +113,9 @@ export class CheckoutService {
       .where('employeeId', employee.id)
       .first()
     if (!payment) throw new CheckoutSessionNotFoundError()
-    if (payment.status === PAYMENT_STATUSES.PAID) {
-      return { paymentId: payment.id, paid: true }
+    // Hors `pending`, la ligne locale fait foi : payé et non révoqué seulement.
+    if (payment.status !== PAYMENT_STATUSES.PENDING) {
+      return { paymentId: payment.id, paid: payment.grantsAccess }
     }
 
     const session = await this.gateway.retrieveCheckoutSession(sessionId)
@@ -115,9 +123,49 @@ export class CheckoutService {
     if (session.paymentStatus !== 'paid') {
       return { paymentId: payment.id, paid: false }
     }
+    const consistent = this.payments.sessionMatches(payment, {
+      sessionId: session.id,
+      amountTotal: session.amountTotal,
+      currency: session.currency,
+    })
+    if (!consistent) return { paymentId: payment.id, paid: false }
 
     await this.payments.markPaid(payment, { paymentIntentId: session.paymentIntentId })
-    return { paymentId: payment.id, paid: true }
+    await payment.refresh()
+    return { paymentId: payment.id, paid: payment.grantsAccess }
+  }
+
+  /**
+   * Un `pending` dont la session Stripe est encore ouverte est réutilisé (même
+   * URL) plutôt que doublé à chaque clic ; une session expirée ou disparue
+   * l'annule ; une session déjà payée est confirmée (le droit existe).
+   */
+  private async reusePendingSession(employee: Employee): Promise<CheckoutStartResult | null> {
+    const pending = await CandidatePayment.query()
+      .where('employeeId', employee.id)
+      .where('provider', PAYMENT_PROVIDERS.STRIPE)
+      .where('status', PAYMENT_STATUSES.PENDING)
+      .whereNotNull('stripeCheckoutSessionId')
+      .orderBy('id', 'desc')
+
+    let reusable: CheckoutStartResult | null = null
+    for (const payment of pending) {
+      const session = await this.gateway.retrieveCheckoutSession(payment.stripeCheckoutSessionId!)
+      if (session?.paymentStatus === 'paid') {
+        if (this.payments.sessionMatches(payment, { sessionId: session.id })) {
+          await this.payments.markPaid(payment, { paymentIntentId: session.paymentIntentId })
+          throw new EntitlementAlreadyGrantedError()
+        }
+        continue
+      }
+      if (session?.status === 'open' && session.url && !reusable) {
+        reusable = { paymentId: payment.id, url: session.url }
+        continue
+      }
+      // Expirée, disparue ou doublon d'une session déjà réutilisable.
+      await this.payments.markCanceled(payment)
+    }
+    return reusable
   }
 
   /** Fiche du particulier connecté ; les candidats B2B n'ont rien à acheter. */

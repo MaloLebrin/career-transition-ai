@@ -107,6 +107,12 @@ export class StripeWebhooksService {
         if (object.payment_status !== 'paid') {
           return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
         }
+        const consistent = this.payments.sessionMatches(payment, {
+          sessionId: stringOrNull(object.id),
+          amountTotal: typeof object.amount_total === 'number' ? object.amount_total : null,
+          currency: stringOrNull(object.currency),
+        })
+        if (!consistent) return this.unmatched(event)
         await this.payments.markPaid(payment, {
           paymentIntentId: stringOrNull(object.payment_intent),
         })
@@ -114,13 +120,13 @@ export class StripeWebhooksService {
       }
       case STRIPE_WEBHOOK_EVENTS.ASYNC_PAYMENT_FAILED: {
         const payment = await this.findCheckoutPayment(object)
-        if (!payment) return this.unmatched(event)
+        if (!payment || !this.referencesSession(payment, object)) return this.unmatched(event)
         await this.payments.markFailed(payment)
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
       case STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED: {
         const payment = await this.findCheckoutPayment(object)
-        if (!payment) return this.unmatched(event)
+        if (!payment || !this.referencesSession(payment, object)) return this.unmatched(event)
         await this.payments.markCanceled(payment)
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
@@ -128,6 +134,10 @@ export class StripeWebhooksService {
         const intentId = stringOrNull(object.payment_intent)
         const payment = intentId ? await this.payments.findByPaymentIntent(intentId) : null
         if (!payment) return this.unmatched(event)
+        // Remboursement partiel : le droit reste ouvert, on ne révoque pas.
+        if (!isFullRefund(object)) {
+          return { outcome: WEBHOOK_OUTCOMES.IGNORED, paymentId: payment.id }
+        }
         await this.payments.refund(payment)
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
@@ -147,6 +157,14 @@ export class StripeWebhooksService {
     return sessionId ? this.payments.findByCheckoutSession(sessionId) : null
   }
 
+  /** `client_reference_id` pointant vers le paiement d'une autre session : on ne le touche pas. */
+  private referencesSession(
+    payment: Parameters<PaymentsService['sessionMatches']>[0],
+    session: Record<string, unknown>
+  ): boolean {
+    return this.payments.sessionMatches(payment, { sessionId: stringOrNull(session.id) })
+  }
+
   private unmatched(event: PaymentGatewayWebhookEvent) {
     logger.warn('Webhook Stripe : aucun paiement local pour cet événement', {
       stripeEventId: event.id,
@@ -154,6 +172,15 @@ export class StripeWebhooksService {
     })
     return { outcome: WEBHOOK_OUTCOMES.UNMATCHED, paymentId: null }
   }
+}
+
+/** `charge.refunded` est aussi émis pour un remboursement partiel : seul le total retire le droit. */
+function isFullRefund(charge: Record<string, unknown>): boolean {
+  if (charge.refunded === true) return true
+  const { amount, amount_refunded: refunded } = charge
+  return (
+    typeof amount === 'number' && typeof refunded === 'number' && amount > 0 && refunded >= amount
+  )
 }
 
 /** Stripe renvoie tantôt un id, tantôt l'objet développé (`{ id }`). */

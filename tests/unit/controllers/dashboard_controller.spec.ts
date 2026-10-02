@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import DashboardController from '#controllers/dashboard_controller'
 import { EmployeesService } from '#services/employees_service'
 import { EntitlementsService } from '#services/entitlements_service'
@@ -20,7 +21,7 @@ import { DateTime } from 'luxon'
 function makeController() {
   return new DashboardController(
     new EmployeesService({ sendSetPasswordLink: async () => {} } as any),
-    new ExerciseAccessService(new EntitlementsService())
+    new ExerciseAccessService(makeEntitlements())
   )
 }
 

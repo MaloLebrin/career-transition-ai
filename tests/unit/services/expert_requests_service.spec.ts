@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
 import {
   ExpertAlreadyAssignedError,
@@ -66,7 +67,7 @@ function makeService() {
   )
   return {
     notifications,
-    service: new ExpertRequestsService(new EntitlementsService(), notifications, team),
+    service: new ExpertRequestsService(makeEntitlements(), notifications, team),
   }
 }
 

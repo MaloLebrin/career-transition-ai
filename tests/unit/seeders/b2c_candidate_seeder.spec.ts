@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import AdminSeeder from '#database/seeders/admin_seeder'
 import B2cCandidateSeeder, { B2C_SEED_ACCOUNTS } from '#database/seeders/b2c_candidate_seeder'
 import Employee from '#models/employee'
@@ -43,7 +44,7 @@ test.group('B2cCandidateSeeder (#94)', (group) => {
       assert.isNotNull(employee.userId)
     }
 
-    const service = new EntitlementsService()
+    const service = makeEntitlements()
     assert.isFalse(await service.hasResultsAccess(unpaid.id))
     assert.isTrue(await service.hasResultsAccess(paid.id))
     assert.lengthOf(await Employee.query().where('email', B2C_SEED_ACCOUNTS.paid), 1)

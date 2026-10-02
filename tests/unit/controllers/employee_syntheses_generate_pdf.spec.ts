@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import EmployeeSynthesesController from '#controllers/employee_syntheses_controller'
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
@@ -100,7 +101,7 @@ function makeController() {
   return new EmployeeSynthesesController(
     new EmployeeSynthesisService(),
     {} as CandidateNotificationsService,
-    new EntitlementsService()
+    makeEntitlements()
   )
 }
 

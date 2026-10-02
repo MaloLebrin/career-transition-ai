@@ -109,6 +109,44 @@ lancée — part dans la queue `ai` (`AnalyzeExerciseQualitativeJob`) et le
 particulier reçoit `results_unlocked` ; au retrait, `results_access_revoked`.
 Un échec de traitement est remonté à Sentry (`reportError`, ids seulement).
 
+## Fiabilité des droits (revue #109)
+
+- **Remboursement partiel.** `charge.refunded` n'est suivi que si le
+  remboursement est **total** (`refunded === true` ou `amount_refunded >=
+amount`) ; un remboursement partiel est accusé (`ignored`) sans retirer le
+  droit. Après une révocation manuelle, un remboursement total change le statut
+  en `refunded` mais n'écrase ni `revoked_at` ni le motif, et ne renotifie pas.
+- **Effets rejouables.** La transition d'état (`pending → paid`, `paid →
+refunded`) est atomique et idempotente ; ses effets de bord (jobs IA,
+  notification) sont suivis par `candidate_payments.unlock_effects_at` /
+  `revoke_effects_at`, posés une fois les effets terminés. Si un effet lève
+  après la transition, le webhook répond 500, Stripe réessaie et
+  `markPaid` / `refund` voient un paiement déjà `paid` / `refunded` au
+  marqueur nul : ils **rejouent les effets** (les jobs ne partent que pour les
+  exercices sans analyse). La notification est « au mieux » : son échec est
+  signalé (`reportError`) mais ne bloque ni ne rejoue les jobs, donc pas de
+  doublon. Octroi et révocation manuels : effets lancés après commit, une
+  erreur est signalée sans 500 pour l'admin.
+- **Un seul droit actif.** Index unique partiel
+  `candidate_payments_one_active_per_employee` (`employee_id` où `status =
+'paid'` et `revoked_at IS NULL`) ; l'octroi manuel verrouille la fiche
+  (`FOR UPDATE`). La migration régularise les doublons existants en révoquant
+  les plus anciens. Si un paiement Stripe est encaissé alors que le candidat a
+  déjà un droit actif, il est conservé `paid` mais révoqué (motif
+  « Doublon : paiement à rembourser dans Stripe »), `reportError` alerte
+  (`step: duplicate_paid`) : **aucun remboursement automatique par l'API**, le
+  super admin rembourse dans Stripe, sur demande explicite.
+- **Départ vers Stripe.** `CheckoutService.start` réutilise le paiement
+  `pending` dont la session est encore ouverte, annule ceux dont la session a
+  expiré, et passe le paiement en `failed` si Stripe échoue. `throttleCheckout` :
+  10 départs / heure par compte.
+- **Recoupement.** Session, `amount_total` et devise sont comparés à la ligne
+  locale (webhook et réconciliation) ; un écart donne `unmatched` + `reportError`,
+  sans déblocage.
+- **Révocation manuelle.** Auteur dans `revoked_by_user_id` (plus de suffixe dans
+  `revoke_reason`, borné à `REVOKE_REASON_MAX`) ; l'export RGPD inclut
+  `revokeReason` et `withdrawalWaivedAt`.
+
 ## Support (#107)
 
 - **Rembourser** : dans le tableau de bord Stripe (ou l'API). L'événement

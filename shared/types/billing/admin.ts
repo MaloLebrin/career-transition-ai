@@ -14,6 +14,14 @@ export interface B2cCandidateRow {
   pendingExpertRequest: boolean
 }
 
+/** Page de particuliers du back-office (#107). */
+export interface B2cCandidatesListResult {
+  items: B2cCandidateRow[]
+  page: number
+  total: number
+  lastPage: number
+}
+
 /** Indicateurs B2C de l'accueil super admin et de la page des particuliers (#107). */
 export interface B2cStats {
   candidates: number
@@ -44,6 +52,8 @@ export interface PaymentRow {
   revokedAt: string | null
   revokeReason: string | null
   grantedBy: { id: number; name: string } | null
+  /** Super admin à l'origine d'une révocation manuelle (`null` : remboursement Stripe ou non révoqué). */
+  revokedBy: { id: number; name: string } | null
   createdAt: string | null
   /** Ce paiement ouvre-t-il l'accès aujourd'hui ? */
   grantsAccess: boolean

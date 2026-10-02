@@ -1,3 +1,4 @@
+import { makeEntitlements, testNotifications } from '#tests/support/entitlements'
 import { test } from '@japa/runner'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
@@ -38,7 +39,7 @@ let spy: SpyEntitlements
 test.group('Super admin — particuliers (#107)', (group) => {
   group.each.setup(() => truncateDb())
   group.each.setup(() => {
-    spy = new SpyEntitlements()
+    spy = new SpyEntitlements(testNotifications())
     app.container.swap(EntitlementsService, () => spy)
     return () => app.container.restore(EntitlementsService)
   })
@@ -60,7 +61,9 @@ test.group('Super admin — particuliers (#107)', (group) => {
     const response = await client.get(BILLING_ADMIN_PATHS.b2c).loginAs(superAdmin).withInertia()
 
     const props = assertPage(assert, response, PAGE, ['candidates', 'stats'])
-    const candidates = props.candidates as Array<Record<string, unknown>>
+    const result = props.candidates as Record<string, unknown>
+    assert.include(result, { page: 1, total: 2, lastPage: 1 })
+    const candidates = result.items as Array<Record<string, unknown>>
     assert.sameMembers(
       candidates.map((c) => c.id),
       [paid.employee.id, free.employee.id]
@@ -111,7 +114,7 @@ test.group('Super admin — particuliers (#107)', (group) => {
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
     assert.equal(payment.amountCents, 0)
     assert.equal(payment.grantedByUserId, superAdmin.id)
-    assert.isTrue(await new EntitlementsService().hasResultsAccess(employee.id))
+    assert.isTrue(await makeEntitlements().hasResultsAccess(employee.id))
     assert.deepEqual(spy.dispatched, [locked.id])
     const [notification] = await Notification.query().where('userId', user.id)
     assert.equal(notification.type, NOTIFICATION_TYPES.RESULTS_UNLOCKED)

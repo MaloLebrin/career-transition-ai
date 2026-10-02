@@ -1,6 +1,8 @@
 import { ResultsLockedError } from '#exceptions/billing_errors'
 import type User from '#models/user'
 import { createServerAiClient } from '#services/ai/server_ai_client'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
+import { NotificationService } from '#services/notification_service'
 import { EntitlementsService } from '#services/entitlements_service'
 import type { AiClient } from '#shared/helpers/ai/ai_client'
 import { pseudonymizeForAi } from '#shared/helpers/ai/exercise_profile'
@@ -20,7 +22,9 @@ import { readFile } from 'node:fs/promises'
 export class AiAssistService {
   constructor(
     private clientFactory: () => AiClient = createServerAiClient,
-    private entitlements: EntitlementsService = new EntitlementsService()
+    private entitlements: EntitlementsService = new EntitlementsService(
+      new CandidateNotificationsService(new NotificationService())
+    )
   ) {}
 
   /**

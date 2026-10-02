@@ -23,6 +23,7 @@ const paid: PaymentRow = {
   revokedAt: null,
   revokeReason: null,
   grantedBy: null,
+  revokedBy: null,
   createdAt: '2026-10-02T09:59:00.000Z',
   grantsAccess: true,
 }
@@ -35,6 +36,7 @@ const manualRevoked: PaymentRow = {
   revokedAt: '2026-10-03T10:00:00.000Z',
   revokeReason: 'Litige (par l’utilisateur #1)',
   grantedBy: { id: 1, name: 'Super Admin' },
+  revokedBy: null,
   grantsAccess: false,
 }
 
@@ -62,6 +64,24 @@ describe('PaymentsTable (#107)', () => {
     expect(rows[1]).toHaveTextContent('Accès retiré')
     expect(rows[1]).toHaveTextContent('Litige (par l’utilisateur #1)')
     expect(within(rows[1]).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  test('révocation manuelle : affiche le super admin à côté du motif ; absent pour un remboursement', () => {
+    render(
+      <PaymentsTable
+        payments={[
+          { ...manualRevoked, revokedBy: { id: 2, name: 'Alex Admin' } },
+          { ...manualRevoked, id: 13, revokeReason: 'Remboursement Stripe', revokedBy: null },
+        ]}
+      />
+    )
+
+    const rows = within(screen.getByRole('table', { name: 'Paiements du forfait' }))
+      .getAllByRole('row')
+      .slice(1)
+    expect(rows[0]).toHaveTextContent('Litige (par l’utilisateur #1) · Retiré par Alex Admin')
+    expect(rows[1]).toHaveTextContent('Remboursement Stripe')
+    expect(rows[1]).not.toHaveTextContent('Retiré par')
   })
 
   test('retirer l’accès : motif saisi puis POST sur la route de révocation', async () => {

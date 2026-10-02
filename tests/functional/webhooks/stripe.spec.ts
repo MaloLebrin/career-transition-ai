@@ -1,3 +1,4 @@
+import { makeEntitlements, testNotifications } from '#tests/support/entitlements'
 import { test } from '@japa/runner'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
@@ -61,7 +62,7 @@ test.group('Webhook Stripe (#104)', (group) => {
   group.each.setup(() => truncateDb())
   group.each.setup(() => {
     swapFakeStripe()
-    spy = new SpyEntitlements()
+    spy = new SpyEntitlements(testNotifications())
     app.container.swap(EntitlementsService, () => spy)
     return () => {
       app.container.restore(EntitlementsService)
@@ -107,7 +108,7 @@ test.group('Webhook Stripe (#104)', (group) => {
     await payment.refresh()
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
     assert.equal(payment.stripePaymentIntentId, 'pi_test_1')
-    assert.isTrue(await new EntitlementsService().hasResultsAccess(employee.id))
+    assert.isTrue(await makeEntitlements().hasResultsAccess(employee.id))
     assert.deepEqual(spy.dispatched, [lockedResult.id])
 
     const [notification] = await Notification.query().where('userId', user.id)
@@ -197,7 +198,7 @@ test.group('Webhook Stripe (#104)', (group) => {
     await expired.refresh()
     assert.equal(failed.status, PAYMENT_STATUSES.FAILED)
     assert.equal(expired.status, PAYMENT_STATUSES.CANCELED)
-    assert.isFalse(await new EntitlementsService().hasResultsAccess(employee.id))
+    assert.isFalse(await makeEntitlements().hasResultsAccess(employee.id))
     assert.lengthOf(spy.dispatched, 0)
   })
 
@@ -240,6 +241,7 @@ test.group('Webhook Stripe (#104)', (group) => {
         event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
           id: 'ch_test_1',
           payment_intent: 'pi_refund',
+          refunded: true,
         })
       )
 
@@ -249,7 +251,7 @@ test.group('Webhook Stripe (#104)', (group) => {
       assert.isNotNull(payment.refundedAt)
       assert.isNotNull(payment.revokedAt)
       assert.equal(payment.revokeReason, STRIPE_REFUND_REVOKE_REASON)
-      assert.isFalse(await new EntitlementsService().hasResultsAccess(employee.id))
+      assert.isFalse(await makeEntitlements().hasResultsAccess(employee.id))
 
       const after = await client.get(download).loginAs(user).redirects(0)
       after.assertStatus(404)
@@ -263,6 +265,40 @@ test.group('Webhook Stripe (#104)', (group) => {
     } finally {
       restoreCloudinary()
     }
+  })
+
+  test('charge.refunded partiel : ignoré, le droit reste ouvert, le paiement reste payé', async ({
+    client,
+    assert,
+  }) => {
+    const { employee, user } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      userId: user.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+    payment.stripePaymentIntentId = 'pi_partial'
+    await payment.save()
+
+    const response = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
+        id: 'ch_partial',
+        payment_intent: 'pi_partial',
+        amount: 4900,
+        amount_refunded: 1000,
+        refunded: false,
+      })
+    )
+
+    response.assertStatus(200)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(payment.revokedAt)
+    assert.isTrue(await makeEntitlements().hasResultsAccess(employee.id))
+    assert.lengthOf(await Notification.query().where('userId', user.id), 0)
   })
 
   test('type non suivi ou paiement inconnu : 200, journalisé, sans effet', async ({
@@ -312,5 +348,134 @@ test.group('Webhook Stripe (#104)', (group) => {
     await open.refresh()
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
     assert.isTrue(open.isProcessed)
+  })
+
+  test('erreur interne : 500 (Stripe retentera), ligne laissée ouverte, puis reprise en 200', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const payment = await pendingPayment(employee, 'cs_boom')
+    const body = event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+      id: 'cs_boom',
+      client_reference_id: String(payment.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_boom',
+    })
+    let broken = true
+    spy.runUnlockEffects = async (...args) => {
+      if (broken) throw new Error('base indisponible')
+      return EntitlementsService.prototype.runUnlockEffects.apply(spy, args)
+    }
+
+    const failed = await deliver(client, body)
+
+    failed.assertStatus(500)
+    const [row] = await StripeEvent.all()
+    assert.isFalse(row.isProcessed)
+
+    broken = false
+    const retry = await deliver(client, body)
+    retry.assertStatus(200)
+    await row.refresh()
+    assert.isTrue(row.isProcessed)
+  })
+
+  test('completed unpaid : 200, paiement resté pending, aucun droit', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const payment = await pendingPayment(employee, 'cs_unpaid')
+
+    const response = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_unpaid',
+        client_reference_id: String(payment.id),
+        payment_status: 'unpaid',
+      })
+    )
+
+    response.assertStatus(200)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.isFalse(await makeEntitlements().hasResultsAccess(employee.id))
+    assert.lengthOf(spy.dispatched, 0)
+  })
+
+  test('ordre inversé : expired après paid sans effet ; refund avant completed → 200 unmatched puis paiement ouvert', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const paid = await pendingPayment(employee, 'cs_order_a')
+    const paidObject = {
+      id: 'cs_order_a',
+      client_reference_id: String(paid.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_order_a',
+    }
+    const completed = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, paidObject)
+    )
+    const expired = await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, paidObject))
+    completed.assertStatus(200)
+    expired.assertStatus(200)
+    await paid.refresh()
+    assert.equal(paid.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(paid.revokedAt)
+
+    const { employee: other } = await createB2cCandidate()
+    const late = await pendingPayment(other, 'cs_order_b')
+    const refund = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, { payment_intent: 'pi_order_b', refunded: true })
+    )
+    refund.assertStatus(200)
+    const lateCompleted = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_order_b',
+        client_reference_id: String(late.id),
+        payment_status: 'paid',
+        payment_intent: 'pi_order_b',
+      })
+    )
+    lateCompleted.assertStatus(200)
+    await late.refresh()
+    assert.equal(late.status, PAYMENT_STATUSES.PAID)
+  })
+
+  test('client_reference_id incohérent : 200, le paiement visé par erreur n’est pas touché', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const victim = await pendingPayment(employee, 'cs_victim')
+
+    for (const reference of [String(victim.id), 'not-a-number']) {
+      const response = await deliver(
+        client,
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, {
+          id: 'cs_elsewhere',
+          client_reference_id: reference,
+        })
+      )
+      response.assertStatus(200)
+    }
+    const paidWrong = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_elsewhere',
+        client_reference_id: String(victim.id),
+        payment_status: 'paid',
+      })
+    )
+    paidWrong.assertStatus(200)
+
+    await victim.refresh()
+    assert.equal(victim.status, PAYMENT_STATUSES.PENDING)
   })
 })

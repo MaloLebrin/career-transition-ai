@@ -45,6 +45,7 @@ export class SuperAdminPaymentsService {
       .if(filter.status, (q) => q.where('status', filter.status!))
       .preload('employee', (q) => q.select('id', 'name', 'email'))
       .preload('grantedBy', (q) => q.select('id', 'name'))
+      .preload('revokedBy', (q) => q.select('id', 'name'))
       .orderBy([
         { column: 'createdAt', order: 'desc' },
         { column: 'id', order: 'desc' },
@@ -93,6 +94,9 @@ function toRow(payment: CandidatePayment): PaymentRow {
     revokeReason: payment.revokeReason,
     grantedBy: payment.grantedBy
       ? { id: payment.grantedBy.id, name: payment.grantedBy.name }
+      : null,
+    revokedBy: payment.revokedBy
+      ? { id: payment.revokedBy.id, name: payment.revokedBy.name }
       : null,
     createdAt: payment.createdAt?.toISO() ?? null,
     grantsAccess: payment.grantsAccess,

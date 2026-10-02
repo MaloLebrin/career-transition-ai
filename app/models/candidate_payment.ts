@@ -68,6 +68,18 @@ export default class CandidatePayment extends BaseModel {
   @column()
   declare grantedByUserId: number | null
 
+  /** Super admin à l'origine d'une révocation manuelle (#107) ; `null` pour un remboursement Stripe. */
+  @column()
+  declare revokedByUserId: number | null
+
+  /** Effets du déblocage (jobs IA) exécutés ; nul = à rejouer à la reprise du webhook. */
+  @column.dateTime()
+  declare unlockEffectsAt: DateTime | null
+
+  /** Effets du retrait de droit exécutés ; nul = à rejouer. */
+  @column.dateTime()
+  declare revokeEffectsAt: DateTime | null
+
   /** Renonciation expresse au droit de rétractation cochée au paiement (#102). */
   @column.dateTime()
   declare withdrawalWaivedAt: DateTime | null
@@ -89,6 +101,9 @@ export default class CandidatePayment extends BaseModel {
 
   @belongsTo(() => User, { foreignKey: 'grantedByUserId' })
   declare grantedBy: BelongsTo<typeof User>
+
+  @belongsTo(() => User, { foreignKey: 'revokedByUserId' })
+  declare revokedBy: BelongsTo<typeof User>
 
   /** Ce paiement ouvre-t-il l'accès aux résultats aujourd'hui ? */
   get grantsAccess(): boolean {

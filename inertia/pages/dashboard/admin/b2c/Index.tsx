@@ -1,13 +1,24 @@
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
+import { BILLING_ADMIN_PATHS } from '#shared/constants/billing'
 import { formatPrice } from '#shared/helpers/billing/format_price'
-import type { B2cCandidateRow, B2cStats } from '#shared/types/billing/admin'
+import type { B2cCandidatesListResult, B2cStats } from '#shared/types/billing/admin'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { B2cCandidatesTable } from '~/components/dashboard/admin/B2cCandidatesTable'
+import { Pagination } from '~/components/ui/Pagination'
 import StatCard from '~/components/ui/StatCard'
 
 interface B2cAdminProps {
-  candidates: B2cCandidateRow[]
+  candidates: B2cCandidatesListResult
   stats: B2cStats
+}
+
+function visit(page: number) {
+  const query: Record<string, string> = page > 1 ? { page: String(page) } : {}
+  router.get(BILLING_ADMIN_PATHS.b2c, query, {
+    preserveScroll: true,
+    preserveState: true,
+    only: ['candidates'],
+  })
 }
 
 /** Back-office super admin : particuliers inscrits et indicateurs du forfait (#107). */
@@ -40,7 +51,9 @@ export default function B2cAdmin({ candidates, stats }: B2cAdminProps) {
             />
           </div>
 
-          <B2cCandidatesTable candidates={candidates} />
+          <B2cCandidatesTable candidates={candidates.items} />
+
+          <Pagination page={candidates.page} lastPage={candidates.lastPage} onPageChange={visit} />
         </div>
       </DashboardLayout>
     </>

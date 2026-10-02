@@ -8,7 +8,7 @@ import {
 import type { PaymentsListResult } from '#shared/types/billing/admin'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { PaymentsTable } from '~/components/dashboard/admin/PaymentsTable'
-import Button from '~/components/ui/Button'
+import { Pagination } from '~/components/ui/Pagination'
 import SelectField, { type SelectFieldOption } from '~/components/ui/SelectField'
 
 interface PaymentsAdminProps {
@@ -26,7 +26,11 @@ function visit(status: StatusFilter, page: number) {
   const query: Record<string, string> = {}
   if (status !== 'all') query.status = status
   if (page > 1) query.page = String(page)
-  router.get(BILLING_ADMIN_PATHS.payments, query, { preserveScroll: true, preserveState: true })
+  router.get(BILLING_ADMIN_PATHS.payments, query, {
+    preserveScroll: true,
+    preserveState: true,
+    only: ['payments'],
+  })
 }
 
 /** Back-office super admin : paiements du forfait, filtre par statut, retrait d'un accès (#107). */
@@ -58,31 +62,11 @@ export default function PaymentsAdmin({ payments }: PaymentsAdminProps) {
 
           <PaymentsTable payments={payments.items} />
 
-          {payments.lastPage > 1 && (
-            <nav className="flex items-center justify-between" aria-label="Pagination">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => visit(status, page - 1)}
-              >
-                Précédent
-              </Button>
-              <span className="text-sm text-muted">
-                Page {page} / {payments.lastPage}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page >= payments.lastPage}
-                onClick={() => visit(status, page + 1)}
-              >
-                Suivant
-              </Button>
-            </nav>
-          )}
+          <Pagination
+            page={page}
+            lastPage={payments.lastPage}
+            onPageChange={(next) => visit(status, next)}
+          />
         </div>
       </DashboardLayout>
     </>

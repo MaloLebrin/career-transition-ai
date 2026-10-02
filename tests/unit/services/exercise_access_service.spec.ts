@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import { SupportPlanStepExerciseFactory } from '#database/factories/support_plan_step_exercise_factory'
 import { SupportPlanStepFactory } from '#database/factories/support_plan_step_factory'
 import type Employee from '#models/employee'
@@ -13,7 +14,7 @@ import { createB2cCandidate, createCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
-const service = new ExerciseAccessService(new EntitlementsService())
+const service = new ExerciseAccessService(makeEntitlements())
 const CATALOGUE = EXERCISE_LIST.map((entry) => entry.slug as ExerciceResultType)
 
 async function planStep(employee: Employee, types: ExerciceResultType[], isLocked = false) {
