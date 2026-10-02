@@ -12,6 +12,7 @@ router
     router.on('/methodologie').renderInertia('Methodology', {})
     router.on('/offre').renderInertia('Offer', {})
     router.on('/tarifs').renderInertia('Pricing', {})
+    router.on('/particuliers').renderInertia('Individuals', {})
     router.on('/mentions-legales').renderInertia('LegalNotice', {})
     router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
     router.on('/securite').renderInertia('Security', {})

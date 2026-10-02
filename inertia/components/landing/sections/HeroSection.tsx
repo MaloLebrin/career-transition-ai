@@ -6,6 +6,7 @@ import { ProductMockup } from '~/components/marketing/ProductMockup'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import { SectionHeading } from '~/components/ui/SectionHeading'
+import { INDIVIDUALS_ACTION } from '~/config/marketing'
 
 const PROOF_POINTS = [
   'Huit exercices issus des sciences comportementales',
@@ -45,6 +46,13 @@ export const HeroSection: React.FC = () => (
             Voir la méthodologie
           </AppLink>
         </div>
+        {/* Épic B2C (#99) : les particuliers ont leur propre page, sans brouiller le message cabinet. */}
+        <p className="text-sm text-muted">
+          <AppLink href={INDIVIDUALS_ACTION.href} className="font-medium text-accent hover:underline">
+            {INDIVIDUALS_ACTION.label}
+          </AppLink>{' '}
+          Découvrez le parcours en autonomie, avec deux exercices offerts.
+        </p>
         <ul className="flex flex-col gap-2 border-t border-hairline pt-6 text-sm text-muted sm:flex-row sm:flex-wrap sm:gap-x-6">
           {PROOF_POINTS.map((point) => (
             <li key={point} className="flex items-center gap-2">

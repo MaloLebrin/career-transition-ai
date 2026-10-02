@@ -1,9 +1,14 @@
+import { usePage } from '@inertiajs/react'
+import { Check } from 'lucide-react'
 import React from 'react'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
+import Badge from '../ui/Badge'
 import { buttonClassName } from '../ui/Button'
+import Card from '../ui/Card'
 import { SectionHeading } from '../ui/SectionHeading'
 import { CtaBand } from './CtaBand'
+import { useResultsPriceLabel } from './IndividualsPage'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
 import { PricingTierCard, type PricingTierCardProps } from './PricingTierCard'
@@ -71,11 +76,23 @@ const FAQ = [
   {
     question: 'La TVA s’applique-t-elle ?',
     answer:
-      'Selon votre statut et le lieu de facturation. Les montants affichés sont HT ; la TVA éventuelle est indiquée sur le devis.',
+      'Selon votre statut et le lieu de facturation. Les montants des offres cabinets sont HT ; la TVA éventuelle est indiquée sur le devis. Le forfait particuliers est affiché TTC.',
   },
 ]
 
+/** Forfait particuliers (épic B2C #99) : ce qu'il comprend, ce qu'il ne comprend pas. */
+const INDIVIDUAL_INCLUDED = [
+  'Motivations et Valeurs offerts, résultats visibles sans paiement',
+  'Les six autres exercices et leurs analyses IA',
+  'Votre synthèse de parcours et son export PDF',
+  'La possibilité de demander un accompagnement par un expert',
+]
+
 export default function PricingPage() {
+  const { props } = usePage<{ b2cRegistrationEnabled?: boolean }>()
+  const registrationOpen = Boolean(props.b2cRegistrationEnabled)
+  const individualPrice = useResultsPriceLabel()
+
   return (
     <PublicLayout>
       <MarketingSection tone="canvas">
@@ -85,7 +102,7 @@ export default function PricingPage() {
           align="center"
           eyebrow="Tarifs pour cabinets et organismes"
           title="Des offres claires, adaptées à votre volume."
-          description="Prix indicatifs hors taxes, facturation au choix (mensuelle ou annuelle). Le devis final intègre vos besoins en sièges conseiller, bilans actifs et options."
+          description="Prix indicatifs hors taxes pour les cabinets, facturation au choix (mensuelle ou annuelle). Le devis final intègre vos besoins en sièges conseiller, bilans actifs et options."
         />
         <p className="mt-4 text-center text-sm text-muted">
           Montants indicatifs, devis personnalisé sous 48h ouvrées.
@@ -94,6 +111,60 @@ export default function PricingPage() {
           {TIERS.map((tier) => (
             <PricingTierCard key={tier.name} {...tier} />
           ))}
+        </div>
+      </MarketingSection>
+
+      <MarketingSection tone="soft" id="particuliers" className="scroll-mt-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+          <div className="space-y-6 lg:col-span-6">
+            <SectionHeading
+              eyebrow="Vous êtes un particulier ?"
+              title="Un forfait unique, réglé une fois."
+              description="Pas de cabinet, pas d’abonnement : vous faites deux exercices gratuitement, puis débloquez l’ensemble du parcours si vous le souhaitez. Prix TTC, paiement sécurisé par Stripe, facture envoyée par e-mail."
+            />
+            <div className="flex flex-wrap gap-3">
+              <AppLink href="/particuliers" className={buttonClassName({ variant: 'outline' })}>
+                Découvrir le parcours particuliers
+              </AppLink>
+              {registrationOpen && (
+                <AppLink href="/inscription" className={buttonClassName({ variant: 'primary' })}>
+                  Commencer gratuitement
+                </AppLink>
+              )}
+            </div>
+          </div>
+          <Card
+            padding="lg"
+            className="flex h-full flex-col lg:col-span-6"
+            role="group"
+            aria-label="Forfait particuliers"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <h3 className="text-title-lg">Forfait particuliers</h3>
+                <p className="text-sm text-muted">Accès complet aux résultats</p>
+              </div>
+              <Badge variant="sun">Paiement unique</Badge>
+            </div>
+            <div className="mt-6">
+              <p className="text-display-sm text-ink">{individualPrice}</p>
+              <p className="mt-1 text-sm text-muted">TTC, une seule fois</p>
+            </div>
+            <ul className="mt-6 flex-1 space-y-3">
+              {INDIVIDUAL_INCLUDED.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                  <span className="text-ink-soft">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-caption text-muted">
+              Les séances avec un expert font l’objet d’un tarif et d’un contrat à part.{' '}
+              <AppLink href="/cgv" className="font-medium text-accent hover:underline">
+                Conditions de vente
+              </AppLink>
+            </p>
+          </Card>
         </div>
       </MarketingSection>
 
