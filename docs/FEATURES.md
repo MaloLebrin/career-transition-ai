@@ -375,3 +375,4 @@
 ### 11.4 À venir
 
 Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
+Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
