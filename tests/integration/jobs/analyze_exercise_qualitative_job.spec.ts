@@ -68,7 +68,7 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     })
   })
 
-  test("ajoute le temps d'analyse IA à la durée de l'exercice", async ({ assert }) => {
+  test("ne modifie pas la durée de l'exercice pendant l'analyse IA", async ({ assert }) => {
     const { employee } = await createCandidate()
     const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
     result.duration = 40
@@ -91,7 +91,7 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
 
     await result.refresh()
     assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
-    assert.equal(result.duration, 52)
+    assert.equal(result.duration, 40)
   })
 
   test("enregistre l'analyse sans notification pour un candidat sans conseiller", async ({
@@ -129,6 +129,8 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     const advisor = await createAdvisor()
     const { employee } = await createCandidate({ advisor })
     const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+    result.duration = 40
+    await result.save()
 
     const originalConsoleError = console.error
     console.error = () => {}
@@ -140,6 +142,7 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
 
     await result.refresh()
     assert.equal(result.qualitativeAnalysis, "Erreur lors de la génération de l'analyse.")
+    assert.equal(result.duration, 40)
     assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
   })
 
