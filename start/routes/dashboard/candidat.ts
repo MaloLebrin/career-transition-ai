@@ -1,5 +1,5 @@
 import { middleware } from '#start/kernel'
-import { throttleDataExport, throttleEmailVerification } from '#start/limiter'
+import { throttleDataExport, throttleEmailVerification, throttleExerciseSave } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const EmployeesController = () => import('#controllers/employees_controller')
@@ -41,14 +41,18 @@ router
           .delete('/documents/:mediaId', [CandidateDocumentsController, 'destroy'])
           .where('mediaId', router.matchers.number())
           .as('candidat.documents.destroy')
-        router.post('/exercises/:type/draft', [
-          ExerciseResultsController,
-          'saveDraftFromDashboardCandidat',
-        ])
-        router.post('/exercises/:type/result', [
-          ExerciseResultsController,
-          'storeFromDashboardCandidat',
-        ])
+        router
+          .post('/exercises/:type/draft', [
+            ExerciseResultsController,
+            'saveDraftFromDashboardCandidat',
+          ])
+          .use(throttleExerciseSave)
+        router
+          .post('/exercises/:type/result', [
+            ExerciseResultsController,
+            'storeFromDashboardCandidat',
+          ])
+          .use(throttleExerciseSave)
       })
       .use(middleware.checkOnboarding())
 

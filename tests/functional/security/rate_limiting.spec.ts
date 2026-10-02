@@ -2,8 +2,10 @@ import ContactRequest from '#models/contact_request'
 import User from '#models/user'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { RATE_LIMIT_ERROR_KEY, rateLimitMessage } from '#shared/helpers/rate_limit'
+import { EXERCISE_SAVE_LIMIT } from '#start/limiter'
+import { EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
 import { PASSWORD, SESSION_KEY, withPassword } from '#tests/functional/auth/helpers'
-import { createAdvisor } from '#tests/support/actors'
+import { createAdvisor, createCandidate } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import hash from '@adonisjs/core/services/hash'
 import { test } from '@japa/runner'
@@ -402,5 +404,50 @@ test.group('Rate limiting — mots de passe, #68 (functional)', (group) => {
     response.assertStatus(429)
     const reloaded = await User.findOrFail(advisor.id)
     assert.isTrue(await hash.verify(reloaded.password, PASSWORD))
+  })
+})
+
+test.group('Rate limiting — sauvegarde d’exercice, M5 (functional)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('au-delà du quota par compte, 429 — la clé est l’utilisateur, pas l’IP', async ({
+    assert,
+    client,
+  }) => {
+    const { user, employee } = await createCandidate()
+    const { user: other } = await createCandidate()
+    const url = `/dashboard/candidat/exercises/${EXERCICE_RESULTS_TYPES.VALUES}/draft`
+    const body = {
+      employeeId: String(employee.id),
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      data: { step: 1 },
+    }
+
+    for (let i = 0; i < EXERCISE_SAVE_LIMIT; i++) {
+      const attempt = await client
+        .post(url)
+        .loginAs(user)
+        .header('X-Forwarded-For', `203.0.113.${(i % 200) + 1}`)
+        .json(body)
+        .redirects(0)
+      assert.notEqual(attempt.status(), 429)
+    }
+
+    const blocked = await client
+      .post(url)
+      .loginAs(user)
+      .header('X-Forwarded-For', '198.51.100.99')
+      .json(body)
+      .redirects(0)
+    blocked.assertStatus(429)
+
+    // Un autre compte, même IP, n'est pas bloqué.
+    const free = await client
+      .post(url)
+      .loginAs(other)
+      .header('X-Forwarded-For', '198.51.100.99')
+      .json(body)
+      .redirects(0)
+    assert.notEqual(free.status(), 429)
   })
 })

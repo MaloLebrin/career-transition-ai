@@ -5,7 +5,9 @@ import EmployeeSkill from '#models/employee_skill'
 import Experience from '#models/experience'
 import Skill from '#models/skill'
 import User from '#models/user'
+import { EmailVerificationService } from '#services/email_verification_service'
 import { EmployeesService } from '#services/employees_service'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXPERIENCES_TYPES } from '#shared/constants/experience'
 import { inject } from '@adonisjs/core'
@@ -51,7 +53,10 @@ type UpdateOptions = {
 
 @inject()
 export class CandidatProfileService {
-  constructor(private employeesService: EmployeesService) {}
+  constructor(
+    private employeesService: EmployeesService,
+    private emailVerification: EmailVerificationService
+  ) {}
 
   private parseLenientDate(raw?: string | null): DateTime | null {
     const value = (raw ?? '').trim()
@@ -119,12 +124,14 @@ export class CandidatProfileService {
       effectivePayload.skills !== undefined
 
     const trx = hasArrays ? await db.transaction() : null
+    let emailChanged = false
 
     try {
       // Update user
       if (effectivePayload.name !== undefined || effectivePayload.email !== undefined) {
         const nextName = effectivePayload.name ?? user.name
         const nextEmail = effectivePayload.email ?? user.email
+        emailChanged = nextEmail !== user.email
 
         if (trx) {
           if (nextEmail !== user.email) {
@@ -135,6 +142,8 @@ export class CandidatProfileService {
             if (existing) throw new EmailAlreadyUsedException()
           }
           user.merge({ name: nextName, email: nextEmail })
+          // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
+          if (emailChanged) user.emailVerifiedAt = null
           await user.useTransaction(trx).save()
         } else {
           // no transaction => keep existing AuthService behavior elsewhere; here we do minimal update
@@ -146,6 +155,8 @@ export class CandidatProfileService {
             if (existing) throw new EmailAlreadyUsedException()
           }
           user.merge({ name: nextName, email: nextEmail })
+          // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
+          if (emailChanged) user.emailVerifiedAt = null
           await user.save()
         }
       }
@@ -157,6 +168,9 @@ export class CandidatProfileService {
             .where('organizationId', user.organizationId)
             .firstOrFail()
         : await this.employeesService.getEmployeeForUser(user)
+
+      // Même donnée que `users.email` : les deux fiches restent alignées.
+      if (emailChanged) employee.email = user.email
 
       this.employeesService.applyUpdate(employee, {
         name: effectivePayload.name ?? employee.name,
@@ -259,6 +273,10 @@ export class CandidatProfileService {
         }
 
         await trx.commit()
+      }
+
+      if (emailChanged && employee.accountType === ACCOUNT_TYPES.B2C) {
+        await this.emailVerification.sendLinkSafely(user)
       }
 
       return { user, employee }

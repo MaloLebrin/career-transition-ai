@@ -2,6 +2,8 @@ import { test } from '@japa/runner'
 import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import ExerciseResult from '#models/exercise_result'
 import Notification from '#models/notification'
+import { NotificationService } from '#services/notification_service'
+import { B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
 import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
@@ -145,22 +147,68 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     await assert.doesNotReject(() => run(999_999_999))
   })
 
-  test("enregistre un message d'erreur quand le fournisseur IA échoue", async ({ assert }) => {
+  test("n'écrit aucun texte d'erreur quand le fournisseur IA échoue", async ({ assert }) => {
     const advisor = await createAdvisor()
     const { employee } = await createCandidate({ advisor })
     const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
 
-    const originalConsoleError = console.error
-    console.error = () => {}
+    await withFailingProvider(() => run(result.id))
+
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysis)
+    assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
+  })
+
+  test("une notification en échec n'écrase pas l'analyse enregistrée", async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({ advisor })
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    const original = NotificationService.prototype.notify
+    NotificationService.prototype.notify = async () => {
+      throw new Error('notification down')
+    }
     try {
-      await withFailingProvider(() => run(result.id))
+      await run(result.id)
     } finally {
-      console.error = originalConsoleError
+      NotificationService.prototype.notify = original
     }
 
     await result.refresh()
-    assert.equal(result.qualitativeAnalysis, "Erreur lors de la génération de l'analyse.")
-    assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
+    assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+  })
+
+  test('B2C : exercice verrouillé (forfait non réglé) → aucune analyse à l’exécution', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const locked = Object.values(EXERCICE_RESULTS_TYPES).find(
+      (type) => !B2C_FREE_EXERCISE_TYPES.includes(type as any)
+    )!
+    const result = await ExerciseResult.create({
+      employeeId: employee.id,
+      type: locked,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: {},
+      qualitativeAnalysis: null,
+    })
+
+    await run(result.id)
+
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysis)
+  })
+
+  test('B2C gratuit : analyse déjà présente → non régénérée', async ({ assert }) => {
+    const { employee } = await createB2cCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+    result.qualitativeAnalysis = 'Première analyse'
+    await result.save()
+
+    await run(result.id)
+
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, 'Première analyse')
   })
 
   test("n'envoie ni le nom ni l'e-mail du candidat au fournisseur IA (RGPD)", async ({
