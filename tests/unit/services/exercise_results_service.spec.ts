@@ -631,7 +631,7 @@ test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('completed → draft → saveDraft ne rouvre pas le droit à une analyse', async ({ assert }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const { employee } = await createB2cCandidate()
     const type = EXERCICE_RESULTS_TYPES.VALUES
     const base = { employeeId: employee.id, type, plan: [] }
