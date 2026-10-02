@@ -29,6 +29,18 @@ const PAGE = 'dashboard/employee/home/Home'
 test.group('Candidat — accueil (GET /dashboard/candidat)', (group) => {
   group.each.setup(() => truncateDb())
 
+  test('ne transmet jamais les notes du conseiller (advisorNotes)', async ({ client, assert }) => {
+    const { user, employee } = await createCandidate()
+    employee.advisorNotes = 'Note confidentielle du conseiller'
+    await employee.save()
+
+    const response = await client.get(URL).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, PAGE, ['employee'])
+    assert.notProperty(props.employee as object, 'advisorNotes')
+    assert.notInclude(JSON.stringify(props), 'Note confidentielle du conseiller')
+  })
+
   test('rend la page avec la fiche et une progression vide', async ({ client, assert }) => {
     const { user, employee } = await createCandidate()
 

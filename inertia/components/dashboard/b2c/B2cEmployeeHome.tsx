@@ -149,12 +149,6 @@ export function B2cEmployeeHome({
               </div>
             </Card>
           )}
-          {employee.advisorNotes && (
-            <Card variant="sun" padding="md" className="space-y-2">
-              <h2 className="text-title-sm text-ink">Conseils de votre expert</h2>
-              <p className="text-sm italic text-ink-soft">« {employee.advisorNotes} »</p>
-            </Card>
-          )}
           {employee.skills.length > 0 && (
             <Card padding="md" className="space-y-4">
               <h2 className="text-title-sm text-ink">Vos compétences</h2>

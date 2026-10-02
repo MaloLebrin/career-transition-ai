@@ -1,5 +1,10 @@
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
-import { mapEmployee, mapExerciseResult, mapSupportPlanStep } from '#mappers/employee_mapper'
+import {
+  mapEmployee,
+  mapEmployeeForCandidate,
+  mapExerciseResult,
+  mapSupportPlanStep,
+} from '#mappers/employee_mapper'
 import { redactEmployeePayload, redactExerciseResults } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
@@ -177,7 +182,10 @@ export default class EmployeesController {
     // résultats réservés au forfait ; les conseillers voient tout.
     const data =
       employeeIdFromParam === null && user.role === USERS_ROLES.EMPLOYEE
-        ? redactEmployeePayload(mapEmployee(employee), await this.exerciseAccess.resolve(employee))
+        ? redactEmployeePayload(
+            mapEmployeeForCandidate(employee),
+            await this.exerciseAccess.resolve(employee)
+          )
         : mapEmployee(employee)
     const documents = await this.candidateDocuments.list(employee, user)
 

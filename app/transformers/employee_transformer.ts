@@ -46,8 +46,13 @@ export default class EmployeeTransformer extends BaseTransformer<Employee> {
  * Objet brut de la fiche candidat, pour les contrôleurs qui doivent le relire
  * avant envoi (expurgation des résultats réservés au forfait, #101) :
  * `EmployeeTransformer.transform()` renvoie un `Item` paresseux, sérialisé
- * seulement par Inertia.
+ * seulement par Inertia. Destiné aux pages du candidat : les notes du conseiller
+ * (`advisorNotes`) en sont retirées, elles restent réservées à l'équipe
+ * (`EmployeeTransformer.transform`).
  */
 export function employeeToObject(employee: Employee) {
-  return new EmployeeTransformer(employee).toObject()
+  const { advisorNotes: _advisorNotes, ...candidateView } = new EmployeeTransformer(
+    employee
+  ).toObject() as ReturnType<EmployeeTransformer['toObject']> & { advisorNotes?: unknown }
+  return candidateView
 }

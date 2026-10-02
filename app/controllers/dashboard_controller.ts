@@ -7,7 +7,7 @@ import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
+import { employeeToObject } from '#transformers/employee_transformer'
 import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -225,7 +225,7 @@ export default class DashboardController {
     }
 
     return (inertia as any).render('dashboard/employee/onboarding/Onboarding', {
-      employee: EmployeeTransformer.transform(employee),
+      employee: employeeToObject(employee),
     })
   }
 }

@@ -383,7 +383,7 @@ export default class ExerciseResultsController {
       initialDraftsByType[typeParam] = await this.service.findLatestDraft(employee.id, typeParam)
     }
     const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
-    const employeePayload = EmployeeTransformer.transform(employee)
+    const employeePayload = employeeToObject(employee)
     const props =
       pageName === 'dashboard/employee/exercises/Home'
         ? { type: params.type, employee: employeePayload, initialDraftsByType }
