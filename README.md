@@ -42,6 +42,7 @@ Détails (isolation, shards de CI, couverture) dans [docs/TESTING.md](docs/TESTI
 
 - [x] **Offre / Pour les cabinets** (`/offre`) — bénéfices, pour qui, différenciation, livrables
 - [x] **Tarifs** (`/tarifs`) — ou “sur devis” + packaging (essentiel pour qualifier les leads)
+- [x] **Particuliers** (`/particuliers`) — offre B2C : deux exercices offerts, forfait unique TTC, accompagnement expert (épic #90, #99) ; bloc « Particuliers » sur `/tarifs`
 - [ ] **FAQ** (`/faq`) — objections: rôle de l’IA, méthodo, RGPD, usages cabinet
 - [ ] **Cas clients / Témoignages** (`/cas-clients`) — preuves sociales et résultats
 
