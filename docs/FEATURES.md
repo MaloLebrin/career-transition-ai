@@ -336,3 +336,30 @@
   - Composants réutilisables (boutons, champs, cartes) pour réduire la charge cognitive.
 
 ---
+
+## 11. Parcours particulier (B2C, épic #90) — en cours
+
+### 11.1 Inscription et compte
+
+- Inscription publique sur `/inscription` (flag `B2C_REGISTRATION_ENABLED`, #93), compte
+  rattaché à l'organisation plateforme, fiche `account_type = 'b2c'` sans conseiller.
+- Vérification de l'adresse e-mail par lien (#98) : bandeau de rappel sur l'accueil,
+  prérequis au paiement seulement.
+
+### 11.2 Exercices gratuits et forfait (#100)
+
+- **Motivations** et **Valeurs** sont gratuits et affichés en premier ; leurs résultats
+  et leur analyse IA (une seule fois par exercice) sont visibles sans paiement.
+- Les autres exercices sont présentés verrouillés (« Inclus dans le forfait ») avec un
+  CTA « Débloquer » vers l'offre quand le paiement est activé (`STRIPE_ENABLED`, #102),
+  « Bientôt disponible » sinon. Le verrou est appliqué côté serveur (page bloquée,
+  brouillon et résultat refusés), le front n'affiche que l'état.
+- Accueil dédié (`B2cEmployeeHome`) : progression, catalogue, bloc « Votre expert : X »
+  quand un expert interne est assigné (#105), conseils de l'expert s'il en a laissé ;
+  pas de feuille de route (aucun plan d'accompagnement).
+- Notification « Votre analyse IA est disponible » adressée directement au particulier.
+
+### 11.3 À venir
+
+Verrouillage des résultats sur toutes les pages (#101), Stripe Checkout (#102) et
+webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).

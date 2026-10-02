@@ -8,6 +8,8 @@ export const NOTIFICATION_TYPES = {
   SYNTHESIS_SHARED: 'synthesis_shared',
   // Équipe (super admin, conseiller) : demande d'effacement RGPD d'un candidat (#70)
   DATA_ERASURE_REQUESTED: 'data_erasure_requested',
+  // Particulier B2C sans conseiller : son analyse IA est prête (#100)
+  AI_ANALYSIS_READY_CANDIDATE: 'ai_analysis_ready_candidate',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

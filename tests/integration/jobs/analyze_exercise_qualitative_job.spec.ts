@@ -6,7 +6,12 @@ import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { AI_PSEUDONYM } from '#shared/helpers/ai/exercise_profile'
-import { createAdvisor, createCandidate } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createInHouseExpert,
+} from '#tests/support/actors'
 import env from '#start/env'
 
 /**
@@ -81,6 +86,47 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
     const after = await Notification.query().count('* as total')
     assert.equal(Number(after[0].$extras.total), Number(before[0].$extras.total))
+  })
+
+  test('notifie directement un particulier B2C sans expert (#100)', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    await run(result.id)
+
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+    const notifications = await Notification.query().where('user_id', user.id)
+    assert.lengthOf(notifications, 1)
+    assert.equal(notifications[0].type, NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE)
+    assert.equal(
+      (notifications[0].meta as { href: string }).href,
+      `/dashboard/candidat/exercises/${EXERCICE_RESULTS_TYPES.MOTIVATION}`
+    )
+  })
+
+  test('B2C avec expert assigné : le particulier et l’expert sont prévenus', async ({ assert }) => {
+    const expert = await createInHouseExpert()
+    const { user, employee } = await createB2cCandidate({ expert })
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    await run(result.id)
+
+    const candidate = await Notification.query().where('user_id', user.id)
+    assert.lengthOf(candidate, 1)
+    assert.equal(candidate[0].type, NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE)
+    const advisor = await Notification.query().where('user_id', expert.id)
+    assert.lengthOf(advisor, 1)
+    assert.equal(advisor[0].type, NOTIFICATION_TYPES.AI_SYNTHESIS_READY)
+  })
+
+  test('un candidat B2B n’est jamais notifié lui-même', async ({ assert }) => {
+    const { user, employee } = await createCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    await run(result.id)
+
+    assert.lengthOf(await Notification.query().where('user_id', user.id), 0)
   })
 
   test('ignore un exercice encore en brouillon', async ({ assert }) => {

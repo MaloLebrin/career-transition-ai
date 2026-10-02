@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { createB2cCandidate, createInHouseExpert } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
@@ -145,5 +146,18 @@ test.group('EmployeesService.findEmployeeForUser', (group) => {
     })
 
     assert.isNull(await service.findEmployeeForUser(advisor))
+  })
+
+  test('withAdvisor précharge le conseiller (nom seul) — accueil B2C #100', async ({ assert }) => {
+    const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+    const expert = await createInHouseExpert()
+    const { user } = await createB2cCandidate({ expert })
+
+    const plain = await service.findEmployeeForUser(user)
+    assert.isUndefined(plain?.advisor)
+
+    const withAdvisor = await service.findEmployeeForUser(user, { withAdvisor: true })
+    assert.equal(withAdvisor?.advisor?.name, expert.name)
+    assert.isUndefined(withAdvisor?.advisor?.email)
   })
 })

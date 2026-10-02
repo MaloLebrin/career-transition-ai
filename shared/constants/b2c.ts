@@ -32,3 +32,19 @@ export const B2C_FREE_EXERCISE_TYPES: readonly ExerciceResultType[] = [
  * par exercice (décision PO à confirmer, question 2 de #90).
  */
 export const B2C_FREE_INCLUDES_AI_ANALYSIS = true
+
+/**
+ * Motif de verrouillage d'un exercice côté candidat (#100) : le plan
+ * d'accompagnement (B2B) ou le forfait non réglé (B2C).
+ */
+export const EXERCISE_LOCK_REASONS = {
+  PLAN: 'plan',
+  PAYMENT: 'payment',
+} as const
+
+export type ExerciseLockReason = (typeof EXERCISE_LOCK_REASONS)[keyof typeof EXERCISE_LOCK_REASONS]
+
+export const exerciseLockReasonValues = Object.values(EXERCISE_LOCK_REASONS)
+
+/** Page de l'offre (forfait) vers laquelle pointent les CTA « Débloquer » (#102). */
+export const B2C_OFFER_PATH = '/dashboard/candidat/offre'

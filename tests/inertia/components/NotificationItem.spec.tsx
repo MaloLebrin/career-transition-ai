@@ -80,4 +80,19 @@ describe('NotificationItem', () => {
     ).not.toBeInTheDocument()
     expect(screen.getByText('Exercice terminé par Jean Dupont')).toBeInTheDocument()
   })
+
+  test('rend la notification « analyse IA prête » du particulier (#100) avec son icône', () => {
+    const { container } = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'ai_analysis_ready_candidate',
+          title: 'Votre analyse IA est disponible',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Votre analyse IA est disponible')).toBeInTheDocument()
+    expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
+  })
 })

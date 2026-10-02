@@ -84,5 +84,56 @@ describe('Dashboard candidat - Exercise list', () => {
     expect(screen.getByRole('link', { name: /Analyse Motivations/i })).toBeInTheDocument()
     expect(screen.getByText('Complété')).toBeInTheDocument()
   })
-})
 
+  test('B2C (#100) : badge « Gratuit », carte du forfait verrouillée avec CTA « Débloquer »', () => {
+    render(
+      <ExerciseList
+        exercises={[...mockExercises, { slug: 'disc', title: 'Profil DISC', description: 'DISC.' }]}
+        unlockedExerciseSlugs={['motivation', 'values']}
+        lockedReason="payment"
+        accountType="b2c"
+        exerciseAccess={{
+          accountType: 'b2c',
+          unlockedExerciseSlugs: ['motivation', 'values'],
+          lockedReason: 'payment',
+          hasPaidAccess: false,
+          freeExerciseTypes: ['motivation', 'values'],
+          paymentsEnabled: true,
+        }}
+      />
+    )
+
+    expect(screen.getAllByText('Gratuit')).toHaveLength(2)
+    expect(screen.getByText(/Les exercices offerts sont en tête de liste/)).toBeInTheDocument()
+    expect(screen.queryByText('Verrouillé')).not.toBeInTheDocument()
+    expect(screen.getByText('Inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Débloquer : Profil DISC' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/offre'
+    )
+    expect(screen.queryByRole('link', { name: /^Profil DISC/ })).not.toBeInTheDocument()
+  })
+
+  test('B2C payé : les exercices du forfait sont cliquables et marqués « Inclus »', () => {
+    render(
+      <ExerciseList
+        exercises={[...mockExercises, { slug: 'disc', title: 'Profil DISC', description: 'DISC.' }]}
+        exerciseAccess={{
+          accountType: 'b2c',
+          unlockedExerciseSlugs: ['motivation', 'values', 'disc'],
+          lockedReason: 'payment',
+          hasPaidAccess: true,
+          freeExerciseTypes: ['motivation', 'values'],
+          paymentsEnabled: true,
+        }}
+      />
+    )
+
+    expect(screen.getByRole('link', { name: /Profil DISC/ })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/exercises/disc'
+    )
+    expect(screen.getByText('Inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.queryByText('Débloquer')).not.toBeInTheDocument()
+  })
+})

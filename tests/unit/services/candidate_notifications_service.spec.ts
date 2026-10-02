@@ -6,8 +6,11 @@ import {
 } from '#services/candidate_notifications_service'
 import { NotificationService } from '#services/notification_service'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
+import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import { EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
 import {
   createAdvisor,
+  createB2cCandidate,
   createCandidate,
   createEmployeeFor,
   createSuperAdmin,
@@ -146,5 +149,39 @@ test.group('CandidateNotificationsService.erasureRequested', (group) => {
       rows.map((row) => row.userId),
       [superAdmin.id]
     )
+  })
+})
+
+test.group('CandidateNotificationsService.aiAnalysisReady (#100)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('notifie un particulier B2C avec un lien vers l’exercice', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate()
+    const result = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+    }).create()
+
+    await service.aiAnalysisReady(employee, result)
+
+    const [notification] = await Notification.query().where('userId', user.id)
+    assert.equal(notification.type, NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE)
+    assert.equal(notification.title, 'Votre analyse IA est disponible')
+    assert.deepEqual(notification.meta, {
+      exerciseResultId: result.id,
+      exerciseType: EXERCICE_RESULTS_TYPES.VALUES,
+      href: CANDIDATE_NOTIFICATION_LINKS.exercise(EXERCICE_RESULTS_TYPES.VALUES),
+    })
+  })
+
+  test('ne notifie pas un candidat B2B (son conseiller est prévenu par le job)', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    const result = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
+
+    await service.aiAnalysisReady(employee, result)
+
+    assert.lengthOf(await Notification.query().where('userId', user.id), 0)
   })
 })

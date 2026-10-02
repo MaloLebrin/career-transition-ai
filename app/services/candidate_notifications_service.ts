@@ -1,7 +1,9 @@
 import type Employee from '#models/employee'
+import type ExerciseResult from '#models/exercise_result'
 import type SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
 import { NotificationService } from '#services/notification_service'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -11,6 +13,7 @@ import { inject } from '@adonisjs/core'
 export const CANDIDATE_NOTIFICATION_LINKS = {
   step: (stepId: number) => `/dashboard/candidat/steps/${stepId}`,
   synthesis: '/dashboard/candidat/synthesis',
+  exercise: (type: string) => `/dashboard/candidat/exercises/${type}`,
 } as const
 
 /**
@@ -68,6 +71,25 @@ export class CandidateNotificationsService {
       title: 'Votre synthèse est disponible',
       body: 'Votre expert a partagé votre synthèse de parcours.',
       meta: { href: CANDIDATE_NOTIFICATION_LINKS.synthesis },
+    })
+  }
+
+  /**
+   * Analyse IA d'un exercice prête (#100) : seuls les particuliers B2C, qui
+   * n'ont pas de conseiller pour la leur relayer, sont prévenus directement.
+   */
+  async aiAnalysisReady(employee: Employee, result: ExerciseResult): Promise<void> {
+    if (!employee.userId || employee.accountType !== ACCOUNT_TYPES.B2C) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE,
+      title: 'Votre analyse IA est disponible',
+      body: `L'analyse de votre exercice "${result.type}" est prête.`,
+      meta: {
+        exerciseResultId: result.id,
+        exerciseType: result.type,
+        href: CANDIDATE_NOTIFICATION_LINKS.exercise(result.type),
+      },
     })
   }
 

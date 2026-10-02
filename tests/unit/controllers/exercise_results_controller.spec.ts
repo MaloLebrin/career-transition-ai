@@ -1,5 +1,8 @@
 import ExerciseResultsController from '#controllers/exercise_results_controller'
+import type { ExerciseAccessService } from '#services/exercise_access_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
+import { EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
+import type { ExerciseAccess } from '#shared/types/exercise/access'
 import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
 import { createAdvisor, createEmployeeFor } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -8,6 +11,19 @@ import { test } from '@japa/runner'
 const fakeEmployeesService = {
   getEmployeeForUser: async () => ({ id: 1, exerciseResults: [] }),
 } as any
+
+/** Accès B2B (#100) : les exercices déverrouillés par le plan passés en paramètre. */
+function fakeAccess(unlocked: string[] = []): ExerciseAccessService {
+  const access: ExerciseAccess = {
+    accountType: 'b2b',
+    unlockedExerciseSlugs: unlocked as ExerciseAccess['unlockedExerciseSlugs'],
+    lockedReason: EXERCISE_LOCK_REASONS.PLAN,
+    hasPaidAccess: true,
+    freeExerciseTypes: [],
+    paymentsEnabled: false,
+  }
+  return { resolve: async () => access } as unknown as ExerciseAccessService
+}
 
 function makeCtx(overrides: any = {}) {
   const flashes: Record<string, any> = {}
@@ -99,7 +115,7 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
     const service = {
       saveResult: async () => {},
     } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
     const ctx = makeCtx({ auth: { user: null } })
 
     await controller.storeFromDashboard(ctx)
@@ -110,7 +126,7 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
   test('calls service and flashes dynamic success message', async ({ assert }) => {
     const saveResult = async () => {}
     const service = { saveResult } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
     const { ctx, employee } = await ownEmployeeCtx()
 
     await controller.storeFromDashboard(ctx)
@@ -126,7 +142,7 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
     const service = {
       saveResult: async (input: unknown) => calls.push(input),
     } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
     const { ctx } = await ownEmployeeCtx()
     const intruder = await createAdvisor()
     ctx.auth.user = { id: intruder.id, organizationId: intruder.organizationId }
@@ -143,7 +159,7 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
         return {}
       },
     } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
 
     const { ctx: motivationCtx } = await ownEmployeeCtx()
     await controller.storeFromDashboard(motivationCtx)
@@ -171,7 +187,7 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
 test.group('ExerciseResultsController.exerciseListCandidat', () => {
   test('returns unauthorized when no auth user', async ({ assert }) => {
     const service = {} as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
     const ctx = makeCtx({ auth: { user: null } })
 
     await controller.exerciseListCandidat(ctx)
@@ -182,10 +198,12 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
   test('renders dashboard/exercises/List with exercises and context candidat', async ({
     assert,
   }) => {
-    const service = {
-      getUnlockedExerciseSlugsForEmployee: async () => [EXERCICE_RESULTS_TYPES.MOTIVATION],
-    } as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const service = {} as unknown as ExerciseResultsService
+    const controller = new ExerciseResultsController(
+      service,
+      fakeEmployeesService,
+      fakeAccess([EXERCICE_RESULTS_TYPES.MOTIVATION])
+    )
     const ctx = makeCtx()
 
     await controller.exerciseListCandidat(ctx)
@@ -196,15 +214,12 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
       EXERCICE_RESULTS_TYPES.MOTIVATION,
     ])
     assert.deepEqual(ctx._inertiaRenderProps().completedExerciseSlugs, [])
+    assert.equal(ctx._inertiaRenderProps().lockedReason, EXERCISE_LOCK_REASONS.PLAN)
+    assert.equal(ctx._inertiaRenderProps().accountType, 'b2b')
   })
 
   test('returns completedExerciseSlugs from latest status by type', async ({ assert }) => {
-    const service = {
-      getUnlockedExerciseSlugsForEmployee: async () => [
-        EXERCICE_RESULTS_TYPES.MOTIVATION,
-        EXERCICE_RESULTS_TYPES.VALUES,
-      ],
-    } as unknown as ExerciseResultsService
+    const service = {} as unknown as ExerciseResultsService
     const employeeService = {
       getEmployeeForUser: async () => ({
         id: 1,
@@ -232,7 +247,11 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
       }),
     } as any
 
-    const controller = new ExerciseResultsController(service, employeeService)
+    const controller = new ExerciseResultsController(
+      service,
+      employeeService,
+      fakeAccess([EXERCICE_RESULTS_TYPES.MOTIVATION, EXERCICE_RESULTS_TYPES.VALUES])
+    )
     const ctx = makeCtx()
 
     await controller.exerciseListCandidat(ctx)
@@ -246,7 +265,7 @@ test.group('ExerciseResultsController.exerciseListCandidat', () => {
 test.group('ExerciseResultsController.exerciseListConseiller', () => {
   test('returns unauthorized when no auth user', async ({ assert }) => {
     const service = {} as unknown as ExerciseResultsService
-    const controller = new ExerciseResultsController(service, fakeEmployeesService)
+    const controller = new ExerciseResultsController(service, fakeEmployeesService, fakeAccess())
     const ctx = makeCtx({ auth: { user: null }, params: { id: 42 } })
 
     await controller.exerciseListConseiller(ctx)
