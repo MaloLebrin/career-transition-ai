@@ -21,6 +21,14 @@ vi.mock('@inertiajs/react', () => ({
   ),
 }))
 
+const { billingState } = vi.hoisted(() => ({
+  billingState: { paymentsEnabled: true, resultsPriceCents: 4900, currency: 'eur' },
+}))
+
+vi.mock('../../../../../../inertia/hooks/use_billing', () => ({
+  useBilling: () => billingState,
+}))
+
 vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'employee' },
@@ -149,9 +157,9 @@ describe('Dashboard candidat - Exercise Home', () => {
       />
     )
 
-    expect(screen.getByText('Exercice inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText('Cet exercice est inclus dans le forfait')).toBeInTheDocument()
     expect(screen.getByText(/Cet exercice fait partie du forfait/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Débloquer' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Débloquer mes résultats' })).toHaveAttribute(
       'href',
       '/dashboard/candidat/offre'
     )
@@ -159,13 +167,15 @@ describe('Dashboard candidat - Exercise Home', () => {
   })
 
   test('verrou « payment » sans paiement activé : « bientôt disponible », pas de CTA', () => {
+    billingState.paymentsEnabled = false
     render(
       <ExerciseHome type="disc" initialDraftsByType={{}} accessGranted={false} lockedReason="payment" />
     )
 
-    expect(screen.getByText('Exercice inclus dans le forfait')).toBeInTheDocument()
-    expect(screen.getByText('Paiement bientôt disponible.')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Débloquer' })).not.toBeInTheDocument()
+    expect(screen.getByText('Cet exercice est inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText('Paiement bientôt disponible')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Débloquer mes résultats' })).not.toBeInTheDocument()
+    billingState.paymentsEnabled = true
   })
 
   test('passes completed result fallback as initial draft for candidate tool hydration', async () => {

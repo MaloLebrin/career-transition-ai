@@ -256,6 +256,21 @@ test.group('InertiaMiddleware.share', () => {
     assert.notProperty(props, 'entitlement')
   })
 
+  test('prop billing (#101) : prix du forfait et activation du paiement, pour tous', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+
+    const props = await share(makeShareCtx({ user: advisor }))
+    assert.deepEqual(props.billing, {
+      paymentsEnabled: false,
+      resultsPriceCents: 4900,
+      currency: 'eur',
+    })
+    const guestProps = await share(makeShareCtx())
+    assert.deepEqual(guestProps.billing, props.billing)
+  })
+
   test('conseiller et invité : pas de prop entitlement', async ({ assert }) => {
     const advisor = await createAdvisor()
 

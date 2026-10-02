@@ -1,11 +1,13 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
+import billingConfig from '#config/billing'
 import Employee from '#models/employee'
 import { EntitlementsService } from '#services/entitlements_service'
 import { NotificationService } from '#services/notification_service'
 import { receivesNotifications } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import type { BillingInfo } from '#shared/types/billing/billing'
 import config from '@adonisjs/core/services/config'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
@@ -65,6 +67,13 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       // Masquent les liens d'inscription quand /auth/register ou /inscription est fermé.
       registrationEnabled: config.get<boolean>('registration.enabled'),
       b2cRegistrationEnabled: config.get<boolean>('registration.candidateEnabled'),
+      // Forfait particuliers (#101) : prix affiché et « Bientôt disponible » tant que
+      // `STRIPE_ENABLED` est faux. Lu à chaque requête, comme `entitlement`.
+      billing: ctx.inertia.always({
+        paymentsEnabled: billingConfig.paymentsEnabled,
+        resultsPriceCents: billingConfig.resultsPriceCents,
+        currency: billingConfig.currency,
+      } satisfies BillingInfo),
     }
   }
 

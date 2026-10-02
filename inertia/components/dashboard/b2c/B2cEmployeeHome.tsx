@@ -2,6 +2,7 @@ import { Sparkles, UserRound } from 'lucide-react'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
 import { B2cExerciseGrid } from '~/components/dashboard/b2c/B2cExerciseGrid'
+import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
@@ -109,6 +110,13 @@ export function B2cEmployeeHome({
         </div>
 
         <div className="space-y-6 lg:col-span-4">
+          {!exerciseAccess.hasPaidAccess && (
+            <ResultsLockedCard
+              compact
+              title="Débloquez tout votre parcours"
+              description="Les autres exercices, leurs analyses IA et votre synthèse se débloquent avec le forfait."
+            />
+          )}
           {advisor && (
             <Card variant="accent" padding="md" className="flex items-start gap-4">
               <span

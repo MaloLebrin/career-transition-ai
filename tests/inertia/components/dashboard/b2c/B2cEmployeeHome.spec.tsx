@@ -5,6 +5,10 @@ import { B2cEmployeeHome } from '~/components/dashboard/b2c/B2cEmployeeHome'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
 import { makeEmployee } from '../../../support/factories'
 
+vi.mock('../../../../../inertia/hooks/use_billing', () => ({
+  useBilling: () => ({ paymentsEnabled: false, resultsPriceCents: 4900, currency: 'eur' }),
+}))
+
 vi.mock('@inertiajs/react', () => ({
   Head: () => null,
   router: { visit: vi.fn() },
@@ -54,6 +58,9 @@ describe('B2cEmployeeHome (#100)', () => {
     expect(screen.queryByText(/Feuille de route/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/Votre expert/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Conseils de votre expert/)).not.toBeInTheDocument()
+    // #101 : carte « forfait » compacte tant que le forfait n'est pas réglé.
+    expect(screen.getByRole('region', { name: 'Débloquez tout votre parcours' })).toBeInTheDocument()
+    expect(screen.getByText(/49 €/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mon profil' })).toHaveAttribute(
       'href',
       '/dashboard/candidat/profile'
@@ -87,5 +94,6 @@ describe('B2cEmployeeHome (#100)', () => {
     expect(screen.getByText('Compétence 5')).toBeInTheDocument()
     expect(screen.queryByText('Compétence 6')).not.toBeInTheDocument()
     expect(screen.getByText(/Tous les exercices et vos résultats sont débloqués/)).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Débloquez tout votre parcours' })).not.toBeInTheDocument()
   })
 })

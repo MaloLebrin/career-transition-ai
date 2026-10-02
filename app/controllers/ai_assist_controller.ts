@@ -33,12 +33,14 @@ export default class AiAssistController {
   }
 
   async extractSkillMapping({ request, response, auth }: HttpContext) {
-    const { text } = await request.validateUsing(extractSkillMappingValidator)
     const user = auth.getUserOrFail()
+    await this.aiAssist.assertResultsAccess(user)
+    const { text } = await request.validateUsing(extractSkillMappingValidator)
     return response.ok(await this.aiAssist.extractSkillMapping(text, user))
   }
 
-  async suggestTargets({ request, response }: HttpContext) {
+  async suggestTargets({ request, response, auth }: HttpContext) {
+    await this.aiAssist.assertResultsAccess(auth.getUserOrFail())
     const profile = await request.validateUsing(suggestTargetsValidator)
     return response.ok(await this.aiAssist.suggestTargets(profile))
   }

@@ -10,6 +10,7 @@ import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloud
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createCandidate,
   createOrganization,
   createSuperAdmin,
@@ -182,5 +183,41 @@ test.group('PdfExportDownloadsService.open — fichier', (group) => {
 
       await assert.rejects(() => service.open(advisor, pdfExport.id), PdfExportNotFoundError as any)
     }
+  })
+})
+
+test.group('PdfExportDownloadsService — forfait des particuliers (#101)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
+  })
+
+  test('B2C non payé : son propre export est introuvable (404), comme pour un étranger', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate()
+    const pdfExport = await exportOf(employee, user)
+
+    await assert.rejects(() => service.findFor(user, pdfExport.id), PdfExportNotFoundError)
+    await assert.rejects(() => service.open(user, pdfExport.id), PdfExportNotFoundError)
+  })
+
+  test('B2C payé : export lisible', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate({ paid: true })
+    const pdfExport = await exportOf(employee, user)
+
+    const found = await service.findFor(user, pdfExport.id)
+    assert.equal(found.id, pdfExport.id)
+    const download = await service.open(user, pdfExport.id)
+    assert.equal(await drain(download.stream), '%PDF-1.4 fake')
+  })
+
+  test('B2B : inchangé, lisible sans paiement', async ({ assert }) => {
+    const { user, employee } = await createCandidate()
+    const pdfExport = await exportOf(employee, user)
+
+    const found = await service.findFor(user, pdfExport.id)
+    assert.equal(found.id, pdfExport.id)
   })
 })

@@ -13,7 +13,7 @@ import { readdir, readFile } from 'node:fs/promises'
  */
 const BASELINE: Record<string, number> = {
   'dashboard_controller.ts': 2,
-  'employee_syntheses_controller.ts': 11,
+  'employee_syntheses_controller.ts': 4,
   'employees_controller.ts': 16,
   'exercise_results_controller.ts': 6,
   'pdf_exports_controller.ts': 1,

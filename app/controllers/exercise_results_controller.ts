@@ -1,3 +1,4 @@
+import { redactEmployeePayload } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
@@ -14,7 +15,7 @@ import {
 import { isB2cAccount, orderExercisesForB2c } from '#shared/helpers/b2c_access'
 import { canAccessExercise } from '#shared/helpers/exercise_access'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
-import EmployeeTransformer from '#transformers/employee_transformer'
+import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
 import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
 import { inject } from '@adonisjs/core'
@@ -405,7 +406,7 @@ export default class ExerciseResultsController {
       session.flash('error', blockedMessage)
       return (inertia as any).render('dashboard/employee/exercises/Home', {
         type: params.type,
-        employee: EmployeeTransformer.transform(employee),
+        employee: redactEmployeePayload(employeeToObject(employee), access),
         initialDraftsByType: {},
         accessGranted: false,
         blockedMessage,
@@ -424,7 +425,8 @@ export default class ExerciseResultsController {
 
     return (inertia as any).render('dashboard/employee/exercises/Home', {
       type: params.type,
-      employee: EmployeeTransformer.transform(employee),
+      // #101 : les autres résultats du candidat suivent la même règle de verrouillage.
+      employee: redactEmployeePayload(employeeToObject(employee), access),
       initialDraftsByType,
       accessGranted: true,
       exerciseProgressPercent,
