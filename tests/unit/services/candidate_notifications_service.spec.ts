@@ -295,32 +295,3 @@ test.group('CandidateNotificationsService — assignation d’un expert (#105)',
     })
   })
 })
-
-test.group('CandidateNotificationsService — forfait débloqué / retiré (#104)', (group) => {
-  group.each.setup(() => testUtils.db().withGlobalTransaction())
-
-  test('un particulier est prévenu avec un lien ; un candidat B2B ne l’est pas', async ({
-    assert,
-  }) => {
-    const b2c = await createB2cCandidate({ paid: true })
-    const b2b = await createCandidate()
-
-    await service.resultsUnlocked(b2c.employee)
-    await service.resultsAccessRevoked(b2c.employee)
-    await service.resultsUnlocked(b2b.employee)
-    await service.resultsAccessRevoked(b2b.employee)
-
-    const rows = await Notification.query().where('userId', b2c.user.id).orderBy('id')
-    assert.deepEqual(
-      rows.map((row) => row.type),
-      [NOTIFICATION_TYPES.RESULTS_UNLOCKED, NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED]
-    )
-    assert.equal(rows[0].title, 'Vos résultats sont débloqués')
-    assert.deepEqual(rows[0].meta, { employeeId: b2c.employee.id, href: '/dashboard/candidat' })
-    assert.deepEqual(rows[1].meta, {
-      employeeId: b2c.employee.id,
-      href: '/dashboard/candidat/offre',
-    })
-    assert.lengthOf(await Notification.query().where('userId', b2b.user.id), 0)
-  })
-})

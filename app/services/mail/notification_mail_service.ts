@@ -37,8 +37,6 @@ const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.EXPERT_ASSIGNED]: 'Votre expert vous accompagne',
   [NOTIFICATION_TYPES.CANDIDATE_ASSIGNED]: 'Nouveau candidat à accompagner',
   [NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED]: 'Votre demande d’accompagnement',
-  [NOTIFICATION_TYPES.RESULTS_UNLOCKED]: 'Vos résultats sont débloqués',
-  [NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED]: 'Votre accès aux résultats a été retiré',
 }
 
 type NotificationWithUser = Notification & { user: User }
