@@ -37,6 +37,8 @@ const ALLOWED: Record<string, string> = {
   'shared/helpers/ai/ai_client.ts': 'types et interface `AiClient` seuls, aucun code exécutable',
   'app/services/employee_synthesis_pdf/index.ts':
     'barrel de ré-export de `./document.js`, testé via document.ts',
+  'app/services/billing/payment_gateway.ts':
+    'interface `PaymentGateway` seule, aucun code exécutable (#102)',
 }
 
 async function listFiles(dir: string, keep: (name: string) => boolean): Promise<string[]> {

@@ -75,6 +75,9 @@ export const envSchema = {
   */
   STRIPE_ENABLED: Env.schema.boolean.optional(),
   B2C_RESULTS_PRICE_CENTS: Env.schema.number.optional(),
+  /** Clés Stripe (#102) : exigées en production dès que `STRIPE_ENABLED=true` (config/stripe.ts). */
+  STRIPE_SECRET_KEY: Env.schema.string.optional(),
+  STRIPE_WEBHOOK_SECRET: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

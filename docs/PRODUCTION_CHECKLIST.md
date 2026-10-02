@@ -13,6 +13,7 @@ Checklist des points à traiter avant ou pour la mise en production.
 - [ ] **Secrets et variables d’environnement** — Vérifier que les clés (session, DB, API externes) sont en env et jamais en dur.
 - [ ] **HTTPS** — Forcer HTTPS et cookies sécurisés en production.
 - [ ] **CORS / CSP** — Ajuster les en-têtes si l’app est consommée par un autre domaine ou intégrée en iframe.
+- [ ] **Paiement (épic B2C, `docs/STRIPE.md`)** — `STRIPE_ENABLED=false` tant que les CGV ne sont pas validées ; au passage à `true` : clés live, endpoint webhook et `STRIPE_WEBHOOK_SECRET` renseignés, prix TTC confirmé, test du parcours complet en mode test au préalable.
 
 ## Qualité & robustesse
 
