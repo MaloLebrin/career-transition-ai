@@ -53,6 +53,25 @@ l'ensemble n'est pas terminé et validé.
 6. Les changelogs `../changelog/` sont ajoutés par chaque PR vers `epic/b2c` (un fichier par
    issue) et arrivent dans `main` avec la PR finale.
 
+## État de livraison et fusion
+
+Chaque sous-issue a sa PR vers `epic/b2c` (squash). Certaines sont **empilées** : quand une PR
+dépendait d'une PR encore ouverte, sa branche part de celle-ci et sa base GitHub est la branche
+parente ; GitHub rebascule la base sur `epic/b2c` au squash du parent, après quoi
+`git merge origin/epic/b2c` dans la fille nettoie le diff (jamais de rebase ni de force-push).
+Ordre de fusion recommandé : les PR à base `epic/b2c` d'abord (#120 Stripe Checkout, #121
+marketing, #122 demande d'expert, #126 notes privées), puis #123 (webhook, sur #120), #124
+(back-office expert) et #125 (RGPD) sur #122, puis #127 (back-office B2C, sur #124 + #123),
+enfin la PR de documentation (#108). La checklist de la PR épic #109 suit l'avancement.
+
+Avant de passer `epic/b2c → main` en « ready for review » :
+
+1. toutes les sous-issues fermées à la main, CI verte sur `epic/b2c` ;
+2. `database/schema.ts` régénéré **une fois** (`node ace migration:run` sur une base à jour :
+   les PR filles ne l'ont pas régénéré pour éviter un diff mêlant plusieurs sujets) ;
+3. recette manuelle `../MANUAL_TESTS.md` § 11 faite, points « Parcours particulier » de
+   `../PRODUCTION_CHECKLIST.md` passés en revue.
+
 ## Objets transverses
 
 - **Env** : `B2C_REGISTRATION_ENABLED`, `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`,
