@@ -107,6 +107,21 @@ export const throttleChangePassword = limiter.define(
 )
 
 /**
+ * Renvoi du lien de vérification d'e-mail (#98) : chaque demande envoie un
+ * e-mail (quota Resend). 5 / 15 min par compte.
+ */
+export const throttleEmailVerification = limiter.define(
+  'email_verification',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(5)
+      .every('15 minutes')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
  * Appels au fournisseur IA (quota et facturation) : 20/min par utilisateur.
  * Appliqué après `auth()`, d'où la clé sur l'identifiant du compte.
  */

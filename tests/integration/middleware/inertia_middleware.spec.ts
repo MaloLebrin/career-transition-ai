@@ -140,6 +140,7 @@ test.group('InertiaMiddleware.share', () => {
       name: advisor.name,
       role: 'advisor',
       accountType: null,
+      emailVerified: false,
     })
     assert.deepEqual(
       props.employees.map((e: { name: string }) => e.name),
@@ -220,6 +221,17 @@ test.group('InertiaMiddleware.share', () => {
       freeExerciseTypes: ['motivation', 'values'],
       paymentsEnabled: false,
     })
+  })
+
+  test('user.emailVerified reflète emailVerifiedAt (#98)', async ({ assert }) => {
+    const unverified = await createB2cCandidate()
+    const verified = await createB2cCandidate({ emailVerified: true })
+
+    const unverifiedProps = await share(makeShareCtx({ user: unverified.user }))
+    const verifiedProps = await share(makeShareCtx({ user: verified.user }))
+
+    assert.isFalse(unverifiedProps.user.emailVerified)
+    assert.isTrue(verifiedProps.user.emailVerified)
   })
 
   test('particulier B2C payé : hasPaidAccess ; candidat B2B : toujours vrai', async ({

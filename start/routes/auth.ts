@@ -3,12 +3,14 @@ import {
   throttleChangePassword,
   throttleForgotPassword,
   throttleLogin,
+  throttleOnboarding,
   throttlePasswordReset,
   throttleRegister,
 } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 const AuthController = () => import('#controllers/auth_controller')
 const PasswordsController = () => import('#controllers/passwords_controller')
+const EmailVerificationController = () => import('#controllers/email_verification_controller')
 
 router.get('/auth', ({ response }) => response.redirect('/auth/login'))
 
@@ -54,3 +56,9 @@ router
 router
   .put('/dashboard/password', [PasswordsController, 'update'])
   .use([middleware.auth(), throttleChangePassword])
+
+// Vérification d'e-mail (#98) : lien cliqué depuis la boîte mail, connecté ou
+// non (`silentAuth`), même quota que l'énumération des jetons d'onboarding.
+router
+  .get('/auth/verify-email/:token', [EmailVerificationController, 'verify'])
+  .use([middleware.silentAuth(), throttleOnboarding])

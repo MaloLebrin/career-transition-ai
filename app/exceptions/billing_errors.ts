@@ -28,3 +28,12 @@ export class EntitlementAlreadyGrantedError extends DomainException {
     super(message, { status: 409, code: 'E_ENTITLEMENT_ALREADY_GRANTED' })
   }
 }
+
+/** Paiement demandé par un particulier dont l'adresse e-mail n'est pas vérifiée (#98) → 403. */
+export class EmailNotVerifiedError extends DomainException {
+  constructor(
+    message: string = 'Confirmez votre adresse e-mail avant de régler le forfait : le lien vous a été envoyé par e-mail.'
+  ) {
+    super(message, { status: 403, code: 'E_EMAIL_NOT_VERIFIED' })
+  }
+}

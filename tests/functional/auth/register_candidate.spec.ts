@@ -7,6 +7,7 @@ import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { TERMS_VERSION } from '#shared/constants/legal'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { SESSION_KEY } from '#tests/functional/auth/helpers'
+import { fakeMail, restoreMail } from '#tests/functional/conseiller/helpers'
 import { createAdvisor, createCandidate, createPlatformOrganization } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { assertFieldErrors } from '#tests/support/validation'
@@ -40,6 +41,12 @@ test.group('Auth — inscription particulier (functional)', (group) => {
     const truncate = await truncateDb()
     await createPlatformOrganization()
     return truncate
+  })
+  // Le lien de vérification d'e-mail (#98) part à l'inscription : on l'enregistre
+  // au lieu de l'envoyer (bruit console). Assertions dans `email_verification.spec.ts`.
+  group.each.setup(() => {
+    fakeMail()
+    return () => restoreMail()
   })
 
   test('GET /inscription rend la page RegisterCandidate pour un invité', async ({

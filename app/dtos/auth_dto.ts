@@ -9,4 +9,6 @@ export type UserSessionDto = {
   role: UserRole
   /** Type de la fiche candidat liée (`employee` seulement), `null` sinon (#92). */
   accountType?: AccountType | null
+  /** Adresse e-mail confirmée par lien (#98) ; posée par la prop partagée `user`. */
+  emailVerified?: boolean
 }

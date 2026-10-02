@@ -24,6 +24,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             name: user.name,
             role: user.role,
             accountType: candidate?.accountType ?? null,
+            // Bandeau de vérification d'e-mail des particuliers (#98).
+            emailVerified: Boolean(user.emailVerifiedAt),
           }
     const entitlement = candidate ? await new EntitlementsService().forEmployee(candidate) : null
 

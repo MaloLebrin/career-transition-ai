@@ -9,4 +9,6 @@ export interface UserSession {
   role: UserRole
   /** `b2b` | `b2c` pour un candidat, `null` sinon (#92). */
   accountType: AccountType | null
+  /** Adresse e-mail confirmée par lien (#98) ; le bandeau ne concerne que les `b2c`. */
+  emailVerified: boolean
 }
