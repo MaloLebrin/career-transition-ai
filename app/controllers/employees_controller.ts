@@ -1,5 +1,6 @@
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import { mapEmployee, mapExerciseResult, mapSupportPlanStep } from '#mappers/employee_mapper'
+import { redactEmployeePayload, redactExerciseResults } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
@@ -13,6 +14,7 @@ import {
 import { buildDossierArchive, dossierZipFilename } from '#services/dossier_export_service'
 import type { CandidateDataRights } from '#shared/types/candidate_data/requests'
 import { EmployeesService } from '#services/employees_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee/employee_update_validator'
@@ -23,7 +25,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class EmployeesController {
   constructor(
     private employeesService: EmployeesService,
-    private candidateDocuments: CandidateDocumentsService
+    private candidateDocuments: CandidateDocumentsService,
+    private exerciseAccess: ExerciseAccessService
   ) {}
 
   /**
@@ -170,7 +173,12 @@ export default class EmployeesController {
       .preload('author')
       .orderBy('createdAt', 'desc')
 
-    const data = mapEmployee(employee)
+    // #101 : sur son propre profil, un particulier non payé ne reçoit pas les
+    // résultats réservés au forfait ; les conseillers voient tout.
+    const data =
+      employeeIdFromParam === null && user.role === USERS_ROLES.EMPLOYEE
+        ? redactEmployeePayload(mapEmployee(employee), await this.exerciseAccess.resolve(employee))
+        : mapEmployee(employee)
     const documents = await this.candidateDocuments.list(employee, user)
 
     return (ctx.inertia as any).render('dashboard/employee/profile/Home', {
@@ -382,9 +390,13 @@ export default class EmployeesController {
       }
     }
 
+    // #101 : un expert peut assigner une étape à un particulier ; ses résultats
+    // restent verrouillés tant que le forfait n'est pas réglé.
+    const access = await this.exerciseAccess.resolve(employee)
+
     return (ctx.inertia as any).render('dashboard/candidat/StepDetail', {
       step: mapSupportPlanStep(step),
-      results,
+      results: redactExerciseResults(results, access),
     })
   }
 }

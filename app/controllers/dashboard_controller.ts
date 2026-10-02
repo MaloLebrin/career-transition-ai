@@ -1,3 +1,4 @@
+import { redactEmployeePayload } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseAccessService } from '#services/exercise_access_service'
@@ -6,7 +7,7 @@ import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import EmployeeTransformer from '#transformers/employee_transformer'
+import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
@@ -181,15 +182,18 @@ export default class DashboardController {
       totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
     const exerciseProgressByType = getExerciseProgressByType(employee.exerciseResults as any)
 
+    // #100 : accès aux exercices (plan ou forfait) ; #101 : les résultats réservés
+    // au forfait ne quittent pas le serveur pour un particulier non payé.
+    const exerciseAccess = await this.exerciseAccess.resolve(employee)
+
     return (inertia as any).render('dashboard/employee/home/Home', {
-      employee: EmployeeTransformer.transform(employee),
+      employee: redactEmployeePayload(employeeToObject(employee), exerciseAccess),
       completedExercises,
       totalExercises,
       exerciseCompletionPercent,
       exerciseProgressByType,
-      // #100 : expert assigné (nom seul) et accès aux exercices (plan ou forfait).
       advisor: employee.advisor ? { name: employee.advisor.name } : null,
-      exerciseAccess: await this.exerciseAccess.resolve(employee),
+      exerciseAccess,
     })
   }
 

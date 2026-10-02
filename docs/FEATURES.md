@@ -358,8 +358,12 @@
   quand un expert interne est assigné (#105), conseils de l'expert s'il en a laissé ;
   pas de feuille de route (aucun plan d'accompagnement).
 - Notification « Votre analyse IA est disponible » adressée directement au particulier.
+- Verrouillage **côté serveur** (#101) : réponses, scores et analyses des exercices du
+  forfait n'apparaissent dans aucune prop Inertia (accueil, exercice, profil, étape)
+  tant que le forfait n'est pas réglé ; synthèse, export PDF, téléchargement et IA
+  assistée (cartographie, ciblage) sont refusés de même. Carte « réservé au forfait »
+  avec le prix TTC.
 
 ### 11.3 À venir
 
-Verrouillage des résultats sur toutes les pages (#101), Stripe Checkout (#102) et
-webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
+Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).

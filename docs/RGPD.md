@@ -112,6 +112,13 @@ un candidat qui n'a plus accès à son compte.
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
    serveur (`tmp/rgpd/`).
 
+**Particuliers (B2C, #101).** L'export n'est **pas expurgé** des résultats
+« réservés au forfait » : le droit d'accès (art. 15) porte sur toutes les données
+que la personne nous a confiées, y compris ses réponses à un exercice qu'elle n'a
+pas encore débloqué. Il n'y a rien à cacher : l'analyse IA d'un exercice
+verrouillé n'est jamais produite avant paiement, et les pages du produit, elles,
+sont verrouillées côté serveur (`app/mappers/results_access_mapper.ts`).
+
 ## 5. Demande d'effacement
 
 ### Candidat

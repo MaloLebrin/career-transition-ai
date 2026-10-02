@@ -41,3 +41,13 @@ export default class EmployeeTransformer extends BaseTransformer<Employee> {
     }
   }
 }
+
+/**
+ * Objet brut de la fiche candidat, pour les contrôleurs qui doivent le relire
+ * avant envoi (expurgation des résultats réservés au forfait, #101) :
+ * `EmployeeTransformer.transform()` renvoie un `Item` paresseux, sérialisé
+ * seulement par Inertia.
+ */
+export function employeeToObject(employee: Employee) {
+  return new EmployeeTransformer(employee).toObject()
+}

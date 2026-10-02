@@ -1,4 +1,4 @@
-import { createAdvisor, createCandidate } from '#tests/support/actors'
+import { createAdvisor, createB2cCandidate, createCandidate } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import { AI_ASSIST_ROUTES } from '#shared/constants/ai_assist'
 import { test } from '@japa/runner'
@@ -103,5 +103,54 @@ test.group('Assistance IA : endpoints', (group) => {
     }
     const blocked = await call()
     blocked.assertStatus(429)
+  })
+})
+
+/** #101 : cartographie et ciblage assistent des exercices réservés au forfait. */
+test.group('Assistance IA : forfait des particuliers (#101)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('B2C non payé : skill-mapping et targets refusés (403), import de CV libre', async ({
+    client,
+  }) => {
+    const { user } = await createB2cCandidate()
+
+    const mapping = await client
+      .post(AI_ASSIST_ROUTES.SKILL_MAPPING)
+      .loginAs(user)
+      .header('Accept', 'application/json')
+      .json({ text: 'J’ai piloté la clôture mensuelle.' })
+    mapping.assertStatus(403)
+    mapping.assertBodyContains({
+      message: 'La cartographie et le ciblage assistés par IA sont réservés au forfait.',
+    })
+
+    const targets = await client
+      .post(AI_ASSIST_ROUTES.TARGETS)
+      .loginAs(user)
+      .header('Accept', 'application/json')
+      .json({ skills: ['SQL'], targetRole: 'Data analyst' })
+    targets.assertStatus(403)
+
+    const cv = await client
+      .post(AI_ASSIST_ROUTES.CV)
+      .loginAs(user)
+      .file('cv', PDF, { filename: 'cv.pdf', contentType: 'application/pdf' })
+    cv.assertStatus(200)
+  })
+
+  test('B2C payé : tout est ouvert', async ({ client }) => {
+    const { user } = await createB2cCandidate({ paid: true })
+
+    const targets = await client
+      .post(AI_ASSIST_ROUTES.TARGETS)
+      .loginAs(user)
+      .json({ skills: ['SQL'], targetRole: 'Data analyst' })
+    targets.assertStatus(200)
+    const mapping = await client
+      .post(AI_ASSIST_ROUTES.SKILL_MAPPING)
+      .loginAs(user)
+      .json({ text: 'J’ai piloté la clôture mensuelle.' })
+    mapping.assertStatus(200)
   })
 })

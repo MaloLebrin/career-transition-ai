@@ -1,19 +1,25 @@
+import { ResultsLockedError } from '#exceptions/billing_errors'
 import Employee from '#models/employee'
-import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
+import { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import PdfExport from '#models/pdf_export'
 import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
+import { EntitlementsService } from '#services/entitlements_service'
+import { ACCOUNT_TYPES, EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 import GenerateEmployeeSynthesisPdf from '#jobs/generate_employee_synthesis_pdf'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 
+const SHARE_REQUIRED_MESSAGE = 'La synthèse doit être partagée avant génération PDF.'
+
 @inject()
 export default class EmployeeSynthesesController {
   constructor(
     private synthesisService: EmployeeSynthesisService,
-    private candidateNotifications: CandidateNotificationsService
+    private candidateNotifications: CandidateNotificationsService,
+    private entitlements: EntitlementsService
   ) {}
 
   /**
@@ -29,29 +35,15 @@ export default class EmployeeSynthesesController {
       employeeId,
     })
 
-    const recentPdfExports = await PdfExport.query()
-      .where('organizationId', user.organizationId)
-      .orderBy('createdAt', 'desc')
-      .limit(50)
-
-    const latestForEmployee = recentPdfExports.find((e) => e.employeeId === employeeId)
-
     return (ctx.inertia as any).render('dashboard/conseiller/employees/Synthesis', {
       employeeId: String(employeeId),
       employee: payload.employee,
       synthesis: payload.synthesis,
       latestCompletedByType: payload.latestCompletedByType,
-      latestPdfJob: latestForEmployee
-        ? {
-            id: latestForEmployee.id,
-            status: latestForEmployee.status,
-            downloadUrl:
-              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED &&
-              latestForEmployee.filePath
-                ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
-                : null,
-          }
-        : null,
+      latestPdfJob: await this.synthesisService.findLatestPdfExport(
+        { organizationId: user.organizationId },
+        employeeId
+      ),
     })
   }
 
@@ -153,23 +145,23 @@ export default class EmployeeSynthesesController {
   /**
    * Candidate view (Inertia): only shareable content.
    * GET /dashboard/candidat/synthesis
+   *
+   * B2B : visible une fois partagée par le conseiller. B2C (#101) : visible dès
+   * que le forfait est réglé, verrouillée sinon (`lockedReason: 'payment'`).
    */
   public async showCandidate(ctx: HttpContext) {
     const user = ctx.auth.user!
 
-    const employee = await Employee.query()
-      .where('userId', user.id)
-      .where('organizationId', user.organizationId)
-      .firstOrFail()
+    const employee = await this.synthesisService.getCandidateEmployee(user)
+    const scope = { organizationId: user.organizationId, employeeId: employee.id }
+    const synthesis = await this.synthesisService.findRow(scope)
+    const entitlement = await this.entitlements.forEmployee(employee)
 
-    const synthesis = await EmployeeSynthesis.query()
-      .where('organizationId', user.organizationId)
-      .where('employeeId', employee.id)
-      .first()
-
-    if (!synthesis || synthesis.shareStatus !== EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED) {
+    if (!this.synthesisService.candidateCanView(employee, synthesis, entitlement)) {
       return (ctx.inertia as any).render('dashboard/candidat/Synthesis', {
         shared: false,
+        lockedReason:
+          employee.accountType === ACCOUNT_TYPES.B2C ? EXERCISE_LOCK_REASONS.PAYMENT : null,
         employeeId: String(employee.id),
         employee: null,
         synthesis: null,
@@ -178,35 +170,19 @@ export default class EmployeeSynthesesController {
       })
     }
 
-    const payload = await this.synthesisService.buildForCandidate({
-      organizationId: user.organizationId,
-      employeeId: employee.id,
-    })
-
-    const recentPdfExports = await PdfExport.query()
-      .where('userId', user.id)
-      .orderBy('createdAt', 'desc')
-      .limit(50)
-
-    const latestForEmployee = recentPdfExports.find((e) => e.employeeId === employee.id)
+    const payload = await this.synthesisService.buildForCandidate(scope)
 
     return (ctx.inertia as any).render('dashboard/candidat/Synthesis', {
       shared: true,
+      lockedReason: null,
       employeeId: String(employee.id),
       employee: payload.employee,
       synthesis: payload.synthesis,
       latestCompletedByType: payload.latestCompletedByType,
-      latestPdfJob: latestForEmployee
-        ? {
-            id: latestForEmployee.id,
-            status: latestForEmployee.status,
-            downloadUrl:
-              latestForEmployee.status === PDF_EXPORT_STATUSES.COMPLETED &&
-              latestForEmployee.filePath
-                ? `/dashboard/pdf-exports/${latestForEmployee.id}/download`
-                : null,
-          }
-        : null,
+      latestPdfJob: await this.synthesisService.findLatestPdfExport(
+        { userId: user.id },
+        employee.id
+      ),
     })
   }
 
@@ -218,13 +194,13 @@ export default class EmployeeSynthesesController {
     const user = ctx.auth.user!
     const employeeId = Number(ctx.params.id)
 
-    const synthesis = await EmployeeSynthesis.query()
-      .where('organizationId', user.organizationId)
-      .where('employeeId', employeeId)
-      .first()
+    const synthesis = await this.synthesisService.findRow({
+      organizationId: user.organizationId,
+      employeeId,
+    })
 
     if (!synthesis || synthesis.shareStatus !== EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED) {
-      ctx.session.flash('error', 'La synthèse doit être partagée avant génération PDF.')
+      ctx.session.flash('error', SHARE_REQUIRED_MESSAGE)
       return ctx.response.redirect().back()
     }
 
@@ -249,36 +225,35 @@ export default class EmployeeSynthesesController {
   }
 
   /**
-   * Async PDF generation for candidate (only if shared).
+   * Async PDF generation for candidate.
    * POST /dashboard/candidat/synthesis/pdf
+   *
+   * B2B : seulement si la synthèse est partagée. B2C (#101) : réservé au
+   * forfait (`ResultsLockedError`, 403), sans condition de partage ensuite.
    */
   public async generateShareablePdfCandidate(ctx: HttpContext) {
     const user = ctx.auth.user!
 
-    const employee = await Employee.query()
-      .where('userId', user.id)
-      .where('organizationId', user.organizationId)
-      .firstOrFail()
+    const employee = await this.synthesisService.getCandidateEmployee(user)
+    const synthesis = await this.synthesisService.findRow({
+      organizationId: user.organizationId,
+      employeeId: employee.id,
+    })
+    const entitlement = await this.entitlements.forEmployee(employee)
 
-    const synthesis = await EmployeeSynthesis.query()
-      .where('organizationId', user.organizationId)
-      .where('employeeId', employee.id)
-      .first()
-
-    if (!synthesis || synthesis.shareStatus !== EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED) {
-      ctx.session.flash('error', 'La synthèse doit être partagée avant génération PDF.')
+    if (!this.synthesisService.candidateCanView(employee, synthesis, entitlement)) {
+      if (employee.accountType === ACCOUNT_TYPES.B2C) {
+        throw new ResultsLockedError('La synthèse et son export PDF sont réservés au forfait.')
+      }
+      ctx.session.flash('error', SHARE_REQUIRED_MESSAGE)
       return ctx.response.redirect().back()
     }
 
-    const pdfExport = await PdfExport.create({
-      userId: user.id,
-      organizationId: user.organizationId,
-      employeeId: employee.id,
+    await this.synthesisService.requestPdfExport({
+      user,
+      employee,
       advisorUserId: employee.advisorId ?? null,
-      status: PDF_EXPORT_STATUSES.PENDING,
     })
-
-    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
 
     ctx.session.flash('success', 'Génération PDF lancée.')
     return ctx.response.redirect().back()

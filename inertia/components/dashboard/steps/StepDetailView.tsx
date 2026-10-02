@@ -59,7 +59,17 @@ const StepDetailView = memo(function StepDetailView({
         {results.map((result) => (
           <div key={result.id} className="space-y-6">
             <h4 className="text-lg font-bold text-slate-800">{getExerciseTitle(result.type)}</h4>
-            <ExerciseResultVisualization result={result} />
+            {result.locked ? (
+              // #101 : résultat réservé au forfait — le serveur n'a envoyé ni réponses ni analyse.
+              <p
+                role="status"
+                className="rounded-xl border border-hairline bg-surface-soft px-4 py-3 text-sm text-muted"
+              >
+                Résultat réservé au forfait.
+              </p>
+            ) : (
+              <ExerciseResultVisualization result={result} />
+            )}
             {result.qualitativeAnalysis && (
               <div className="lg:hidden">
                 <ExerciseQualitativeAnalysisCard

@@ -9,15 +9,16 @@ import type User from '#models/user'
 import { EmployeeSynthesisFactory } from '#database/factories/employee_synthesis_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
+import { EntitlementsService } from '#services/entitlements_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { createAdvisor, createCandidate, createEmployeeFor } from '#tests/support/actors'
 
 /**
  * Unit — `EmployeeSynthesesController` (vues et mutations conseiller / candidat).
- * `EmployeeSynthesisService` est remplacé par un faux injecté au constructeur ;
- * le contrôleur interroge encore `Employee`, `EmployeeSynthesis` et `PdfExport`
- * lui-même (dette figée dans `controllers_thin.spec.ts`), d'où la base isolée par
- * une transaction globale.
+ * `EmployeeSynthesisService` est remplacé par un faux injecté au constructeur,
+ * qui délègue au vrai service les lectures migrées depuis le contrôleur (#101) ;
+ * les vues conseiller interrogent encore `Employee` elles-mêmes (dette figée dans
+ * `controllers_thin.spec.ts`), d'où la base isolée par une transaction globale.
  *
  * La génération PDF (`generateShareablePdf*`) est couverte par
  * `employee_syntheses_generate_pdf.spec.ts`.
@@ -71,6 +72,27 @@ class FakeSynthesisService {
     this.getOrCreateRowCalls.push(input)
     return this.real.getOrCreateRow(input)
   }
+
+  // Lectures migrées depuis le contrôleur (#101) : déléguées au vrai service.
+  getCandidateEmployee(user: User) {
+    return this.real.getCandidateEmployee(user)
+  }
+
+  findRow(input: ScopeInput) {
+    return this.real.findRow(input)
+  }
+
+  candidateCanView(...args: Parameters<EmployeeSynthesisService['candidateCanView']>) {
+    return this.real.candidateCanView(...args)
+  }
+
+  findLatestPdfExport(...args: Parameters<EmployeeSynthesisService['findLatestPdfExport']>) {
+    return this.real.findLatestPdfExport(...args)
+  }
+
+  requestPdfExport(...args: Parameters<EmployeeSynthesisService['requestPdfExport']>) {
+    return this.real.requestPdfExport(...args)
+  }
 }
 
 function makeContext(
@@ -121,7 +143,11 @@ class FakeCandidateNotifications {
 function setup() {
   const service = new FakeSynthesisService()
   const notifications = new FakeCandidateNotifications()
-  const controller = new EmployeeSynthesesController(service as any, notifications as any)
+  const controller = new EmployeeSynthesesController(
+    service as any,
+    notifications as any,
+    new EntitlementsService()
+  )
   return { service, notifications, controller }
 }
 
@@ -387,6 +413,7 @@ test.group('EmployeeSynthesesController.showCandidate', (group) => {
         component: 'dashboard/candidat/Synthesis',
         props: {
           shared: false,
+          lockedReason: null,
           employeeId: String(own.id),
           employee: null,
           synthesis: null,
@@ -443,6 +470,7 @@ test.group('EmployeeSynthesesController.showCandidate', (group) => {
         component: 'dashboard/candidat/Synthesis',
         props: {
           shared: true,
+          lockedReason: null,
           employeeId: String(own.id),
           employee: CANDIDATE_PAYLOAD.employee,
           synthesis: CANDIDATE_PAYLOAD.synthesis,

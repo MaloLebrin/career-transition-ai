@@ -1,9 +1,10 @@
 import { Head, router } from '@inertiajs/react'
 import { Lock } from 'lucide-react'
-import { B2C_OFFER_PATH, type ExerciseLockReason } from '#shared/constants/b2c'
+import type { ExerciseLockReason } from '#shared/constants/b2c'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
 import DISCTool from '~/components/exercises/DISCTool'
 import ExerciseProgressBadge from '~/components/exercises/ExerciseProgressBadge'
@@ -54,7 +55,7 @@ export default function CandidatExercise({
   accessGranted = true,
   blockedMessage,
   lockedReason = 'plan',
-  exerciseAccess,
+  exerciseAccess: _exerciseAccess,
   exerciseProgressPercent = 0,
 }: CandidatExerciseProps) {
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeFromPage?.id ?? null, employeeFromPage ?? null)
@@ -114,41 +115,36 @@ export default function CandidatExercise({
               </AppLink>
             </div>
 
-            <Card
-              variant={paymentLock ? 'sun' : 'flat'}
-              padding="md"
-              className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start"
-              role="status"
-            >
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
-                aria-hidden="true"
+            {paymentLock ? (
+              <ResultsLockedCard
+                title="Cet exercice est inclus dans le forfait"
+                description={
+                  blockedMessage ??
+                  'Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder.'
+                }
+              />
+            ) : (
+              <Card
+                variant="flat"
+                padding="md"
+                className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start"
+                role="status"
               >
-                <Lock className="h-5 w-5" />
-              </span>
-              <div className="space-y-2">
-                <h2 className="text-title-md text-ink">
-                  {paymentLock ? 'Exercice inclus dans le forfait' : 'Accès verrouillé'}
-                </h2>
-                <p className="text-sm text-ink-soft">
-                  {blockedMessage ??
-                    (paymentLock
-                      ? 'Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder.'
-                      : 'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.')}
-                </p>
-                {paymentLock &&
-                  (exerciseAccess?.paymentsEnabled ? (
-                    <AppLink
-                      href={B2C_OFFER_PATH}
-                      className={buttonClassName({ variant: 'primary', size: 'sm', className: 'mt-2' })}
-                    >
-                      Débloquer
-                    </AppLink>
-                  ) : (
-                    <p className="text-caption text-muted">Paiement bientôt disponible.</p>
-                  ))}
-              </div>
-            </Card>
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
+                  aria-hidden="true"
+                >
+                  <Lock className="h-5 w-5" />
+                </span>
+                <div className="space-y-2">
+                  <h2 className="text-title-md text-ink">Accès verrouillé</h2>
+                  <p className="text-sm text-ink-soft">
+                    {blockedMessage ??
+                      'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'}
+                  </p>
+                </div>
+              </Card>
+            )}
           </div>
         </DashboardLayout>
       </>
