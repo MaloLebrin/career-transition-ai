@@ -51,3 +51,14 @@ export const BILLING_CURRENCY = 'eur'
 
 /** Prix TTC par défaut du forfait, en centimes (à confirmer par le PO — question 1 de #90). */
 export const DEFAULT_RESULTS_PRICE_CENTS = 4900
+
+/** Libellé de la ligne Stripe Checkout (facture et page de paiement). */
+export const RESULTS_PRODUCT_NAME = 'Forfait Transition Carrière — accès complet aux résultats'
+
+/** Routes du parcours de paiement (#102), côté candidat. */
+export const BILLING_PATHS = {
+  offer: '/dashboard/candidat/offre',
+  checkout: '/dashboard/candidat/offre/checkout',
+  success: '/dashboard/candidat/billing/success',
+  cancel: '/dashboard/candidat/billing/cancel',
+} as const

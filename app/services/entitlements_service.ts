@@ -112,6 +112,11 @@ export class EntitlementsService {
     return payment
   }
 
+  /** Droit ouvert par un paiement confirmé (#102, `PaymentsService.markPaid`). */
+  public async unlockResults(employee: Employee, payment: CandidatePayment): Promise<void> {
+    await this.onResultsUnlocked(employee, payment)
+  }
+
   /** Point d'extension (#104) : analyses IA différées, notification `results_unlocked`. */
   protected async onResultsUnlocked(
     _employee: Employee,

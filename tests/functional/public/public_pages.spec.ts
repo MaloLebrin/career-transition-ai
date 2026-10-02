@@ -12,6 +12,7 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/methodologie', 'Methodology'],
   ['/offre', 'Offer'],
   ['/tarifs', 'Pricing'],
+  ['/particuliers', 'Individuals'],
   ['/mentions-legales', 'LegalNotice'],
   ['/confidentialite', 'PrivacyPolicy'],
   ['/securite', 'Security'],

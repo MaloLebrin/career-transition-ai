@@ -37,3 +37,33 @@ export class EmailNotVerifiedError extends DomainException {
     super(message, { status: 403, code: 'E_EMAIL_NOT_VERIFIED' })
   }
 }
+
+/** Démarrage d'un paiement alors que `STRIPE_ENABLED` est faux → 503. */
+export class PaymentsDisabledError extends DomainException {
+  constructor(message: string = 'Le paiement en ligne n’est pas encore disponible.') {
+    super(message, { status: 503, code: 'E_PAYMENTS_DISABLED' })
+  }
+}
+
+/** Clés Stripe absentes hors production (en production, le serveur refuse de démarrer) → 503. */
+export class PaymentGatewayNotConfiguredError extends DomainException {
+  constructor(
+    message: string = 'Le paiement n’est pas configuré sur ce serveur (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET).'
+  ) {
+    super(message, { status: 503, code: 'E_PAYMENT_GATEWAY_NOT_CONFIGURED' })
+  }
+}
+
+/** Session Checkout inconnue, ou qui n'appartient pas au candidat connecté → 404. */
+export class CheckoutSessionNotFoundError extends DomainException {
+  constructor(message: string = 'Session de paiement introuvable.') {
+    super(message, { status: 404, code: 'E_CHECKOUT_SESSION_NOT_FOUND' })
+  }
+}
+
+/** Webhook Stripe dont la signature ne correspond pas à `STRIPE_WEBHOOK_SECRET` → 400. */
+export class InvalidStripeSignatureError extends DomainException {
+  constructor(message: string = 'Signature Stripe invalide.') {
+    super(message, { status: 400, code: 'E_INVALID_STRIPE_SIGNATURE' })
+  }
+}
