@@ -76,6 +76,9 @@ describe('shared/constants/legal (source de /confidentialite et /securite)', () 
       const stripe = SUBPROCESSORS.find((s) => s.name === 'Stripe')
       expect(stripe?.purpose).toMatch(/données de carte ne transitent jamais par nos serveurs/)
       expect(stripe?.purpose).toMatch(/factures/)
+      // Seul l'e-mail part chez Stripe (customer_email), jamais le nom.
+      expect(stripe?.purpose).toMatch(/e-mail, montant/)
+      expect(stripe?.purpose).not.toMatch(/nom/)
     })
   })
 

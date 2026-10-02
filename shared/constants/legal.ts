@@ -92,7 +92,7 @@ export const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Stripe',
     purpose:
-      'Paiement par carte du forfait particuliers (page de paiement hébergée par Stripe : nom, e-mail, montant ; les données de carte ne transitent jamais par nos serveurs) et émission des factures.',
+      'Paiement par carte du forfait particuliers (page de paiement hébergée par Stripe : e-mail, montant ; les données de carte ne transitent jamais par nos serveurs) et émission des factures.',
     location: 'Irlande (UE) et États-Unis (clauses contractuelles types)',
   },
 ]
