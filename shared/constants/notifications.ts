@@ -10,6 +10,9 @@ export const NOTIFICATION_TYPES = {
   DATA_ERASURE_REQUESTED: 'data_erasure_requested',
   // Particulier B2C sans conseiller : son analyse IA est prête (#100)
   AI_ANALYSIS_READY_CANDIDATE: 'ai_analysis_ready_candidate',
+  // Particulier B2C : forfait réglé, résultats débloqués / accès retiré (remboursement, révocation) (#104)
+  RESULTS_UNLOCKED: 'results_unlocked',
+  RESULTS_ACCESS_REVOKED: 'results_access_revoked',
   // Super admins : un particulier demande un accompagnement par un expert (#103)
   EXPERT_REQUEST_CREATED: 'expert_request_created',
   // Assignation d'un expert (#105) : candidat prévenu, expert prévenu, ou demande refusée
