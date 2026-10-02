@@ -1,3 +1,4 @@
+import { makeEntitlements, testNotifications } from '#tests/support/entitlements'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import Notification from '#models/notification'
@@ -6,7 +7,8 @@ import { EntitlementAlreadyGrantedError, PaymentNotFoundError } from '#exception
 import CandidatePayment from '#models/candidate_payment'
 import { EntitlementsService } from '#services/entitlements_service'
 import { ACCOUNT_TYPES, B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
-import { PAYMENT_PROVIDERS, PAYMENT_STATUSES } from '#shared/constants/billing'
+import { setErrorReporter, type ErrorContext } from '#services/error_tracking_service'
+import { PAYMENT_PROVIDERS, PAYMENT_STATUSES, REVOKE_REASON_MAX } from '#shared/constants/billing'
 import {
   createAdvisor,
   createB2cCandidate,
@@ -15,13 +17,14 @@ import {
 } from '#tests/support/actors'
 import config from '@adonisjs/core/services/config'
 import testUtils from '@adonisjs/core/services/test_utils'
+import db from '@adonisjs/lucid/services/db'
 import { test } from '@japa/runner'
 
 /** #94 — un droit d'accès = un paiement `paid` non révoqué ; les B2B ont toujours accès. */
 test.group('EntitlementsService — lecture des droits', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  const service = new EntitlementsService()
+  const service = makeEntitlements()
 
   async function paymentFor(actor: Awaited<ReturnType<typeof createB2cCandidate>>, state: string) {
     return CandidatePaymentFactory.merge({
@@ -108,7 +111,7 @@ test.group('EntitlementsService — lecture des droits', (group) => {
 test.group('EntitlementsService — octroi et révocation manuels', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  const service = new EntitlementsService()
+  const service = makeEntitlements()
 
   test('grantManual crée un paiement manual payé à 0 € et ouvre l’accès', async ({ assert }) => {
     const { employee, user } = await createB2cCandidate()
@@ -150,10 +153,77 @@ test.group('EntitlementsService — octroi et révocation manuels', (group) => {
     )
 
     assert.isNotNull(revoked.revokedAt)
-    assert.match(revoked.revokeReason ?? '', /Remboursement hors Stripe/)
-    assert.match(revoked.revokeReason ?? '', new RegExp(`#${superAdmin.id}`))
+    assert.equal(revoked.revokeReason, 'Remboursement hors Stripe')
+    assert.equal(revoked.revokedByUserId, superAdmin.id)
     assert.equal(revoked.status, PAYMENT_STATUSES.PAID)
     assert.isFalse(await service.hasResultsAccess(employee.id))
+  })
+
+  test('revoke borne le motif à REVOKE_REASON_MAX et trace l’auteur sans suffixe', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate({ paid: true })
+    const superAdmin = await createSuperAdmin()
+    const payment = (await service.findActivePayment(employee.id))!
+
+    const revoked = await service.revoke(
+      { paymentId: payment.id, reason: ` ${'x'.repeat(REVOKE_REASON_MAX + 50)} ` },
+      superAdmin
+    )
+
+    assert.lengthOf(revoked.revokeReason ?? '', REVOKE_REASON_MAX)
+    assert.equal(revoked.revokedByUserId, superAdmin.id)
+    await revoked.refresh()
+    assert.isNotNull(revoked.revokeEffectsAt)
+  })
+
+  test('un effet de bord qui lève ne fait échouer ni l’octroi ni la révocation (signalé)', async ({
+    assert,
+  }) => {
+    class Failing extends EntitlementsService {
+      protected async onResultsUnlocked(): Promise<void> {
+        throw new Error('jobs indisponibles')
+      }
+      protected async onResultsRevoked(): Promise<void> {
+        throw new Error('notification indisponible')
+      }
+    }
+    const failing = new Failing(testNotifications())
+    const { employee } = await createB2cCandidate()
+    const superAdmin = await createSuperAdmin()
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      const payment = await failing.grantManual(employee, superAdmin)
+      assert.isTrue(await failing.hasResultsAccess(employee.id))
+      await payment.refresh()
+      assert.isNull(payment.unlockEffectsAt)
+
+      await failing.revoke({ paymentId: payment.id, reason: 'Erreur' }, superAdmin)
+      assert.isFalse(await failing.hasResultsAccess(employee.id))
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 2)
+  })
+
+  test('l’index unique partiel interdit deux paiements actifs pour un candidat', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate({ paid: true })
+
+    await assert.rejects(async () => {
+      await db.transaction(async (trx) => {
+        await CandidatePaymentFactory.merge({
+          employeeId: employee.id,
+          organizationId: employee.organizationId,
+        })
+          .apply('paid')
+          .client(trx)
+          .create()
+      })
+    }, /candidate_payments_one_active_per_employee/)
   })
 
   test('revoke d’un paiement inconnu, pending ou déjà révoqué → 404', async ({ assert }) => {
@@ -204,7 +274,7 @@ test.group('EntitlementsService — déblocage et retrait (#104)', (group) => {
   test('unlockResults lance l’analyse des exercices complétés sans analyse et prévient le particulier', async ({
     assert,
   }) => {
-    const service = new SpyDispatchEntitlements()
+    const service = new SpyDispatchEntitlements(testNotifications())
     const { employee, user } = await createB2cCandidate()
     const locked = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
     await ExerciseResultFactory.merge({
@@ -232,7 +302,7 @@ test.group('EntitlementsService — déblocage et retrait (#104)', (group) => {
   test('grantManual déclenche le même déblocage ; revoke prévient du retrait', async ({
     assert,
   }) => {
-    const service = new SpyDispatchEntitlements()
+    const service = new SpyDispatchEntitlements(testNotifications())
     const { employee, user } = await createB2cCandidate()
     const result = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
     const superAdmin = await createSuperAdmin()

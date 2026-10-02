@@ -1,3 +1,4 @@
+import { inject } from '@adonisjs/core'
 import { PdfExportNotFoundError, PdfExportNotReadyError } from '#exceptions/pdf_export_errors'
 import Employee from '#models/employee'
 import PdfExport from '#models/pdf_export'
@@ -17,8 +18,9 @@ import type { PdfExportDownload } from '#shared/types/pdf_export/download'
  * Le statut n'est examiné qu'ensuite, pour ne rien révéler des exports des
  * autres organisations.
  */
+@inject()
 export class PdfExportDownloadsService {
-  constructor(private entitlements: EntitlementsService = new EntitlementsService()) {}
+  constructor(private entitlements: EntitlementsService) {}
 
   /**
    * Export lisible par `user` :

@@ -100,6 +100,13 @@ export type WebhookOutcome = (typeof WEBHOOK_OUTCOMES)[keyof typeof WEBHOOK_OUTC
 /** Motif posé sur `candidate_payments.revoke_reason` lors d'un remboursement Stripe. */
 export const STRIPE_REFUND_REVOKE_REASON = 'Remboursement Stripe'
 
+/**
+ * Motif posé sur un paiement Stripe encaissé alors que le candidat avait déjà
+ * un droit actif : la ligne reste `paid` (l'argent est reçu) mais révoquée,
+ * à rembourser manuellement dans Stripe (docs/STRIPE.md).
+ */
+export const DUPLICATE_PAYMENT_REVOKE_REASON = 'Doublon : paiement à rembourser dans Stripe'
+
 /** Back-office super admin des particuliers et des paiements (#107). */
 export const BILLING_ADMIN_PATHS = {
   b2c: '/dashboard/super-admin/b2c',

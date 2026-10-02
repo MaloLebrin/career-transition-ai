@@ -248,3 +248,47 @@ test.group('Candidat B2C — offre et checkout (#102)', (group) => {
     response.assertHeader('location', '/auth/login')
   })
 })
+
+test.group('Candidat B2C — throttle du checkout', (group) => {
+  group.each.setup(() => truncateDb())
+  group.each.setup(() => {
+    stripe = swapFakeStripe()
+    const previous = billingConfig.paymentsEnabled
+    enablePayments(true)
+    return () => {
+      restoreStripe()
+      enablePayments(previous)
+    }
+  })
+
+  test('POST checkout : 10 départs par heure et par compte, le 11e est refusé (429)', async ({
+    client,
+    assert,
+  }) => {
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    const other = await createB2cCandidate({ emailVerified: true })
+
+    for (let i = 0; i < 10; i++) {
+      const ok = await client
+        .post(BILLING_PATHS.checkout)
+        .loginAs(user)
+        .withInertia()
+        .form(CONSENTS)
+        .redirects(0)
+      ok.assertStatus(409)
+    }
+    const limited = await client.post(BILLING_PATHS.checkout).loginAs(user).form(CONSENTS)
+    limited.assertStatus(429)
+
+    // Clé par compte : un autre particulier n'est pas affecté, même depuis la même IP.
+    const unaffected = await client
+      .post(BILLING_PATHS.checkout)
+      .loginAs(other.user)
+      .withInertia()
+      .form(CONSENTS)
+      .redirects(0)
+    unaffected.assertStatus(409)
+    // Une seule session Stripe pour dix appels du même compte (réutilisation du pending).
+    assert.lengthOf(stripe.created, 2)
+  })
+})

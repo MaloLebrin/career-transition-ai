@@ -44,6 +44,8 @@ export interface PaymentRow {
   revokedAt: string | null
   revokeReason: string | null
   grantedBy: { id: number; name: string } | null
+  /** Super admin à l'origine d'une révocation manuelle (`null` : remboursement Stripe ou non révoqué). */
+  revokedBy: { id: number; name: string } | null
   createdAt: string | null
   /** Ce paiement ouvre-t-il l'accès aujourd'hui ? */
   grantsAccess: boolean

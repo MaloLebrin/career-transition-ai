@@ -1,9 +1,15 @@
+import { makeEntitlements, testNotifications } from '#tests/support/entitlements'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import type CandidatePayment from '#models/candidate_payment'
 import type Employee from '#models/employee'
 import { PaymentsService } from '#services/billing/payments_service'
 import { EntitlementsService } from '#services/entitlements_service'
-import { PAYMENT_STATUSES, STRIPE_REFUND_REVOKE_REASON } from '#shared/constants/billing'
+import { setErrorReporter, type ErrorContext } from '#services/error_tracking_service'
+import {
+  DUPLICATE_PAYMENT_REVOKE_REASON,
+  PAYMENT_STATUSES,
+  STRIPE_REFUND_REVOKE_REASON,
+} from '#shared/constants/billing'
 import { createB2cCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
@@ -27,7 +33,7 @@ test.group('PaymentsService.markPaid (#102)', (group) => {
   test('passe un paiement pending en paid, trace l’intent, ouvre le droit une fois', async ({
     assert,
   }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const service = new PaymentsService(spy)
     const { employee } = await createB2cCandidate()
     const payment = await CandidatePaymentFactory.merge({
@@ -50,7 +56,7 @@ test.group('PaymentsService.markPaid (#102)', (group) => {
   test('idempotent : un second passage (webhook puis réconciliation) ne fait rien', async ({
     assert,
   }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const service = new PaymentsService(spy)
     const { employee } = await createB2cCandidate()
     const payment = await CandidatePaymentFactory.merge({
@@ -69,7 +75,7 @@ test.group('PaymentsService.markPaid (#102)', (group) => {
   })
 
   test('ne touche pas un paiement déjà remboursé ou annulé', async ({ assert }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const service = new PaymentsService(spy)
     const { employee } = await createB2cCandidate()
     const refunded = await CandidatePaymentFactory.merge({
@@ -86,7 +92,7 @@ test.group('PaymentsService.markPaid (#102)', (group) => {
   })
 
   test('findByCheckoutSession retrouve le paiement par sa session', async ({ assert }) => {
-    const service = new PaymentsService(new EntitlementsService())
+    const service = new PaymentsService(makeEntitlements())
     const { employee } = await createB2cCandidate()
     const payment = await CandidatePaymentFactory.merge({
       employeeId: employee.id,
@@ -113,7 +119,7 @@ test.group('PaymentsService — échec, annulation, remboursement (#104)', (grou
   }
 
   test('markFailed et markCanceled ne partent que de pending', async ({ assert }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const { payment, service } = await pendingFor(spy)
 
     assert.isTrue(await service.markFailed(payment))
@@ -132,7 +138,7 @@ test.group('PaymentsService — échec, annulation, remboursement (#104)', (grou
   test('refund : paid → refunded, dates et motif posés, droit retiré une seule fois', async ({
     assert,
   }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const { employee } = await createB2cCandidate()
     const payment = await CandidatePaymentFactory.merge({
       employeeId: employee.id,
@@ -156,7 +162,7 @@ test.group('PaymentsService — échec, annulation, remboursement (#104)', (grou
   })
 
   test('refund ignore un paiement pending ou déjà remboursé', async ({ assert }) => {
-    const spy = new SpyEntitlements()
+    const spy = new SpyEntitlements(testNotifications())
     const { payment, service } = await pendingFor(spy)
     const { employee } = await createB2cCandidate()
     const refunded = await CandidatePaymentFactory.merge({
@@ -172,7 +178,7 @@ test.group('PaymentsService — échec, annulation, remboursement (#104)', (grou
   })
 
   test('findById et findByPaymentIntent', async ({ assert }) => {
-    const service = new PaymentsService(new EntitlementsService())
+    const service = new PaymentsService(makeEntitlements())
     const { employee } = await createB2cCandidate()
     const payment = await CandidatePaymentFactory.merge({
       employeeId: employee.id,
@@ -190,5 +196,175 @@ test.group('PaymentsService — échec, annulation, remboursement (#104)', (grou
     const byIntent = await service.findByPaymentIntent('pi_lookup')
     assert.equal(byIntent?.id, payment.id)
     assert.isNull(await service.findByPaymentIntent('pi_unknown'))
+  })
+})
+
+/** Observe `unlockResults` / `revokeResults` et peut les faire échouer une fois. */
+class FlakyEntitlements extends EntitlementsService {
+  unlockCalls = 0
+  revokeCalls = 0
+  failUnlock = false
+  failRevoke = false
+  async unlockResults(_employee: Employee, _payment: CandidatePayment) {
+    this.unlockCalls++
+    if (this.failUnlock) {
+      this.failUnlock = false
+      throw new Error('file d’attente indisponible')
+    }
+  }
+  async revokeResults(_employee: Employee, _payment: CandidatePayment) {
+    this.revokeCalls++
+    if (this.failRevoke) {
+      this.failRevoke = false
+      throw new Error('notification indisponible')
+    }
+  }
+}
+
+test.group('PaymentsService — effets rejouables (#109 M1)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  async function pending() {
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+    return { employee, payment }
+  }
+
+  test('unlock lève → rejeu du webhook → effets exécutés, puis une seule fois', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { payment } = await pending()
+    entitlements.failUnlock = true
+
+    await assert.rejects(() => service.markPaid(payment, { paymentIntentId: 'pi_replay' }))
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(payment.unlockEffectsAt)
+    assert.equal(entitlements.unlockCalls, 1)
+
+    // Reprise du webhook : le paiement est déjà `paid`, les effets sont rejoués.
+    assert.isFalse(await service.markPaid(payment, { paymentIntentId: 'pi_replay' }))
+    await payment.refresh()
+    assert.isNotNull(payment.unlockEffectsAt)
+    assert.equal(entitlements.unlockCalls, 2)
+
+    // Troisième livraison : marqueur posé, plus aucun effet.
+    assert.isFalse(await service.markPaid(payment, { paymentIntentId: 'pi_replay' }))
+    assert.equal(entitlements.unlockCalls, 2)
+  })
+
+  test('refund : un retrait dont les effets ont échoué est rejoué une seule fois', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+    entitlements.failRevoke = true
+
+    await assert.rejects(() => service.refund(payment))
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.REFUNDED)
+    assert.isNull(payment.revokeEffectsAt)
+
+    assert.isFalse(await service.refund(payment))
+    assert.equal(entitlements.revokeCalls, 2)
+    await payment.refresh()
+    assert.isNotNull(payment.revokeEffectsAt)
+    assert.isFalse(await service.refund(payment))
+    assert.equal(entitlements.revokeCalls, 2)
+  })
+
+  test('refund après une révocation manuelle : ni date ni motif écrasés, aucune notification', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { employee } = await createB2cCandidate()
+    const revokedAt = DateTime.now().minus({ hours: 5 }).startOf('second')
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('revoked')
+      .create()
+    payment.revokedAt = revokedAt
+    await payment.save()
+
+    assert.isTrue(await service.refund(payment))
+
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.REFUNDED)
+    assert.isNotNull(payment.refundedAt)
+    assert.equal(payment.revokedAt?.toISO(), revokedAt.toISO())
+    assert.equal(payment.revokeReason, 'Révocation de test')
+    assert.equal(entitlements.revokeCalls, 0)
+  })
+
+  test('paiement encaissé alors qu’un droit est déjà actif : conservé, révoqué, signalé, sans effet', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { employee } = await createB2cCandidate({ paid: true })
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      assert.isFalse(await service.markPaid(payment, { paymentIntentId: 'pi_dup' }))
+    } finally {
+      setErrorReporter(previous)
+    }
+
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.stripePaymentIntentId, 'pi_dup')
+    assert.isNotNull(payment.revokedAt)
+    assert.equal(payment.revokeReason, DUPLICATE_PAYMENT_REVOKE_REASON)
+    assert.equal(entitlements.unlockCalls, 0)
+    assert.lengthOf(reported, 1)
+    assert.equal(reported[0].tags?.step, 'duplicate_paid')
+    // Le droit d'origine n'est pas touché.
+    assert.isTrue(await entitlements.hasResultsAccess(employee.id))
+  })
+
+  test('sessionMatches : écart de session, de montant ou de devise → refusé et signalé', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { payment } = await pending()
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      assert.isTrue(
+        service.sessionMatches(payment, {
+          sessionId: payment.stripeCheckoutSessionId,
+          amountTotal: payment.amountCents,
+          currency: 'EUR',
+        })
+      )
+      assert.isTrue(service.sessionMatches(payment, {}))
+      assert.isFalse(service.sessionMatches(payment, { sessionId: 'cs_autre' }))
+      assert.isFalse(service.sessionMatches(payment, { amountTotal: 1 }))
+      assert.isFalse(service.sessionMatches(payment, { currency: 'usd' }))
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 3)
   })
 })

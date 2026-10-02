@@ -1,8 +1,8 @@
+import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
 import ExpertRequest from '#models/expert_request'
 import Organization from '#models/organization'
 import User from '#models/user'
-import { EntitlementsService } from '#services/entitlements_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { BILLING_CURRENCY, PAYMENT_PROVIDERS, PAYMENT_STATUSES } from '#shared/constants/billing'
@@ -19,10 +19,7 @@ import { DateTime } from 'luxon'
  */
 @inject()
 export class SuperAdminB2cService {
-  constructor(
-    private platformOrganization: PlatformOrganizationService,
-    private entitlements: EntitlementsService
-  ) {}
+  constructor(private platformOrganization: PlatformOrganizationService) {}
 
   public async listCandidates(): Promise<B2cCandidateRow[]> {
     const platformId = await this.platformOrganization.getId()
@@ -42,9 +39,18 @@ export class SuperAdminB2cService {
       .select('employeeId')
     const pendingIds = new Set(pending.map((r) => r.employeeId))
 
+    // Une seule requête pour tous les droits actifs (plus récent par candidat).
+    const activePayments = await CandidatePayment.query()
+      .whereIn('employeeId', ids)
+      .where('status', PAYMENT_STATUSES.PAID)
+      .whereNull('revokedAt')
+      .orderBy('paidAt', 'asc')
+    const activeByEmployee = new Map<number, CandidatePayment>()
+    for (const active of activePayments) activeByEmployee.set(active.employeeId!, active)
+
     const rows: B2cCandidateRow[] = []
     for (const employee of employees) {
-      const payment = await this.entitlements.findActivePayment(employee.id)
+      const payment = activeByEmployee.get(employee.id) ?? null
       rows.push({
         id: employee.id,
         name: employee.name,

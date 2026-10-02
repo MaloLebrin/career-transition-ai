@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import Organization from '#models/organization'
@@ -61,7 +62,7 @@ test.group('EmployeeSynthesisService', (group) => {
 test.group('EmployeeSynthesisService — visibilité candidat et exports (#101)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   const service = new EmployeeSynthesisService()
-  const entitlements = new EntitlementsService()
+  const entitlements = makeEntitlements()
 
   test('candidateCanView : B2B selon le partage, B2C selon le forfait', async ({ assert }) => {
     const b2b = await createCandidate()

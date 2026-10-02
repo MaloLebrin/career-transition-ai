@@ -32,6 +32,10 @@ export class FakeStripeGateway extends StripePaymentGateway {
       input: CreateCheckoutSessionInput
       paymentStatus: 'paid' | 'unpaid'
       paymentIntentId: string | null
+      status: 'open' | 'complete' | 'expired'
+      /** Écarts simulés côté Stripe pour les tests de recoupement. */
+      amountTotal: number
+      currency: string
     }
   >()
   readonly created: CreateCheckoutSessionInput[] = []
@@ -39,9 +43,20 @@ export class FakeStripeGateway extends StripePaymentGateway {
   private counter = 0
 
   async createCheckoutSession(input: CreateCheckoutSessionInput): Promise<CheckoutSessionRef> {
+    if (this.failNextCreate) {
+      this.failNextCreate = false
+      throw new Error('FakeStripeGateway : panne simulée')
+    }
     this.counter += 1
     const id = `cs_test_fake_${this.counter}`
-    this.sessions.set(id, { input, paymentStatus: 'unpaid', paymentIntentId: null })
+    this.sessions.set(id, {
+      input,
+      paymentStatus: 'unpaid',
+      paymentIntentId: null,
+      status: 'open',
+      amountTotal: input.amountCents,
+      currency: input.currency,
+    })
     this.created.push(input)
     return { id, url: `https://checkout.stripe.test/pay/${id}` }
   }
@@ -54,7 +69,10 @@ export class FakeStripeGateway extends StripePaymentGateway {
       id: sessionId,
       paymentStatus: session.paymentStatus,
       paymentIntentId: session.paymentIntentId,
-      status: session.paymentStatus === 'paid' ? 'complete' : 'open',
+      status: session.paymentStatus === 'paid' ? 'complete' : session.status,
+      url: `https://checkout.stripe.test/pay/${sessionId}`,
+      amountTotal: session.amountTotal,
+      currency: session.currency,
     }
   }
 
@@ -70,6 +88,16 @@ export class FakeStripeGateway extends StripePaymentGateway {
     session.paymentStatus = 'paid'
     session.paymentIntentId = `pi_test_fake_${sessionId.split('_').pop()}`
   }
+
+  /** Simule l'expiration de la session côté Stripe (24 h sans paiement). */
+  expire(sessionId: string): void {
+    const session = this.sessions.get(sessionId)
+    if (!session) throw new Error(`FakeStripeGateway : session inconnue ${sessionId}`)
+    session.status = 'expired'
+  }
+
+  /** Les appels suivants à `createCheckoutSession` échouent (panne Stripe). */
+  failNextCreate = false
 
   lastSessionId(): string | null {
     const ids = [...this.sessions.keys()]

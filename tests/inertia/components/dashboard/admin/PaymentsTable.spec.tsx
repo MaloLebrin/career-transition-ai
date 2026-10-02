@@ -23,6 +23,7 @@ const paid: PaymentRow = {
   revokedAt: null,
   revokeReason: null,
   grantedBy: null,
+  revokedBy: null,
   createdAt: '2026-10-02T09:59:00.000Z',
   grantsAccess: true,
 }
@@ -35,6 +36,7 @@ const manualRevoked: PaymentRow = {
   revokedAt: '2026-10-03T10:00:00.000Z',
   revokeReason: 'Litige (par l’utilisateur #1)',
   grantedBy: { id: 1, name: 'Super Admin' },
+  revokedBy: null,
   grantsAccess: false,
 }
 

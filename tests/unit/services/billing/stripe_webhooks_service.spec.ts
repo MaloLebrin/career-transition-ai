@@ -1,3 +1,4 @@
+import { testNotifications } from '#tests/support/entitlements'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { StripeEventFactory } from '#database/factories/stripe_event_factory'
 import { InvalidStripeSignatureError } from '#exceptions/billing_errors'
@@ -41,7 +42,7 @@ function event(
 }
 
 function makeService() {
-  const entitlements = new SpyEntitlements()
+  const entitlements = new SpyEntitlements(testNotifications())
   const payments = new PaymentsService(entitlements)
   const service = new StripeWebhooksService(new FakeStripeGateway(), payments)
   return { entitlements, payments, service }
@@ -199,6 +200,7 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
         event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
           id: 'ch_test_1',
           payment_intent: 'pi_refund_me',
+          refunded: true,
         })
       ),
       FAKE_STRIPE_SIGNATURE
@@ -210,6 +212,83 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
     assert.isNotNull(payment.refundedAt)
     assert.isNotNull(payment.revokedAt)
     assert.deepEqual(entitlements.revoked, [payment.id])
+  })
+
+  test('charge.refunded partiel : ignoré, droit conservé ; total par montants : révoqué', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+    payment.stripePaymentIntentId = 'pi_partial_unit'
+    await payment.save()
+    const deliver = (object: Record<string, unknown>) =>
+      service.handle(
+        JSON.stringify(
+          event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, {
+            payment_intent: 'pi_partial_unit',
+            ...object,
+          })
+        ),
+        FAKE_STRIPE_SIGNATURE
+      )
+
+    const partial = await deliver({ amount: 4900, amount_refunded: 1000, refunded: false })
+    assert.equal(partial.outcome, WEBHOOK_OUTCOMES.IGNORED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(payment.revokedAt)
+    assert.lengthOf(entitlements.revoked, 0)
+
+    const total = await deliver({ amount: 4900, amount_refunded: 4900 })
+    assert.equal(total.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.REFUNDED)
+    assert.deepEqual(entitlements.revoked, [payment.id])
+  })
+
+  test('checkout.session.completed incohérent (montant, devise, session) → unmatched, aucun déblocage', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const payment = await pendingPayment('cs_test_match')
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      for (const override of [
+        { amount_total: payment.amountCents - 100 },
+        { currency: 'usd' },
+        { id: 'cs_test_autre' },
+      ]) {
+        const result = await service.handle(
+          JSON.stringify(
+            event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+              id: 'cs_test_match',
+              client_reference_id: String(payment.id),
+              payment_status: 'paid',
+              amount_total: payment.amountCents,
+              currency: payment.currency,
+              ...override,
+            })
+          ),
+          FAKE_STRIPE_SIGNATURE
+        )
+        assert.equal(result.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+      }
+    } finally {
+      setErrorReporter(previous)
+    }
+
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.lengthOf(entitlements.unlocked, 0)
+    assert.lengthOf(reported, 3)
   })
 
   test('type non suivi → ignored ; paiement inconnu → unmatched ; les deux sont journalisés', async ({
@@ -243,7 +322,7 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
   test('traitement interrompu : la ligne reste ouverte, signalée, et la livraison suivante reprend', async ({
     assert,
   }) => {
-    const entitlements = new SpyEntitlements()
+    const entitlements = new SpyEntitlements(testNotifications())
     const payments = new PaymentsService(entitlements)
     let failOnce = true
     const originalMarkPaid = payments.markPaid.bind(payments)

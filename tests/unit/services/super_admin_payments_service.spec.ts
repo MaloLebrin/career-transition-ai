@@ -1,3 +1,4 @@
+import { testNotifications } from '#tests/support/entitlements'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { EntitlementAlreadyGrantedError, PaymentNotFoundError } from '#exceptions/billing_errors'
 import { CandidateProfileNotFoundError } from '#exceptions/candidate_data_errors'
@@ -24,7 +25,7 @@ class SpyEntitlements extends EntitlementsService {
 }
 
 function makeService() {
-  const entitlements = new SpyEntitlements()
+  const entitlements = new SpyEntitlements(testNotifications())
   return {
     entitlements,
     service: new SuperAdminPaymentsService(new PlatformOrganizationService(), entitlements),
@@ -131,7 +132,8 @@ test.group('SuperAdminPaymentsService (#107)', (group) => {
 
     assert.isNotNull(revoked.revokedAt)
     assert.include(revoked.revokeReason ?? '', 'Litige')
-    assert.include(revoked.revokeReason ?? '', `#${superAdmin.id}`)
+    assert.equal(revoked.revokeReason, 'Litige')
+    assert.equal(revoked.revokedByUserId, superAdmin.id)
     assert.deepEqual(entitlements.revoked, [payment.id])
     await assert.rejects(
       () => service.revoke(superAdmin, { paymentId: payment.id, reason: 'Encore' }),

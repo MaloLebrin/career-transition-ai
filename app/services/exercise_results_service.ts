@@ -4,7 +4,6 @@ import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
-import { EntitlementsService } from '#services/entitlements_service'
 import { ExerciseAccessService } from '#services/exercise_access_service'
 import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
@@ -39,9 +38,7 @@ export class ExerciseResultsService {
    * L'accès aux exercices (plan B2B / forfait B2C) vit dans
    * `ExerciseAccessService` (#100) ; ce service ne décide que de l'analyse IA.
    */
-  constructor(
-    private access: ExerciseAccessService = new ExerciseAccessService(new EntitlementsService())
-  ) {}
+  constructor(private access: ExerciseAccessService) {}
 
   /** Dernier brouillon d'un candidat pour un type d'exercice, ou `null`. */
   public async findLatestDraft(

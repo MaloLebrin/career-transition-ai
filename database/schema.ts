@@ -8,7 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class CandidatePaymentSchema extends BaseModel {
-  static $columns = ['amountCents', 'createdAt', 'currency', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'provider', 'refundedAt', 'revokeReason', 'revokedAt', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
+  static $columns = ['amountCents', 'createdAt', 'currency', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
   $columns = CandidatePaymentSchema.$columns
   @column()
   declare amountCents: number
@@ -32,16 +32,22 @@ export class CandidatePaymentSchema extends BaseModel {
   declare provider: string
   @column.dateTime()
   declare refundedAt: DateTime | null
+  @column.dateTime()
+  declare revokeEffectsAt: DateTime | null
   @column()
   declare revokeReason: string | null
   @column.dateTime()
   declare revokedAt: DateTime | null
+  @column()
+  declare revokedByUserId: number | null
   @column()
   declare status: string
   @column()
   declare stripeCheckoutSessionId: string | null
   @column()
   declare stripePaymentIntentId: string | null
+  @column.dateTime()
+  declare unlockEffectsAt: DateTime | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()

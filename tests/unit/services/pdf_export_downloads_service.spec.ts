@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import { PdfExportNotFoundError, PdfExportNotReadyError } from '#exceptions/pdf_export_errors'
 import type Employee from '#models/employee'
@@ -20,7 +21,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import type { Readable } from 'node:stream'
 
-const service = new PdfExportDownloadsService()
+const service = await app.container.make(PdfExportDownloadsService)
 
 async function drain(stream: Readable): Promise<string> {
   const chunks: Buffer[] = []

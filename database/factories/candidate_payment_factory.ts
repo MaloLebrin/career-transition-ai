@@ -5,6 +5,7 @@ import {
   PAYMENT_PRODUCTS,
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
+  STRIPE_REFUND_REVOKE_REASON,
 } from '#shared/constants/billing'
 import factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
@@ -28,6 +29,9 @@ export const CandidatePaymentFactory = factory
       revokedAt: null as DateTime | null,
       revokeReason: null as string | null,
       grantedByUserId: null as number | null,
+      revokedByUserId: null as number | null,
+      unlockEffectsAt: null as DateTime | null,
+      revokeEffectsAt: null as DateTime | null,
       withdrawalWaivedAt: null as DateTime | null,
     }
   })
@@ -40,11 +44,16 @@ export const CandidatePaymentFactory = factory
     payment.paidAt = DateTime.now().minus({ days: 1 })
     payment.stripePaymentIntentId = `pi_test_${faker.string.alphanumeric(24)}`
     payment.withdrawalWaivedAt = payment.paidAt
+    payment.unlockEffectsAt = payment.paidAt
   })
   .state('refunded', (payment, { faker }) => {
     payment.status = PAYMENT_STATUSES.REFUNDED
     payment.paidAt = DateTime.now().minus({ days: 3 })
     payment.refundedAt = DateTime.now().minus({ hours: 2 })
+    payment.revokedAt = payment.refundedAt
+    payment.revokeReason = STRIPE_REFUND_REVOKE_REASON
+    payment.unlockEffectsAt = payment.paidAt
+    payment.revokeEffectsAt = payment.refundedAt
     payment.stripePaymentIntentId = `pi_test_${faker.string.alphanumeric(24)}`
   })
   .state('revoked', (payment) => {
@@ -52,6 +61,8 @@ export const CandidatePaymentFactory = factory
     payment.paidAt = DateTime.now().minus({ days: 3 })
     payment.revokedAt = DateTime.now().minus({ hours: 1 })
     payment.revokeReason = 'Révocation de test'
+    payment.unlockEffectsAt = payment.paidAt
+    payment.revokeEffectsAt = payment.revokedAt
   })
   .state('manual', (payment) => {
     payment.provider = PAYMENT_PROVIDERS.MANUAL
@@ -60,5 +71,6 @@ export const CandidatePaymentFactory = factory
     payment.stripeCheckoutSessionId = null
     payment.stripePaymentIntentId = null
     payment.paidAt = DateTime.now()
+    payment.unlockEffectsAt = payment.paidAt
   })
   .build()

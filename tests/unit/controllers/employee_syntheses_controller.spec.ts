@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { errors as lucidErrors } from '@adonisjs/lucid'
@@ -146,7 +147,7 @@ function setup() {
   const controller = new EmployeeSynthesesController(
     service as any,
     notifications as any,
-    new EntitlementsService()
+    makeEntitlements()
   )
   return { service, notifications, controller }
 }

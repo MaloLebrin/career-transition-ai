@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import { test } from '@japa/runner'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import CandidatePayment from '#models/candidate_payment'
@@ -115,7 +116,7 @@ test.group('Super admin — paiements (#107)', (group) => {
     assert.isNotNull(payment.revokedAt)
     assert.include(payment.revokeReason ?? '', 'Paiement contesté par la banque.')
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
-    assert.isFalse(await new EntitlementsService().hasResultsAccess(employee.id))
+    assert.isFalse(await makeEntitlements().hasResultsAccess(employee.id))
     const [notification] = await Notification.query().where('userId', user.id)
     assert.equal(notification.type, NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED)
   })

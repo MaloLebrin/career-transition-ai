@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import billingConfig from '#config/billing'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import {
@@ -25,7 +26,7 @@ import { test } from '@japa/runner'
 
 function makeService() {
   const stripe = new FakeStripeGateway()
-  const entitlements = new EntitlementsService()
+  const entitlements = makeEntitlements()
   return {
     stripe,
     service: new CheckoutService(stripe, entitlements, new PaymentsService(entitlements)),
@@ -79,6 +80,55 @@ test.group('CheckoutService.start (#102)', (group) => {
     )
     assert.equal(input.cancelUrl, 'https://app.example.test/dashboard/candidat/billing/cancel')
     assert.notInclude(JSON.stringify(input), user.name)
+  })
+
+  test('réutilise le pending dont la session Stripe est ouverte (pas de nouveau paiement)', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+
+    const first = await withPayments(true, () => service.start(user))
+    const second = await withPayments(true, () => service.start(user))
+
+    assert.deepEqual(second, first)
+    assert.lengthOf(stripe.created, 1)
+    assert.lengthOf(await CandidatePayment.query().where('employeeId', employee.id), 1)
+  })
+
+  test('session expirée : l’ancien pending est annulé et une nouvelle session créée', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const first = await withPayments(true, () => service.start(user))
+    stripe.expire(stripe.lastSessionId()!)
+
+    const second = await withPayments(true, () => service.start(user))
+
+    assert.notEqual(second.paymentId, first.paymentId)
+    const old = await CandidatePayment.findOrFail(first.paymentId)
+    assert.equal(old.status, PAYMENT_STATUSES.CANCELED)
+    const pending = await CandidatePayment.query()
+      .where('employeeId', employee.id)
+      .where('status', PAYMENT_STATUSES.PENDING)
+    assert.lengthOf(pending, 1)
+  })
+
+  test('Stripe en panne : pas de pending orphelin (failed), l’erreur remonte', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    stripe.failNextCreate = true
+
+    await withPayments(true, () =>
+      assert.rejects(() => service.start(user), 'FakeStripeGateway : panne simulée')
+    )
+
+    const payments = await CandidatePayment.query().where('employeeId', employee.id)
+    assert.lengthOf(payments, 1)
+    assert.equal(payments[0].status, PAYMENT_STATUSES.FAILED)
   })
 
   test('refuse quand le paiement est désactivé (503), sans rien créer', async ({ assert }) => {
@@ -154,6 +204,58 @@ test.group('CheckoutService.reconcile (#102)', (group) => {
     const result = await service.reconcile(user, stripe.lastSessionId()!)
 
     assert.deepEqual(result, { paymentId, paid: false })
+    assert.isFalse(await entitlements.hasResultsAccess(employee.id))
+  })
+
+  test('paiement révoqué, remboursé ou annulé : paid=false, sans relire Stripe', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const make = (state: 'revoked' | 'refunded' | 'pending', sessionId: string) =>
+      CandidatePaymentFactory.merge({
+        employeeId: employee.id,
+        userId: user.id,
+        organizationId: employee.organizationId,
+        stripeCheckoutSessionId: sessionId,
+      })
+        .apply(state)
+        .create()
+    const revoked = await make('revoked', 'cs_revoked')
+    const refunded = await make('refunded', 'cs_refunded')
+    const canceled = await make('pending', 'cs_canceled')
+    canceled.status = PAYMENT_STATUSES.CANCELED
+    await canceled.save()
+
+    assert.deepEqual(await service.reconcile(user, 'cs_revoked'), {
+      paymentId: revoked.id,
+      paid: false,
+    })
+    assert.deepEqual(await service.reconcile(user, 'cs_refunded'), {
+      paymentId: refunded.id,
+      paid: false,
+    })
+    assert.deepEqual(await service.reconcile(user, 'cs_canceled'), {
+      paymentId: canceled.id,
+      paid: false,
+    })
+    assert.lengthOf(stripe.retrieved, 0)
+  })
+
+  test('session payée mais montant ou devise différents : rien n’est débloqué', async ({
+    assert,
+  }) => {
+    const { service, stripe, entitlements } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const { paymentId } = await withPayments(true, () => service.start(user))
+    const sessionId = stripe.lastSessionId()!
+    stripe.pay(sessionId)
+    stripe.sessions.get(sessionId)!.amountTotal = 100
+
+    assert.deepEqual(await service.reconcile(user, sessionId), { paymentId, paid: false })
+
+    const payment = await CandidatePayment.findOrFail(paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
     assert.isFalse(await entitlements.hasResultsAccess(employee.id))
   })
 

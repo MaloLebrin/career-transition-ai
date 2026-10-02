@@ -1,4 +1,5 @@
 import { middleware } from '#start/kernel'
+import { throttleCheckout } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const BillingController = () => import('#controllers/billing_controller')
@@ -10,7 +11,10 @@ const BillingController = () => import('#controllers/billing_controller')
 router
   .group(() => {
     router.get('/offre', [BillingController, 'offer']).as('candidat.billing.offer')
-    router.post('/offre/checkout', [BillingController, 'checkout']).as('candidat.billing.checkout')
+    router
+      .post('/offre/checkout', [BillingController, 'checkout'])
+      .as('candidat.billing.checkout')
+      .use(throttleCheckout)
     router.get('/billing/success', [BillingController, 'success']).as('candidat.billing.success')
     router.get('/billing/cancel', [BillingController, 'cancel']).as('candidat.billing.cancel')
   })

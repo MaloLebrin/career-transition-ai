@@ -1,7 +1,6 @@
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
 import CandidatePayment from '#models/candidate_payment'
-import { EntitlementsService } from '#services/entitlements_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { SuperAdminB2cService } from '#services/super_admin_b2c_service'
 import {
@@ -11,14 +10,12 @@ import {
   createInHouseExpert,
   createSuperAdmin,
 } from '#tests/support/actors'
+import { countQueries } from '#tests/utils/query_counter'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
-const service = new SuperAdminB2cService(
-  new PlatformOrganizationService(),
-  new EntitlementsService()
-)
+const service = new SuperAdminB2cService(new PlatformOrganizationService())
 
 test.group('SuperAdminB2cService (#107)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -66,6 +63,19 @@ test.group('SuperAdminB2cService (#107)', (group) => {
     })
     const revokedRow = rows.find((r) => r.id === revoked.employee.id)!
     assert.include(revokedRow, { hasPaidAccess: false, activePaymentId: null })
+  })
+
+  test('listCandidates : une seule requête sur candidate_payments quel que soit le nombre de candidats', async ({
+    assert,
+  }) => {
+    await createSuperAdmin()
+    for (let i = 0; i < 5; i++) await createB2cCandidate({ paid: i % 2 === 0 })
+
+    const queries = await countQueries(() => service.listCandidates(), {
+      table: 'candidate_payments',
+    })
+
+    assert.equal(queries, 1)
   })
 
   test('stats : inscrits, payés (distincts, non révoqués), CA Stripe du mois, demandes en attente', async ({

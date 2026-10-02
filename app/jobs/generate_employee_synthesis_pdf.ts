@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app'
 import Employee from '#models/employee'
 import PdfExport from '#models/pdf_export'
 import { EmployeeSynthesisPdfService } from '#services/employee_synthesis_pdf_service'
@@ -41,6 +42,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
     if (pdfExport.advisorUserId) notifyUserIds.push(pdfExport.advisorUserId)
     broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
 
+    const entitlements = await app.container.make(EntitlementsService)
     try {
       const employee = await Employee.query()
         .where('id', pdfExport.employeeId)
@@ -51,7 +53,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       // révocation) entre la demande et l'exécution — échec propre, sans PDF.
       if (
         employee.accountType === ACCOUNT_TYPES.B2C &&
-        !(await new EntitlementsService().hasResultsAccess(employee.id))
+        !(await entitlements.hasResultsAccess(employee.id))
       ) {
         pdfExport.status = PDF_EXPORT_STATUSES.FAILED
         pdfExport.errorMessage = RESULTS_LOCKED_MESSAGE

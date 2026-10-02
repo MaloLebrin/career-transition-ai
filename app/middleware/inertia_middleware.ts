@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
@@ -29,7 +30,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             // Bandeau de vérification d'e-mail des particuliers (#98).
             emailVerified: Boolean(user.emailVerifiedAt),
           }
-    const entitlement = candidate ? await new EntitlementsService().forEmployee(candidate) : null
+    const entitlements = await app.container.make(EntitlementsService)
+    const entitlement = candidate ? await entitlements.forEmployee(candidate) : null
 
     let employees: any[] = []
     if (user) {
