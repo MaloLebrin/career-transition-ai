@@ -72,6 +72,18 @@ test.group('EntitlementsService — lecture des droits', (group) => {
     assert.isFalse(await service.hasResultsAccess(other.employee.id))
   })
 
+  test('employeeIdsWithResultsAccess : lot en une requête, sans les non payés', async ({
+    assert,
+  }) => {
+    const paid = await createB2cCandidate({ paid: true })
+    const unpaid = await createB2cCandidate()
+
+    const ids = await service.employeeIdsWithResultsAccess([paid.employee.id, unpaid.employee.id])
+
+    assert.deepEqual([...ids], [paid.employee.id])
+    assert.lengthOf([...(await service.employeeIdsWithResultsAccess([]))], 0)
+  })
+
   test('B2B : accès porté par le cabinet, sans paiement', async ({ assert }) => {
     const { employee } = await createCandidate()
 

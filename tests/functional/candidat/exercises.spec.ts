@@ -176,6 +176,25 @@ test.group('Candidat — exercices : page exercice (GET)', (group) => {
     assert.deepEqual(props.initialDraftsByType, {})
   })
 
+  test('la page exercice ne transmet jamais advisorNotes au candidat', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    employee.advisorNotes = 'Note confidentielle du conseiller'
+    await employee.save()
+    await planStep(employee, [EXERCICE_RESULTS_TYPES.MOTIVATION])
+
+    const response = await client
+      .get(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}`)
+      .loginAs(user)
+      .withInertia()
+
+    const props = assertPage(assert, response, EXERCISE_PAGE, ['employee'])
+    assert.notProperty(props.employee as object, 'advisorNotes')
+    assert.notInclude(JSON.stringify(props), 'Note confidentielle du conseiller')
+  })
+
   test('exercice absent du plan : page bloquée elle aussi', async ({ client, assert }) => {
     const { user } = await createCandidate()
 

@@ -57,6 +57,21 @@ test.group('Candidat — profil : page (GET)', (group) => {
     )
   })
 
+  test('ne transmet jamais les notes du conseiller (advisorNotes) au candidat', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    employee.advisorNotes = 'Note confidentielle du conseiller'
+    await employee.save()
+
+    const response = await client.get(URL).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, PAGE, ['employee'])
+    assert.notProperty(props.employee as object, 'advisorNotes')
+    assert.notInclude(JSON.stringify(props), 'Note confidentielle du conseiller')
+  })
+
   test("n'expose que les notes partagées et non supprimées, sans droit d'édition", async ({
     client,
     assert,

@@ -6,6 +6,7 @@ import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createStepValidator } from '#validators/support_plan_step/create_step_validator'
 import { updateStepValidator } from '#validators/support_plan_step/update_step_validator'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
@@ -28,7 +29,7 @@ export default class SupportPlanStepsController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {
@@ -91,7 +92,7 @@ export default class SupportPlanStepsController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {
@@ -169,7 +170,7 @@ export default class SupportPlanStepsController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {
@@ -206,7 +207,7 @@ export default class SupportPlanStepsController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {
@@ -246,7 +247,7 @@ export default class SupportPlanStepsController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {

@@ -53,6 +53,18 @@ export class EntitlementsService {
     return Boolean(await this.findActivePayment(employeeId))
   }
 
+  /** Ids (parmi `employeeIds`) dont le droit est ouvert, en une seule requête. */
+  public async employeeIdsWithResultsAccess(employeeIds: number[]): Promise<Set<number>> {
+    if (employeeIds.length === 0) return new Set()
+    const rows = await CandidatePayment.query()
+      .whereIn('employeeId', employeeIds)
+      .where('status', PAYMENT_STATUSES.PAID)
+      .whereNull('revokedAt')
+      .distinct('employeeId')
+      .select('employeeId')
+    return new Set(rows.flatMap((row) => (row.employeeId === null ? [] : [row.employeeId])))
+  }
+
   public async forEmployee(employee: Employee): Promise<ResultsEntitlement> {
     const hasPaidAccess =
       employee.accountType === ACCOUNT_TYPES.B2C ? await this.hasResultsAccess(employee.id) : true

@@ -179,7 +179,7 @@ test.group('EmployeeSynthesesController.showAdvisor', (group) => {
     await controller.showAdvisor(ctx)
 
     assert.deepEqual(service.buildForAdvisorCalls, [
-      { organizationId: advisor.organizationId, employeeId: employee.id },
+      { organizationId: advisor.organizationId, employeeId: employee.id, viewer: advisor },
     ])
     assert.deepEqual(rendered, [
       {

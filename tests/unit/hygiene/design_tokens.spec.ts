@@ -18,7 +18,7 @@ const LEGACY_CLASS =
 
 const BASELINE: Record<string, number> = {
   'inertia/components/auth': 0,
-  'inertia/components/dashboard': 247,
+  'inertia/components/dashboard': 243,
   'inertia/components/design-system': 0,
   'inertia/components/errors': 0,
   'inertia/components/exercises': 297,

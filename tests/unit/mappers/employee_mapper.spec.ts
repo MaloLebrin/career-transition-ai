@@ -1,4 +1,4 @@
-import { exerciceTypeToFront, mapEmployee } from '#mappers/employee_mapper'
+import { exerciceTypeToFront, mapEmployee, mapEmployeeForCandidate } from '#mappers/employee_mapper'
 import Education from '#models/education'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
@@ -149,5 +149,32 @@ test.group('Employee mapper', (group) => {
 
     assert.lengthOf(dto.plan, 1)
     assert.deepEqual(dto.plan[0].associatedExercises, ['MOTIVATION'])
+  })
+})
+
+test.group('mapEmployeeForCandidate', () => {
+  function inMemoryEmployee() {
+    const employee = new Employee()
+    employee.merge({
+      id: 1,
+      organizationId: 2,
+      name: 'Jane',
+      email: 'jane@example.com',
+      currentRole: 'Dev',
+      advisorNotes: 'Note confidentielle',
+      status: 'active',
+      onboarded: true,
+    })
+    return employee
+  }
+
+  test('mapEmployee garde advisorNotes pour l’équipe', ({ assert }) => {
+    assert.equal(mapEmployee(inMemoryEmployee()).advisorNotes, 'Note confidentielle')
+  })
+
+  test('la vue candidat ne contient jamais advisorNotes', ({ assert }) => {
+    const dto = mapEmployeeForCandidate(inMemoryEmployee())
+    assert.notProperty(dto, 'advisorNotes')
+    assert.equal(dto.name, 'Jane')
   })
 })

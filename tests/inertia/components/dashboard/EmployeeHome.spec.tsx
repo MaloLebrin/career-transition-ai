@@ -147,8 +147,9 @@ describe('EmployeeHome — contenu', () => {
       'aria-valuenow',
       '38'
     )
-    expect(screen.getByText('Conseils Expert')).toBeInTheDocument()
-    expect(screen.getByText(/Mets en avant ta reconversion/)).toBeInTheDocument()
+    // Les notes du conseiller ne sont jamais montrées au candidat.
+    expect(screen.queryByText('Conseils Expert')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Mets en avant ta reconversion/)).not.toBeInTheDocument()
     expect(screen.getByText('Compétence 5')).toBeInTheDocument()
     expect(screen.queryByText('Compétence 6')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Voir tous les exercices/ })).toHaveAttribute(
@@ -164,10 +165,5 @@ describe('EmployeeHome — contenu', () => {
       'href',
       '/dashboard/candidat/synthesis'
     )
-  })
-
-  test('masque le bloc conseils sans note du conseiller', () => {
-    render(<EmployeeHome {...baseProps} employee={makeEmployee({ advisorNotes: null })} />)
-    expect(screen.queryByText('Conseils Expert')).not.toBeInTheDocument()
   })
 })

@@ -57,3 +57,12 @@ export class ExpertNotEligibleError extends DomainException {
     super(message, { status: 422, code: 'E_EXPERT_NOT_ELIGIBLE' })
   }
 }
+
+/** Le candidat a déjà un conseiller ou un expert assigné → 409. */
+export class ExpertAlreadyAssignedError extends DomainException {
+  constructor(
+    message: string = 'Ce candidat a déjà un conseiller ou un expert assigné : aucune demande d’accompagnement n’est possible.'
+  ) {
+    super(message, { status: 409, code: 'E_EXPERT_ALREADY_ASSIGNED' })
+  }
+}
