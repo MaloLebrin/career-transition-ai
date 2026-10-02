@@ -30,6 +30,7 @@ export const controllers = {
   PdfExports: () => import('#controllers/pdf_exports_controller'),
   Robots: () => import('#controllers/robots_controller'),
   Skills: () => import('#controllers/skills_controller'),
+  StripeWebhooks: () => import('#controllers/stripe_webhooks_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

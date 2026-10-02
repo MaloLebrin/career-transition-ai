@@ -10,6 +10,9 @@ export const NOTIFICATION_TYPES = {
   DATA_ERASURE_REQUESTED: 'data_erasure_requested',
   // Particulier B2C sans conseiller : son analyse IA est prête (#100)
   AI_ANALYSIS_READY_CANDIDATE: 'ai_analysis_ready_candidate',
+  // Particulier B2C : forfait réglé, résultats débloqués / accès retiré (remboursement, révocation) (#104)
+  RESULTS_UNLOCKED: 'results_unlocked',
+  RESULTS_ACCESS_REVOKED: 'results_access_revoked',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

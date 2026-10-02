@@ -372,6 +372,15 @@
   réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
 - Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
 
-### 11.4 À venir
+### 11.4 Webhook Stripe (#104)
 
-Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
+- `POST /webhooks/stripe` : source de vérité des paiements, signée, exemptée de CSRF,
+  idempotente (`stripe_events`, sans payload). Paiement confirmé → forfait débloqué,
+  analyses IA des exercices complétés sans analyse lancées, notification « Vos résultats
+  sont débloqués » ; paiement différé refusé → `failed` ; session expirée → `canceled` ;
+  remboursement → `refunded`, accès retiré, notification « Votre accès aux résultats a été
+  retiré ». Rejouer un événement est sans effet.
+
+### 11.5 À venir
+
+Demande d'accompagnement par un expert (#103), back-office (#105, #107).

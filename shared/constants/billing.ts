@@ -62,3 +62,40 @@ export const BILLING_PATHS = {
   success: '/dashboard/candidat/billing/success',
   cancel: '/dashboard/candidat/billing/cancel',
 } as const
+
+/** Chemin public du webhook Stripe (#104) : hors `guest`/`auth`, exempté de CSRF, signé. */
+export const STRIPE_WEBHOOK_PATH = '/webhooks/stripe'
+
+/**
+ * Événements Stripe traités par `StripeWebhooksService` (#104) ; ce sont aussi
+ * ceux à abonner dans le tableau de bord Stripe (docs/STRIPE.md). Tout autre
+ * type est accusé réception et ignoré.
+ */
+export const STRIPE_WEBHOOK_EVENTS = {
+  CHECKOUT_COMPLETED: 'checkout.session.completed',
+  ASYNC_PAYMENT_SUCCEEDED: 'checkout.session.async_payment_succeeded',
+  ASYNC_PAYMENT_FAILED: 'checkout.session.async_payment_failed',
+  CHECKOUT_EXPIRED: 'checkout.session.expired',
+  CHARGE_REFUNDED: 'charge.refunded',
+} as const
+
+export type StripeWebhookEvent = (typeof STRIPE_WEBHOOK_EVENTS)[keyof typeof STRIPE_WEBHOOK_EVENTS]
+
+export const stripeWebhookEventValues = Object.values(STRIPE_WEBHOOK_EVENTS)
+
+/** Issue du traitement d'un événement webhook (#104). */
+export const WEBHOOK_OUTCOMES = {
+  /** Événement traité et journalisé. */
+  PROCESSED: 'processed',
+  /** Déjà traité (rejeu Stripe) : aucun effet. */
+  DUPLICATE: 'duplicate',
+  /** Type non suivi : accusé réception seulement. */
+  IGNORED: 'ignored',
+  /** Type suivi mais aucun paiement local correspondant. */
+  UNMATCHED: 'unmatched',
+} as const
+
+export type WebhookOutcome = (typeof WEBHOOK_OUTCOMES)[keyof typeof WEBHOOK_OUTCOMES]
+
+/** Motif posé sur `candidate_payments.revoke_reason` lors d'un remboursement Stripe. */
+export const STRIPE_REFUND_REVOKE_REASON = 'Remboursement Stripe'
