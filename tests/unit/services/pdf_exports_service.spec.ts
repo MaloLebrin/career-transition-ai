@@ -31,7 +31,8 @@ async function exportOf(
 }
 
 async function ids(user: User, status?: string) {
-  return (await service.listForUser(user, { status })).map((row) => row.id)
+  const rows = await service.listForUser(user, { status })
+  return rows.map((row) => row.id)
 }
 
 test.group('PdfExportsService.listForUser', (group) => {
@@ -60,10 +61,9 @@ test.group('PdfExportsService.listForUser', (group) => {
 
   test('le super admin voit tout ; filtre de statut valide, inconnu ignoré', async ({ assert }) => {
     const superAdmin = await createSuperAdmin()
+    const admin = await createAdmin()
     const a = await exportOf(
-      await EmployeeFactory.merge({
-        organizationId: (await createAdmin()).organizationId,
-      }).create(),
+      await EmployeeFactory.merge({ organizationId: admin.organizationId }).create(),
       PDF_EXPORT_STATUSES.FAILED
     )
     const { employee } = await createB2cCandidate()

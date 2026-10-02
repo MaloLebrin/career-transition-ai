@@ -51,8 +51,8 @@ export default class EmployeeTransformer extends BaseTransformer<Employee> {
  * (`EmployeeTransformer.transform`).
  */
 export function employeeToObject(employee: Employee) {
-  const { advisorNotes: _advisorNotes, ...candidateView } = new EmployeeTransformer(
-    employee
-  ).toObject() as ReturnType<EmployeeTransformer['toObject']> & { advisorNotes?: unknown }
+  const candidateView: Record<string, unknown> & ReturnType<EmployeeTransformer['toObject']> =
+    new EmployeeTransformer(employee).toObject()
+  delete candidateView.advisorNotes
   return candidateView
 }
