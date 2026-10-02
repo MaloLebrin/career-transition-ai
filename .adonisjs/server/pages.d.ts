@@ -20,9 +20,9 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/jobs/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/jobs/Index.tsx'))['default']>
     'dashboard/admin/organizations/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/organizations/Index.tsx'))['default']>
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
-    'dashboard/candidat/expert/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/expert/Index.tsx'))['default']>
     'dashboard/candidat/billing/Offer': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Offer.tsx'))['default']>
     'dashboard/candidat/billing/Success': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Success.tsx'))['default']>
+    'dashboard/candidat/expert/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/expert/Index.tsx'))['default']>
     'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
     'dashboard/candidat/Synthesis': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/Synthesis.tsx'))['default']>
     'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
