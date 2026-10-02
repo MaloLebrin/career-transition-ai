@@ -114,7 +114,7 @@ Même famille de problème : `config/queue.ts` → `locations: ['./build/app/job
 Rappels de cadrage :
 
 - Pas de nom de domaine → sous-domaines de plateforme, `*.ts.net` (Tailscale Funnel), ou `*.sslip.io` / `*.nip.io` (DNS gratuit qui résout `1-2-3-4.sslip.io` vers `1.2.3.4`, compatible Let's Encrypt via Caddy) pour un VPS.
-- Deux processus (web + worker) + Postgres, **ou** un seul process avec `QUEUE_DRIVER=sync` (jobs inline : la requête « exercice terminé » attend Mistral quelques secondes ; PDF généré dans la requête). Le mode `sync` est le **seul** qui rend les événements SSE des jobs fonctionnels sans Redis (cf. 1.3).
+- Deux processus (web + worker) + Postgres, **ou** un seul process avec `QUEUE_DRIVER=sync` (jobs inline dans le process web). L'enregistrement d'un exercice n'attend pas l'analyse qualitative : elle continue après la réponse. Le PDF est encore généré dans la requête. Le mode `sync` est le **seul** qui rend les événements SSE des jobs fonctionnels sans Redis (cf. 1.3).
 - ~~Web + worker doivent partager `tmp/exports` (PDF)~~ → PDF sur Cloudinary (issue #49), aucun disque partagé.
 - Le worker polle Postgres toutes les 2 s → **il empêche l'autosuspend** d'un Postgres serverless et **consomme le quota** (Neon Free : 100 CU-h/mois ≈ 400 h à 0,25 CU < 720 h/mois ; Koyeb DB free : 5 h/mois). Avec un Postgres serverless gratuit, **pas de worker permanent** → `sync`.
 

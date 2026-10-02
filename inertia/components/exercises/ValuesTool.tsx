@@ -10,9 +10,12 @@ interface Props {
     data: { selectedValues: string[]; peopleExercise: { name: string; values: string }[] },
     duration: number
   ) => void
-  // Added missing draft props
   onSaveDraft: (data: any) => void
   initialDraftPromise?: Promise<ExerciseDraft | null>
+}
+
+function valueByLabel(label: string) {
+  return SCHWARTZ_VALUES.find((v) => v.label === label)
 }
 
 const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
@@ -28,7 +31,6 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
   const onSaveDraftRef = useRef(onSaveDraft)
   const didInitFromDraftRef = useRef(false)
 
-  // Load draft on mount
   useEffect(() => {
     if (didInitFromDraftRef.current) return
     didInitFromDraftRef.current = true
@@ -59,7 +61,6 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
     onSaveDraftRef.current = onSaveDraft
   }, [onSaveDraft])
 
-  // Auto-save draft whenever relevant state changes
   useEffect(() => {
     onSaveDraftRef.current({ selectedValues: rankedValues, peopleExercise: people, step })
   }, [rankedValues, people, step])
@@ -96,47 +97,50 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
   }
 
   return (
-    <Card className="p-10 max-w-5xl mx-auto animate-fadeIn border-brand-navy/5">
+    <Card className="max-w-5xl mx-auto animate-fadeIn border-brand-navy/5">
       {step === 1 ? (
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h3 className="text-3xl font-bold text-brand-navy mb-4 tracking-tight">
-              Classement des Valeurs
+            <h3 className="text-3xl font-bold text-ink mb-4 tracking-tight">
+              Classement des valeurs
             </h3>
-            <p className="text-brand-navy/60 leading-relaxed">
-              Classez les 10 valeurs universelles de Schwartz par ordre d'importance pour vous.
-              <span className="block mt-2 font-bold text-brand-sage">
+            <p className="text-muted leading-relaxed">
+              Classez les 10 valeurs par ordre d’importance pour vous. Lisez le portrait et la
+              situation de travail de chaque carte — pas seulement le nom — avant de cliquer.
+              <span className="block mt-2 font-semibold text-accent">
                 Cliquez sur les valeurs dans votre ordre de priorité.
               </span>
-              <span className="block mt-1 text-[10px] uppercase font-bold text-brand-navy/20">
-                Chronométrage actif
-              </span>
+              <span className="block mt-1 text-sm text-muted-soft">Chronométrage actif</span>
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-4">
-              <h4 className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest px-2">
+              <h4 className="text-sm font-semibold text-muted px-2">
                 Valeurs à classer ({unrankedValues.length})
               </h4>
               <div className="grid grid-cols-1 gap-3">
                 {unrankedValues.map((val) => (
                   <button
                     key={val.id}
+                    type="button"
                     onClick={() => handleRankValue(val.label)}
-                    className="p-4 text-left rounded-2xl border border-brand-navy/5 bg-white hover:bg-brand-sage/5 hover:border-brand-sage hover:shadow-xl transition-all group cursor-pointer disabled:cursor-not-allowed"
+                    className="p-4 text-left rounded-2xl border border-hairline bg-surface hover:bg-surface-soft hover:border-accent hover:shadow-card transition-all group cursor-pointer disabled:cursor-not-allowed"
                   >
-                    <div className="font-bold text-brand-navy group-hover:text-brand-sage">
-                      {val.label}
-                    </div>
-                    <p className="text-[10px] text-brand-navy/40 mt-1 line-clamp-1">{val.desc}</p>
+                    <div className="font-bold text-ink group-hover:text-accent">{val.label}</div>
+                    <p className="text-sm text-muted mt-1">{val.desc}</p>
+                    <p className="text-sm text-ink mt-3">{val.portrait}</p>
+                    <p className="text-sm text-muted mt-2 border-t border-hairline pt-2">
+                      <span className="font-semibold text-ink">En situation : </span>
+                      <span>{val.situation}</span>
+                    </p>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-brand-sage/5 p-8 rounded-[32px] border-2 border-dashed border-brand-sage/20 min-h-[500px]">
-              <h4 className="text-[10px] font-bold text-brand-sage uppercase tracking-widest mb-6">
+            <div className="bg-surface-soft p-8 rounded-2xl border-2 border-dashed border-hairline-strong min-h-[500px]">
+              <h4 className="text-sm font-semibold text-accent mb-6">
                 Votre hiérarchie ({rankedValues.length}/10)
               </h4>
               <div
@@ -157,55 +161,65 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                   dragFromIndexRef.current = null
                 }}
               >
-                {rankedValues.map((label, idx) => (
-                  <div
-                    key={label}
-                    data-testid={`ranked-value-${label}`}
-                    data-ranked-idx={idx}
-                    draggable
-                    onDragStart={(e) => {
-                      dragFromIndexRef.current = idx
-                      try {
-                        e.dataTransfer?.setData('text/plain', label)
-                        e.dataTransfer.effectAllowed = 'move'
-                      } catch {}
-                    }}
-                    onDragEnd={() => {
-                      dragFromIndexRef.current = null
-                    }}
-                    className="flex items-center bg-white p-4 rounded-2xl shadow-sm border border-brand-sage/10 animate-slideUp"
-                  >
-                    <span
-                      className="mr-3 text-brand-navy/20 select-none"
-                      aria-hidden="true"
-                      title="Glisser pour réordonner"
+                {rankedValues.map((label, idx) => {
+                  const value = valueByLabel(label)
+                  return (
+                    <div
+                      key={label}
+                      data-testid={`ranked-value-${label}`}
+                      data-ranked-idx={idx}
+                      draggable
+                      onDragStart={(e) => {
+                        dragFromIndexRef.current = idx
+                        try {
+                          e.dataTransfer?.setData('text/plain', label)
+                          e.dataTransfer.effectAllowed = 'move'
+                        } catch {}
+                      }}
+                      onDragEnd={() => {
+                        dragFromIndexRef.current = null
+                      }}
+                      className="flex items-start bg-surface p-4 rounded-2xl shadow-card border border-hairline animate-slideUp"
                     >
-                      ⠿
-                    </span>
-                    <span className="w-8 h-8 rounded-lg bg-brand-sage text-white flex items-center justify-center font-bold text-xs mr-4">
-                      {idx + 1}
-                    </span>
-                    <span className="font-bold text-brand-navy grow">{label}</span>
-                    <button
-                      onClick={() => handleRemoveValue(label)}
-                      className="text-brand-navy/20 hover:text-rose-500 transition-colors cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <span
+                        className="mr-3 mt-1 text-muted-soft select-none"
+                        aria-hidden="true"
+                        title="Glisser pour réordonner"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                        ⠿
+                      </span>
+                      <span className="w-8 h-8 shrink-0 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold text-xs mr-4">
+                        {idx + 1}
+                      </span>
+                      <div className="grow min-w-0">
+                        <span className="font-bold text-ink">{label}</span>
+                        {value?.situation ? (
+                          <p className="text-sm text-muted mt-1">{value.situation}</p>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveValue(label)}
+                        className="text-muted-soft hover:text-danger transition-colors cursor-pointer disabled:cursor-not-allowed shrink-0 ml-2"
+                        aria-label={`Retirer ${label}`}
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
 
               {rankedValues.length === 10 && (

@@ -18,7 +18,7 @@ Détails : [`../AI_JOBS.md`](../AI_JOBS.md).
    | `MISTRAL_MODEL`   | `mistral-small-latest` (déjà dans `render.yaml`) | non     |
 
 L'offre gratuite est limitée en débit : une analyse peut échouer ou ralentir en cas de
-pic. Les jobs IA s'exécutent dans le process web (`QUEUE_DRIVER=sync`).
+pic. Les jobs IA s'exécutent dans le process web (`QUEUE_DRIVER=sync`), sans bloquer l'enregistrement : l'analyse continue après la redirection.
 
 ## Sans IA
 

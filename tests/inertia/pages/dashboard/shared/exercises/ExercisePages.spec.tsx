@@ -159,7 +159,7 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
     hook.state.isAnalyzing = true
     hook.state.isSavingDraft = true
     await renderPage(<Page employeeId="5" />)
-    expect(screen.getByText(/IA en action/)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/arrière-plan/)
     if (hasDraft) expect(screen.getByText('Sauvegarde auto...')).toBeInTheDocument()
   })
 

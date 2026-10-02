@@ -21,7 +21,7 @@ const BASELINE: Record<string, number> = {
   'inertia/components/dashboard': 247,
   'inertia/components/design-system': 0,
   'inertia/components/errors': 0,
-  'inertia/components/exercises': 297,
+  'inertia/components/exercises': 272,
   'inertia/components/landing': 0,
   'inertia/components/layout': 0,
   'inertia/components/marketing': 0,
@@ -31,7 +31,7 @@ const BASELINE: Record<string, number> = {
   'inertia/components/profile': 60,
   'inertia/components/settings': 11,
   'inertia/components/ui': 0,
-  'inertia/pages': 458,
+  'inertia/pages': 382,
 }
 
 const REMOVED_TOKENS = [

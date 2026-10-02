@@ -244,7 +244,10 @@ test.group('Conseiller — exercices : enregistrement', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', `/dashboard/conseiller/employees/${employee.id}`)
-    assert.equal(response.flashMessage('success'), 'Exercice DISC enregistré.')
+    assert.equal(
+      response.flashMessage('success'),
+      "Exercice DISC enregistré. L'analyse IA se prépare en arrière-plan."
+    )
 
     const result = await ExerciseResult.query().where('employeeId', employee.id).firstOrFail()
     assert.equal(result.status, exerciceResultStatusValues.COMPLETED)

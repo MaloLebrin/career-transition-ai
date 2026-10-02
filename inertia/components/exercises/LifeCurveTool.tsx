@@ -55,11 +55,20 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
   const startTimeRef = useRef<number>(Date.now())
   const onSaveDraftRef = useRef(onSaveDraft)
   const lastAutoSavePayloadRef = useRef<string | null>(null)
+  const draftAppliedRef = useRef(false)
 
-  // Load draft on mount; defer autosave until resolved to avoid empty-state overwrites (Strict Mode / slow promise).
+  // Hydrate once. The page passes a new Promise on every render (autosave, Inertia
+  // props). Re-applying that draft would wipe points the user just added.
   useEffect(() => {
     let cancelled = false
+    if (draftAppliedRef.current) {
+      setDraftHydrated(true)
+      return () => {
+        cancelled = true
+      }
+    }
     if (!initialDraftPromise) {
+      draftAppliedRef.current = true
       setDraftHydrated(true)
       return () => {
         cancelled = true
@@ -67,7 +76,8 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     }
     initialDraftPromise
       .then((draft) => {
-        if (cancelled) return
+        if (cancelled || draftAppliedRef.current) return
+        draftAppliedRef.current = true
         if (draft && draft.data) {
           setPoints(draft.data.points || [])
           setReflection(
@@ -232,9 +242,12 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
             </div>
 
             <div className="lg:col-span-2 space-y-6">
-              <div className="h-[450px] bg-slate-50 rounded-[40px] p-8 border border-slate-100 flex items-center justify-center relative overflow-hidden">
+              <div
+                data-testid="life-curve-chart"
+                className="relative h-[450px] w-full min-w-0 bg-slate-50 rounded-[40px] border border-slate-100"
+              >
                 {points.length < 2 ? (
-                  <div className="text-center text-slate-400">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                     <svg
                       className="w-16 h-16 mx-auto mb-4 opacity-20"
                       fill="none"
@@ -253,43 +266,46 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
                     </p>
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={sortedData}
-                      margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis
-                        dataKey="year"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-                      />
-                      <YAxis
-                        domain={[0, 10]}
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: '16px',
-                          border: 'none',
-                          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                          fontWeight: 900,
-                        }}
-                        itemStyle={{ color: '#6366f1' }}
-                      />
-                      <ReferenceLine y={5} stroke="#cbd5e1" strokeDasharray="5 5" />
-                      <Line
-                        type="monotone"
-                        dataKey="satisfaction"
-                        stroke="#6366f1"
-                        strokeWidth={4}
-                        dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div className="absolute inset-0 p-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={sortedData}
+                        margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis
+                          dataKey="year"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                        />
+                        <YAxis
+                          domain={[0, 10]}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '16px',
+                            border: 'none',
+                            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                            fontWeight: 900,
+                          }}
+                          itemStyle={{ color: '#6366f1' }}
+                        />
+                        <ReferenceLine y={5} stroke="#cbd5e1" strokeDasharray="5 5" />
+                        <Line
+                          type="monotone"
+                          dataKey="satisfaction"
+                          stroke="#6366f1"
+                          strokeWidth={4}
+                          dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                          isAnimationActive={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </div>
 

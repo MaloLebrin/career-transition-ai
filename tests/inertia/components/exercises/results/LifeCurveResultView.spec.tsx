@@ -25,6 +25,24 @@ describe('LifeCurveResultView', () => {
     expect(screen.getByTestId('line-chart')).toBeInTheDocument()
   })
 
+  test('donne au graphique une hauteur fixe hors flex', () => {
+    const { container } = render(
+      <LifeCurveResultView
+        points={[
+          { year: 2020, satisfaction: 7 },
+          { year: 2021, satisfaction: 8 },
+        ]}
+        reflection={{}}
+      />
+    )
+    const host = Array.from(container.querySelectorAll('div')).find((el) =>
+      el.className.includes('h-[400px]')
+    )
+    expect(host).toBeTruthy()
+    expect(host?.className).not.toMatch(/\bflex\b/)
+    expect(host?.querySelector('.absolute.inset-0')).toBeTruthy()
+  })
+
   test('renders with valid points data', () => {
     const points = [
       { year: 2020, satisfaction: 7 },

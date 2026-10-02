@@ -11,6 +11,10 @@ import { saveExerciseResultValidator } from '#validators/exercise/exercise_resul
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
+function savedExerciseFlash(label: string) {
+  return `Exercice ${label} enregistré. L'analyse IA se prépare en arrière-plan.`
+}
+
 /** Map exercise type (slug) to dedicated Inertia page. Unknown type falls back to dashboard/Exercise. */
 const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {
   [EXERCICE_RESULTS_TYPES.MOTIVATION]: 'dashboard/shared/exercises/Motivation',
@@ -102,7 +106,7 @@ export default class ExerciseResultsController {
 
     const typeKey = String(payload.type)
     const label = typeLabelMap[typeKey] ?? 'Exercice'
-    session.flash('success', `Exercice ${label} enregistré.`)
+    session.flash('success', savedExerciseFlash(label))
     return response.redirect(`/dashboard/conseiller/employees/${employeeId}`)
   }
   /**
@@ -572,7 +576,7 @@ export default class ExerciseResultsController {
     }
 
     const label = typeLabelMap[String(payload.type)] ?? 'Exercice'
-    session.flash('success', `Exercice ${label} enregistré.`)
+    session.flash('success', savedExerciseFlash(label))
     return response.redirect('/dashboard/candidat')
   }
 }

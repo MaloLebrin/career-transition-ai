@@ -65,9 +65,11 @@ node ace queue:work --queue=ai
 
 Sans worker, les entrées restent dans la file (adapter database) jusqu’au traitement.
 
-### Mode `sync` (dev / tests)
+### Mode `sync` (déploiement sans worker)
 
-Si `QUEUE_DRIVER=sync` dans `.env`, le job s’exécute **immédiatement** dans le même processus que le `dispatch` (pas besoin de `queue:work`).
+Si `QUEUE_DRIVER=sync`, le job s’exécute dans le même processus que le `dispatch` (pas de `queue:work`). À l’enregistrement d’un exercice terminé, la requête **n’attend pas** la fin de l’appel IA : la redirection part tout de suite et l’analyse continue en arrière-plan. Le conseiller est notifié quand le texte est prêt.
+
+En test (`app.inTest`), le `dispatch` est attendu pour rester dans la transaction de test.
 
 ---
 
