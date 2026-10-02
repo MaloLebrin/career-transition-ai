@@ -1,7 +1,7 @@
 /**
- * Informations RGPD affichées sur /confidentialite et /securite, et reprises
- * dans docs/RGPD.md. Une seule source : un nouveau sous-traitant ou une
- * nouvelle durée se change ici.
+ * Informations légales affichées sur /confidentialite, /securite, /cgu et /cgv,
+ * et reprises dans docs/RGPD.md. Une seule source : un nouveau sous-traitant,
+ * une nouvelle durée ou une nouvelle version des conditions se change ici.
  */
 
 /** Adresse pour exercer ses droits (accès, rectification, effacement…). */
@@ -9,6 +9,44 @@ export const PRIVACY_CONTACT_EMAIL = 'contact@transitioncarriere.fr'
 
 /** Délai légal de réponse à une demande d'exercice de droits (art. 12 RGPD). */
 export const PRIVACY_REQUEST_DELAY = 'un mois'
+
+/**
+ * Version des CGU / CGV en vigueur (date ISO). Enregistrée sur le compte à
+ * l'inscription (`users.terms_version`, #93) et à l'achat du forfait (#102) :
+ * toute modification substantielle des conditions change cette valeur.
+ */
+export const TERMS_VERSION = '2026-10-01'
+
+export interface SellerIdentity {
+  /** Raison sociale de l'éditeur et vendeur du forfait particuliers. */
+  name: string
+  legalForm: string
+  siren: string
+  address: string
+  email: string
+  /** Médiateur de la consommation (art. L612-1 Code de la consommation). */
+  mediator: string
+}
+
+/** Identité du vendeur (CGV, facture). Placeholders tant que le PO ne l'a pas fournie (#95). */
+export const SELLER_IDENTITY: SellerIdentity = {
+  name: 'Transition Carrière',
+  legalForm: '[forme juridique à compléter]',
+  siren: '[SIREN à compléter]',
+  address: '[adresse à compléter]',
+  email: PRIVACY_CONTACT_EMAIL,
+  mediator: '[médiateur de la consommation à compléter]',
+}
+
+/**
+ * Information précontractuelle sur le droit de rétractation d'un contenu
+ * numérique exécuté immédiatement (Code de la consommation, art. L221-28 13°) :
+ * le consommateur demande l'exécution avant la fin du délai de quatorze jours
+ * et renonce expressément à son droit de rétractation. Affiché sur /cgv et
+ * sous la case à cocher du paiement (#102).
+ */
+export const WITHDRAWAL_NOTICE =
+  'Le forfait donne un accès immédiat à des contenus numériques (résultats, analyses, synthèse). En cochant la case, vous demandez expressément que l’exécution commence dès le paiement et reconnaissez perdre votre droit de rétractation de quatorze jours (art. L221-28 13° du Code de la consommation).'
 
 export interface Subprocessor {
   name: string
@@ -51,6 +89,12 @@ export const SUBPROCESSORS: Subprocessor[] = [
     purpose: 'Chargement des polices de caractères du site (adresse IP transmise).',
     location: 'États-Unis (clauses contractuelles types)',
   },
+  {
+    name: 'Stripe',
+    purpose:
+      'Paiement par carte du forfait particuliers (page de paiement hébergée par Stripe : nom, e-mail, montant ; les données de carte ne transitent jamais par nos serveurs) et émission des factures.',
+    location: 'Irlande (UE) et États-Unis (clauses contractuelles types)',
+  },
 ]
 
 export interface RetentionPeriod {
@@ -64,8 +108,17 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: 'Durée de l’accompagnement, puis 3 ans après sa fin',
   },
   {
-    data: 'Comptes utilisateurs des cabinets',
+    data: 'Comptes utilisateurs des cabinets (conseillers, administrateurs, candidats invités)',
     duration: 'Durée du contrat avec le cabinet, puis 3 ans',
+  },
+  {
+    data: 'Compte particulier (inscription en libre-service) et son dossier',
+    duration: '3 ans après la dernière connexion, ou dès la demande d’effacement',
+  },
+  {
+    data: 'Données de paiement et factures du forfait particuliers',
+    duration:
+      '10 ans (art. L123-22 du Code de commerce) ; enregistrement anonymisé après effacement du compte',
   },
   { data: 'Demandes de contact et prospection B2B', duration: '3 ans après le dernier contact' },
   {
