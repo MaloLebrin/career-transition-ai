@@ -19,15 +19,6 @@
     - “Accès Expert” (usage par les cabinets).
   - Cohérence graphique (logo, couleurs, typographies, animations) entre la landing, l’auth et le portail.
 
-- **Acquisition B2C (épic #90, #99)**
-  - Page `/particuliers` : promesse en autonomie, Motivations et Valeurs offerts, forfait
-    unique TTC (prix de la prop partagée `billing`), accompagnement par un expert sur demande,
-    CTA vers `/inscription` quand `B2C_REGISTRATION_ENABLED` est vrai, formulaire de contact
-    « être prévenu » sinon.
-  - `/tarifs` : bloc « Vous êtes un particulier ? » (prix TTC, inclus / non inclus), le libellé
-    HT étant réservé aux offres cabinets. Lien « Particuliers » dans l’en-tête et le pied de
-    page, lien secondaire sur la landing. `noindex` conservé par défaut (`SEO_INDEXING`).
-
 ---
 
 ## 2. Authentification & gestion des accès
@@ -393,7 +384,16 @@
   réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
 - Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
 
-### 11.4 Accompagnement par un expert (#103)
+### 11.4 Webhook Stripe (#104)
+
+- `POST /webhooks/stripe` : source de vérité des paiements, signée, exemptée de CSRF,
+  idempotente (`stripe_events`, sans payload). Paiement confirmé → forfait débloqué,
+  analyses IA des exercices complétés sans analyse lancées, notification « Vos résultats
+  sont débloqués » ; paiement différé refusé → `failed` ; session expirée → `canceled` ;
+  remboursement → `refunded`, accès retiré, notification « Votre accès aux résultats a été
+  retiré ». Rejouer un événement est sans effet.
+
+### 11.5 Accompagnement par un expert (#103)
 
 - Page `/dashboard/candidat/accompagnement` : un particulier au forfait réglé dépose une
   demande (message libre, disponibilités) ; une seule demande en attente à la fois ; statut
@@ -406,6 +406,6 @@
   expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
   notification, nouvelle demande possible.
 
-### 11.5 À venir
+### 11.6 À venir
 
-Webhook Stripe (#104), back-office B2C : paiements, octroi et révocation manuels (#107).
+Back-office B2C : paiements, octroi et révocation manuels (#107).

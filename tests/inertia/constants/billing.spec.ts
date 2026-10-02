@@ -6,9 +6,13 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
   PAYMENT_STATUS_LABELS,
+  STRIPE_WEBHOOK_EVENTS,
+  STRIPE_WEBHOOK_PATH,
+  WEBHOOK_OUTCOMES,
   paymentProductValues,
   paymentProviderValues,
   paymentStatusValues,
+  stripeWebhookEventValues,
 } from '#shared/constants/billing'
 import { expectConsistentEnum } from './enum_contract.js'
 
@@ -42,5 +46,24 @@ describe('shared/constants/billing (#94)', () => {
     expect(BILLING_CURRENCY).toMatch(/^[a-z]{3}$/)
     expect(Number.isInteger(DEFAULT_RESULTS_PRICE_CENTS)).toBe(true)
     expect(DEFAULT_RESULTS_PRICE_CENTS).toBeGreaterThan(0)
+  })
+
+  test('webhook (#104) : chemin public, cinq événements Stripe à abonner, issues figées', () => {
+    expect(STRIPE_WEBHOOK_PATH).toBe('/webhooks/stripe')
+    // Noms imposés par Stripe (points) : hors du contrat `expectConsistentEnum`.
+    expect(stripeWebhookEventValues).toEqual([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+      'checkout.session.async_payment_failed',
+      'checkout.session.expired',
+      'charge.refunded',
+    ])
+    expect(Object.values(STRIPE_WEBHOOK_EVENTS)).toEqual(stripeWebhookEventValues)
+    expect(Object.values(WEBHOOK_OUTCOMES)).toEqual([
+      'processed',
+      'duplicate',
+      'ignored',
+      'unmatched',
+    ])
   })
 })
