@@ -1,0 +1,89 @@
+# Paiement du forfait particuliers — Stripe Checkout
+
+Épic B2C (#90), issue #102 (checkout) puis #104 (webhook). Un particulier
+(`employees.account_type = 'b2c'`) règle **une fois** le forfait qui débloque tous
+ses résultats (`EntitlementsService`, #94).
+
+## Principe
+
+- **Stripe Checkout hébergé**, `mode: payment`, one-shot. Le navigateur est
+  redirigé vers la page Stripe (`inertia.location`) puis revient sur
+  `/dashboard/candidat/billing/success?session_id=…`. **Aucun Stripe.js** dans le
+  bundle : CSP et `Permissions-Policy: payment=()` inchangés.
+- **Réconciliation** au retour : `CheckoutService.reconcile` relit la session chez
+  Stripe et débloque si `payment_status = paid`, sans attendre le webhook.
+- **Webhook** (#104, `POST /webhooks/stripe`) : source de vérité si l'onglet est
+  fermé, remboursements. `PaymentsService.markPaid` est idempotent (une seule
+  ligne `pending` passe `paid`) : réconciliation et webhook peuvent arriver dans
+  n'importe quel ordre.
+- Données transmises à Stripe : e-mail du compte (`customer_email`), montant,
+  libellé du forfait, **ids seulement** dans `metadata` (`paymentId`, `employeeId`)
+  — jamais de nom. Stripe est déclaré sous-traitant (`shared/constants/legal.ts`,
+  `docs/RGPD.md`).
+
+## Fichiers
+
+| Rôle                 | Fichier                                                  |
+| -------------------- | -------------------------------------------------------- |
+| Flag et prix         | `config/billing.ts` (`STRIPE_ENABLED`, `B2C_RESULTS_PRICE_CENTS`) |
+| Clés et garde prod   | `config/stripe.ts`                                       |
+| Passerelle           | `app/services/billing/payment_gateway.ts` (interface), `stripe_payment_gateway.ts` |
+| Checkout             | `app/services/billing/checkout_service.ts`, `app/controllers/billing_controller.ts`, `start/routes/dashboard/candidat/billing.ts` |
+| Paiements            | `app/services/billing/payments_service.ts`, modèle `CandidatePayment` |
+| Pages                | `inertia/pages/dashboard/candidat/billing/{Offer,Success}.tsx`, `inertia/components/dashboard/b2c/CheckoutConsentForm.tsx` |
+| Fake de test         | `tests/support/fake_stripe.ts` (`swapFakeStripe()` / `restoreStripe()`) |
+
+## Variables d'environnement
+
+| Variable                | Défaut  | Rôle                                                                 |
+| ----------------------- | ------- | -------------------------------------------------------------------- |
+| `STRIPE_ENABLED`        | `false` | Ouvre le paiement. Tant que faux : bouton « Bientôt disponible », `POST …/checkout` → 503. |
+| `STRIPE_SECRET_KEY`     | —       | `sk_test_…` en dev / staging, `sk_live_…` en production.             |
+| `STRIPE_WEBHOOK_SECRET` | —       | `whsec_…` du endpoint webhook (ou de `stripe listen`).               |
+| `B2C_RESULTS_PRICE_CENTS` | `4900` | Prix TTC en centimes (`config/billing.ts`).                         |
+
+**Garde de démarrage** (`config/stripe.ts`) : en production, `STRIPE_ENABLED=true`
+sans les deux clés (ou avec des clés mal formées) empêche le serveur de démarrer.
+Hors production, l'app démarre sans clés et seul un appel à Stripe échoue
+(`PaymentGatewayNotConfiguredError`, 503).
+
+**Prérequis avant `STRIPE_ENABLED=true` en production** : CGV (`/cgv`) validées
+juridiquement (#95), identité du vendeur renseignée (`SELLER_IDENTITY`), prix TTC
+confirmé par le PO.
+
+## Configuration Stripe (tableau de bord)
+
+1. Créer le compte, activer le **mode test**, copier la clé secrète `sk_test_…`.
+2. Aucun produit à créer : le prix est envoyé inline (`price_data`) à chaque session.
+3. Activer les **factures** pour Checkout (`invoice_creation` est demandé par
+   session) ; renseigner les informations légales de l'entreprise sur Stripe.
+4. Webhook (#104) : endpoint `https://<domaine>/webhooks/stripe`, événements
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed`, `checkout.session.expired`,
+   `charge.refunded`. Copier le `whsec_…`.
+5. Passer en mode live : nouvelles clés, nouveau endpoint webhook, nouveau `whsec_`.
+
+## En local
+
+```bash
+# .env
+STRIPE_ENABLED=true
+STRIPE_SECRET_KEY=sk_test_…
+STRIPE_WEBHOOK_SECRET=whsec_…   # celui affiché par `stripe listen`
+
+stripe login
+stripe listen --forward-to localhost:3333/webhooks/stripe
+```
+
+Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque. Parcours
+manuel : `docs/MANUAL_TESTS.md` (§ B2C).
+
+## Tests
+
+Les tests ne font **aucun appel réseau** : `swapFakeStripe()` remplace
+`StripePaymentGateway` dans le conteneur (`FakeStripeGateway` : sessions en
+mémoire, `pay(sessionId)` simule le paiement, `FAKE_STRIPE_SIGNATURE` pour les
+webhooks). `StripePaymentGateway.checkoutParams` est pur et testé tel quel ; la
+vérification de signature utilise `stripe.webhooks.generateTestHeaderString`
+(`tests/unit/services/billing/stripe_payment_gateway.spec.ts`). `.env.test` ne
+définit aucune clé.

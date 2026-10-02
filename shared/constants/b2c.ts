@@ -1,3 +1,4 @@
+import { BILLING_PATHS } from './billing.js'
 import { EXERCICE_RESULTS_TYPES, type ExerciceResultType } from './exercises.js'
 
 /**
@@ -47,4 +48,4 @@ export type ExerciseLockReason = (typeof EXERCISE_LOCK_REASONS)[keyof typeof EXE
 export const exerciseLockReasonValues = Object.values(EXERCISE_LOCK_REASONS)
 
 /** Page de l'offre (forfait) vers laquelle pointent les CTA « Débloquer » (#102). */
-export const B2C_OFFER_PATH = '/dashboard/candidat/offre'
+export const B2C_OFFER_PATH: string = BILLING_PATHS.offer
