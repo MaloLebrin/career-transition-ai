@@ -41,7 +41,11 @@ export class ExpertRequestsService {
     const lockedReason = await this.lockedReasonFor(employee)
     const latest = await ExpertRequest.query()
       .where('employeeId', employee.id)
-      .orderBy('createdAt', 'desc')
+      // Deux demandes créées dans la même milliseconde : l'id départage.
+      .orderBy([
+        { column: 'createdAt', order: 'desc' },
+        { column: 'id', order: 'desc' },
+      ])
       .first()
 
     return {
@@ -81,7 +85,10 @@ export class ExpertRequestsService {
   public async listForEmployee(employee: Employee): Promise<ExpertRequestView[]> {
     const rows = await ExpertRequest.query()
       .where('employeeId', employee.id)
-      .orderBy('createdAt', 'desc')
+      .orderBy([
+        { column: 'createdAt', order: 'desc' },
+        { column: 'id', order: 'desc' },
+      ])
     return rows.map(toView)
   }
 
