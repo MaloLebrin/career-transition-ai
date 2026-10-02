@@ -112,6 +112,17 @@ un candidat qui n'a plus accès à son compte.
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
    serveur (`tmp/rgpd/`).
 
+**Notes des conseillers (#97).** `donnees.json` sépare les notes partagées avec
+le candidat (`notes`) des notes `private` des conseillers
+(`advisorPrivateNotes`). Leur restitution au titre du droit d'accès (art. 15)
+contre la protection des appréciations internes est **en cours d'arbitrage**
+(PO / juridique, question 9 de l'épic #90) ; avec les experts internes du
+parcours B2C, la question porte aussi sur nos propres notes. En attendant,
+statu quo : elles sont incluses (`PRIVATE_NOTES_IN_EXPORT`,
+`shared/constants/legal.ts`), et `node ace candidate:export <id>
+--without-private-notes` les écarte au cas par cas (`advisorPrivateNotes: null`,
+`advisorPrivateNotesWithheld` donne leur nombre).
+
 **Particuliers (B2C, #101).** L'export n'est **pas expurgé** des résultats
 « réservés au forfait » : le droit d'accès (art. 15) porte sur toutes les données
 que la personne nous a confiées, y compris ses réponses à un exercice qu'elle n'a

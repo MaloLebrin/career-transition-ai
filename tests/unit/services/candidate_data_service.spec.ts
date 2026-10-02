@@ -3,6 +3,7 @@ import CandidatePurge from '#commands/candidate_purge'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { ExperienceFactory } from '#database/factories/experience_factory'
 import { MediaFactory } from '#database/factories/media_factory'
+import { NoteFactory } from '#database/factories/note_factory'
 import { NotificationFactory } from '#database/factories/notification_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import Employee from '#models/employee'
@@ -15,6 +16,7 @@ import User from '#models/user'
 import { CloudinaryService } from '#services/cloudinary_service'
 import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import {
+  DEFAULT_EXPORT_OPTIONS,
   CANDIDATE_DATA_FILENAME,
   buildCandidateExportArchive,
   candidateDataSnapshot,
@@ -36,6 +38,7 @@ import {
   restoreCloudinary,
   swapFakeCloudinary,
 } from '#tests/support/fake_cloudinary'
+import { NOTE_VISIBILITY } from '#shared/constants/note'
 import { test } from '@japa/runner'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -218,6 +221,54 @@ test.group('candidate_data_service | export', (group) => {
     assert.match(snapshot.payments[0].stripeCheckoutSessionId ?? '', /^cs_test_/)
   })
 
+  test('notes (#97) : les partagées dans `notes`, les privées à part, exclues sur demande', async ({
+    assert,
+  }) => {
+    const { employee, advisor } = await seedCandidate()
+    await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: advisor.id,
+      visibility: NOTE_VISIBILITY.SHARED,
+      content: 'Note partagée avec le candidat',
+    }).create()
+    await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: advisor.id,
+      visibility: NOTE_VISIBILITY.PRIVATE,
+      content: 'Appréciation interne du conseiller',
+    }).create()
+    const loaded = await loadCandidateForExport(employee.id)
+
+    const included = candidateDataSnapshot(loaded!, [], { includePrivateNotes: true })
+    assert.deepEqual(
+      included.notes.map((n) => n.content),
+      ['Note partagée avec le candidat']
+    )
+    assert.deepEqual(
+      included.advisorPrivateNotes?.map((n) => n.content),
+      ['Appréciation interne du conseiller']
+    )
+    assert.equal(included.advisorPrivateNotesWithheld, 0)
+
+    const excluded = candidateDataSnapshot(loaded!, [], { includePrivateNotes: false })
+    assert.deepEqual(
+      excluded.notes.map((n) => n.content),
+      ['Note partagée avec le candidat']
+    )
+    assert.isNull(excluded.advisorPrivateNotes)
+    assert.equal(excluded.advisorPrivateNotesWithheld, 1)
+    assert.notInclude(JSON.stringify(excluded), 'Appréciation interne du conseiller')
+
+    // Sans option : la politique par défaut (`PRIVATE_NOTES_IN_EXPORT`).
+    const byDefault = candidateDataSnapshot(loaded!)
+    assert.equal(
+      byDefault.advisorPrivateNotes === null,
+      !DEFAULT_EXPORT_OPTIONS.includePrivateNotes
+    )
+  })
+
   test('l’archive contient la liste et le contenu des documents déposés', async ({ assert }) => {
     const { employee } = await seedCandidate()
     const [document] = await Media.query().where('entityId', employee.id)
@@ -268,6 +319,25 @@ test.group('commandes candidate:export et candidate:purge', (group) => {
     const zip = await readFile(out)
     assert.equal(zip.subarray(0, 2).toString(), 'PK')
     assert.include(zip.toString('latin1'), CANDIDATE_DATA_FILENAME)
+  })
+
+  test('candidate:export --without-private-notes écarte les notes privées (#97)', async ({
+    assert,
+  }) => {
+    const { employee } = await seedCandidate()
+    const out = join(TMP_DIR, `export-sans-notes-${employee.id}.zip`)
+
+    const command = await ace.create(CandidateExport, [
+      String(employee.id),
+      `--out=${out}`,
+      '--without-private-notes',
+    ])
+    await command.exec()
+
+    command.assertSucceeded()
+    command.assertLogMatches(/notes privées des conseillers exclues/)
+    const zip = await readFile(out)
+    assert.equal(zip.subarray(0, 2).toString(), 'PK')
   })
 
   test('candidate:purge --force supprime le candidat', async ({ assert }) => {

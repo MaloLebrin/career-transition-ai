@@ -128,3 +128,13 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
   { data: 'Exports PDF générés (synthèses)', duration: '30 jours, puis régénérables' },
   { data: 'Journaux techniques et de sécurité', duration: '1 an' },
 ]
+
+/**
+ * Export RGPD (#97) : les notes `private` des conseillers (appréciations
+ * internes que le candidat ne voit jamais dans l'application) sont-elles
+ * restituées au titre du droit d'accès (art. 15) ? Arbitrage PO / juridique
+ * en cours (question 9 de l'épic #90) : en attendant, statu quo — incluses,
+ * mais séparées dans `advisorPrivateNotes` ; `candidate:export
+ * --without-private-notes` permet de les écarter au cas par cas.
+ */
+export const PRIVATE_NOTES_IN_EXPORT = true

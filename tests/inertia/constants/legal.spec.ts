@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   PRIVACY_CONTACT_EMAIL,
   PRIVACY_REQUEST_DELAY,
+  PRIVATE_NOTES_IN_EXPORT,
   RETENTION_PERIODS,
   SELLER_IDENTITY,
   SUBPROCESSORS,
@@ -140,6 +141,13 @@ describe('shared/constants/legal (source de /confidentialite et /securite)', () 
         expect(period.duration, period.data).toMatch(/\d+ (an|ans|jours|mois)|suppression|Durée/)
         expect(period.duration, period.data).not.toMatch(/illimit|indéfini/i)
       }
+    })
+  })
+
+  describe('export RGPD (#97)', () => {
+    test('politique des notes privées : booléen explicite, statu quo tant que l’arbitrage est ouvert', () => {
+      expect(typeof PRIVATE_NOTES_IN_EXPORT).toBe('boolean')
+      expect(PRIVATE_NOTES_IN_EXPORT).toBe(true)
     })
   })
 })
