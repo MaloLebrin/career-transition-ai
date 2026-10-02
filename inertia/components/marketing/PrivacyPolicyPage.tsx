@@ -1,6 +1,7 @@
 import {
   PRIVACY_CONTACT_EMAIL,
   PRIVACY_REQUEST_DELAY,
+  RETENTION_NOTICE,
   RETENTION_PERIODS,
   SUBPROCESSORS,
 } from '#shared/constants/legal'
@@ -75,6 +76,7 @@ export default function PrivacyPolicyPage() {
       </LegalSection>
 
       <LegalSection title="Durées de conservation">
+        <p>{RETENTION_NOTICE}</p>
         <ul className="list-disc space-y-2 pl-5">
           {RETENTION_PERIODS.map((period) => (
             <li key={period.data}>

@@ -35,17 +35,17 @@ Contact pour l'exercice des droits : `contact@transitioncarriere.fr`
 
 ## 2. Sous-traitants et flux de données
 
-| Sous-traitant                          | Données                                                                                                                                             | Depuis                                                                        | Mesure                                                                                                                                                                                                                                                                                                               |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Mistral AI** (France)                | Profil (poste, résumé, compétences, expériences, formations) et réponses aux exercices                                                              | Serveur : `AnalyzeExerciseQualitativeJob` (queue `ai`)                        | **Pseudonymisé** : `buildEmployeeAiProfile` n'inclut ni nom ni e-mail, et `pseudonymizeForAi` remplace le nom (complet, prénom, nom) et l'e-mail par `[candidat]` dans tout le texte libre, profil **et** données d'exercice (`shared/helpers/ai/exercise_profile.ts`).                                              |
-| **Mistral AI** (France)                | **CV complet** (OCR `mistral-ocr-latest`) et son texte, pour pré-remplir le profil                                                                  | Serveur : `POST /dashboard/ai/cv` (`#services/ai_assist_service`)             | Non pseudonymisable : extraire nom, e-mail et parcours du CV est le but de l'import. Déclenché uniquement par l'utilisateur connecté qui importe son CV. Mistral ne conserve pas le fichier ; après une extraction réussie, le CV d'un candidat est conservé dans **ses documents** (Cloudinary, privé — issue #50). |
-| **Mistral AI** (France)                | Récit libre (cartographie), compétences et poste visé (ciblage)                                                                                     | Serveur : `POST /dashboard/ai/skill-mapping`, `/dashboard/ai/targets`         | Récit **pseudonymisé** avec l'identité de l'utilisateur connecté (`pseudonymizeForAi`) ; le ciblage n'envoie aucune donnée identifiante.                                                                                                                                                                             |
-| **Resend**                             | Nom, e-mail du destinataire, contenu des e-mails (invitation, notifications, formulaire de contact)                                                 | Serveur (`app/services/mail/`)                                                | `MAIL_PROVIDER=console` en dev/test.                                                                                                                                                                                                                                                                                 |
-| **Hébergeur** (UE, à choisir)          | Toute la base PostgreSQL                                                                                                                            | —                                                                             | Voir [hosting.md](hosting.md).                                                                                                                                                                                                                                                                                       |
-| **Cloudinary** (États-Unis par défaut) | Documents du candidat (CV importé, diplômes…) et synthèses PDF exportées (nom du candidat dans le contenu, jamais dans l'identifiant du fichier)    | Worker (écriture), serveur (lecture relayée) — `#services/cloudinary_service` | Fichiers **privés** (`authenticated`) : aucune URL publique, téléchargement relayé par le serveur après contrôle d'accès (URL signée de 5 min). PDF purgés à 30 jours ; documents conservés jusqu'à leur suppression ; tout est effacé par `candidate:purge`. Voir [CLOUDINARY.md](CLOUDINARY.md).                   |
-| **Sentry** (région EU)                 | Message et pile d'appels des erreurs 5xx et des jobs en échec, méthode et route, **id** de l'utilisateur                                            | Serveur et worker (`#services/error_tracking_service`)                        | Actif seulement avec `SENTRY_DSN`. `scrubEvent` retire nom, e-mail, IP, cookies, corps de requête et query string ; le payload des jobs n'est jamais envoyé.                                                                                                                                                         |
-| **Google Fonts**                       | Adresse IP du visiteur                                                                                                                              | Navigateur                                                                    | Auto-héberger les polices supprimerait ce transfert.                                                                                                                                                                                                                                                                 |
-| **Stripe** (Irlande, États-Unis)       | Nom, e-mail, montant et identifiant de transaction du forfait particuliers ; données de carte saisies **chez Stripe** uniquement (Checkout hébergé) | Navigateur (page Stripe), serveur (webhook signé — #102, #104)                | Aucun script Stripe sur notre domaine, donc aucun cookie tiers (CSP et `Permissions-Policy: payment=()` inchangées). Nous ne stockons que le statut, le montant et les identifiants Stripe ; facture émise par Stripe.                                                                                               |
+| Sous-traitant                          | Données                                                                                                                                                                                                               | Depuis                                                                        | Mesure                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mistral AI** (France)                | Profil (poste, résumé, compétences, expériences, formations) et réponses aux exercices                                                                                                                                | Serveur : `AnalyzeExerciseQualitativeJob` (queue `ai`)                        | **Pseudonymisé** : `buildEmployeeAiProfile` n'inclut ni nom ni e-mail, et `pseudonymizeForAi` remplace le nom (complet, prénom, nom) et l'e-mail par `[candidat]` dans tout le texte libre, profil **et** données d'exercice (`shared/helpers/ai/exercise_profile.ts`).                                              |
+| **Mistral AI** (France)                | **CV complet** (OCR `mistral-ocr-latest`) et son texte, pour pré-remplir le profil                                                                                                                                    | Serveur : `POST /dashboard/ai/cv` (`#services/ai_assist_service`)             | Non pseudonymisable : extraire nom, e-mail et parcours du CV est le but de l'import. Déclenché uniquement par l'utilisateur connecté qui importe son CV. Mistral ne conserve pas le fichier ; après une extraction réussie, le CV d'un candidat est conservé dans **ses documents** (Cloudinary, privé — issue #50). |
+| **Mistral AI** (France)                | Récit libre (cartographie), compétences et poste visé (ciblage)                                                                                                                                                       | Serveur : `POST /dashboard/ai/skill-mapping`, `/dashboard/ai/targets`         | Récit **pseudonymisé** avec l'identité de l'utilisateur connecté (`pseudonymizeForAi`) ; le ciblage n'envoie aucune donnée identifiante.                                                                                                                                                                             |
+| **Resend**                             | Nom, e-mail du destinataire, contenu des e-mails (invitation, notifications, formulaire de contact)                                                                                                                   | Serveur (`app/services/mail/`)                                                | `MAIL_PROVIDER=console` en dev/test.                                                                                                                                                                                                                                                                                 |
+| **Hébergeur** (UE, à choisir)          | Toute la base PostgreSQL                                                                                                                                                                                              | —                                                                             | Voir [hosting.md](hosting.md).                                                                                                                                                                                                                                                                                       |
+| **Cloudinary** (États-Unis par défaut) | Documents du candidat (CV importé, diplômes…) et synthèses PDF exportées (nom du candidat dans le contenu, jamais dans l'identifiant du fichier)                                                                      | Worker (écriture), serveur (lecture relayée) — `#services/cloudinary_service` | Fichiers **privés** (`authenticated`) : aucune URL publique, téléchargement relayé par le serveur après contrôle d'accès (URL signée de 5 min). PDF purgés à 30 jours ; documents conservés jusqu'à leur suppression ; tout est effacé par `candidate:purge`. Voir [CLOUDINARY.md](CLOUDINARY.md).                   |
+| **Sentry** (région EU)                 | Message et pile d'appels des erreurs 5xx et des jobs en échec, méthode et route, **id** de l'utilisateur                                                                                                              | Serveur et worker (`#services/error_tracking_service`)                        | Actif seulement avec `SENTRY_DSN`. `scrubEvent` retire nom, e-mail, IP, cookies, corps de requête et query string ; le payload des jobs n'est jamais envoyé.                                                                                                                                                         |
+| **Google Fonts**                       | Adresse IP du visiteur                                                                                                                                                                                                | Navigateur                                                                    | Auto-héberger les polices supprimerait ce transfert.                                                                                                                                                                                                                                                                 |
+| **Stripe** (Irlande, États-Unis)       | E-mail, montant et identifiant de transaction du forfait particuliers (jamais le nom : seul `customer_email` est transmis, non pseudonymisé) ; données de carte saisies **chez Stripe** uniquement (Checkout hébergé) | Navigateur (page Stripe), serveur (webhook signé — #102, #104)                | Aucun script Stripe sur notre domaine, donc aucun cookie tiers (CSP et `Permissions-Policy: payment=()` inchangées). Nous ne stockons que le statut, le montant et les identifiants Stripe ; facture émise par Stripe.                                                                                               |
 
 Règle de code : **aucun nom ni e-mail de candidat dans un prompt IA**. Tout
 nouvel appel serveur à un fournisseur IA passe ses données par
@@ -54,7 +54,8 @@ nouvel appel serveur à un fournisseur IA passe ses données par
 
 ## 3. Durées de conservation
 
-Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
+Source : `RETENTION_PERIODS` et `RETENTION_NOTICE` (`shared/constants/legal.ts`).
+Les durées publiées (3 ans, 1 an) sont des **durées maximales** de conservation.
 
 | Données                                           | Durée                                                                                           |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -68,9 +69,20 @@ Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
 | Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                              |
 | Journaux techniques et de sécurité                | 1 an                                                                                            |
 
-Seuls les exports PDF sont purgés automatiquement. Pour le reste, il n'existe **pas encore de purge automatique** : à l'échéance, appliquer la
-procédure d'effacement ci-dessous (ou le SQL du §5 pour les demandes de
-contact).
+**Écart entre durée annoncée et pratique réelle.** Seuls les exports PDF sont
+purgés automatiquement (`PurgeExpiredPdfExportsJob`, `start/scheduler.ts`). Il
+n'existe **pas encore de purge automatique** des comptes particuliers inactifs,
+des dossiers clôturés, des demandes de contact ni des journaux. Les pages
+publiques le disent (`RETENTION_NOTICE` : durées maximales, effacement à la
+demande, purges à l'échéance faites par l'équipe, automatisation à venir).
+En pratique :
+
+- sur demande d'effacement : `node ace candidate:purge <id>` (§5) ;
+- à l'échéance : traitement **manuel** par l'équipe avec la même commande (ou le
+  SQL du §5 pour les demandes de contact) ; la rétention des journaux est celle
+  de l'hébergeur et de Sentry, à vérifier à la mise en production ;
+- tant que l'automatisation n'existe pas, un passage manuel périodique (au moins
+  annuel) doit être planifié ; suivi dans `PRODUCTION_CHECKLIST.md`.
 
 ### Cookies
 
@@ -105,12 +117,16 @@ un candidat qui n'a plus accès à son compte.
 
    Le ZIP contient le dossier PDF (identique au téléchargement conseiller :
    `profil.pdf`, `resultats/<exercice>.pdf`) et `donnees.json` : fiche,
-   compte (sans mot de passe ni jeton), compétences, expériences, formations,
+   compte (sans mot de passe ni jeton : e-mail, rôle, version des CGU acceptée,
+   date de vérification de l'e-mail), type de compte (`accountType` : cabinet ou
+   particulier) et date de demande d'effacement, compétences, expériences, formations,
    résultats d'exercices bruts et analyses IA, plan d'accompagnement, notes,
    paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
    jamais de numéro de carte, Stripe seul les détient), demandes
    d'accompagnement par un expert (#103 : message, disponibilités, statut,
-   motif de refus, dates), liste des documents déposés ; les documents
+   motif de refus, dates), synthèses d'accompagnement (`syntheses` ; les notes internes de l'expert
+   suivent la politique des notes privées ci-dessous), notifications reçues par
+   le compte (`notifications`), liste des documents déposés ; les documents
    eux-mêmes sont dans `documents/<id>_<nom d'origine>`.
 
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
@@ -125,7 +141,14 @@ parcours B2C, la question porte aussi sur nos propres notes. En attendant,
 statu quo : elles sont incluses (`PRIVATE_NOTES_IN_EXPORT`,
 `shared/constants/legal.ts`), et `node ace candidate:export <id>
 --without-private-notes` les écarte au cas par cas (`advisorPrivateNotes: null`,
-`advisorPrivateNotesWithheld` donne leur nombre).
+`advisorPrivateNotesWithheld` donne leur nombre ; `syntheses[].expertNotesInternal`
+est aussi mis à `null`).
+
+**Hors export.** La table `ai_generations` (historique des générations IA) a été
+supprimée (migration `drop_ai_generations_table`) : il n'y a rien à restituer.
+Les identifiants Stripe des paiements sont restitués ; le motif de retrait, la
+renonciation à la rétractation et l'auteur de l'octroi manuel (`candidate_payments`)
+seront ajoutés avec la branche `fix/b2c-billing`.
 
 **Particuliers (B2C, #101).** L'export n'est **pas expurgé** des résultats
 « réservés au forfait » : le droit d'accès (art. 15) porte sur toutes les données
@@ -186,6 +209,15 @@ sans aucun champ identifiant (montant, statut, dates, identifiants techniques
 Stripe seulement). La commande affiche le nombre de paiements ainsi anonymisés
 (`paymentsAnonymized`) et de demandes d'accompagnement supprimées
 (`expertRequests`).
+
+**Stripe.** Les identifiants `stripe_checkout_session_id` et
+`stripe_payment_intent_id` sont conservés avec la ligne de paiement anonymisée
+(rapprochement comptable, 10 ans). La purge ne supprime **pas** le client côté
+Stripe : le client (qui porte l'e-mail transmis dans `customer_email`) et ses
+paiements restent chez Stripe, qui les conserve au titre de ses propres
+obligations. Si la personne demande l'effacement, supprimer le client à la main
+dans le tableau de bord Stripe (_Clients_ → _Supprimer_) ; Stripe peut conserver
+certaines données exigées par la loi. À mentionner dans la réponse.
 
 Restent hors de portée de la commande, à traiter à la main si nécessaire :
 les **sauvegardes** de la base (l'effacement y devient effectif à leur
