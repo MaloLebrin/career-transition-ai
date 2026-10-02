@@ -8,6 +8,9 @@ import { employeeMediaOwner } from '#services/candidate_documents_service'
 import { MediaService } from '#services/media_service'
 import { deletePdf } from '#services/pdf_storage_service'
 import { MEDIA_ENTITY_TYPES } from '#shared/constants/media'
+import { NOTE_VISIBILITY } from '#shared/constants/note'
+import type { CandidateExportOptions } from '#shared/types/candidate_data/export_options'
+import { PRIVATE_NOTES_IN_EXPORT } from '#shared/constants/legal'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
@@ -25,6 +28,11 @@ export const CANDIDATE_DATA_FILENAME = 'donnees.json'
 
 /** Dossier des documents déposés (issue #50) dans l'archive d'export. */
 export const CANDIDATE_DOCUMENTS_DIR = 'documents'
+
+/** Par défaut, l'export suit la politique `PRIVATE_NOTES_IN_EXPORT` (#97). */
+export const DEFAULT_EXPORT_OPTIONS: CandidateExportOptions = {
+  includePrivateNotes: PRIVATE_NOTES_IN_EXPORT,
+}
 
 /** Résolu à chaque appel : le fake Cloudinary de test (`app.container.swap`) s'applique. */
 function mediaService(): Promise<MediaService> {
@@ -50,9 +58,26 @@ export async function loadCandidateForExport(employeeId: number): Promise<Employ
 /**
  * Données brutes du candidat (`donnees.json`). Liste explicite des champs du
  * compte : jamais de mot de passe ni de jeton.
+ *
+ * Notes (#97) : `notes` ne contient que les notes partagées avec le candidat ;
+ * les notes `private` des conseillers vont dans `advisorPrivateNotes`, incluses
+ * selon `options.includePrivateNotes` (`null` sinon, avec leur nombre dans
+ * `advisorPrivateNotesWithheld`).
  */
-export function candidateDataSnapshot(employee: Employee, documents: Media[] = []) {
+export function candidateDataSnapshot(
+  employee: Employee,
+  documents: Media[] = [],
+  options: CandidateExportOptions = DEFAULT_EXPORT_OPTIONS
+) {
   const user = employee.user
+  const notes = employee.notes ?? []
+  const sharedNotes = notes.filter((note) => note.visibility === NOTE_VISIBILITY.SHARED)
+  const privateNotes = notes.filter((note) => note.visibility === NOTE_VISIBILITY.PRIVATE)
+  const serializeNote = (note: (typeof notes)[number]) => ({
+    visibility: note.visibility,
+    content: note.content,
+    createdAt: note.createdAt?.toISO() ?? null,
+  })
   return {
     exportedAt: new Date().toISOString(),
     candidate: {
@@ -87,11 +112,9 @@ export function candidateDataSnapshot(employee: Employee, documents: Media[] = [
       createdAt: result.createdAt?.toISO() ?? null,
     })),
     supportPlanSteps: (employee.supportPlanSteps ?? []).map((step) => step.serialize()),
-    notes: (employee.notes ?? []).map((note) => ({
-      visibility: note.visibility,
-      content: note.content,
-      createdAt: note.createdAt?.toISO() ?? null,
-    })),
+    notes: sharedNotes.map(serializeNote),
+    advisorPrivateNotes: options.includePrivateNotes ? privateNotes.map(serializeNote) : null,
+    advisorPrivateNotesWithheld: options.includePrivateNotes ? 0 : privateNotes.length,
     // Forfait particuliers (#94) : la pièce comptable survit anonymisée à la purge.
     payments: (employee.payments ?? []).map((payment) => ({
       product: payment.productCode,
@@ -138,7 +161,10 @@ async function readAll(stream: Readable): Promise<Buffer> {
 }
 
 /** Archive ZIP de l'export : dossier PDF existant + `donnees.json`. */
-export async function buildCandidateExportArchive(employee: Employee): Promise<archiver.Archiver> {
+export async function buildCandidateExportArchive(
+  employee: Employee,
+  options: CandidateExportOptions = DEFAULT_EXPORT_OPTIONS
+): Promise<archiver.Archiver> {
   const media = await mediaService()
   const documents = await media.list(employeeMediaOwner(employee))
 
@@ -158,7 +184,7 @@ export async function buildCandidateExportArchive(employee: Employee): Promise<a
   return buildDossierArchive(employee, [
     {
       name: CANDIDATE_DATA_FILENAME,
-      content: JSON.stringify(candidateDataSnapshot(employee, documents), null, 2),
+      content: JSON.stringify(candidateDataSnapshot(employee, documents, options), null, 2),
     },
     ...files,
   ])
