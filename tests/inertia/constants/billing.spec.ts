@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  BILLING_ADMIN_PATHS,
   BILLING_CURRENCY,
   DEFAULT_RESULTS_PRICE_CENTS,
   PAYMENT_PRODUCTS,
@@ -65,5 +66,12 @@ describe('shared/constants/billing (#94)', () => {
       'ignored',
       'unmatched',
     ])
+  })
+
+  test('back-office (#107) : chemins super admin des particuliers et des paiements', () => {
+    expect(BILLING_ADMIN_PATHS.b2c).toBe('/dashboard/super-admin/b2c')
+    expect(BILLING_ADMIN_PATHS.payments).toBe('/dashboard/super-admin/payments')
+    expect(BILLING_ADMIN_PATHS.grant(4)).toBe('/dashboard/super-admin/b2c/4/entitlement/grant')
+    expect(BILLING_ADMIN_PATHS.revoke(9)).toBe('/dashboard/super-admin/payments/9/revoke')
   })
 })

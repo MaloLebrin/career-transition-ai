@@ -4,6 +4,7 @@ const SuperAdminController = () => import('#controllers/super_admin_controller')
 const PdfExportsController = () => import('#controllers/pdf_exports_controller')
 const SuperAdminExpertRequestsController = () =>
   import('#controllers/super_admin_expert_requests_controller')
+const SuperAdminBillingController = () => import('#controllers/super_admin_billing_controller')
 
 // Super admin only dashboard routes
 router
@@ -34,6 +35,15 @@ router
     router
       .post('/team', [SuperAdminExpertRequestsController, 'invite'])
       .as('super_admin.team.invite')
+    // Particuliers et paiements du forfait (#107)
+    router.get('/b2c', [SuperAdminBillingController, 'candidates']).as('super_admin.b2c.index')
+    router
+      .post('/b2c/:employeeId/entitlement/grant', [SuperAdminBillingController, 'grant'])
+      .as('super_admin.b2c.grant')
+    router.get('/payments', [SuperAdminBillingController, 'index']).as('super_admin.payments.index')
+    router
+      .post('/payments/:id/revoke', [SuperAdminBillingController, 'revoke'])
+      .as('super_admin.payments.revoke')
   })
   .prefix('/dashboard/super-admin')
   .use([middleware.auth(), middleware.superAdmin()])

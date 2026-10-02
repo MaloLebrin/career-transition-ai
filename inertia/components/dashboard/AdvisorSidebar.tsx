@@ -37,6 +37,8 @@ function SuperAdminSidebarContent() {
             label="Demandes d'accompagnement"
           />
           <NavLink href="/dashboard/super-admin/team" icon="user" label="Équipe interne" />
+          <NavLink href="/dashboard/super-admin/b2c" icon="users" label="Particuliers" />
+          <NavLink href="/dashboard/super-admin/payments" icon="target" label="Paiements" />
           <NavLink
             href="/dashboard/super-admin/exercises-usage"
             icon="target"

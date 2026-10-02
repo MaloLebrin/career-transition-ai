@@ -349,6 +349,29 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
   - **Vérifications**
     - La demande passe « Refusée » avec le motif ; le particulier est notifié et peut redemander.
 
+### 7.4. Particuliers et paiements (B2C, #107)
+
+- **Pré-requis** : `node ace db:seed` (particuliers de démo, forfait réglé et non réglé), compte super admin.
+
+- **Ouvrir un accès manuellement**
+  - **Étapes**
+    1. `/dashboard/super-admin/b2c` → sur le particulier non réglé, « Ouvrir l'accès », confirmer.
+  - **Vérifications**
+    - Le forfait passe « Réglé » ; `/dashboard/super-admin/payments` montre un paiement « Octroi manuel » à 0 €.
+    - Le particulier reçoit « Vos résultats sont débloqués » et voit tous ses exercices.
+    - Un second « Ouvrir l'accès » n'est plus proposé (409 côté serveur).
+
+- **Retirer un accès**
+  - **Étapes**
+    1. `/dashboard/super-admin/payments` → « Retirer l'accès » sur un paiement qui ouvre l'accès, saisir un motif, confirmer.
+  - **Vérifications**
+    - Le paiement affiche « Accès retiré » et le motif ; le particulier reçoit « Votre accès aux résultats a été retiré ».
+    - Ses résultats du forfait sont de nouveau verrouillés, le téléchargement PDF renvoie 404.
+
+- **Indicateurs**
+  - **Vérifications**
+    - L'accueil super admin et la page Particuliers affichent inscrits, forfaits réglés, chiffre d'affaires du mois (paiements Stripe payés ce mois, hors octrois manuels), demandes en attente.
+
 ---
 
 ## 8. Jobs de fond

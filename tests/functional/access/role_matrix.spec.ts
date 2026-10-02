@@ -70,6 +70,22 @@ const AREAS: Area[] = [
     forbiddenMessage: 'Accès réservé aux super administrateurs.',
   },
   {
+    name: 'super admin (particuliers, #107)',
+    url: '/dashboard/super-admin/b2c',
+    component: 'dashboard/admin/b2c/Index',
+    allowed: [USERS_ROLES.SUPER_ADMIN],
+    denied: [USERS_ROLES.EMPLOYEE, USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT],
+    forbiddenMessage: 'Accès réservé aux super administrateurs.',
+  },
+  {
+    name: 'super admin (paiements, #107)',
+    url: '/dashboard/super-admin/payments',
+    component: 'dashboard/admin/payments/Index',
+    allowed: [USERS_ROLES.SUPER_ADMIN],
+    denied: [USERS_ROLES.EMPLOYEE, USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT],
+    forbiddenMessage: 'Accès réservé aux super administrateurs.',
+  },
+  {
     name: 'super admin (équipe interne, #105)',
     url: '/dashboard/super-admin/team',
     component: 'dashboard/admin/team/Index',

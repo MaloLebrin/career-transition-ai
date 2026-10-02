@@ -3,6 +3,7 @@ import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
+import { SuperAdminB2cService } from '#services/super_admin_b2c_service'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -19,21 +20,14 @@ export default class SuperAdminController {
   constructor(
     private superAdminOrganizationsService: SuperAdminOrganizationsService,
     private superAdminUsersService: SuperAdminUsersService,
-    private platformOrganizationService: PlatformOrganizationService
+    private platformOrganizationService: PlatformOrganizationService,
+    private superAdminB2cService: SuperAdminB2cService
   ) {}
   /**
-   * Inertia page: super admin home with global metrics.
+   * Inertia page: super admin home with global metrics (#107 : B2C inclus).
    */
   public async home({ inertia }: HttpContext) {
-    const organizationsCount = await Organization.query().count('* as total')
-    const usersCount = await User.query().count('* as total')
-
-    const totalOrgs = Number(organizationsCount[0].$extras.total || 0)
-    const totalUsers = Number(usersCount[0].$extras.total || 0)
-    const stats = {
-      organizations: totalOrgs,
-      users: totalUsers,
-    }
+    const stats = await this.superAdminB2cService.homeStats()
 
     logger.info('Super admin home', { stats: JSON.stringify(stats) })
 

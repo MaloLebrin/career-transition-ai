@@ -98,6 +98,19 @@ lancée — part dans la queue `ai` (`AnalyzeExerciseQualitativeJob`) et le
 particulier reçoit `results_unlocked` ; au retrait, `results_access_revoked`.
 Un échec de traitement est remonté à Sentry (`reportError`, ids seulement).
 
+## Support (#107)
+
+- **Rembourser** : dans le tableau de bord Stripe (ou l'API). L'événement
+  `charge.refunded` arrive par le webhook : paiement `refunded`, accès retiré,
+  particulier prévenu. Rien à faire côté application.
+- **Ouvrir un accès sans paiement** (geste commercial, incident) :
+  `/dashboard/super-admin/b2c` → « Ouvrir l'accès » — paiement `manual` à 0 €,
+  mêmes effets qu'un paiement (analyses IA, notification).
+- **Retirer un accès sans rembourser** (litige, erreur) :
+  `/dashboard/super-admin/payments` → « Retirer l'accès » avec un motif consigné
+  sur le paiement (`revoke_reason`) ; le paiement garde son statut, l'accès est
+  fermé, le particulier prévenu.
+
 ## En local
 
 ```bash
