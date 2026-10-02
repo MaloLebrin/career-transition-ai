@@ -10,7 +10,8 @@ de l'organisation plateforme par `advisorId` (M4) fait l'objet d'un lot séparé
   d'organisation ; le propriétaire de l'export garde la charge complète sur `users/:id/pdf-exports`.
   `broadcastPdfExportUpdatedToUsers` est désormais asynchrone.
 - **Changement d'e-mail du candidat (M6).** `emailVerifiedAt` repassé à `null`, `employees.email`
-  aligné sur `users.email`, lien de vérification renvoyé pour les particuliers.
+  aligné sur `users.email`, lien de vérification renvoyé, le tout réservé aux fiches `accountType`
+  `b2c` (les candidats B2B gardent leur comportement d'avant : aucun reset, aucun lien).
 - **Analyse IA gratuite (M5).** `saveDraft` n'efface plus `qualitativeAnalysis` (un retour
   completed → draft ne rouvre plus le droit à une analyse). Nouveau `throttleExerciseSave`
   (60/min par compte) sur les sauvegardes d'exercice candidat.

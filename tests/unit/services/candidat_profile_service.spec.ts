@@ -378,7 +378,7 @@ test.group('CandidatProfileService.updateForUser — changement d’e-mail (M6)'
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
   test('B2C : e-mail non vérifié, aligné sur la fiche, lien renvoyé', async ({ assert }) => {
-    const { user, employee } = await createB2cCandidate()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
     user.emailVerifiedAt = DateTime.now()
     await user.save()
 
@@ -392,7 +392,7 @@ test.group('CandidatProfileService.updateForUser — changement d’e-mail (M6)'
   })
 
   test('avec tableaux (transaction) : même comportement', async ({ assert }) => {
-    const { user } = await createB2cCandidate()
+    const { user } = await createB2cCandidate({ emailVerified: true })
     user.emailVerifiedAt = DateTime.now()
     await user.save()
 
@@ -404,7 +404,7 @@ test.group('CandidatProfileService.updateForUser — changement d’e-mail (M6)'
   })
 
   test('e-mail inchangé : vérification conservée, aucun lien', async ({ assert }) => {
-    const { user } = await createB2cCandidate()
+    const { user } = await createB2cCandidate({ emailVerified: true })
     user.emailVerifiedAt = DateTime.now()
     await user.save()
 
@@ -415,15 +415,20 @@ test.group('CandidatProfileService.updateForUser — changement d’e-mail (M6)'
     assert.lengthOf(sentLinks, 0)
   })
 
-  test('B2B : vérification remise à zéro mais aucun lien envoyé', async ({ assert }) => {
-    const { user } = await createCandidate()
+  test('B2B : comportement inchangé (vérification conservée, e-mail de fiche, aucun lien)', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
     user.emailVerifiedAt = DateTime.now()
     await user.save()
 
     await makeService().updateForUser(user, { email: 'b2b-nouveau@example.com' })
+    await makeService().updateForUser(user, { email: 'b2b-tableaux@example.com', skills: [] })
 
     const reloaded = await User.findOrFail(user.id)
-    assert.isNull(reloaded.emailVerifiedAt)
+    assert.isNotNull(reloaded.emailVerifiedAt)
+    const freshEmployee = await Employee.findOrFail(employee.id)
+    assert.equal(freshEmployee.email, employee.email)
     assert.lengthOf(sentLinks, 0)
   })
 })

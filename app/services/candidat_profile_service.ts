@@ -127,6 +127,17 @@ export class CandidatProfileService {
     let emailChanged = false
 
     try {
+      // Load employee
+      const employee = trx
+        ? await Employee.query({ client: trx })
+            .where('userId', user.id)
+            .where('organizationId', user.organizationId)
+            .firstOrFail()
+        : await this.employeesService.getEmployeeForUser(user)
+
+      // Réinitialisation de la vérification et lien : particuliers (B2C) seulement (#98).
+      const isB2c = employee.accountType === ACCOUNT_TYPES.B2C
+
       // Update user
       if (effectivePayload.name !== undefined || effectivePayload.email !== undefined) {
         const nextName = effectivePayload.name ?? user.name
@@ -143,7 +154,7 @@ export class CandidatProfileService {
           }
           user.merge({ name: nextName, email: nextEmail })
           // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
-          if (emailChanged) user.emailVerifiedAt = null
+          if (emailChanged && isB2c) user.emailVerifiedAt = null
           await user.useTransaction(trx).save()
         } else {
           // no transaction => keep existing AuthService behavior elsewhere; here we do minimal update
@@ -156,21 +167,13 @@ export class CandidatProfileService {
           }
           user.merge({ name: nextName, email: nextEmail })
           // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
-          if (emailChanged) user.emailVerifiedAt = null
+          if (emailChanged && isB2c) user.emailVerifiedAt = null
           await user.save()
         }
       }
 
-      // Load employee
-      const employee = trx
-        ? await Employee.query({ client: trx })
-            .where('userId', user.id)
-            .where('organizationId', user.organizationId)
-            .firstOrFail()
-        : await this.employeesService.getEmployeeForUser(user)
-
       // Même donnée que `users.email` : les deux fiches restent alignées.
-      if (emailChanged) employee.email = user.email
+      if (emailChanged && isB2c) employee.email = user.email
 
       this.employeesService.applyUpdate(employee, {
         name: effectivePayload.name ?? employee.name,
@@ -275,7 +278,7 @@ export class CandidatProfileService {
         await trx.commit()
       }
 
-      if (emailChanged && employee.accountType === ACCOUNT_TYPES.B2C) {
+      if (emailChanged && isB2c) {
         await this.emailVerification.sendLinkSafely(user)
       }
 
