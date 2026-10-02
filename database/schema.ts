@@ -7,6 +7,69 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class CandidatePaymentSchema extends BaseModel {
+  static $columns = [
+    'amountCents',
+    'createdAt',
+    'currency',
+    'employeeId',
+    'grantedByUserId',
+    'id',
+    'organizationId',
+    'paidAt',
+    'productCode',
+    'provider',
+    'refundedAt',
+    'revokeReason',
+    'revokedAt',
+    'status',
+    'stripeCheckoutSessionId',
+    'stripePaymentIntentId',
+    'updatedAt',
+    'userId',
+    'withdrawalWaivedAt',
+  ] as const
+  $columns = CandidatePaymentSchema.$columns
+  @column()
+  declare amountCents: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currency: string
+  @column()
+  declare employeeId: number | null
+  @column()
+  declare grantedByUserId: number | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare organizationId: number
+  @column.dateTime()
+  declare paidAt: DateTime | null
+  @column()
+  declare productCode: string
+  @column()
+  declare provider: string
+  @column.dateTime()
+  declare refundedAt: DateTime | null
+  @column()
+  declare revokeReason: string | null
+  @column.dateTime()
+  declare revokedAt: DateTime | null
+  @column()
+  declare status: string
+  @column()
+  declare stripeCheckoutSessionId: string | null
+  @column()
+  declare stripePaymentIntentId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: number | null
+  @column.dateTime()
+  declare withdrawalWaivedAt: DateTime | null
+}
+
 export class ContactRequestSchema extends BaseModel {
   static $columns = [
     'createdAt',

@@ -66,6 +66,16 @@ export const envSchema = {
 
   /*
   |----------------------------------------------------------
+  | Forfait particuliers (épic B2C) — voir config/billing.ts
+  |----------------------------------------------------------
+  | `STRIPE_ENABLED` : `false` par défaut, aucun paiement possible.
+  | `B2C_RESULTS_PRICE_CENTS` : prix TTC en centimes (défaut 4900).
+  */
+  STRIPE_ENABLED: Env.schema.boolean.optional(),
+  B2C_RESULTS_PRICE_CENTS: Env.schema.number.optional(),
+
+  /*
+  |----------------------------------------------------------
   | Référencement — voir config/seo.ts
   |----------------------------------------------------------
   | `SEO_INDEXING` : `false` par défaut (noindex), `true` sur le

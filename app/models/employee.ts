@@ -1,3 +1,4 @@
+import CandidatePayment from '#models/candidate_payment'
 import Education from '#models/education'
 import Experience from '#models/experience'
 import Note from '#models/note'
@@ -105,6 +106,10 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => EmployeeSynthesis)
   declare syntheses: HasMany<typeof EmployeeSynthesis>
+
+  /** Paiements du forfait particuliers (#94) ; FK en SET NULL, donc hors cascade de purge. */
+  @hasMany(() => CandidatePayment)
+  declare payments: HasMany<typeof CandidatePayment>
 
   @manyToMany(() => Skill, {
     pivotTable: 'employee_skills',

@@ -1,0 +1,46 @@
+import { describe, expect, test } from 'vitest'
+import {
+  BILLING_CURRENCY,
+  DEFAULT_RESULTS_PRICE_CENTS,
+  PAYMENT_PRODUCTS,
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUSES,
+  PAYMENT_STATUS_LABELS,
+  paymentProductValues,
+  paymentProviderValues,
+  paymentStatusValues,
+} from '#shared/constants/billing'
+import { expectConsistentEnum } from './enum_contract.js'
+
+describe('shared/constants/billing (#94)', () => {
+  test('produits : enum cohérent et figé (CHECK candidate_payments.product_code)', () => {
+    expectConsistentEnum(PAYMENT_PRODUCTS, paymentProductValues, ['results_access'])
+  })
+
+  test('fournisseurs : enum cohérent et figé (CHECK candidate_payments.provider)', () => {
+    expectConsistentEnum(PAYMENT_PROVIDERS, paymentProviderValues, ['stripe', 'manual'])
+  })
+
+  test('statuts : enum cohérent et figé (CHECK candidate_payments.status)', () => {
+    expectConsistentEnum(PAYMENT_STATUSES, paymentStatusValues, [
+      'pending',
+      'paid',
+      'failed',
+      'canceled',
+      'refunded',
+    ])
+  })
+
+  test('chaque statut a un libellé français non vide', () => {
+    expect(Object.keys(PAYMENT_STATUS_LABELS).sort()).toEqual([...paymentStatusValues].sort())
+    for (const label of Object.values(PAYMENT_STATUS_LABELS)) {
+      expect(label.trim()).not.toBe('')
+    }
+  })
+
+  test('devise ISO 4217 en minuscules (format Stripe) et prix par défaut entier positif', () => {
+    expect(BILLING_CURRENCY).toMatch(/^[a-z]{3}$/)
+    expect(Number.isInteger(DEFAULT_RESULTS_PRICE_CENTS)).toBe(true)
+    expect(DEFAULT_RESULTS_PRICE_CENTS).toBeGreaterThan(0)
+  })
+})

@@ -2,8 +2,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import Employee from '#models/employee'
+import { EntitlementsService } from '#services/entitlements_service'
 import { NotificationService } from '#services/notification_service'
-import type { AccountType } from '#shared/constants/b2c'
 import { receivesNotifications } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import config from '@adonisjs/core/services/config'
@@ -13,6 +13,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
     const { session, auth } = ctx as Partial<HttpContext>
     const request = ctx.request as typeof ctx.request & { csrfToken?: string }
     const user = auth?.user
+    const candidate = user ? await this.candidateFor(user) : null
     const userDto =
       user === undefined
         ? undefined
@@ -22,8 +23,9 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             email: user.email,
             name: user.name,
             role: user.role,
-            accountType: await this.accountTypeFor(user),
+            accountType: candidate?.accountType ?? null,
           }
+    const entitlement = candidate ? await new EntitlementsService().forEmployee(candidate) : null
 
     let employees: any[] = []
     if (user) {
@@ -51,6 +53,9 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
         success: session?.flashMessages.get('success'),
       }),
       user: ctx.inertia.always(userDto),
+      // Droits d'accès aux résultats du candidat (#94), absents hors espace candidat :
+      // `inertia.always()` refuse `null`, et la prop doit survivre aux rechargements partiels.
+      ...(entitlement ? { entitlement: ctx.inertia.always(entitlement) } : {}),
       employees: ctx.inertia.always(employees),
       csrfToken: request.csrfToken,
       notifications: ctx.inertia.always(notifications),
@@ -61,14 +66,13 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
   }
 
   /**
-   * Type de compte d'un candidat (`b2b` | `b2c`, #92) : les pages candidat
-   * choisissent l'accueil B2C et le verrouillage des résultats. `null` pour
-   * les autres rôles et pour un `employee` sans fiche (onboarding en cours).
+   * Fiche du candidat connecté (#92, #94) : son type de compte (`b2b` | `b2c`)
+   * et ses droits d'accès alimentent les pages candidat. `null` pour les
+   * autres rôles et pour un `employee` sans fiche (onboarding en cours).
    */
-  private async accountTypeFor(user: { id: number; role: string }): Promise<AccountType | null> {
+  private async candidateFor(user: { id: number; role: string }): Promise<Employee | null> {
     if (user.role !== USERS_ROLES.EMPLOYEE) return null
-    const employee = await Employee.query().where('userId', user.id).select('accountType').first()
-    return employee?.accountType ?? null
+    return Employee.query().where('userId', user.id).first()
   }
 
   async handle(ctx: HttpContext, next: NextFn) {

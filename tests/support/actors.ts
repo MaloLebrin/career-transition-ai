@@ -1,5 +1,6 @@
 import type Employee from '#models/employee'
 import type User from '#models/user'
+import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { EmployeeFactory } from '#database/factories/employee_factory'
 import { OrganizationFactory } from '#database/factories/organization_factory'
 import { UserFactory } from '#database/factories/user_factory'
@@ -99,9 +100,10 @@ export async function createCandidate(
  * Particulier B2C (#92) : compte `employee` + fiche `account_type = 'b2c'`
  * dans l'organisation plateforme, sans conseiller (`advisorId: null`) sauf si
  * un expert est fourni. `onboarded` vaut `true` par défaut, comme `createCandidate`.
+ * `paid: true` ajoute un paiement Stripe `paid` qui ouvre l'accès aux résultats (#94).
  */
 export async function createB2cCandidate(
-  options: { onboarded?: boolean; expert?: User } = {}
+  options: { onboarded?: boolean; expert?: User; paid?: boolean } = {}
 ): Promise<CandidateActor> {
   const platform = await createPlatformOrganization()
   const user = await createUser(USERS_ROLES.EMPLOYEE, platform)
@@ -115,6 +117,15 @@ export async function createB2cCandidate(
     onboarded: options.onboarded ?? true,
     accountType: ACCOUNT_TYPES.B2C,
   }).create()
+  if (options.paid) {
+    await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      userId: user.id,
+      organizationId: platform.id,
+    })
+      .apply('paid')
+      .create()
+  }
   return { user, employee }
 }
 

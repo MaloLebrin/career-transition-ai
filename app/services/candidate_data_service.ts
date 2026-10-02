@@ -42,6 +42,7 @@ export async function loadCandidateForExport(employeeId: number): Promise<Employ
     .preload('exerciseResults')
     .preload('supportPlanSteps')
     .preload('notes', (q) => q.whereNull('deletedAt'))
+    .preload('payments')
     .first()
 }
 
@@ -89,6 +90,20 @@ export function candidateDataSnapshot(employee: Employee, documents: Media[] = [
       visibility: note.visibility,
       content: note.content,
       createdAt: note.createdAt?.toISO() ?? null,
+    })),
+    // Forfait particuliers (#94) : la pièce comptable survit anonymisée à la purge.
+    payments: (employee.payments ?? []).map((payment) => ({
+      product: payment.productCode,
+      provider: payment.provider,
+      status: payment.status,
+      amountCents: payment.amountCents,
+      currency: payment.currency,
+      stripeCheckoutSessionId: payment.stripeCheckoutSessionId,
+      stripePaymentIntentId: payment.stripePaymentIntentId,
+      paidAt: payment.paidAt?.toISO() ?? null,
+      refundedAt: payment.refundedAt?.toISO() ?? null,
+      revokedAt: payment.revokedAt?.toISO() ?? null,
+      createdAt: payment.createdAt?.toISO() ?? null,
     })),
     documents: documents.map((document) => ({
       kind: document.kind,

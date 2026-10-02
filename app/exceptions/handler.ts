@@ -59,6 +59,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_CANDIDATE_PROFILE_NOT_FOUND',
     'E_ERASURE_ALREADY_REQUESTED',
     'E_PLATFORM_ORGANIZATION_MISSING',
+    'E_RESULTS_LOCKED',
+    'E_PAYMENT_NOT_FOUND',
+    'E_ENTITLEMENT_ALREADY_GRANTED',
   ]
 
   /**

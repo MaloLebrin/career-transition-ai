@@ -22,7 +22,12 @@ import {
   previewCandidatePurge,
   purgeCandidate,
 } from '#services/candidate_data_service'
-import { createAdvisor, createCandidate, type CandidateActor } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  type CandidateActor,
+} from '#tests/support/actors'
 import ace from '@adonisjs/core/services/ace'
 import app from '@adonisjs/core/services/app'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -195,8 +200,22 @@ test.group('candidate_data_service | export', (group) => {
     assert.equal(snapshot.account?.email, user.email)
     assert.lengthOf(snapshot.exerciseResults, 1)
     assert.lengthOf(snapshot.experiences, 1)
+    assert.deepEqual(snapshot.payments, [])
     assert.notInclude(json, 'password')
     assert.notInclude(json, user.password)
+  })
+
+  test('l’export d’un particulier liste ses paiements du forfait (#94)', async ({ assert }) => {
+    const { employee } = await createB2cCandidate({ paid: true })
+
+    const loaded = await loadCandidateForExport(employee.id)
+    const snapshot = candidateDataSnapshot(loaded!)
+
+    assert.lengthOf(snapshot.payments, 1)
+    assert.equal(snapshot.payments[0].status, 'paid')
+    assert.equal(snapshot.payments[0].provider, 'stripe')
+    assert.isNotNull(snapshot.payments[0].paidAt)
+    assert.match(snapshot.payments[0].stripeCheckoutSessionId ?? '', /^cs_test_/)
   })
 
   test('l’archive contient la liste et le contenu des documents déposés', async ({ assert }) => {

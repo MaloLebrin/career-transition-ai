@@ -187,7 +187,9 @@ test.group('InertiaMiddleware.share', () => {
     assert.equal(props.unreadNotificationsCount, 1)
   })
 
-  test('particulier B2C : accountType b2c (#92)', async ({ assert }) => {
+  test('particulier B2C : accountType b2c (#92) et droits verrouillés (#94)', async ({
+    assert,
+  }) => {
     const { user } = await createB2cCandidate()
 
     const props = await share(makeShareCtx({ user }))
@@ -195,14 +197,41 @@ test.group('InertiaMiddleware.share', () => {
     assert.equal(props.user.role, 'employee')
     assert.equal(props.user.accountType, 'b2c')
     assert.deepEqual(props.employees, [])
+    assert.deepEqual(props.entitlement, {
+      accountType: 'b2c',
+      hasPaidAccess: false,
+      freeExerciseTypes: ['motivation', 'values'],
+      paymentsEnabled: false,
+    })
   })
 
-  test('compte employee sans fiche : accountType null', async ({ assert }) => {
+  test('particulier B2C payé : hasPaidAccess ; candidat B2B : toujours vrai', async ({
+    assert,
+  }) => {
+    const paid = await createB2cCandidate({ paid: true })
+    const b2b = await createCandidate()
+
+    const paidProps = await share(makeShareCtx({ user: paid.user }))
+    assert.isTrue(paidProps.entitlement.hasPaidAccess)
+    const b2bProps = await share(makeShareCtx({ user: b2b.user }))
+    assert.equal(b2bProps.entitlement.accountType, 'b2b')
+    assert.isTrue(b2bProps.entitlement.hasPaidAccess)
+  })
+
+  test('compte employee sans fiche : accountType et entitlement null', async ({ assert }) => {
     const user = await createUser('employee')
 
     const props = await share(makeShareCtx({ user }))
 
     assert.isNull(props.user.accountType)
+    assert.notProperty(props, 'entitlement')
+  })
+
+  test('conseiller et invité : pas de prop entitlement', async ({ assert }) => {
+    const advisor = await createAdvisor()
+
+    assert.notProperty(await share(makeShareCtx({ user: advisor })), 'entitlement')
+    assert.notProperty(await share(makeShareCtx()), 'entitlement')
   })
 })
 
