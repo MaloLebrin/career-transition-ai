@@ -8,7 +8,7 @@ import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
-import type { SuperAdminAssignableRole } from '#shared/constants/roles'
+import type { SuperAdminCreatableRole } from '#shared/constants/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { inject } from '@adonisjs/core'
 import { randomBytes } from 'node:crypto'
@@ -17,7 +17,7 @@ type CreatePlatformUserInput = {
   organizationId: number
   name: string
   email: string
-  role: SuperAdminAssignableRole
+  role: SuperAdminCreatableRole
   /** Organisation plateforme du super admin : interdite comme cible de création. */
   platformOrganizationId: number
 }
@@ -103,7 +103,7 @@ export class SuperAdminUsersService {
   public async updateRole(
     actor: User,
     userId: number,
-    role: SuperAdminAssignableRole
+    role: SuperAdminCreatableRole
   ): Promise<User> {
     const platformOrganizationId = await this.platformOrganizationService.getId()
     const user = await User.query()

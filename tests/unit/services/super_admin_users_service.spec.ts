@@ -233,7 +233,7 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
     const actor = await createSuperAdmin()
 
     await assert.rejects(
-      () => service.updateRole(actor, actor.id, USERS_ROLES.EMPLOYEE),
+      () => service.updateRole(actor, actor.id, USERS_ROLES.ADMIN),
       SuperAdminUserNotFoundError as any
     )
     await actor.refresh()
@@ -260,7 +260,7 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
     const other = await createSuperAdmin(await createOrganization())
 
     await assert.rejects(
-      () => service.updateRole(actor, other.id, USERS_ROLES.EMPLOYEE),
+      () => service.updateRole(actor, other.id, USERS_ROLES.ADMIN),
       SuperAdminRoleLockedError as any
     )
     await other.refresh()
