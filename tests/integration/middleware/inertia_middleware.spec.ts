@@ -12,6 +12,7 @@ import {
   createCandidate,
   createEmployeeFor,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
   createUser,
 } from '#tests/support/actors'
@@ -165,6 +166,24 @@ test.group('InertiaMiddleware.share', () => {
     assert.isTrue(
       props.employees.every((e: { organizationId: number }) => e.organizationId === org.id)
     )
+  })
+
+  test('admin et super admin : les particuliers B2C de la plateforme sont exclus', async ({
+    assert,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const admin = await createAdmin(await createPlatformOrganization())
+    const { employee: b2c } = await createB2cCandidate()
+    const staffed = await EmployeeFactory.merge({
+      organizationId: superAdmin.organizationId,
+    }).create()
+
+    for (const user of [superAdmin, admin]) {
+      const props = await share(makeShareCtx({ user }))
+      const ids = props.employees.map((e: { id: number }) => e.id)
+      assert.deepEqual(ids, [staffed.id])
+      assert.notInclude(ids, b2c.id)
+    }
   })
 
   test('super admin : expose les candidats de son organisation et ses notifications', async ({

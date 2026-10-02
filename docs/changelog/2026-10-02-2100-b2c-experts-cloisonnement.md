@@ -6,3 +6,4 @@ Correctifs de la revue PR #109 (lot 3).
 - Migration 08 : `PREVIOUS_TYPES` du `down()` inclut `expert_request_created`.
 - Cloisonnement : dans l'organisation plateforme, un conseiller ou un expert n'accède qu'aux candidats B2C dont il est `advisor_id` (404 sinon) — `teamEmployeeScope` (`#services/team_employee_scope_service`) appliqué aux contrôleurs employés, résultats d'exercices, synthèses, parcours et accueil conseiller.
 - Exports PDF : la requête quitte `PdfExportsController` pour `PdfExportsService.listForUser` ; hors super admin, la liste est bornée aux candidats du périmètre `teamEmployeeScope` (un expert ne voit plus l'export d'un B2C non assigné).
+- Prop partagée `employees` (Inertia) : pour l'admin et le super admin, les particuliers B2C ne sont plus chargés à chaque requête (seule la barre latérale conseiller la consomme).
