@@ -18,6 +18,8 @@ import type { ExerciseAccess } from '#shared/types/exercise/access'
 import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
 import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import type User from '#models/user'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -71,11 +73,11 @@ export default class ExerciseResultsController {
    * quelle organisation écrivait des résultats (et déclenchait l'analyse IA et
    * les notifications) sur le candidat d'une autre.
    */
-  private async employeeIdInOrganization(user: { organizationId: number }, id: string) {
+  private async employeeIdInOrganization(user: User, id: string) {
     const employee = await Employee.query()
       .select('id')
       .where('id', Number(id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
     return employee.id
   }
@@ -196,7 +198,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .preload('exerciseResults')
         .firstOrFail()
     } catch {
@@ -249,7 +251,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .firstOrFail()
     } catch {
       session.flash('error', 'Candidat introuvable.')
@@ -317,7 +319,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .preload('skills', (q) => q.pivotColumns(['level']))
         .preload('exerciseResults')
         .preload('supportPlanSteps', (q) => q.preload('exercises'))

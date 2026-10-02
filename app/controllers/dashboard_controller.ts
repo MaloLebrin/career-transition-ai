@@ -8,6 +8,7 @@ import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
@@ -55,7 +56,7 @@ export default class DashboardController {
     if (user.role === USERS_ROLES.ADVISOR) {
       query.where('advisorId', user.id)
     } else {
-      query.where('organizationId', user.organizationId)
+      query.where(teamEmployeeScope(user))
     }
 
     const employees = await query

@@ -5,6 +5,7 @@ import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/em
 import ExerciseResult from '#models/exercise_result'
 import PdfExport from '#models/pdf_export'
 import type User from '#models/user'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import type { ResultsEntitlement } from '#shared/types/billing/entitlement'
@@ -123,10 +124,16 @@ export class EmployeeSynthesisService {
   public async buildForAdvisor(input: {
     organizationId: number
     employeeId: number
+    /** Membre d'équipe qui consulte : applique le cloisonnement de l'organisation plateforme. */
+    viewer?: Pick<User, 'id' | 'role' | 'organizationId'>
   }): Promise<EmployeeSynthesisPayload> {
     const employee = await Employee.query()
       .where('id', input.employeeId)
-      .where('organizationId', input.organizationId)
+      .if(
+        input.viewer !== undefined,
+        (q) => q.where(teamEmployeeScope(input.viewer!)),
+        (q) => q.where('organizationId', input.organizationId)
+      )
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
       .preload('educations')

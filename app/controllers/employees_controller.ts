@@ -18,6 +18,7 @@ import { ExerciseAccessService } from '#services/exercise_access_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee/employee_update_validator'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -39,7 +40,7 @@ export default class EmployeesController {
 
     const employee = await Employee.query()
       .where('id', Number(params.id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
 
     try {
@@ -93,7 +94,7 @@ export default class EmployeesController {
 
     const employeeQuery = Employee.query()
       .where('id', Number(params.id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
       .preload('educations')
@@ -118,11 +119,10 @@ export default class EmployeesController {
       return ctx.response.unauthorized()
     }
 
-    const organizationId = user.organizationId
     const advisorId = user.role === USERS_ROLES.ADVISOR ? user.id : null
 
     const query = Employee.query()
-      .where('organizationId', organizationId)
+      .where(teamEmployeeScope(user))
       .if(advisorId !== null, (q) => q.where('advisorId', advisorId!))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
@@ -148,7 +148,7 @@ export default class EmployeesController {
     const employeeIdFromParam = ctx.params.id ? Number(ctx.params.id) : null
 
     const employeeQuery = Employee.query()
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .if(employeeIdFromParam !== null, (q) => q.where('id', employeeIdFromParam!))
       .if(employeeIdFromParam === null, (q) => q.where('userId', user.id))
       .preload('skills', (q) => q.pivotColumns(['level']))
@@ -226,7 +226,7 @@ export default class EmployeesController {
 
     const employee = await Employee.query()
       .where('id', Number(ctx.params.id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
       .preload('educations')
@@ -255,7 +255,7 @@ export default class EmployeesController {
 
     const employeeQuery = Employee.query()
       .where('id', Number(ctx.params.id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .preload('skills', (q) => q.pivotColumns(['level']))
       .preload('experiences')
       .preload('educations')
@@ -302,7 +302,7 @@ export default class EmployeesController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
 
     const step = await SupportPlanStep.query()
@@ -367,7 +367,7 @@ export default class EmployeesController {
 
     const employee = await Employee.query()
       .where('userId', user.id)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
 
     const step = await SupportPlanStep.query()
