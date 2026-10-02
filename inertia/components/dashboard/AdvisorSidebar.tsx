@@ -12,8 +12,7 @@ interface AdvisorSidebarProps {
   activePdfJobsCount?: number
 }
 
-const sidebarShellClass =
-  'lg:col-span-1 flex flex-col min-h-0 lg:max-h-[calc(100vh-15.5rem)]'
+const sidebarShellClass = 'lg:col-span-1 flex flex-col min-h-0 lg:max-h-[calc(100vh-15.5rem)]'
 
 function SuperAdminSidebarContent() {
   return (
@@ -25,17 +24,19 @@ function SuperAdminSidebarContent() {
               Supervision
             </h3>
           </div>
-          <NavLink
-            href="/dashboard/super-admin"
-            icon="dashboard"
-            label="Supervision Plateforme"
-          />
+          <NavLink href="/dashboard/super-admin" icon="dashboard" label="Supervision Plateforme" />
           <NavLink
             href="/dashboard/super-admin/organizations"
             icon="building"
             label="Organisations"
           />
           <NavLink href="/dashboard/super-admin/users" icon="user" label="Utilisateurs" />
+          <NavLink
+            href="/dashboard/super-admin/expert-requests"
+            icon="users"
+            label="Demandes d'accompagnement"
+          />
+          <NavLink href="/dashboard/super-admin/team" icon="user" label="Équipe interne" />
           <NavLink
             href="/dashboard/super-admin/exercises-usage"
             icon="target"
@@ -111,14 +112,16 @@ function AdvisorSidebarContent({
                     <AppLink
                       key={emp.id}
                       href={`/dashboard/conseiller/employees/${emp.id}`}
-                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${isActive
-                        ? 'bg-brand-sage/10 text-brand-sage'
-                        : 'text-brand-navy/60 hover:bg-brand-ivory'
-                        }`}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all group ${
+                        isActive
+                          ? 'bg-brand-sage/10 text-brand-sage'
+                          : 'text-brand-navy/60 hover:bg-brand-ivory'
+                      }`}
                     >
                       <div
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform group-hover:scale-125 ${!emp.onboarded ? 'bg-brand-terracotta' : 'bg-brand-sage'
-                          }`}
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 transition-transform group-hover:scale-125 ${
+                          !emp.onboarded ? 'bg-brand-terracotta' : 'bg-brand-sage'
+                        }`}
                       />
                       <span className="text-[11px] font-medium truncate">{emp.name}</span>
                     </AppLink>

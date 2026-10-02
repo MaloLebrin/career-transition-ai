@@ -29,3 +29,17 @@ export const SUPER_ADMIN_CREATABLE_ROLES = [
 ] as const satisfies readonly UserRole[]
 
 export type SuperAdminCreatableRole = (typeof SUPER_ADMIN_CREATABLE_ROLES)[number]
+
+/**
+ * Équipe interne de l'organisation plateforme (#105) : rôles qu'un super admin
+ * peut inviter et assigner comme expert d'un particulier. `advisor` est le rôle
+ * cible (crée étapes et notes, ne voit que ses candidats) ; `expert` et `admin`
+ * restent possibles. Jamais `employee` (#96) ni `super_admin` (#66).
+ */
+export const PLATFORM_TEAM_ROLES = [
+  USERS_ROLES.ADVISOR,
+  USERS_ROLES.EXPERT,
+  USERS_ROLES.ADMIN,
+] as const satisfies readonly UserRole[]
+
+export type PlatformTeamRole = (typeof PLATFORM_TEAM_ROLES)[number]

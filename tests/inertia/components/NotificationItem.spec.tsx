@@ -111,6 +111,24 @@ describe('NotificationItem', () => {
     expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
   })
 
+  test('rend les notifications d’assignation d’un expert (#105)', () => {
+    for (const [type, title] of [
+      ['expert_assigned', 'Votre expert : Nadia Experte'],
+      ['candidate_assigned', 'Nouveau candidat à accompagner'],
+      ['expert_request_declined', 'Votre demande d’accompagnement n’a pas pu aboutir'],
+    ] as const) {
+      const { container, unmount } = render(
+        <NotificationItem
+          notification={{ ...baseNotification, type, title }}
+          onMarkAsRead={vi.fn()}
+        />
+      )
+      expect(screen.getByText(title)).toBeInTheDocument()
+      expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
+      unmount()
+    }
+  })
+
   test('rend les notifications de forfait débloqué et d’accès retiré (#104)', () => {
     const unlocked = render(
       <NotificationItem

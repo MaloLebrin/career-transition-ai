@@ -15,6 +15,10 @@ export const NOTIFICATION_TYPES = {
   RESULTS_ACCESS_REVOKED: 'results_access_revoked',
   // Super admins : un particulier demande un accompagnement par un expert (#103)
   EXPERT_REQUEST_CREATED: 'expert_request_created',
+  // Assignation d'un expert (#105) : candidat prévenu, expert prévenu, ou demande refusée
+  EXPERT_ASSIGNED: 'expert_assigned',
+  CANDIDATE_ASSIGNED: 'candidate_assigned',
+  EXPERT_REQUEST_DECLINED: 'expert_request_declined',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

@@ -33,5 +33,6 @@ export const controllers = {
   Skills: () => import('#controllers/skills_controller'),
   StripeWebhooks: () => import('#controllers/stripe_webhooks_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
+  SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

@@ -1,6 +1,6 @@
 import type User from '#models/user'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
-import { createCandidate, createUser } from '#tests/support/actors'
+import { createCandidate, createSuperAdmin, createUser } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
@@ -61,6 +61,22 @@ const AREAS: Area[] = [
     denied: [USERS_ROLES.EMPLOYEE, USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT],
     forbiddenMessage: 'Accès réservé aux super administrateurs.',
   },
+  {
+    name: 'super admin (demandes d’accompagnement, #105)',
+    url: '/dashboard/super-admin/expert-requests',
+    component: 'dashboard/admin/expert_requests/Index',
+    allowed: [USERS_ROLES.SUPER_ADMIN],
+    denied: [USERS_ROLES.EMPLOYEE, USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT],
+    forbiddenMessage: 'Accès réservé aux super administrateurs.',
+  },
+  {
+    name: 'super admin (équipe interne, #105)',
+    url: '/dashboard/super-admin/team',
+    component: 'dashboard/admin/team/Index',
+    allowed: [USERS_ROLES.SUPER_ADMIN],
+    denied: [USERS_ROLES.EMPLOYEE, USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT],
+    forbiddenMessage: 'Accès réservé aux super administrateurs.',
+  },
 ]
 
 /**
@@ -73,6 +89,8 @@ async function actor(role: UserRole): Promise<User> {
     const { user } = await createCandidate()
     return user
   }
+  // Un super admin appartient à l'organisation plateforme (#92) : ses écrans la lisent.
+  if (role === USERS_ROLES.SUPER_ADMIN) return createSuperAdmin()
   return createUser(role)
 }
 

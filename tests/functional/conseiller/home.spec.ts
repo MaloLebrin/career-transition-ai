@@ -5,7 +5,9 @@ import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createCandidate,
+  createInHouseExpert,
   createOrganization,
 } from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
@@ -136,5 +138,27 @@ test.group('Conseiller — accueil', (group) => {
     const response = await client.get('/dashboard/conseiller').loginAs(user).redirects(0)
 
     response.assertStatus(403)
+  })
+})
+
+test.group('Conseiller — accueil : expert interne (#105)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('l’expert interne voit le particulier qui lui est assigné, pas les autres B2C', async ({
+    client,
+    assert,
+  }) => {
+    const expert = await createInHouseExpert()
+    const mine = await createB2cCandidate({ paid: true, expert })
+    await createB2cCandidate({ paid: true })
+
+    const response = await client.get('/dashboard/conseiller').loginAs(expert).withInertia()
+
+    const props = assertPage(assert, response, 'dashboard/conseiller/home/Home')
+    const accompaniments = props.accompaniments as Accompaniment[]
+    assert.deepEqual(
+      accompaniments.map((a) => a.employeeId),
+      [mine.employee.id]
+    )
   })
 })
