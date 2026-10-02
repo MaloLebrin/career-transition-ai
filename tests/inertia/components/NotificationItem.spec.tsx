@@ -96,6 +96,35 @@ describe('NotificationItem', () => {
     expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
   })
 
+  test('rend les notifications de forfait débloqué et d’accès retiré (#104)', () => {
+    const unlocked = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'results_unlocked',
+          title: 'Vos résultats sont débloqués',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Vos résultats sont débloqués')).toBeInTheDocument()
+    expect(unlocked.container.querySelector('svg.text-accent')).toBeInTheDocument()
+    unlocked.unmount()
+
+    const revoked = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'results_access_revoked',
+          title: 'Votre accès aux résultats a été retiré',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Votre accès aux résultats a été retiré')).toBeInTheDocument()
+    expect(revoked.container.querySelector('svg.text-muted')).toBeInTheDocument()
+  })
+
   test('rend la notification « demande d’accompagnement » des super admins (#103)', () => {
     const { container } = render(
       <NotificationItem

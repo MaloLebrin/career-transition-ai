@@ -376,7 +376,24 @@
   assistée (cartographie, ciblage) sont refusés de même. Carte « réservé au forfait »
   avec le prix TTC.
 
-### 11.3 Accompagnement par un expert (#103)
+### 11.3 Paiement du forfait (#102)
+
+- Page `/dashboard/candidat/offre` : rappel du forfait, prix TTC, cases CGV et
+  renonciation au droit de rétractation (art. L221-28 13°), bouton « Payer » → Stripe
+  Checkout hébergé (one-shot, facture Stripe). Retour sur `/billing/success` avec
+  réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
+- Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
+
+### 11.4 Webhook Stripe (#104)
+
+- `POST /webhooks/stripe` : source de vérité des paiements, signée, exemptée de CSRF,
+  idempotente (`stripe_events`, sans payload). Paiement confirmé → forfait débloqué,
+  analyses IA des exercices complétés sans analyse lancées, notification « Vos résultats
+  sont débloqués » ; paiement différé refusé → `failed` ; session expirée → `canceled` ;
+  remboursement → `refunded`, accès retiré, notification « Votre accès aux résultats a été
+  retiré ». Rejouer un événement est sans effet.
+
+### 11.5 Accompagnement par un expert (#103)
 
 - Page `/dashboard/candidat/accompagnement` : un particulier au forfait réglé dépose une
   demande (message libre, disponibilités) ; une seule demande en attente à la fois ; statut
@@ -389,6 +406,6 @@
   expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
   notification, nouvelle demande possible.
 
-### 11.4 À venir
+### 11.6 À venir
 
 Back-office B2C : paiements, octroi et révocation manuels (#107).

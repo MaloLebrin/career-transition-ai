@@ -6,6 +6,7 @@
 export const controllers = {
   AiAssist: () => import('#controllers/ai_assist_controller'),
   Auth: () => import('#controllers/auth_controller'),
+  Billing: () => import('#controllers/billing_controller'),
   CandidatOnboarding: () => import('#controllers/candidat_onboarding_controller'),
   CandidateData: () => import('#controllers/candidate_data_controller'),
   CandidateDocuments: () => import('#controllers/candidate_documents_controller'),
@@ -30,6 +31,7 @@ export const controllers = {
   PdfExports: () => import('#controllers/pdf_exports_controller'),
   Robots: () => import('#controllers/robots_controller'),
   Skills: () => import('#controllers/skills_controller'),
+  StripeWebhooks: () => import('#controllers/stripe_webhooks_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),

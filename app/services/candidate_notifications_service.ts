@@ -6,6 +6,7 @@ import User from '#models/user'
 import { NotificationService } from '#services/notification_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
+import { BILLING_PATHS } from '#shared/constants/billing'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -16,6 +17,8 @@ export const CANDIDATE_NOTIFICATION_LINKS = {
   step: (stepId: number) => `/dashboard/candidat/steps/${stepId}`,
   synthesis: '/dashboard/candidat/synthesis',
   exercise: (type: string) => `/dashboard/candidat/exercises/${type}`,
+  home: '/dashboard/candidat',
+  offer: BILLING_PATHS.offer,
 } as const
 
 /**
@@ -153,6 +156,29 @@ export class CandidateNotificationsService {
       title: 'Votre demande d’accompagnement n’a pas pu aboutir',
       body: `${reason} Vous pouvez déposer une nouvelle demande.`,
       meta: { employeeId: employee.id, href: EXPERT_REQUEST_PATHS.page },
+   * Forfait réglé (webhook ou réconciliation, #104) ou octroi manuel (#107) :
+   * le particulier est prévenu que tout son parcours est ouvert.
+   */
+  async resultsUnlocked(employee: Employee): Promise<void> {
+    if (!employee.userId || employee.accountType !== ACCOUNT_TYPES.B2C) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.RESULTS_UNLOCKED,
+      title: 'Vos résultats sont débloqués',
+      body: 'Tous les exercices, vos résultats, vos analyses et votre synthèse sont désormais accessibles.',
+      meta: { employeeId: employee.id, href: CANDIDATE_NOTIFICATION_LINKS.home },
+    })
+  }
+
+  /** Remboursement Stripe (#104) ou révocation par un super admin (#107). */
+  async resultsAccessRevoked(employee: Employee): Promise<void> {
+    if (!employee.userId || employee.accountType !== ACCOUNT_TYPES.B2C) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED,
+      title: 'Votre accès aux résultats a été retiré',
+      body: 'Les exercices gratuits restent disponibles. Contactez-nous si vous pensez qu’il s’agit d’une erreur.',
+      meta: { employeeId: employee.id, href: CANDIDATE_NOTIFICATION_LINKS.offer },
     })
   }
 

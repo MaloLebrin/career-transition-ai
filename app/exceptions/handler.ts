@@ -70,6 +70,10 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_EXPERT_REQUEST_NOT_FOUND',
     'E_EXPERT_REQUEST_NOT_PENDING',
     'E_EXPERT_NOT_ELIGIBLE',
+    'E_PAYMENTS_DISABLED',
+    'E_PAYMENT_GATEWAY_NOT_CONFIGURED',
+    'E_CHECKOUT_SESSION_NOT_FOUND',
+    'E_INVALID_STRIPE_SIGNATURE',
   ]
 
   /**
