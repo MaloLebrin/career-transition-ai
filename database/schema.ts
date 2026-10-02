@@ -140,6 +140,7 @@ export class EmployeeSynthesisSchema extends BaseModel {
 
 export class EmployeeSchema extends BaseModel {
   static $columns = [
+    'accountType',
     'advisorId',
     'advisorNotes',
     'createdAt',
@@ -158,6 +159,8 @@ export class EmployeeSchema extends BaseModel {
     'userId',
   ] as const
   $columns = EmployeeSchema.$columns
+  @column()
+  declare accountType: string
   @column()
   declare advisorId: number | null
   @column()
@@ -421,6 +424,7 @@ export class OrganizationSchema extends BaseModel {
     'createdAt',
     'deletedAt',
     'id',
+    'isPlatform',
     'logoPublicId',
     'logoUrl',
     'name',
@@ -434,6 +438,8 @@ export class OrganizationSchema extends BaseModel {
   declare deletedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isPlatform: boolean
   @column()
   declare logoPublicId: string | null
   @column()

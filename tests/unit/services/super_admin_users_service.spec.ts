@@ -12,7 +12,12 @@ import {
   SuperAdminUserNotFoundError,
 } from '#exceptions/super_admin_user_errors'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import { createAdvisor, createOrganization, createSuperAdmin } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createOrganization,
+  createPlatformOrganization,
+  createSuperAdmin,
+} from '#tests/support/actors'
 
 test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -236,7 +241,7 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
   })
 
   test('compte de l’organisation plateforme ou inexistant : 404', async ({ assert }) => {
-    const platform = await createOrganization()
+    const platform = await createPlatformOrganization()
     const actor = await createSuperAdmin(platform)
     const colleague = await createAdvisor(platform)
 

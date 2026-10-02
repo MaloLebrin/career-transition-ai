@@ -11,6 +11,7 @@ import {
   createAdmin,
   createAdvisor,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
   createUser,
 } from '#tests/support/actors'
@@ -374,7 +375,7 @@ test.group('Super admin — utilisateurs : changement de rôle', (group) => {
     client,
     assert,
   }) => {
-    const platform = await createOrganization()
+    const platform = await createPlatformOrganization()
     const superAdmin = await createSuperAdmin(platform)
     const colleague = await createAdvisor(platform)
 

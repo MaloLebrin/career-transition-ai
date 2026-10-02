@@ -24,6 +24,10 @@ export default class Organization extends BaseModel {
   @column({ serializeAs: null })
   declare logoPublicId: string | null
 
+  /** Organisation plateforme (#92) : super admins, experts internes, candidats B2C. Une seule. */
+  @column({ consume: (value) => Boolean(value) })
+  declare isPlatform: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

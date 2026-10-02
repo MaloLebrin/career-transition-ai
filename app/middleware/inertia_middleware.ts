@@ -3,7 +3,9 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import Employee from '#models/employee'
 import { NotificationService } from '#services/notification_service'
+import type { AccountType } from '#shared/constants/b2c'
 import { receivesNotifications } from '#shared/helpers/roles'
+import { USERS_ROLES } from '#shared/types/advisor/roles'
 import config from '@adonisjs/core/services/config'
 
 export default class InertiaMiddleware extends BaseInertiaMiddleware {
@@ -20,6 +22,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             email: user.email,
             name: user.name,
             role: user.role,
+            accountType: await this.accountTypeFor(user),
           }
 
     let employees: any[] = []
@@ -55,6 +58,17 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       // Masque le lien d'inscription quand /auth/register est fermé.
       registrationEnabled: config.get<boolean>('registration.enabled'),
     }
+  }
+
+  /**
+   * Type de compte d'un candidat (`b2b` | `b2c`, #92) : les pages candidat
+   * choisissent l'accueil B2C et le verrouillage des résultats. `null` pour
+   * les autres rôles et pour un `employee` sans fiche (onboarding en cours).
+   */
+  private async accountTypeFor(user: { id: number; role: string }): Promise<AccountType | null> {
+    if (user.role !== USERS_ROLES.EMPLOYEE) return null
+    const employee = await Employee.query().where('userId', user.id).select('accountType').first()
+    return employee?.accountType ?? null
   }
 
   async handle(ctx: HttpContext, next: NextFn) {
