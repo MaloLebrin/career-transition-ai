@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react'
-import { B2C_OFFER_PATH } from '#shared/constants/b2c'
+import { BILLING_PATHS } from '#shared/constants/billing'
 import type { ExerciseListEntry } from '#shared/constants/exercises'
 import AppLink from '~/components/ui/AppLink'
 import Badge from '~/components/ui/Badge'
@@ -41,7 +41,7 @@ export function LockedExerciseCard({ exercise, paymentsEnabled }: LockedExercise
         <Badge variant="lavender">Inclus dans le forfait</Badge>
         {paymentsEnabled ? (
           <AppLink
-            href={B2C_OFFER_PATH}
+            href={BILLING_PATHS.offer}
             className={buttonClassName({ variant: 'primary', size: 'sm' })}
             aria-label={`Débloquer : ${exercise.title}`}
           >

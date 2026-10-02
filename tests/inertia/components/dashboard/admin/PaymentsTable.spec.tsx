@@ -4,7 +4,7 @@ import { render, screen, within } from '@testing-library/react'
 import { PaymentsTable } from '~/components/dashboard/admin/PaymentsTable'
 import type { PaymentRow } from '#shared/types/billing/admin'
 import { renderWithUser } from '../../../support/render'
-import { formSubmissions, resetInertiaMock } from '../../../support/inertia_mock'
+import { formSubmissions, resetInertiaMock, setInertiaOutcome } from '../../../support/inertia_mock'
 
 vi.mock('@inertiajs/react', async () => {
   const { inertiaMock } = await import('../../../support/inertia_mock')
@@ -77,5 +77,17 @@ describe('PaymentsTable (#107)', () => {
       data: { reason: 'Paiement contesté.' },
       options: { preserveScroll: true },
     })
+  })
+
+  test('le formulaire de retrait se ferme au succès', async () => {
+    setInertiaOutcome('success')
+    const { user } = renderWithUser(<PaymentsTable payments={[paid]} />)
+
+    await user.click(screen.getByRole('button', { name: 'Retirer l’accès' }))
+    await user.type(screen.getByRole('textbox', { name: /Motif du retrait/ }), 'Litige.')
+    await user.click(screen.getByRole('button', { name: 'Confirmer le retrait' }))
+
+    expect(screen.queryByRole('form', { name: 'Retirer l’accès' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retirer l’accès' })).toBeInTheDocument()
   })
 })

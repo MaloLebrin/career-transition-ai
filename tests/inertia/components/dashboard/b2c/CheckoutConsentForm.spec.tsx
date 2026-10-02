@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 
 import { CheckoutConsentForm } from '~/components/dashboard/b2c/CheckoutConsentForm'
 import { renderWithUser } from '../../../support/render'
@@ -16,7 +16,9 @@ describe('CheckoutConsentForm (#102)', () => {
   test('deux consentements, CGV en lien, bouton « Payer » actif quand tout est possible', () => {
     render(<CheckoutConsentForm paymentsEnabled emailVerified priceLabel="49 €" />)
 
-    expect(screen.getByRole('checkbox', { name: /conditions générales de vente/ })).not.toBeChecked()
+    expect(
+      screen.getByRole('checkbox', { name: /conditions générales de vente/ })
+    ).not.toBeChecked()
     expect(screen.getByRole('checkbox', { name: /droit de rétractation/ })).not.toBeChecked()
     expect(screen.getByRole('link', { name: 'conditions générales de vente' })).toHaveAttribute(
       'href',
@@ -56,5 +58,25 @@ describe('CheckoutConsentForm (#102)', () => {
 
     expect(screen.getByRole('button', { name: /Payer 49 €/ })).toBeDisabled()
     expect(screen.getByRole('status')).toHaveTextContent(/Confirmez d’abord votre adresse e-mail/)
+  })
+
+  test('bfcache : pageshow persisté réinitialise l’état de soumission', async () => {
+    setInertiaOutcome('pending')
+    const { user } = renderWithUser(
+      <CheckoutConsentForm paymentsEnabled emailVerified priceLabel="49 €" />
+    )
+    await user.click(screen.getByRole('button', { name: /Payer 49 €/ }))
+    expect(screen.getByRole('button', { name: /Payer 49 €/ })).toHaveAttribute('aria-busy', 'true')
+
+    act(() => {
+      const event = new Event('pageshow') as PageTransitionEvent
+      Object.defineProperty(event, 'persisted', { value: true })
+      window.dispatchEvent(event)
+    })
+
+    expect(screen.getByRole('button', { name: /Payer 49 €/ })).not.toHaveAttribute(
+      'aria-busy',
+      'true'
+    )
   })
 })

@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react'
 import { Lock } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { BILLING_PATHS } from '#shared/constants/billing'
 import { WITHDRAWAL_NOTICE } from '#shared/constants/legal'
 import AppLink from '~/components/ui/AppLink'
@@ -27,10 +28,25 @@ export function CheckoutConsentForm({
   emailVerified,
   priceLabel,
 }: CheckoutConsentFormProps) {
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, errors, cancel } = useForm({
     acceptTerms: false,
     waiveWithdrawal: false,
   })
+  const [leaving, setLeaving] = useState(false)
+
+  // bfcache : au retour depuis Stripe (bouton Précédent), la page est restaurée
+  // telle quelle, bouton en chargement compris ; on réinitialise la soumission.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        cancel()
+        setLeaving(false)
+      }
+    }
+    window.addEventListener('pageshow', onPageShow)
+    return () => window.removeEventListener('pageshow', onPageShow)
+  }, [cancel])
+
   const canPay = paymentsEnabled && emailVerified
 
   return (
@@ -39,7 +55,8 @@ export function CheckoutConsentForm({
       aria-label="Consentements et paiement"
       onSubmit={(event) => {
         event.preventDefault()
-        post(BILLING_PATHS.checkout)
+        setLeaving(true)
+        post(BILLING_PATHS.checkout, { onFinish: () => setLeaving(false) })
       }}
     >
       <label className="flex items-start gap-3 text-sm text-ink-soft">
@@ -96,7 +113,7 @@ export function CheckoutConsentForm({
           variant="primary"
           size="lg"
           disabled={!canPay}
-          isLoading={processing}
+          isLoading={leaving}
           icon={<Lock className="h-4 w-4" />}
         >
           {paymentsEnabled ? `Payer ${priceLabel}` : 'Bientôt disponible'}
