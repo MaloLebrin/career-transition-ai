@@ -15,6 +15,17 @@ export interface AnalyzeExerciseQualitativePayload {
   exerciseResultId: number
 }
 
+/** Secondes écoulées pendant l'appel IA, à ajouter à `exercise_results.duration`. */
+export function analysisDurationSeconds(startedAtMs: number, endedAtMs = Date.now()): number {
+  return Math.max(0, Math.round((endedAtMs - startedAtMs) / 1000))
+}
+
+function addAnalysisDuration(result: ExerciseResult, startedAtMs: number) {
+  const extra = analysisDurationSeconds(startedAtMs)
+  if (extra === 0) return
+  result.duration = (result.duration ?? 0) + extra
+}
+
 export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQualitativePayload> {
   static options: JobOptions = {
     queue: QUEUE_NAMES.ai,
@@ -64,9 +75,11 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       exerciseData: pseudonymizeForAi(result.data, identity),
     })
 
+    const startedAt = Date.now()
     try {
       const text = await provider.completeText(prompt)
       result.qualitativeAnalysis = text
+      addAnalysisDuration(result, startedAt)
       await result.save()
 
       if (employee.advisorId) {
@@ -84,6 +97,7 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       console.error(error)
       logger.error('AnalyzeExerciseQualitativeJob: échec IA', { exerciseResultId, message })
       result.qualitativeAnalysis = "Erreur lors de la génération de l'analyse."
+      addAnalysisDuration(result, startedAt)
       await result.save()
     } finally {
       logger.info('AnalyzeExerciseQualitativeJob: terminé', { exerciseResultId })
