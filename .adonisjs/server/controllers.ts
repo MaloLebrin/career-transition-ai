@@ -31,5 +31,6 @@ export const controllers = {
   Robots: () => import('#controllers/robots_controller'),
   Skills: () => import('#controllers/skills_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
+  SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

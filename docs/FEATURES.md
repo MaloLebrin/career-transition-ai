@@ -259,6 +259,18 @@
   - Passage d’un utilisateur à un rôle supérieur (admin, super admin) ou différent.
   - Vérification des impacts sur les accès (visible vs non visible dans certains écrans).
 
+### 7.3 Demandes d'accompagnement et équipe interne (#105)
+
+- **Demandes d'accompagnement** (`/dashboard/super-admin/expert-requests`) : les demandes des
+  particuliers (#103) avec candidat, forfait réglé ou non, message, disponibilités, statut ;
+  filtre par statut. Assignation d'un membre de l'équipe interne (`employees.advisor_id`
+  posé, demande acceptée, candidat et expert notifiés) ou refus motivé (candidat notifié,
+  nouvelle demande possible).
+- **Équipe interne** (`/dashboard/super-admin/team`) : membres de l'organisation plateforme
+  (rôles `advisor`, `expert`, `admin`) avec le nombre de particuliers suivis ; invitation par
+  e-mail (même activation que les cabinets). L'expert interne retrouve ses particuliers dans
+  `/dashboard/conseiller` et peut créer étapes et notes.
+
 ---
 
 ## 8. Jobs de fond & industrialisation
@@ -373,7 +385,10 @@
 - CTA sur l'accueil B2C (payé, sans expert) et la synthèse. Candidat B2B : page lisible mais
   l'accompagnement passe par son conseiller (403 au dépôt) ; non payé : carte « réservé au
   forfait » (403 au dépôt). Tarif et contrat de l'accompagnement hors plateforme pour l'instant.
+- Traitement par les super admins (#105, § 7.3) : assignation d'un expert interne → « Votre
+  expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
+  notification, nouvelle demande possible.
 
 ### 11.4 À venir
 
-Stripe Checkout (#102) et webhook (#104), assignation de l'expert et back-office (#105, #107).
+Back-office B2C : paiements, octroi et révocation manuels (#107).

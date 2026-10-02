@@ -121,6 +121,41 @@ export class CandidateNotificationsService {
     }
   }
 
+  /** Expert assigné (#105) : le particulier connaît désormais son interlocuteur. */
+  async expertAssigned(employee: Employee, expert: User): Promise<void> {
+    if (!employee.userId) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.EXPERT_ASSIGNED,
+      title: `Votre expert : ${expert.name}`,
+      body: 'Il suit désormais votre parcours et peut vous proposer des étapes et des notes.',
+      meta: { employeeId: employee.id, expertUserId: expert.id, href: '/dashboard/candidat' },
+    })
+  }
+
+  /** Nouveau candidat pour l'expert interne (#105) : id du candidat seulement, jamais son nom. */
+  async candidateAssigned(expert: User, employee: Employee): Promise<void> {
+    await this.notifications.notify({
+      userId: expert.id,
+      type: NOTIFICATION_TYPES.CANDIDATE_ASSIGNED,
+      title: 'Nouveau candidat à accompagner',
+      body: `Un particulier vous a été assigné (candidat #${employee.id}) : retrouvez-le dans vos candidats.`,
+      meta: { employeeId: employee.id, href: `/dashboard/conseiller/employees/${employee.id}` },
+    })
+  }
+
+  /** Demande refusée (#105) : motif transmis, nouvelle demande possible. */
+  async expertRequestDeclined(employee: Employee, reason: string): Promise<void> {
+    if (!employee.userId) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED,
+      title: 'Votre demande d’accompagnement n’a pas pu aboutir',
+      body: `${reason} Vous pouvez déposer une nouvelle demande.`,
+      meta: { employeeId: employee.id, href: EXPERT_REQUEST_PATHS.page },
+    })
+  }
+
   /**
    * Demande d'effacement : prévient les super admins (qui appliquent
    * `candidate:purge`, docs/RGPD.md) et le conseiller du candidat.

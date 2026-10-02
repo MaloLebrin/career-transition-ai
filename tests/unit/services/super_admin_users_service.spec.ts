@@ -267,3 +267,25 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
     assert.equal(other.role, USERS_ROLES.SUPER_ADMIN)
   })
 })
+
+test.group('SuperAdminUsersService.createUserWithInvite — équipe interne (#105)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('allowPlatformOrganization lève l’interdiction pour l’organisation plateforme', async ({
+    assert,
+  }) => {
+    const platform = await createPlatformOrganization()
+    const service = new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
+    const input = {
+      organizationId: platform.id,
+      name: 'Interne',
+      email: 'interne@plateforme.test',
+      role: USERS_ROLES.ADVISOR,
+      platformOrganizationId: platform.id,
+    } as const
+
+    await assert.rejects(() => service.createUserWithInvite(input), DomainException)
+    const user = await service.createUserWithInvite({ ...input, allowPlatformOrganization: true })
+    assert.equal(user.organizationId, platform.id)
+  })
+})

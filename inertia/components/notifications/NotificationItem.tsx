@@ -126,6 +126,9 @@ function TypeIcon({ type }: { type: NotificationItemType['type'] }) {
         </svg>
       )
     case NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED:
+    case NOTIFICATION_TYPES.EXPERT_ASSIGNED:
+    case NOTIFICATION_TYPES.CANDIDATE_ASSIGNED:
+    case NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED:
       return (
         <svg
           className="w-4 h-4 text-accent shrink-0"

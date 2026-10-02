@@ -31,5 +31,12 @@ describe('shared/constants/expert_request (#103)', () => {
     expect(EXPERT_REQUEST_PATHS.page).toBe('/dashboard/candidat/accompagnement')
     expect(EXPERT_REQUEST_PATHS.create).toBe('/dashboard/candidat/expert-requests')
     expect(EXPERT_REQUEST_PATHS.admin.startsWith('/dashboard/super-admin/')).toBe(true)
+    expect(EXPERT_REQUEST_PATHS.adminAssign(3)).toBe(
+      '/dashboard/super-admin/expert-requests/3/assign'
+    )
+    expect(EXPERT_REQUEST_PATHS.adminDecline(3)).toBe(
+      '/dashboard/super-admin/expert-requests/3/decline'
+    )
+    expect(EXPERT_REQUEST_PATHS.team).toBe('/dashboard/super-admin/team')
   })
 })

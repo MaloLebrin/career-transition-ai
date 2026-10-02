@@ -225,3 +225,44 @@ test.group('CandidateNotificationsService.expertRequested (#103)', (group) => {
     assert.lengthOf(await Notification.query().whereIn('userId', [user.id, expert.id]), 0)
   })
 })
+
+test.group('CandidateNotificationsService — assignation d’un expert (#105)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('expertAssigned (nom de l’expert), candidateAssigned (id seulement), expertRequestDeclined', async ({
+    assert,
+  }) => {
+    const expert = await createInHouseExpert()
+    const { user, employee } = await createB2cCandidate({ paid: true, expert })
+
+    await service.expertAssigned(employee, expert)
+    await service.candidateAssigned(expert, employee)
+    await service.expertRequestDeclined(employee, 'Aucun expert disponible.')
+
+    const candidateRows = await Notification.query().where('userId', user.id).orderBy('id')
+    assert.deepEqual(
+      candidateRows.map((row) => row.type),
+      [NOTIFICATION_TYPES.EXPERT_ASSIGNED, NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED]
+    )
+    assert.equal(candidateRows[0].title, `Votre expert : ${expert.name}`)
+    assert.deepEqual(candidateRows[0].meta, {
+      employeeId: employee.id,
+      expertUserId: expert.id,
+      href: '/dashboard/candidat',
+    })
+    assert.include(candidateRows[1].body, 'Aucun expert disponible.')
+    assert.deepEqual(candidateRows[1].meta, {
+      employeeId: employee.id,
+      href: EXPERT_REQUEST_PATHS.page,
+    })
+
+    const [expertRow] = await Notification.query().where('userId', expert.id)
+    assert.equal(expertRow.type, NOTIFICATION_TYPES.CANDIDATE_ASSIGNED)
+    assert.notInclude(`${expertRow.title} ${expertRow.body}`, employee.name)
+    assert.notInclude(`${expertRow.title} ${expertRow.body}`, employee.email)
+    assert.deepEqual(expertRow.meta, {
+      employeeId: employee.id,
+      href: `/dashboard/conseiller/employees/${employee.id}`,
+    })
+  })
+})

@@ -34,3 +34,26 @@ export class ExpertRequestAlreadyPendingError extends DomainException {
     super(message, { status: 409, code: 'E_EXPERT_REQUEST_ALREADY_PENDING' })
   }
 }
+
+/** Demande inexistante → 404. */
+export class ExpertRequestNotFoundError extends DomainException {
+  constructor(message: string = 'Demande d’accompagnement introuvable.') {
+    super(message, { status: 404, code: 'E_EXPERT_REQUEST_NOT_FOUND' })
+  }
+}
+
+/** Demande déjà traitée (acceptée, refusée ou clôturée) → 409. */
+export class ExpertRequestNotPendingError extends DomainException {
+  constructor(message: string = 'Cette demande a déjà été traitée.') {
+    super(message, { status: 409, code: 'E_EXPERT_REQUEST_NOT_PENDING' })
+  }
+}
+
+/** Utilisateur choisi hors de l’équipe interne de la plateforme → 422. */
+export class ExpertNotEligibleError extends DomainException {
+  constructor(
+    message: string = 'Cet utilisateur ne fait pas partie de l’équipe interne : choisissez un expert de la plateforme.'
+  ) {
+    super(message, { status: 422, code: 'E_EXPERT_NOT_ELIGIBLE' })
+  }
+}

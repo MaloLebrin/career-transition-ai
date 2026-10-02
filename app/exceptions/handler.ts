@@ -67,6 +67,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_EXPERT_REQUEST_NOT_AVAILABLE',
     'E_EXPERT_REQUEST_REQUIRES_PAYMENT',
     'E_EXPERT_REQUEST_ALREADY_PENDING',
+    'E_EXPERT_REQUEST_NOT_FOUND',
+    'E_EXPERT_REQUEST_NOT_PENDING',
+    'E_EXPERT_NOT_ELIGIBLE',
   ]
 
   /**

@@ -32,6 +32,9 @@ const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED]: 'Demande d’effacement de données à traiter',
   [NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE]: 'Votre analyse IA est disponible',
   [NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED]: 'Demande d’accompagnement par un expert à traiter',
+  [NOTIFICATION_TYPES.EXPERT_ASSIGNED]: 'Votre expert vous accompagne',
+  [NOTIFICATION_TYPES.CANDIDATE_ASSIGNED]: 'Nouveau candidat à accompagner',
+  [NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED]: 'Votre demande d’accompagnement',
 }
 
 type NotificationWithUser = Notification & { user: User }
