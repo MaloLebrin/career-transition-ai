@@ -58,6 +58,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_INVALID_PASSWORD_RESET_TOKEN',
     'E_CANDIDATE_PROFILE_NOT_FOUND',
     'E_ERASURE_ALREADY_REQUESTED',
+    'E_PLATFORM_ORGANIZATION_MISSING',
   ]
 
   /**
