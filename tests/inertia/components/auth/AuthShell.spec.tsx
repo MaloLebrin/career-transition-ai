@@ -28,7 +28,7 @@ describe('AuthShell', () => {
     expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
   })
 
-  test('affiche la tuile d’icône dans le ton primaire par défaut', () => {
+  test('affiche la tuile d’icône soleil par défaut, sur un horizon pastel', () => {
     const { container } = render(
       <AuthShell title="Bienvenue" icon={<svg data-testid="icon" />}>
         <p>Contenu</p>
@@ -36,11 +36,14 @@ describe('AuthShell', () => {
     )
 
     const tile = screen.getByTestId('icon').parentElement
-    expect(tile).toHaveClass('bg-primary-soft', 'text-primary', 'rounded-xl')
+    expect(tile).toHaveClass('bg-tint-sun', 'text-ink', 'rounded-xl')
     expect(container.querySelector('.bg-warning-soft')).toBeNull()
+    const landscape = container.querySelector('svg[data-variant="horizon"]')
+    expect(landscape).toHaveAttribute('aria-hidden', 'true')
+    expect(landscape?.parentElement).toHaveClass('absolute', 'bottom-0', 'pointer-events-none')
   })
 
-  test('ton warning + accent warm pour les liens invalides', () => {
+  test('ton warning + filet apricot pour les liens invalides', () => {
     render(
       <AuthShell
         title="Lien expiré"
@@ -54,17 +57,17 @@ describe('AuthShell', () => {
 
     expect(screen.getByTestId('icon').parentElement).toHaveClass('bg-warning-soft', 'text-warning')
     const card = screen.getByRole('heading', { level: 1 }).closest('.rounded-xl')
-    expect(card).toHaveClass('border-t-2', 'border-t-accent-warm')
+    expect(card).toHaveClass('border-t-2', 'border-t-tint-apricot-bold')
   })
 
-  test('sans accent, la carte n’a pas de filet terracotta', () => {
+  test('sans accent, la carte n’a pas de filet apricot', () => {
     render(
       <AuthShell title="Connexion">
         <p>Contenu</p>
       </AuthShell>
     )
     const card = screen.getByRole('heading', { level: 1 }).closest('.rounded-xl')
-    expect(card).not.toHaveClass('border-t-accent-warm')
+    expect(card).not.toHaveClass('border-t-tint-apricot-bold')
   })
 
   test('rend le footer sous un filet hairline, et rien sans footer', () => {

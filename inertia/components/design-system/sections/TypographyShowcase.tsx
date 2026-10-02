@@ -48,7 +48,7 @@ const SAMPLES: { className: string; label: string; sample: string }[] = [
     sample: 'Texte de carte, formulaires, footer.',
   },
   {
-    className: 'text-eyebrow text-primary',
+    className: 'text-eyebrow text-accent',
     label: 'eyebrow · 14 px / 500',
     sample: 'Pour les cabinets',
   },

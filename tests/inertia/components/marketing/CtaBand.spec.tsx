@@ -21,7 +21,15 @@ describe('CtaBand', () => {
     expect(screen.getByText('Et maintenant')).toBeInTheDocument()
     expect(screen.getByText('Faites une démo.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Demander une démo' })).toHaveAttribute('href', '#demo')
-    expect(container.querySelector('.bg-ink')).toHaveClass('rounded-2xl')
+    expect(container.querySelector('.bg-ink')).toHaveClass('rounded-2xl', 'overflow-hidden')
+  })
+
+  test('pose l’horizon crépusculaire décoratif au bas de la bande', () => {
+    const { container } = render(<CtaBand title="Prêt ?" actions={<a href="#demo">Go</a>} />)
+
+    const landscape = container.querySelector('svg[data-variant="dusk"]')
+    expect(landscape).toHaveAttribute('aria-hidden', 'true')
+    expect(landscape?.parentElement).toHaveClass('absolute', 'bottom-0', 'pointer-events-none')
   })
 
   test('fonctionne sans eyebrow ni description', () => {

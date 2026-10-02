@@ -135,7 +135,7 @@ export default function MethodologyPage() {
               {RESTITUTION_PRINCIPLES.map((principle) => (
                 <Card key={principle.title} padding="sm" className="space-y-3">
                   <span
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint-sun text-ink"
                     aria-hidden="true"
                   >
                     {principle.icon}
@@ -191,7 +191,7 @@ export default function MethodologyPage() {
         description="Transformez vos bilans en parcours rigoureux : clarté, nuance et livrables actionnables pour vos clients."
         actions={
           <>
-            <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+            <a href="#contact" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
               Poser une question
             </a>
             <AppLink

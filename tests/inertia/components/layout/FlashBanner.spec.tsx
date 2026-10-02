@@ -25,7 +25,7 @@ describe('FlashBanner', () => {
     render(<FlashBanner />)
     const alert = screen.getByRole('alert')
     expect(alert).toHaveTextContent('Profil enregistré')
-    expect(alert).toHaveClass('text-brand-sage')
+    expect(alert).toHaveClass('bg-success-soft', 'text-success')
   })
 
   test('affiche un message d’erreur avec le style associé', () => {
@@ -33,7 +33,7 @@ describe('FlashBanner', () => {
     render(<FlashBanner />)
     const alert = screen.getByRole('alert')
     expect(alert).toHaveTextContent('Action impossible')
-    expect(alert).toHaveClass('text-rose-800')
+    expect(alert).toHaveClass('bg-danger-soft', 'text-danger')
   })
 
   test('le bouton Fermer masque la bannière', async () => {

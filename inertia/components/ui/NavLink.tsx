@@ -133,15 +133,15 @@ const NavLink = memo(function NavLink({
       href={href}
       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer disabled:cursor-not-allowed ${
         active
-          ? 'bg-brand-sage/10 text-brand-sage font-bold'
-          : 'text-brand-navy/40 hover:bg-brand-navy/5 hover:text-brand-navy'
+          ? 'bg-accent-soft text-accent font-bold'
+          : 'text-muted hover:bg-surface-soft hover:text-ink'
       }`}
       aria-current={active ? 'page' : undefined}
       aria-label={ariaLabel ?? label}
     >
       <div
         className={`transition-colors duration-200 ${
-          active ? 'text-brand-sage' : 'text-brand-navy/20 group-hover:text-brand-navy/40'
+          active ? 'text-accent' : 'text-muted-soft group-hover:text-muted'
         }`}
       >
         {ICONS[icon]}
@@ -155,13 +155,13 @@ const NavLink = memo(function NavLink({
       </span>
       {typeof badgeCount === 'number' && badgeCount > 0 && (
         <span
-          className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-terracotta/15 text-brand-terracotta text-[10px] font-black"
+          className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-tint-apricot text-tint-apricot-ink text-[10px] font-black"
           aria-label={`${badgeCount} tâches en cours`}
         >
           {badgeCount > 99 ? '99+' : badgeCount}
         </span>
       )}
-      {active && <div className="ml-auto w-1 h-4 bg-brand-sage rounded-full" aria-hidden />}
+      {active && <div className="ml-auto w-1 h-4 bg-accent rounded-full" aria-hidden />}
     </Link>
   )
 })

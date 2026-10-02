@@ -11,16 +11,11 @@ export interface StatCardProps {
   'className'?: string
 }
 
+/** Noms historiques conservés (7 consommateurs dashboard) ; les classes suivent DESIGN.md. */
 const COLORS: Record<StatCardColor, string> = {
-  navy: 'bg-brand-navy/10 text-brand-navy',
-  sage: 'bg-brand-sage/10 text-brand-sage',
-  terracotta: 'bg-brand-terracotta/10 text-brand-terracotta',
-}
-
-const ICON_SHADOWS: Record<StatCardColor, string> = {
-  navy: 'shadow-md shadow-brand-navy/10',
-  sage: 'shadow-md shadow-brand-sage/15',
-  terracotta: 'shadow-md shadow-brand-terracotta/15',
+  navy: 'bg-primary-soft text-ink',
+  sage: 'bg-accent-soft text-accent',
+  terracotta: 'bg-tint-apricot text-tint-apricot-ink',
 }
 
 const StatCard = memo(function StatCard({
@@ -34,11 +29,11 @@ const StatCard = memo(function StatCard({
 
   return (
     <article
-      className={`bg-white p-8 rounded-3xl border border-brand-navy/5 shadow-sm transition-all hover:shadow-md ${className}`.trim()}
+      className={`bg-surface p-8 rounded-3xl border border-hairline shadow-card transition-shadow hover:shadow-raised ${className}`.trim()}
       aria-label={description}
     >
       <div
-        className={`w-12 h-12 rounded-2xl ${COLORS[color]} ${ICON_SHADOWS[color]} flex items-center justify-center mb-6`}
+        className={`w-12 h-12 rounded-2xl ${COLORS[color]} flex items-center justify-center mb-6`}
         aria-hidden
       >
         <svg className="w-6 h-6 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,10 +44,8 @@ const StatCard = memo(function StatCard({
           />
         </svg>
       </div>
-      <div className="text-3xl font-bold text-brand-navy mb-1 tracking-tight">{value}</div>
-      <div className="text-[10px] font-bold text-brand-navy/40 uppercase tracking-widest">
-        {label}
-      </div>
+      <div className="text-3xl font-bold text-ink mb-1 tracking-tight">{value}</div>
+      <div className="text-[10px] font-bold text-muted uppercase tracking-widest">{label}</div>
     </article>
   )
 })

@@ -58,7 +58,7 @@ export default function LoginPage({ csrfToken, error, success, onGoToRegister }:
             <button
               type="button"
               onClick={onGoToRegister}
-              className="font-medium text-primary hover:underline cursor-pointer"
+              className="font-medium text-accent hover:underline cursor-pointer"
             >
               S’inscrire gratuitement
             </button>
@@ -118,7 +118,7 @@ export default function LoginPage({ csrfToken, error, success, onGoToRegister }:
         <div className="-mt-2 text-right">
           <AppLink
             href="/auth/forgot-password"
-            className="text-sm font-medium text-primary hover:underline"
+            className="text-sm font-medium text-accent hover:underline"
           >
             Mot de passe oublié ?
           </AppLink>

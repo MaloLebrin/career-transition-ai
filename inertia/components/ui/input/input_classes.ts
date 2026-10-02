@@ -1,6 +1,6 @@
 /**
  * Classes partagées des champs de formulaire (Input, Textarea).
- * Tokens : hauteur 36/40/44 px, bordure hairline-strong, focus primaire, erreur danger.
+ * Tokens : hauteur 36/40/44 px, bordure hairline-strong, focus accent, erreur danger.
  */
 export type FieldSize = 'sm' | 'md' | 'lg'
 
@@ -28,13 +28,13 @@ export const ERROR_MESSAGE_CLASSES = 'text-sm text-danger'
 export const HINT_MESSAGE_CLASSES = 'text-sm text-muted'
 export const ADDON_CLASSES = 'flex items-center text-muted bg-surface-soft'
 export const ACTION_BUTTON_CLASSES =
-  'p-1.5 rounded-md text-muted hover:text-ink hover:bg-surface-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer disabled:cursor-not-allowed'
+  'p-1.5 rounded-md text-muted hover:text-ink hover:bg-surface-soft transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 cursor-pointer disabled:cursor-not-allowed'
 
 /** Bordure + anneau de focus selon l'état, pour un champ seul (`focus:`). */
 export function fieldStateClassName({ error, success }: FieldStateOptions): string {
   if (error) return 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/25'
   if (success) return 'border-success focus:border-success focus:ring-2 focus:ring-success/25'
-  return 'border-hairline-strong focus:border-primary focus:ring-2 focus:ring-primary/25'
+  return 'border-hairline-strong focus:border-accent focus:ring-2 focus:ring-accent/25'
 }
 
 /** Même chose pour un conteneur (`focus-within:`) qui enveloppe l'input et ses boutons. */
@@ -43,7 +43,7 @@ export function wrapperStateClassName({ error, success }: FieldStateOptions): st
     return 'border-danger focus-within:border-danger focus-within:ring-2 focus-within:ring-danger/25'
   if (success)
     return 'border-success focus-within:border-success focus-within:ring-2 focus-within:ring-success/25'
-  return 'border-hairline-strong focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25'
+  return 'border-hairline-strong focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/25'
 }
 
 export const FIELD_BASE_CLASSES =

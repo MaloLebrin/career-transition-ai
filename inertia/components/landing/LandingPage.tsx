@@ -43,7 +43,7 @@ const LandingPage: React.FC = () => (
       description="Une démo cadrée, puis un pilote court avec votre équipe."
       actions={
         <>
-          <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+          <a href="#demo" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
             Demander une démo
           </a>
           <AppLink

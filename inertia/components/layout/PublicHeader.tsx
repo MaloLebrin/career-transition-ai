@@ -33,7 +33,7 @@ function isCurrent(url: string, href: string): boolean {
 }
 
 const NAV_LINK_CLASS =
-  'text-sm font-medium text-ink-soft hover:text-ink transition-colors aria-[current=page]:text-primary'
+  'text-sm font-medium text-ink-soft hover:text-ink transition-colors aria-[current=page]:text-accent'
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({
   nav = MARKETING_NAV,

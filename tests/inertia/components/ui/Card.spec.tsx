@@ -39,12 +39,14 @@ describe('Card', () => {
     const { container } = render(
       <>
         <Card variant="amber">A</Card>
+        <Card variant="warm">W</Card>
         <Card variant="sage">S</Card>
       </>
     )
-    const [amber, sage] = Array.from(container.children)
-    expect(amber).toHaveClass('bg-accent-warm-soft')
-    expect(sage).toHaveClass('bg-primary-soft')
+    const [amber, warm, sage] = Array.from(container.children)
+    expect(amber).toHaveClass('bg-sun-soft')
+    expect(warm).toHaveClass('bg-sun-soft')
+    expect(sage).toHaveClass('bg-accent-soft')
   })
 
   test('forwards other div props', () => {

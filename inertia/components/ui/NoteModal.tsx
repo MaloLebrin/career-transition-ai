@@ -44,7 +44,7 @@ const NoteModal = memo(function NoteModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fadeIn"
+      className="fixed inset-0 bg-ink/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fadeIn"
       onClick={handleClose}
     >
       <Card
@@ -53,14 +53,14 @@ const NoteModal = memo(function NoteModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-ink">
             {isEditing ? 'Modifier la note' : 'Nouvelle note'}
           </h2>
           <button
             type="button"
             onClick={handleClose}
             disabled={isLoading}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:cursor-not-allowed"
+            className="p-2 rounded-xl text-muted hover:text-ink hover:bg-surface-soft transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
           </button>
@@ -69,7 +69,7 @@ const NoteModal = memo(function NoteModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Sélection de visibilité - très visible */}
           <div className="space-y-3">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block">
               Qui peut voir cette note ?
             </label>
 
@@ -81,23 +81,25 @@ const NoteModal = memo(function NoteModal({
                 disabled={isLoading}
                 className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
                   !isShared
-                    ? 'bg-slate-800 border-slate-800 text-white shadow-xl scale-[1.02]'
-                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'bg-ink border-ink text-on-ink shadow-raised scale-[1.02]'
+                    : 'bg-surface border-hairline-strong text-muted hover:border-muted-soft hover:bg-surface-soft'
                 }`}
               >
-                <div className={`p-3 rounded-2xl ${!isShared ? 'bg-white/20' : 'bg-slate-100'}`}>
-                  <Lock className={`w-6 h-6 ${!isShared ? 'text-white' : 'text-slate-400'}`} />
+                <div
+                  className={`p-3 rounded-2xl ${!isShared ? 'bg-on-ink/20' : 'bg-surface-soft'}`}
+                >
+                  <Lock className={`w-6 h-6 ${!isShared ? 'text-on-ink' : 'text-muted-soft'}`} />
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-base">Privée</div>
-                  <div className={`text-xs mt-1 ${!isShared ? 'text-white/70' : 'text-slate-400'}`}>
+                  <div className={`text-xs mt-1 ${!isShared ? 'text-on-ink-soft' : 'text-muted'}`}>
                     Visible uniquement par moi
                   </div>
                 </div>
                 {!isShared && (
-                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <div className="w-4 h-4 bg-slate-800 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full" />
+                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-surface rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-4 h-4 bg-ink rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-surface rounded-full" />
                     </div>
                   </div>
                 )}
@@ -110,23 +112,27 @@ const NoteModal = memo(function NoteModal({
                 disabled={isLoading}
                 className={`relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all cursor-pointer disabled:cursor-not-allowed ${
                   isShared
-                    ? 'bg-rose-200 border-rose-200 text-rose-800 shadow-xl scale-[1.02]'
-                    : 'bg-white border-slate-200 text-slate-500 hover:border-rose-100 hover:bg-rose-50'
+                    ? 'bg-tint-blossom border-tint-blossom-ink text-tint-blossom-ink shadow-raised scale-[1.02]'
+                    : 'bg-surface border-hairline-strong text-muted hover:border-tint-blossom-ink/30 hover:bg-tint-blossom'
                 }`}
               >
-                <div className={`p-3 rounded-2xl ${isShared ? 'bg-rose-300/50' : 'bg-slate-100'}`}>
-                  <Users className={`w-6 h-6 ${isShared ? 'text-rose-700' : 'text-slate-400'}`} />
+                <div className={`p-3 rounded-2xl ${isShared ? 'bg-surface' : 'bg-surface-soft'}`}>
+                  <Users
+                    className={`w-6 h-6 ${isShared ? 'text-tint-blossom-ink' : 'text-muted-soft'}`}
+                  />
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-base">Partagée</div>
-                  <div className={`text-xs mt-1 ${isShared ? 'text-rose-600' : 'text-slate-400'}`}>
+                  <div
+                    className={`text-xs mt-1 ${isShared ? 'text-tint-blossom-ink' : 'text-muted'}`}
+                  >
                     Visible par l'accompagné
                   </div>
                 </div>
                 {isShared && (
-                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <div className="w-4 h-4 bg-rose-300 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full" />
+                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-surface rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-4 h-4 bg-tint-blossom-bold rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-surface rounded-full" />
                     </div>
                   </div>
                 )}
@@ -135,11 +141,11 @@ const NoteModal = memo(function NoteModal({
 
             {/* Avertissement si partagée */}
             {isShared && (
-              <div className="flex items-start gap-3 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl animate-fadeIn">
-                <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-warning-soft border-2 border-warning/30 rounded-2xl animate-fadeIn">
+                <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm text-rose-800 font-semibold">Attention : note partagée</p>
-                  <p className="text-xs text-rose-600 mt-0.5">
+                  <p className="text-sm text-warning font-semibold">Attention : note partagée</p>
+                  <p className="text-xs text-warning mt-0.5">
                     L'accompagné pourra lire cette note dans son espace personnel.
                   </p>
                 </div>
@@ -149,7 +155,7 @@ const NoteModal = memo(function NoteModal({
 
           {/* Zone de texte - plus grande */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block">
               Contenu de la note
             </label>
             <textarea
@@ -160,8 +166,8 @@ const NoteModal = memo(function NoteModal({
               autoFocus
               className={`w-full p-5 border-2 rounded-2xl outline-none font-medium transition-all text-base resize-none leading-relaxed ${
                 isShared
-                  ? 'bg-rose-50/50 border-rose-200 focus:border-rose-400 focus:ring-4 focus:ring-rose-100'
-                  : 'bg-slate-50 border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-100'
+                  ? 'bg-tint-blossom/40 border-tint-blossom-ink/30 focus:border-tint-blossom-ink focus:ring-2 focus:ring-tint-blossom-ink/25'
+                  : 'bg-surface-soft border-hairline-strong focus:border-accent focus:ring-2 focus:ring-accent/25'
               }`}
               disabled={isLoading}
             />
@@ -178,12 +184,7 @@ const NoteModal = memo(function NoteModal({
             >
               Annuler
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || !content.trim()}
-              size="lg"
-              className={isShared ? '!bg-rose-200 !text-rose-800 hover:!bg-rose-300' : ''}
-            >
+            <Button type="submit" disabled={isLoading || !content.trim()} size="lg" className="">
               {isLoading ? 'Enregistrement...' : isEditing ? 'Mettre à jour' : 'Ajouter la note'}
             </Button>
           </div>

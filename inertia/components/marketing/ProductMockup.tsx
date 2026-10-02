@@ -46,7 +46,7 @@ export const ProductMockup: React.FC = () => {
               <li
                 key={item}
                 className={`rounded-md px-2.5 py-1.5 text-xs font-medium ${
-                  index === 1 ? 'bg-primary-soft text-primary' : 'text-muted'
+                  index === 1 ? 'bg-accent-soft text-accent' : 'text-muted'
                 }`}
               >
                 {item}
@@ -73,7 +73,7 @@ export const ProductMockup: React.FC = () => {
             ))}
           </ul>
           <div className="rounded-lg border border-hairline bg-surface-soft p-3">
-            <p className="text-caption text-primary">Synthèse assistée · à relire</p>
+            <p className="text-caption text-accent">Synthèse assistée · à relire</p>
             <div className="mt-2 space-y-1.5">
               <span className="block h-2 w-11/12 rounded-full bg-hairline-strong" />
               <span className="block h-2 w-4/5 rounded-full bg-hairline-strong" />

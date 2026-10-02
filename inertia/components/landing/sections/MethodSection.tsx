@@ -38,7 +38,7 @@ export const MethodSection: React.FC = () => (
         />
         <AppLink
           href="/methodologie"
-          className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary hover:underline"
+          className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-accent hover:underline"
         >
           Lire la méthodologie
           <ArrowRight className="h-4 w-4" aria-hidden="true" />

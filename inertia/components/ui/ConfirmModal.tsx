@@ -38,9 +38,9 @@ function variantToButton(variant: ConfirmModalVariant): ButtonVariant {
     case 'danger':
       return 'danger'
     case 'warning':
-      return 'terracotta'
+      return 'secondary'
     case 'success':
-      return 'lime'
+      return 'primary'
     case 'info':
     default:
       return 'primary'
@@ -69,7 +69,7 @@ export default function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn"
+      className="fixed inset-0 bg-ink/60 backdrop-blur-sm z-200 flex items-center justify-center p-4 animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-modal-title"
@@ -78,17 +78,17 @@ export default function ConfirmModal({
       }}
     >
       <Card className="w-full max-w-md p-8 animate-slideUp" onClick={(e) => e.stopPropagation()}>
-        <h2 id="confirm-modal-title" className="text-xl font-bold text-brand-navy mb-2">
+        <h2 id="confirm-modal-title" className="text-xl font-bold text-ink mb-2">
           {title}
         </h2>
-        {description && <p className="text-brand-navy/60 text-sm mb-6">{description}</p>}
+        {description && <p className="text-muted text-sm mb-6">{description}</p>}
 
         {(isError || isSuccess) && (
           <div
             className={`mb-6 rounded-2xl p-4 text-sm font-bold ${
               isError
-                ? 'bg-rose-50 text-rose-700 border border-rose-100'
-                : 'bg-brand-sage/10 text-brand-navy border border-brand-sage/20'
+                ? 'bg-danger-soft text-danger border border-danger/20'
+                : 'bg-success-soft text-success border border-success/20'
             }`}
             role={isError ? 'alert' : undefined}
           >

@@ -7,7 +7,15 @@ describe('DesignSystem (vitrine)', () => {
     render(<DesignSystem onBack={() => {}} />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Design system' })).toBeInTheDocument()
-    for (const title of ['Couleurs', 'Typographie', 'Boutons', 'Badges', 'Champs', 'Cartes']) {
+    for (const title of [
+      'Couleurs',
+      'Typographie',
+      'Boutons',
+      'Badges',
+      'Champs',
+      'Cartes',
+      'Illustration',
+    ]) {
       expect(screen.getByRole('heading', { level: 2, name: title })).toBeInTheDocument()
     }
   })
@@ -18,8 +26,16 @@ describe('DesignSystem (vitrine)', () => {
     expect(container.querySelector('[data-token="primary"]')).toHaveStyle({
       background: 'var(--color-primary)',
     })
+    expect(container.querySelector('[data-token="accent"]')).toHaveStyle({
+      background: 'var(--color-accent)',
+    })
+    expect(container.querySelector('[data-token="tint-lavender-bold"]')).toHaveStyle({
+      background: 'var(--color-tint-lavender-bold)',
+    })
     expect(screen.getByRole('button', { name: 'primary' })).toHaveClass('bg-primary')
-    expect(screen.getByRole('button', { name: 'cta' })).toHaveClass('bg-accent-warm')
+    expect(screen.getByRole('button', { name: 'secondary' })).toHaveClass('bg-sun')
+    expect(screen.queryByRole('button', { name: 'cta' })).not.toBeInTheDocument()
+    expect(container.querySelectorAll('svg[data-variant]')).toHaveLength(3)
   })
 
   test('calls onBack', () => {

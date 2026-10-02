@@ -37,7 +37,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
           <h3 className={`text-title-lg ${featured ? 'text-on-ink' : ''}`}>{name}</h3>
           <p className={`text-sm ${muted}`}>{tagline}</p>
         </div>
-        {featured && <Badge variant="primary">Recommandé</Badge>}
+        {featured && <Badge variant="sun">Recommandé</Badge>}
       </div>
       <div className="mt-6">
         <p className={`text-display-sm ${featured ? 'text-on-ink' : 'text-ink'}`}>{priceLabel}</p>
@@ -48,7 +48,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2.5 text-sm">
             <Check
-              className={`mt-0.5 h-4 w-4 shrink-0 ${featured ? 'text-primary-on-ink' : 'text-primary'}`}
+              className={`mt-0.5 h-4 w-4 shrink-0 ${featured ? 'text-accent-on-ink' : 'text-accent'}`}
               aria-hidden="true"
             />
             <span className={featured ? 'text-on-ink' : 'text-ink-soft'}>{feature}</span>
@@ -58,7 +58,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
       <AppLink
         href={ctaHref}
         className={buttonClassName({
-          variant: featured ? 'primary' : 'outline',
+          variant: featured ? 'secondary' : 'outline',
           size: 'md',
           className: 'mt-8 w-full',
         })}

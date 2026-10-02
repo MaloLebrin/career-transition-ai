@@ -28,7 +28,9 @@ describe('PricingTierCard', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Essentiel' })).toBeInTheDocument()
     expect(screen.getByText('À partir de 149 €')).toBeInTheDocument()
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
-    expect(screen.getByRole('link', { name: 'Demander un devis' })).toHaveAttribute('href', '#demo')
+    const cta = screen.getByRole('link', { name: 'Demander un devis' })
+    expect(cta).toHaveAttribute('href', '#demo')
+    expect(cta).toHaveClass('border-hairline-strong')
     expect(screen.queryByText('Recommandé')).not.toBeInTheDocument()
     expect(container.firstChild).toHaveClass('bg-surface')
   })
@@ -41,5 +43,11 @@ describe('PricingTierCard', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Professionnel' })).toHaveClass(
       'text-on-ink'
     )
+    // Sur ink, le bouton plein est le soleil : un bouton encre serait invisible.
+    expect(screen.getByRole('link', { name: 'Demander un devis' })).toHaveClass(
+      'bg-sun',
+      'text-ink'
+    )
+    expect(container.querySelector('.text-accent-on-ink')).toBeInTheDocument()
   })
 })

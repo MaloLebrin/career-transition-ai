@@ -3,6 +3,7 @@ import Button from '~/components/ui/Button'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 import { ColorsShowcase } from './sections/ColorsShowcase'
 import { ComponentsShowcase } from './sections/ComponentsShowcase'
+import { IllustrationShowcase } from './sections/IllustrationShowcase'
 import { TypographyShowcase } from './sections/TypographyShowcase'
 
 interface DesignSystemProps {
@@ -27,6 +28,7 @@ const DesignSystem: React.FC<DesignSystemProps> = ({ onBack }) => (
     <ColorsShowcase />
     <TypographyShowcase />
     <ComponentsShowcase />
+    <IllustrationShowcase />
   </div>
 )
 

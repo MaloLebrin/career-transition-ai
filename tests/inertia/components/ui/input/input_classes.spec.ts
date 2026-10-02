@@ -19,7 +19,7 @@ describe('input_classes', () => {
     expect(fieldStateClassName({ error: true, success: true })).toContain('border-danger')
     expect(fieldStateClassName({ success: true })).toContain('border-success')
     expect(wrapperStateClassName({ error: true })).toContain('focus-within:ring-danger/25')
-    expect(wrapperStateClassName({})).toContain('focus-within:border-primary')
+    expect(wrapperStateClassName({})).toContain('focus-within:border-accent')
   })
 
   test('wrapper and inner field classes follow the size', () => {
