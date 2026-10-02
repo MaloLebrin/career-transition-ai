@@ -64,6 +64,7 @@ declare module '@adonisjs/inertia/types' {
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
+    'Individuals': ExtractProps<(typeof import('../../inertia/pages/Individuals.tsx'))['default']>
     'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
     'Login': ExtractProps<(typeof import('../../inertia/pages/Login.tsx'))['default']>
     'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>
