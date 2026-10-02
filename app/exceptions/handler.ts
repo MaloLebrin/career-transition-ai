@@ -64,6 +64,10 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_ENTITLEMENT_ALREADY_GRANTED',
     'E_EMAIL_ALREADY_VERIFIED',
     'E_EMAIL_NOT_VERIFIED',
+    'E_PAYMENTS_DISABLED',
+    'E_PAYMENT_GATEWAY_NOT_CONFIGURED',
+    'E_CHECKOUT_SESSION_NOT_FOUND',
+    'E_INVALID_STRIPE_SIGNATURE',
   ]
 
   /**

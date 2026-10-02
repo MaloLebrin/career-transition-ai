@@ -364,6 +364,15 @@
   assistée (cartographie, ciblage) sont refusés de même. Carte « réservé au forfait »
   avec le prix TTC.
 
-### 11.3 À venir
+### 11.3 Paiement du forfait (#102)
 
+- Page `/dashboard/candidat/offre` : rappel du forfait, prix TTC, cases CGV et
+  renonciation au droit de rétractation (art. L221-28 13°), bouton « Payer » → Stripe
+  Checkout hébergé (one-shot, facture Stripe). Retour sur `/billing/success` avec
+  réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
+- Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
+
+### 11.4 À venir
+
+Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
 Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
