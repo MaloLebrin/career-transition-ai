@@ -156,6 +156,10 @@ export class CandidateNotificationsService {
       title: 'Votre demande d’accompagnement n’a pas pu aboutir',
       body: `${reason} Vous pouvez déposer une nouvelle demande.`,
       meta: { employeeId: employee.id, href: EXPERT_REQUEST_PATHS.page },
+    })
+  }
+
+  /**
    * Forfait réglé (webhook ou réconciliation, #104) ou octroi manuel (#107) :
    * le particulier est prévenu que tout son parcours est ouvert.
    */

@@ -264,6 +264,9 @@ test.group('CandidateNotificationsService — assignation d’un expert (#105)',
       employeeId: employee.id,
       href: `/dashboard/conseiller/employees/${employee.id}`,
     })
+  })
+})
+
 test.group('CandidateNotificationsService — forfait débloqué / retiré (#104)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
