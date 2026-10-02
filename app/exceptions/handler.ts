@@ -62,6 +62,8 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_RESULTS_LOCKED',
     'E_PAYMENT_NOT_FOUND',
     'E_ENTITLEMENT_ALREADY_GRANTED',
+    'E_EMAIL_ALREADY_VERIFIED',
+    'E_EMAIL_NOT_VERIFIED',
   ]
 
   /**

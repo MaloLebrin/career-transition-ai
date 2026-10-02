@@ -3,6 +3,7 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import { PlatformOrganizationMissingError } from '#exceptions/platform_errors'
 import { AuthService } from '#services/auth_service'
+import type { EmailVerificationService } from '#services/email_verification_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { TERMS_VERSION } from '#shared/constants/legal'
@@ -187,6 +188,17 @@ test.group('AuthService', (group) => {
 test.group('AuthService.registerCandidate (#93)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
+  /** Double du service de vérification d'e-mail (#98) : enregistre les comptes à qui le lien part. */
+  function makeService() {
+    const linksSentTo: number[] = []
+    const emailVerification = {
+      async sendLinkSafely(user: User) {
+        linksSentTo.push(user.id)
+      },
+    } as unknown as EmailVerificationService
+    return { service: new AuthService(undefined, emailVerification), linksSentTo }
+  }
+
   const input = () => ({
     email: `particulier-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`,
     password: 'motdepasse-8',
@@ -198,8 +210,9 @@ test.group('AuthService.registerCandidate (#93)', (group) => {
   }) => {
     const platform = await createPlatformOrganization()
     const data = input()
+    const { service, linksSentTo } = makeService()
 
-    const dto = await new AuthService().registerCandidate(data)
+    const dto = await service.registerCandidate(data)
 
     assert.equal(dto.email, data.email)
     assert.equal(dto.name, 'Camille Durand')
@@ -222,6 +235,8 @@ test.group('AuthService.registerCandidate (#93)', (group) => {
     assert.equal(employee.status, EMPLOYEES_STATUS.ONBOARDING)
     assert.equal(employee.name, 'Camille Durand')
     assert.equal(employee.email, data.email)
+    // Le lien de vérification part après le commit (#98).
+    assert.deepEqual(linksSentTo, [user.id])
   })
 
   test('refuse un e-mail déjà pris par un compte de n’importe quelle organisation', async ({
@@ -229,13 +244,14 @@ test.group('AuthService.registerCandidate (#93)', (group) => {
   }) => {
     await createPlatformOrganization()
     const advisor = await createAdvisor()
-    const service = new AuthService()
+    const { service, linksSentTo } = makeService()
 
     await assert.rejects(
       () => service.registerCandidate({ ...input(), email: advisor.email }),
       'Cet email est déjà utilisé.'
     )
     assert.lengthOf(await Employee.query().where('email', advisor.email), 0)
+    assert.deepEqual(linksSentTo, [])
   })
 
   test('sans organisation plateforme : PlatformOrganizationMissingError, rien de créé', async ({
@@ -245,7 +261,7 @@ test.group('AuthService.registerCandidate (#93)', (group) => {
     const data = input()
 
     await assert.rejects(
-      () => new AuthService().registerCandidate(data),
+      () => makeService().service.registerCandidate(data),
       PlatformOrganizationMissingError
     )
     assert.isNull(await User.findBy('email', data.email))

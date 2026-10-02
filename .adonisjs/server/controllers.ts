@@ -12,6 +12,7 @@ export const controllers = {
   ContactRequests: () => import('#controllers/contact_requests_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   Educations: () => import('#controllers/educations_controller'),
+  EmailVerification: () => import('#controllers/email_verification_controller'),
   EmployeeSkills: () => import('#controllers/employee_skills_controller'),
   EmployeeSyntheses: () => import('#controllers/employee_syntheses_controller'),
   Employees: () => import('#controllers/employees_controller'),

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import CandidatHome from '../../../../../../inertia/pages/dashboard/employee/home/Home'
 
@@ -11,6 +11,10 @@ vi.mock('@inertiajs/react', () => ({
 
 vi.mock('../../../../../../inertia/components/dashboard/DashboardLayout', () => ({
   default: ({ children }: any) => <div data-testid="layout">{children}</div>,
+}))
+
+vi.mock('../../../../../../inertia/components/dashboard/EmailVerificationBanner', () => ({
+  EmailVerificationBanner: () => <div data-testid="email-verification-banner" />,
 }))
 
 vi.mock('../../../../../../inertia/components/dashboard/EmployeeHome', () => ({
@@ -53,6 +57,8 @@ describe('Dashboard candidat - Home', () => {
       />
     )
 
+    // Bandeau de vérification d'e-mail (#98) monté au-dessus de l'accueil.
+    expect(screen.getByTestId('email-verification-banner')).toBeInTheDocument()
     expect(employeeHomeSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         employee,
@@ -64,4 +70,3 @@ describe('Dashboard candidat - Home', () => {
     )
   })
 })
-

@@ -9,6 +9,7 @@ import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { PLATFORM_ORGANIZATION_SLUG } from '#shared/constants/organisation'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
+import { DateTime } from 'luxon'
 
 /**
  * Acteurs prêts à l'emploi pour les suites `functional` et `integration`
@@ -101,12 +102,17 @@ export async function createCandidate(
  * dans l'organisation plateforme, sans conseiller (`advisorId: null`) sauf si
  * un expert est fourni. `onboarded` vaut `true` par défaut, comme `createCandidate`.
  * `paid: true` ajoute un paiement Stripe `paid` qui ouvre l'accès aux résultats (#94).
+ * `emailVerified: true` pose `emailVerifiedAt` (#98) ; l'adresse n'est pas vérifiée par défaut.
  */
 export async function createB2cCandidate(
-  options: { onboarded?: boolean; expert?: User; paid?: boolean } = {}
+  options: { onboarded?: boolean; expert?: User; paid?: boolean; emailVerified?: boolean } = {}
 ): Promise<CandidateActor> {
   const platform = await createPlatformOrganization()
   const user = await createUser(USERS_ROLES.EMPLOYEE, platform)
+  if (options.emailVerified) {
+    user.emailVerifiedAt = DateTime.now()
+    await user.save()
+  }
   const employee = await EmployeeFactory.merge({
     organizationId: platform.id,
     advisorId: options.expert?.id ?? null,

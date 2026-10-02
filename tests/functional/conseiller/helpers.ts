@@ -38,6 +38,13 @@ export class RecordingMailProvider implements MailProvider {
     return match[1]
   }
 
+  /** Secret du lien de vérification d'e-mail du message `index` (#98). */
+  emailVerificationSecret(index = 0): string {
+    const match = (this.sent[index]?.text ?? '').match(/\/auth\/verify-email\/([0-9a-f]{64})\b/)
+    if (!match) throw new Error(`Aucun lien de vérification d'e-mail dans le message ${index}`)
+    return match[1]
+  }
+
   /** Secret du lien « mot de passe oublié » du message `index` (#68). */
   passwordResetSecret(index = 0): string {
     const match = (this.sent[index]?.text ?? '').match(/\/auth\/password-reset\/([0-9a-f]{64})\b/)

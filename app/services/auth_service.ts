@@ -5,6 +5,10 @@ import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { EmailVerificationService } from '#services/email_verification_service'
+import { EmailVerificationMailService } from '#services/mail/email_verification_mail_service'
+import { MailService } from '#services/mail/mail_service'
+import { OnboardingTokensService } from '#services/onboarding_tokens_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
@@ -33,7 +37,11 @@ type UpdateProfileInput = {
 @inject()
 export class AuthService {
   constructor(
-    private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService()
+    private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService(),
+    private emailVerification: EmailVerificationService = new EmailVerificationService(
+      new EmailVerificationMailService(new MailService()),
+      new OnboardingTokensService()
+    )
   ) {}
 
   /**
@@ -99,7 +107,8 @@ export class AuthService {
    * vers l'onboarding existant. L'acceptation des CGU est horodatée avec la
    * version en vigueur. L'e-mail est unique sur toute la plateforme (login
    * global). Lance `PlatformOrganizationMissingError` (503) sans organisation
-   * plateforme seedée.
+   * plateforme seedée. Le lien de vérification d'e-mail (#98) part après le
+   * commit ; son échec n'annule pas l'inscription.
    */
   public async registerCandidate(input: RegisterCandidateInput): Promise<UserSessionDto> {
     const existingUser = await User.findBy('email', input.email)
@@ -110,9 +119,8 @@ export class AuthService {
     const platformOrganizationId = await this.platformOrganizationService.getId()
     const name = input.name.trim()
 
-    const trx = await db.transaction()
-    try {
-      const user = await User.create(
+    const user = await db.transaction(async (trx) => {
+      const created = await User.create(
         {
           organizationId: platformOrganizationId,
           email: input.email,
@@ -129,7 +137,7 @@ export class AuthService {
         {
           organizationId: platformOrganizationId,
           advisorId: null,
-          userId: user.id,
+          userId: created.id,
           name,
           email: input.email,
           currentRole: '',
@@ -142,12 +150,11 @@ export class AuthService {
         },
         { client: trx }
       )
-      await trx.commit()
-      return { ...toSessionDto(user), accountType: ACCOUNT_TYPES.B2C }
-    } catch (err) {
-      await trx.rollback()
-      throw err
-    }
+      return created
+    })
+
+    await this.emailVerification.sendLinkSafely(user)
+    return { ...toSessionDto(user), accountType: ACCOUNT_TYPES.B2C }
   }
 
   /**
