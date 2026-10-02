@@ -7,6 +7,7 @@ Application d’accompagnement à la transition de carrière (conseillers, candi
 - **[Workflow d'onboarding candidat](docs/ONBOARDING.md)** — Invitation par email, création du mot de passe via lien unique, accès au dashboard.
 - **[Tests](docs/TESTING.md)** — Suites Japa/Vitest, base de test Postgres, shards de CI, couverture.
 - **[TODO mise en production](docs/README.md#todo--mise-en-production)** — Checklist des points à traiter pour la prod.
+- **[Parcours particulier (B2C)](docs/epics/b2c.md)** — Inscription en libre-service, exercices gratuits puis forfait Stripe ([docs/STRIPE.md](docs/STRIPE.md)), accompagnement par un expert interne ; recette dans [docs/MANUAL_TESTS.md](docs/MANUAL_TESTS.md) § 11, mise en production dans [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md).
 
 ## Tests
 

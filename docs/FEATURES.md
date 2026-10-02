@@ -361,7 +361,7 @@
 
 ---
 
-## 11. Parcours particulier (B2C, épic #90) — en cours
+## 11. Parcours particulier (B2C, épic #90)
 
 ### 11.1 Inscription et compte
 

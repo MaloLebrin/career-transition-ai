@@ -113,6 +113,8 @@ Modèles principaux (voir `database/schema.ts` pour le schéma complet) :
 `EmployeeSkill`, `EmployeeSynthesis`, `ExerciseResult`, `SupportPlanStep`,
 `SupportPlanStepExercise`, `PdfExport`, `Note`, `Media`, `OnboardingToken`
 
+Parcours particulier (épic B2C #90, `docs/epics/b2c.md`, recette `docs/MANUAL_TESTS.md` § 11, mise en production `docs/PRODUCTION_CHECKLIST.md`) : flags `B2C_REGISTRATION_ENABLED` (inscription) et `STRIPE_ENABLED` (paiement), tous deux fermés par défaut en production ; seeds de démo `database/seeders/b2c_candidate_seeder.ts` (expert interne, particulier payé / non payé, demande d'accompagnement en attente).
+
 Organisation plateforme (épic B2C #90, `docs/epics/b2c.md`) : `organizations.is_platform` (unique), lue via `#services/platform_organization_service` — jamais via le `organizationId` du super admin connecté. Fiches candidat : `employees.account_type` (`ACCOUNT_TYPES` de `#shared/constants/b2c`, `b2b` par défaut, `b2c` = particulier inscrit seul) ; règles d'accès B2C pures dans `#shared/helpers/b2c_access`.
 
 ---
