@@ -9,7 +9,7 @@ import { LegalDocument } from './LegalDocument'
 import { LegalSection, Placeholder, Term } from './LegalSection'
 import { LEGAL_REVIEW_NOTICE } from './TermsOfServicePage'
 
-const LINK_CLASS = 'font-medium text-primary underline-offset-4 hover:underline'
+const LINK_CLASS = 'font-medium text-accent underline-offset-4 hover:underline'
 
 /**
  * Conditions générales de vente du forfait particuliers (paiement unique,
