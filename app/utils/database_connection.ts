@@ -23,7 +23,17 @@ export type DatabaseEnv = {
 
 type SslConfig = { rejectUnauthorized: false } | false
 
-export type PostgresConnection =
+/**
+ * TCP keepalive : Neon et le NAT de Render ferment les sockets idle
+ * (« Connection ended unexpectedly »). Le premier probe part avant le
+ * `idleTimeoutMillis` du pool (config/database.ts).
+ */
+const TCP_KEEPALIVE = {
+  keepAlive: true as const,
+  keepAliveInitialDelayMillis: 10_000,
+}
+
+export type PostgresConnection = (
   | { connectionString: string; ssl: SslConfig }
   | {
       host: string
@@ -33,6 +43,8 @@ export type PostgresConnection =
       database: string
       ssl: SslConfig
     }
+) &
+  typeof TCP_KEEPALIVE
 
 const REQUIRED_DISCRETE_KEYS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_DATABASE'] as const
 
@@ -40,7 +52,7 @@ export function buildPostgresConnection(values: DatabaseEnv): PostgresConnection
   const ssl: SslConfig = (values.DB_SSL ?? true) ? { rejectUnauthorized: false } : false
 
   if (values.DB_URL) {
-    return { connectionString: values.DB_URL, ssl }
+    return { connectionString: values.DB_URL, ssl, ...TCP_KEEPALIVE }
   }
 
   const missing = REQUIRED_DISCRETE_KEYS.filter((key) => {
@@ -61,5 +73,6 @@ export function buildPostgresConnection(values: DatabaseEnv): PostgresConnection
     password: values.DB_PASSWORD,
     database: values.DB_DATABASE!,
     ssl,
+    ...TCP_KEEPALIVE,
   }
 }

@@ -26,6 +26,17 @@ const dbConfig = defineConfig({
         DB_DATABASE: env.get('DB_DATABASE'),
         DB_SSL: env.get('DB_SSL'),
       }),
+      /**
+       * Knex garde 2 connexions par défaut. Neon suspend le compute (ou le
+       * NAT coupe le socket) et le pool réutilise alors une connexion morte :
+       * « Connection ended unexpectedly ». `min: 0` laisse le pool les fermer
+       * après `idleTimeoutMillis`, avant cette coupure.
+       */
+      pool: {
+        min: 0,
+        max: 10,
+        idleTimeoutMillis: 20_000,
+      },
       migrations: {
         naturalSort: true,
         paths: ['database/migrations'],
