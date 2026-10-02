@@ -1,4 +1,5 @@
 import { Sparkles, UserRound } from 'lucide-react'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
 import { B2cExerciseGrid } from '~/components/dashboard/b2c/B2cExerciseGrid'
@@ -116,6 +117,21 @@ export function B2cEmployeeHome({
               title="Débloquez tout votre parcours"
               description="Les autres exercices, leurs analyses IA et votre synthèse se débloquent avec le forfait."
             />
+          )}
+          {exerciseAccess.hasPaidAccess && !advisor && (
+            <Card variant="accent" padding="md" className="space-y-3">
+              <h2 className="text-title-sm text-ink">Être accompagné par un expert</h2>
+              <p className="text-sm text-ink-soft">
+                Un expert de la plateforme peut relire vos résultats et vous aider à construire
+                votre plan.
+              </p>
+              <AppLink
+                href={EXPERT_REQUEST_PATHS.page}
+                className={buttonClassName({ variant: 'outline', size: 'sm' })}
+              >
+                Demander un accompagnement
+              </AppLink>
+            </Card>
           )}
           {advisor && (
             <Card variant="accent" padding="md" className="flex items-start gap-4">

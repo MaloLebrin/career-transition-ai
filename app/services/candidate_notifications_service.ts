@@ -1,9 +1,11 @@
 import type Employee from '#models/employee'
 import type ExerciseResult from '#models/exercise_result'
+import type ExpertRequest from '#models/expert_request'
 import type SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
 import { NotificationService } from '#services/notification_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -91,6 +93,32 @@ export class CandidateNotificationsService {
         href: CANDIDATE_NOTIFICATION_LINKS.exercise(result.type),
       },
     })
+  }
+
+  /**
+   * Demande d'accompagnement d'un particulier (#103) : prévient les super
+   * admins, qui assignent un expert depuis le back-office (#105). Id du
+   * candidat seulement, jamais son nom.
+   */
+  async expertRequested(employee: Employee, request: ExpertRequest): Promise<void> {
+    const superAdmins = await User.query()
+      .where('role', USERS_ROLES.SUPER_ADMIN)
+      .whereNull('deletedAt')
+      .select('id')
+
+    for (const admin of superAdmins) {
+      await this.notifications.notify({
+        userId: admin.id,
+        type: NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED,
+        title: `Demande d'accompagnement — candidat #${employee.id}`,
+        body: 'Un particulier au forfait demande un expert : à assigner depuis le back-office.',
+        meta: {
+          employeeId: employee.id,
+          expertRequestId: request.id,
+          href: EXPERT_REQUEST_PATHS.admin,
+        },
+      })
+    }
   }
 
   /**

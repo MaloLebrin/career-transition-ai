@@ -10,6 +10,8 @@ export const NOTIFICATION_TYPES = {
   DATA_ERASURE_REQUESTED: 'data_erasure_requested',
   // Particulier B2C sans conseiller : son analyse IA est prête (#100)
   AI_ANALYSIS_READY_CANDIDATE: 'ai_analysis_ready_candidate',
+  // Super admins : un particulier demande un accompagnement par un expert (#103)
+  EXPERT_REQUEST_CREATED: 'expert_request_created',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

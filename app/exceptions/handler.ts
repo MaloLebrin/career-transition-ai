@@ -64,6 +64,9 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_ENTITLEMENT_ALREADY_GRANTED',
     'E_EMAIL_ALREADY_VERIFIED',
     'E_EMAIL_NOT_VERIFIED',
+    'E_EXPERT_REQUEST_NOT_AVAILABLE',
+    'E_EXPERT_REQUEST_REQUIRES_PAYMENT',
+    'E_EXPERT_REQUEST_ALREADY_PENDING',
   ]
 
   /**
