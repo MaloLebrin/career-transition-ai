@@ -63,6 +63,7 @@ Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
 | Compte particulier (libre-service) et son dossier | 3 ans après la dernière connexion, ou dès la demande d'effacement                               |
 | Données de paiement et factures (forfait)         | 10 ans (art. L123-22 Code de commerce) ; enregistrement anonymisé après effacement du compte    |
 | Demandes de contact (prospection B2B)             | 3 ans après le dernier contact                                                                  |
+| Demande d'accompagnement par un expert (B2C)      | Avec le dossier candidat : supprimée en cascade avec la fiche (`expert_requests`, #103)         |
 | Documents du candidat (table `media`, Cloudinary) | Jusqu'à leur suppression (candidat ou conseiller), celle du dossier ou une demande d'effacement |
 | Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                              |
 | Journaux techniques et de sécurité                | 1 an                                                                                            |
@@ -150,7 +151,8 @@ Suppression **définitive**, en une transaction :
 
 - la fiche `employees` et, par `ON DELETE CASCADE` : résultats d'exercices,
   expériences, formations, compétences, notes, étapes du plan / rendez-vous,
-  synthèses, exports PDF ;
+  synthèses, exports PDF, demandes d'accompagnement par un expert (#103 : le
+  message libre du candidat part avec sa fiche) ;
 - le compte `users` lié s'il a le rôle candidat (`employees.user_id` est en
   `SET NULL`, donc non couvert par la cascade) et, en cascade, ses jetons
   d'onboarding, jetons de réinitialisation de mot de passe et notifications — un compte conseiller/admin n'est jamais

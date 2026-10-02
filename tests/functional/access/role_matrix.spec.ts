@@ -30,6 +30,14 @@ const AREAS: Area[] = [
     forbiddenMessage: 'Accès réservé aux candidats.',
   },
   {
+    name: 'candidat (accompagnement expert, #103)',
+    url: '/dashboard/candidat/accompagnement',
+    component: 'dashboard/candidat/expert/Index',
+    allowed: [USERS_ROLES.EMPLOYEE],
+    denied: [USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN, USERS_ROLES.EXPERT, USERS_ROLES.SUPER_ADMIN],
+    forbiddenMessage: 'Accès réservé aux candidats.',
+  },
+  {
     name: 'conseiller',
     url: '/dashboard/conseiller',
     component: 'dashboard/conseiller/home/Home',
@@ -120,6 +128,7 @@ test.group('Accès — onboarding candidat (checkOnboarding)', (group) => {
     '/dashboard/candidat/profile',
     '/dashboard/candidat/exercises',
     '/dashboard/candidat/synthesis',
+    '/dashboard/candidat/accompagnement',
   ]
 
   for (const url of gatedUrls) {

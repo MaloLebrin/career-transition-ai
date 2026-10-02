@@ -7,12 +7,15 @@ import {
 import { NotificationService } from '#services/notification_service'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
 import {
   createAdvisor,
   createB2cCandidate,
   createCandidate,
   createEmployeeFor,
+  createInHouseExpert,
   createSuperAdmin,
 } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -183,5 +186,42 @@ test.group('CandidateNotificationsService.aiAnalysisReady (#100)', (group) => {
     await service.aiAnalysisReady(employee, result)
 
     assert.lengthOf(await Notification.query().where('userId', user.id), 0)
+  })
+})
+
+test.group('CandidateNotificationsService.expertRequested (#103)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('prévient chaque super admin avec l’id du candidat et un lien back-office, sans nom', async ({
+    assert,
+  }) => {
+    const first = await createSuperAdmin()
+    const second = await createSuperAdmin()
+    const expert = await createInHouseExpert()
+    const { user, employee } = await createB2cCandidate({ paid: true, expert })
+    const request = await ExpertRequestFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+
+    await service.expertRequested(employee, request)
+
+    const rows = await Notification.query().where('type', NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED)
+    assert.sameMembers(
+      rows.map((row) => row.userId),
+      [first.id, second.id]
+    )
+    for (const row of rows) {
+      assert.include(row.title, `#${employee.id}`)
+      assert.notInclude(`${row.title} ${row.body}`, employee.name)
+      assert.notInclude(`${row.title} ${row.body}`, employee.email)
+      assert.deepEqual(row.meta, {
+        employeeId: employee.id,
+        expertRequestId: request.id,
+        href: EXPERT_REQUEST_PATHS.admin,
+      })
+    }
+    // Ni le candidat ni l'expert déjà assigné ne sont prévenus.
+    assert.lengthOf(await Notification.query().whereIn('userId', [user.id, expert.id]), 0)
   })
 })

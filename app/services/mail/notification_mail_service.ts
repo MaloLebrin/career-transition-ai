@@ -31,6 +31,7 @@ const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.SYNTHESIS_SHARED]: 'Votre synthèse est disponible',
   [NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED]: 'Demande d’effacement de données à traiter',
   [NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE]: 'Votre analyse IA est disponible',
+  [NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED]: 'Demande d’accompagnement par un expert à traiter',
 }
 
 type NotificationWithUser = Notification & { user: User }

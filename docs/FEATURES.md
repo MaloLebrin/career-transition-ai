@@ -381,7 +381,16 @@
   réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
 - Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
 
-### 11.4 À venir
+### 11.4 Accompagnement par un expert (#103)
 
-Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
-Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
+- Page `/dashboard/candidat/accompagnement` : un particulier au forfait réglé dépose une
+  demande (message libre, disponibilités) ; une seule demande en attente à la fois ; statut
+  (en attente, acceptée, refusée, clôturée) et expert assigné affichés. Les super admins sont
+  notifiés (« Demande d'accompagnement — candidat #id », lien vers le back-office #105).
+- CTA sur l'accueil B2C (payé, sans expert) et la synthèse. Candidat B2B : page lisible mais
+  l'accompagnement passe par son conseiller (403 au dépôt) ; non payé : carte « réservé au
+  forfait » (403 au dépôt). Tarif et contrat de l'accompagnement hors plateforme pour l'instant.
+
+### 11.5 À venir
+
+Webhook Stripe (#104), assignation de l'expert et back-office (#105, #107).

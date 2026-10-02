@@ -1,5 +1,6 @@
 import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
+import ExpertRequest from '#models/expert_request'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
@@ -10,6 +11,7 @@ import {
   PAYMENT_STATUSES,
 } from '#shared/constants/billing'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { EXPERT_REQUEST_STATUSES } from '#shared/constants/expert_request'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
@@ -72,6 +74,22 @@ export default class B2cCandidateSeeder extends BaseSeeder {
         currency: BILLING_CURRENCY,
         paidAt: DateTime.now(),
         grantedByUserId: expert.id,
+      })
+    }
+
+    // #103 : une demande d'accompagnement en attente pour le particulier au forfait.
+    const pendingRequest = await ExpertRequest.query()
+      .where('employeeId', paid.id)
+      .where('status', EXPERT_REQUEST_STATUSES.PENDING)
+      .first()
+    if (!pendingRequest) {
+      await ExpertRequest.create({
+        employeeId: paid.id,
+        organizationId: platform.id,
+        message:
+          'J’ai terminé les exercices et j’aimerais échanger avec un expert pour construire mon plan de transition vers le product management.',
+        availability: 'Mardi et jeudi après 18 h',
+        status: EXPERT_REQUEST_STATUSES.PENDING,
       })
     }
 
