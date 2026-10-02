@@ -191,7 +191,8 @@ test.group('AuthController.updateProfileCandidat', (group) => {
     const controller = new AuthController(
       new AuthService() as any,
       new CandidatProfileService(
-        new EmployeesService({ sendSetPasswordLink: async () => {} } as any) as any
+        new EmployeesService({ sendSetPasswordLink: async () => {} } as any) as any,
+        { sendLinkSafely: async () => {} } as any
       ) as any
     )
     const response = makeResponse()
@@ -265,7 +266,7 @@ test.group('AuthController.updateProfileCandidat', (group) => {
     const employeesService = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
     const controller = new AuthController(
       new AuthService() as any,
-      new CandidatProfileService(employeesService) as any
+      new CandidatProfileService(employeesService, { sendLinkSafely: async () => {} } as any) as any
     )
     const response = makeResponse()
     const session = makeSession()

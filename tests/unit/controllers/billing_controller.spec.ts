@@ -87,7 +87,7 @@ test.group('BillingController (#102)', () => {
 
   test('success réconcilie la session et rend la page payée', async ({ assert }) => {
     const checkout = fakeCheckout()
-    const { ctx, user, state, flashes } = makeCtx({ session_id: ' cs_test_1 ' })
+    const { ctx, user, state, flashes } = makeCtx({}, { session_id: 'cs_test_1' })
 
     await new BillingController(checkout).success(ctx)
 
@@ -103,7 +103,7 @@ test.group('BillingController (#102)', () => {
     const checkout = fakeCheckout({
       reconcile: async () => ({ paymentId: 1, paid: false }),
     })
-    const { ctx, state, flashes } = makeCtx({ session_id: 'cs_test_1' })
+    const { ctx, state, flashes } = makeCtx({}, { session_id: 'cs_test_1' })
 
     await new BillingController(checkout).success(ctx)
 

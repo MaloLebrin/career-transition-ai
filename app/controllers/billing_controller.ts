@@ -1,5 +1,6 @@
 import { CheckoutService } from '#services/billing/checkout_service'
 import { BILLING_PATHS } from '#shared/constants/billing'
+import { checkoutSuccessValidator } from '#validators/billing/checkout_success_validator'
 import { checkoutValidator } from '#validators/billing/checkout_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -33,7 +34,7 @@ export default class BillingController {
 
   /** GET /dashboard/candidat/billing/success?session_id=… */
   public async success({ auth, request, inertia, response, session }: HttpContext) {
-    const sessionId = String(request.input('session_id') ?? '').trim()
+    const { session_id: sessionId } = await request.validateUsing(checkoutSuccessValidator)
     if (!sessionId) {
       session.flash('error', MISSING_SESSION_MESSAGE)
       return response.redirect(BILLING_PATHS.offer)
