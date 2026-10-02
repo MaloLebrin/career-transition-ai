@@ -8,6 +8,7 @@ import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
 import DISCTool from '~/components/exercises/DISCTool'
 import ExerciseProgressBadge from '~/components/exercises/ExerciseProgressBadge'
+import { ExerciseSaveOverlay } from '~/components/exercises/ExerciseSaveOverlay'
 import LifeCurveTool from '~/components/exercises/LifeCurveTool'
 import MotivationTool from '~/components/exercises/MotivationTool'
 import PersonalityTool from '~/components/exercises/PersonalityTool'
@@ -58,12 +59,15 @@ export default function CandidatExercise({
   exerciseAccess: _exerciseAccess,
   exerciseProgressPercent = 0,
 }: CandidatExerciseProps) {
-  const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeFromPage?.id ?? null, employeeFromPage ?? null)
+  const { employee: selectedEmployee, refreshEmployee } = useEmployee(
+    employeeFromPage?.id ?? null,
+    employeeFromPage ?? null
+  )
 
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[exerciseType]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useCandidateExercises(
@@ -85,12 +89,11 @@ export default function CandidatExercise({
     }
   )
 
-  const exerciseType =
-    EXERCISE_TYPES[type.toUpperCase()] ?? null
+  const exerciseType = EXERCISE_TYPES[type.toUpperCase()] ?? null
 
   const latestCompletedResultData =
     selectedEmployee && exerciseType
-      ? (selectedEmployee.exercises ?? [])
+      ? ((selectedEmployee.exercises ?? [])
           .filter(
             (r: ExerciseResult) =>
               String(r?.type ?? '').toLowerCase() === String(exerciseType) && Boolean(r?.data)
@@ -99,7 +102,7 @@ export default function CandidatExercise({
             const ad = a?.date ? new Date(a.date).getTime() : 0
             const bd = b?.date ? new Date(b.date).getTime() : 0
             return bd - ad
-          })[0]?.data ?? null
+          })[0]?.data ?? null)
       : null
 
   if (accessGranted === false) {
@@ -110,7 +113,10 @@ export default function CandidatExercise({
         <DashboardLayout hideSidebar>
           <div className="w-full animate-fade-in">
             <div className="mb-10 flex items-center justify-between">
-              <AppLink href="/dashboard/candidat" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+              <AppLink
+                href="/dashboard/candidat"
+                className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+              >
                 ← Retour
               </AppLink>
             </div>
@@ -176,18 +182,7 @@ export default function CandidatExercise({
               )}
             </div>
           </div>
-          {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
-              <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
-              <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
-                IA en action...
-                <br />
-                <span className="text-sm font-bold text-brand-navy/40">
-                  Gemini décode votre profil vitaminé
-                </span>
-              </h3>
-            </div>
-          )}
+          <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             {exerciseType === ExerciseType.MOTIVATION && (
               <MotivationTool
@@ -240,7 +235,9 @@ export default function CandidatExercise({
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (
               <SkillMappingTool
-                onSave={(data, duration) => saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)}
+                onSave={(data, duration) =>
+                  saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
+                }
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.SKILL_MAPPING))}
                 experiences={selectedEmployee?.experiences || []}

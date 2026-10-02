@@ -29,7 +29,7 @@ export default function ConseillerExerciseList({
   const basePath = `/dashboard/conseiller/employees/${employeeId}/exercises/results`
 
   return (
-    <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>
+    <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title="Résultats des exercices" />
       <div className="space-y-8 animate-fadeIn">
         <div className="flex items-center gap-4">

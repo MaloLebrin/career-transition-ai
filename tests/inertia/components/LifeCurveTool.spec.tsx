@@ -161,6 +161,84 @@ describe('LifeCurveTool — parcours complet', () => {
     expect(onSaveDraft).not.toHaveBeenCalled()
   })
 
+  test('affiche la courbe dès qu’il y a au moins deux points', async () => {
+    const user = userEvent.setup()
+    const originalRect = HTMLElement.prototype.getBoundingClientRect
+    HTMLElement.prototype.getBoundingClientRect = function () {
+      if (this.classList?.contains('recharts-responsive-container')) {
+        return {
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: 800,
+          bottom: 400,
+          width: 800,
+          height: 400,
+          toJSON() {},
+        }
+      }
+      return originalRect.call(this)
+    }
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    )
+
+    try {
+      render(<LifeCurveTool onSave={vi.fn()} onSaveDraft={vi.fn()} />)
+      const chart = screen.getByTestId('life-curve-chart')
+      expect(chart.className).not.toMatch(/\bflex\b/)
+
+      await addPoint(user, { year: 2010, label: 'Stage', satisfaction: 4 })
+      expect(screen.getByText('Ajoutez au moins 2 points pour visualiser votre courbe')).toBeInTheDocument()
+
+      await addPoint(user, { year: 2014, label: 'Premier poste', satisfaction: 8 })
+      await addPoint(user, { year: 2019, label: 'Reconversion', satisfaction: 6 })
+
+      await waitFor(() => {
+        const curve = chart.querySelector('.recharts-line-curve')
+        expect(curve).toBeTruthy()
+        expect(curve?.getAttribute('d')).toBeTruthy()
+      })
+      expect(chart.querySelectorAll('.recharts-line-dot').length).toBeGreaterThanOrEqual(3)
+    } finally {
+      HTMLElement.prototype.getBoundingClientRect = originalRect
+      vi.unstubAllGlobals()
+    }
+  })
+
+  test('un brouillon arrivé après la saisie ne remplace pas les points', async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(
+      <LifeCurveTool
+        onSave={vi.fn()}
+        onSaveDraft={vi.fn()}
+        initialDraftPromise={Promise.resolve(null)}
+      />
+    )
+
+    await addPoint(user, { year: 2010, label: 'Stage' })
+    await addPoint(user, { year: 2015, label: 'Premier poste' })
+    expect(screen.getByRole('button', { name: /Suivant : Analyse/ })).toBeInTheDocument()
+
+    rerender(
+      <LifeCurveTool
+        onSave={vi.fn()}
+        onSaveDraft={vi.fn()}
+        initialDraftPromise={Promise.resolve({ data: { points: [], step: 1 } } as never)}
+      />
+    )
+
+    expect(screen.getByText('Stage')).toBeInTheDocument()
+    expect(screen.getByText('Premier poste')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Suivant : Analyse/ })).toBeInTheDocument()
+  })
+
   test('brouillon vide : reste en étape 1 avec les valeurs par défaut', async () => {
     const onSaveDraft = vi.fn()
     render(

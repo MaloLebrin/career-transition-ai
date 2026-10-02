@@ -94,18 +94,16 @@ export default function MotivationMatrix({ matrix }: MotivationMatrixProps) {
         </table>
       </div>
 
-      <div className="mt-10 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 border-t border-slate-50 pt-8">
-        {MOTIVATIONS_LIST.map((m, idx) => (
-          <div key={idx} className="flex items-center space-x-2 group">
-            <span className="text-[9px] font-black text-indigo-300 w-4 group-hover:text-indigo-600 transition-colors">
-              {(idx + 1).toString().padStart(2, '0')}
+      <ol className="mt-8 grid grid-cols-1 gap-x-8 gap-y-2 border-t border-hairline pt-6 sm:grid-cols-2">
+        {MOTIVATIONS_LIST.map((label, idx) => (
+          <li key={label} className="flex items-start gap-3">
+            <span className="mt-0.5 w-6 shrink-0 text-sm font-semibold tabular-nums text-muted">
+              {idx + 1}
             </span>
-            <span className="text-[10px] font-bold text-slate-600 truncate group-hover:text-slate-900">
-              {m}
-            </span>
-          </div>
+            <span className="text-sm leading-snug text-ink">{label}</span>
+          </li>
         ))}
-      </div>
+      </ol>
     </div>
   )
 }

@@ -59,4 +59,20 @@ describe('MotivationResultView', () => {
     expect(screen.getByText('10 mai 2024')).toBeInTheDocument()
     expect(screen.getByText('7min 30s')).toBeInTheDocument()
   })
+
+  test('affiche le classement complet, y compris les libellés longs', () => {
+    const longLabel = "La possibilité d'évoluer professionnellement"
+    const data = {
+      ranked: ['La rémunération', longLabel],
+      scores: {},
+      matrix: [],
+    }
+    render(<MotivationResultView data={data} {...defaultProps} />)
+    expect(screen.getByRole('heading', { name: 'Classement' })).toBeInTheDocument()
+    const labels = screen.getAllByText(longLabel)
+    expect(labels.length).toBeGreaterThan(0)
+    for (const label of labels) {
+      expect(label).not.toHaveClass('truncate')
+    }
+  })
 })

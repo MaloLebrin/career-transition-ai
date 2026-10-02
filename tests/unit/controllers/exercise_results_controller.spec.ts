@@ -132,7 +132,10 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
     await controller.storeFromDashboard(ctx)
 
     assert.equal(ctx.response.redirectUrl, `/dashboard/conseiller/employees/${employee.id}`)
-    assert.equal(ctx.flashes.success, 'Exercice Motivation enregistré.')
+    assert.equal(
+      ctx.flashes.success,
+      "Exercice Motivation enregistré. L'analyse IA se prépare en arrière-plan."
+    )
   })
 
   test("refuse (404) un candidat d'une autre organisation sans appeler le service", async ({
@@ -163,7 +166,10 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
 
     const { ctx: motivationCtx } = await ownEmployeeCtx()
     await controller.storeFromDashboard(motivationCtx)
-    assert.equal(motivationCtx.flashes.success, 'Exercice Motivation enregistré.')
+    assert.equal(
+      motivationCtx.flashes.success,
+      "Exercice Motivation enregistré. L'analyse IA se prépare en arrière-plan."
+    )
 
     const { ctx: valuesCtx } = await ownEmployeeCtx({
       request: {
@@ -180,7 +186,10 @@ test.group('ExerciseResultsController.storeFromDashboard', (group) => {
       },
     })
     await controller.storeFromDashboard(valuesCtx)
-    assert.equal(valuesCtx.flashes.success, 'Exercice Valeurs enregistré.')
+    assert.equal(
+      valuesCtx.flashes.success,
+      "Exercice Valeurs enregistré. L'analyse IA se prépare en arrière-plan."
+    )
   })
 })
 

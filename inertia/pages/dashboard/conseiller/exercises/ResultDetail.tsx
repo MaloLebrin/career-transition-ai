@@ -37,7 +37,7 @@ export default function ExerciseResultDetail({
   const backHref = `/dashboard/conseiller/employees/${employeeId}/exercises`
 
   return (
-    <DashboardLayout selectedEmployeeId={employeeId} hideSidebar>
+    <DashboardLayout selectedEmployeeId={employeeId}>
       <Head title={`${exerciseTitle} - ${employeeName}`} />
       <div className="animate-fadeIn max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-10">

@@ -11,8 +11,25 @@ import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import type { CandidateExerciseState, ExerciseInitialDraft } from '#shared/types/exercise/access'
 import { inject } from '@adonisjs/core'
+import env from '#start/env'
+import app from '@adonisjs/core/services/app'
+import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
+
+/**
+ * Le driver `sync` exécute le job dans le processus de la requête.
+ * Hors tests, on ne l'attend pas : l'enregistrement répond tout de suite
+ * et l'analyse continue dans le process (déploiement sans worker).
+ * En test, on l'attend pour rester dans la transaction globale.
+ * Le driver `database` ne fait qu'insérer le job : l'attente est courte.
+ */
+export function awaitsQualitativeAnalysisInline(
+  driver: 'database' | 'sync' = env.get('QUEUE_DRIVER'),
+  inTest: boolean = app.inTest
+): boolean {
+  return driver !== 'sync' || inTest
+}
 
 type SaveResultInput = {
   employeeId: number
@@ -139,9 +156,22 @@ export class ExerciseResultsService {
 
     if (resultRow.status === exerciceResultStatusValues.COMPLETED) {
       if (await this.access.shouldRunAiAnalysis(employee, input.type, hadAnalysis)) {
-        await AnalyzeExerciseQualitativeJob.dispatch({
+        const analysis = AnalyzeExerciseQualitativeJob.dispatch({
           exerciseResultId: resultRow.id,
         }).toQueue('ai')
+        if (awaitsQualitativeAnalysisInline()) {
+          await analysis
+        } else {
+          void Promise.resolve(analysis).catch((error: unknown) => {
+            logger.error(
+              {
+                exerciseResultId: resultRow.id,
+                message: error instanceof Error ? error.message : String(error),
+              },
+              'Analyse qualitative : lancement en arrière-plan échoué'
+            )
+          })
+        }
       }
 
       if (employee.advisorId) {

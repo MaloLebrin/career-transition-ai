@@ -66,7 +66,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
                 <span className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-sm mr-4">
                   {i + 1}
                 </span>
-                <span className="text-lg font-bold text-slate-800">{item}</span>
+                <span className="min-w-0 text-base font-semibold leading-snug text-ink">{item}</span>
               </div>
             ))}
           </div>
@@ -86,12 +86,28 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
                 <span className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-sm mr-4">
                   {i + 1}
                 </span>
-                <span className="text-lg font-bold text-slate-600">{item}</span>
+                <span className="min-w-0 text-base font-semibold leading-snug text-ink">{item}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {ranked.length > 0 && (
+        <section className="space-y-4">
+          <h5 className="text-xl font-bold text-ink">Classement</h5>
+          <ol className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+            {ranked.map((label, idx) => (
+              <li key={`${label}-${idx}`} className="flex items-start gap-3">
+                <span className="mt-0.5 w-6 shrink-0 text-sm font-semibold tabular-nums text-muted">
+                  {idx + 1}
+                </span>
+                <span className="text-sm leading-snug text-ink">{label}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {/* Matrix View (Spreadsheet Style Replicated) */}
       <div className="space-y-6">

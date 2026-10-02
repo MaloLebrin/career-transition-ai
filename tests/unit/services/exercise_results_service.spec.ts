@@ -4,7 +4,10 @@ import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
-import { ExerciseResultsService } from '#services/exercise_results_service'
+import {
+  awaitsQualitativeAnalysisInline,
+  ExerciseResultsService,
+} from '#services/exercise_results_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
@@ -15,6 +18,13 @@ import { DateTime } from 'luxon'
 
 test.group('ExerciseResultsService', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test("l'analyse synchrone n'est pas attendue hors des tests", ({ assert }) => {
+    assert.isFalse(awaitsQualitativeAnalysisInline('sync', false))
+    assert.isTrue(awaitsQualitativeAnalysisInline('sync', true))
+    assert.isTrue(awaitsQualitativeAnalysisInline('database', false))
+    assert.isTrue(awaitsQualitativeAnalysisInline('database', true))
+  })
   test('saveResult creates exercise result and updates plan', async ({ assert }) => {
     const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({

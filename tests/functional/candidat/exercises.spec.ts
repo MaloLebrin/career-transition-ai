@@ -430,7 +430,10 @@ test.group('Candidat — exercices : résultat (POST)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/dashboard/candidat')
-    response.assertFlashMessage('success', 'Exercice Motivation enregistré.')
+    response.assertFlashMessage(
+      'success',
+      "Exercice Motivation enregistré. L'analyse IA se prépare en arrière-plan."
+    )
 
     const result = await ExerciseResult.query()
       .where('employeeId', employee.id)

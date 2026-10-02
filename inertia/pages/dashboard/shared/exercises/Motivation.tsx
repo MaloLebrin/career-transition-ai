@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { ExerciseSaveOverlay } from '~/components/exercises/ExerciseSaveOverlay'
 import MotivationTool from '~/components/exercises/MotivationTool'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
@@ -87,18 +88,7 @@ export default function MotivationExercise({
               </div>
             )}
           </div>
-          {isAnalyzing && (
-            <div className="fixed inset-0 bg-brand-ivory/95 backdrop-blur-3xl z-100 flex flex-col items-center justify-center">
-              <div className="w-24 h-24 border-4 border-brand-sage border-t-transparent rounded-full animate-spin mb-10" />
-              <h3 className="text-3xl font-bold text-brand-navy tracking-tight text-center">
-                IA en action...
-                <br />
-                <span className="text-sm font-bold text-brand-navy/40">
-                  Gemini décode votre profil vitaminé
-                </span>
-              </h3>
-            </div>
-          )}
+          <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <MotivationTool
               onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, 10, duration)}

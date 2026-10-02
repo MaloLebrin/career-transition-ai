@@ -1,5 +1,6 @@
-import { test } from '@japa/runner'
+import dbConfig from '#config/database'
 import { buildPostgresConnection } from '#utils/database_connection'
+import { test } from '@japa/runner'
 
 /**
  * Non-régression de l'issue #9 : boot avec `DB_URL` seul (Neon, Render) et
@@ -7,6 +8,8 @@ import { buildPostgresConnection } from '#utils/database_connection'
  */
 
 const NEON_URL = 'postgres://user:secret@ep-example.eu-central-1.aws.neon.tech/app?sslmode=require'
+
+const KEEPALIVE = { keepAlive: true, keepAliveInitialDelayMillis: 10_000 }
 
 const DISCRETE = {
   DB_HOST: 'postgres',
@@ -21,6 +24,7 @@ test.group('buildPostgresConnection', () => {
     assert.deepEqual(buildPostgresConnection({ DB_URL: NEON_URL }), {
       connectionString: NEON_URL,
       ssl: { rejectUnauthorized: false },
+      ...KEEPALIVE,
     })
   })
 
@@ -28,6 +32,7 @@ test.group('buildPostgresConnection', () => {
     assert.deepEqual(buildPostgresConnection({ DB_URL: NEON_URL, DB_SSL: false }), {
       connectionString: NEON_URL,
       ssl: false,
+      ...KEEPALIVE,
     })
   })
 
@@ -35,6 +40,7 @@ test.group('buildPostgresConnection', () => {
     assert.deepEqual(buildPostgresConnection({ DB_URL: NEON_URL, ...DISCRETE }), {
       connectionString: NEON_URL,
       ssl: { rejectUnauthorized: false },
+      ...KEEPALIVE,
     })
   })
 
@@ -46,6 +52,7 @@ test.group('buildPostgresConnection', () => {
       password: 'secret',
       database: 'cta',
       ssl: false,
+      ...KEEPALIVE,
     })
   })
 
@@ -65,6 +72,12 @@ test.group('buildPostgresConnection', () => {
       () => buildPostgresConnection({}),
       /définir DB_URL, ou le jeu complet DB_HOST, DB_PORT, DB_USER, DB_DATABASE \(manquant : DB_HOST, DB_PORT, DB_USER, DB_DATABASE\)/
     )
+  })
+
+  test('le pool ne garde pas de connexion idle que Neon couperait', ({ assert }) => {
+    const pool = dbConfig.connections.postgres.pool
+    assert.equal(pool?.min, 0)
+    assert.equal(pool?.idleTimeoutMillis, 20_000)
   })
 
   test('jeu DB_* partiel → erreur listant les clés manquantes', ({ assert }) => {

@@ -23,44 +23,44 @@ interface Props {
 const LifeCurveResultView: React.FC<Props> = ({ points, reflection }) => {
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div className="h-[400px] bg-slate-50 p-8 rounded-[48px] border border-slate-100">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={points}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis
-              dataKey="year"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-            />
-            <YAxis
-              domain={[0, 10]}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: '24px',
-                border: 'none',
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-                fontWeight: 900,
-              }}
-              itemStyle={{ color: '#6366f1' }}
-            />
-            <ReferenceLine y={5} stroke="#cbd5e1" strokeDasharray="5 5" />
-            <Line
-              type="monotone"
-              dataKey="satisfaction"
-              stroke="#6366f1"
-              strokeWidth={4}
-              dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="relative h-[400px] w-full min-w-0 bg-slate-50 rounded-[48px] border border-slate-100">
+        <div className="absolute inset-0 p-8">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={points} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis
+                dataKey="year"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+              />
+              <YAxis
+                domain={[0, 10]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: '24px',
+                  border: 'none',
+                  boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+                  fontWeight: 900,
+                }}
+                itemStyle={{ color: '#6366f1' }}
+              />
+              <ReferenceLine y={5} stroke="#cbd5e1" strokeDasharray="5 5" />
+              <Line
+                type="monotone"
+                dataKey="satisfaction"
+                stroke="#6366f1"
+                strokeWidth={4}
+                dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Object.entries(reflection).map(([key, value]) => (

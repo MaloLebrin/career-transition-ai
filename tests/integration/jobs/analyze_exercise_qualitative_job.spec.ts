@@ -75,6 +75,32 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     })
   })
 
+  test("ne modifie pas la durée de l'exercice pendant l'analyse IA", async ({ assert }) => {
+    const { employee } = await createCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+    result.duration = 40
+    await result.save()
+
+    const originalNow = Date.now
+    const original = NullAiTextProvider.prototype.completeText
+    let now = 1_000_000
+    Date.now = () => now
+    NullAiTextProvider.prototype.completeText = async function (prompt: string) {
+      now += 12_000
+      return original.call(this, prompt)
+    }
+    try {
+      await run(result.id)
+    } finally {
+      Date.now = originalNow
+      NullAiTextProvider.prototype.completeText = original
+    }
+
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+    assert.equal(result.duration, 40)
+  })
+
   test("enregistre l'analyse sans notification pour un candidat sans conseiller", async ({
     assert,
   }) => {
@@ -151,6 +177,8 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     const advisor = await createAdvisor()
     const { employee } = await createCandidate({ advisor })
     const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+    result.duration = 40
+    await result.save()
 
     await withFailingProvider(() => run(result.id))
 
