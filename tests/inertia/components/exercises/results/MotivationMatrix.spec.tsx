@@ -7,7 +7,9 @@ describe('MotivationMatrix', () => {
     render(<MotivationMatrix matrix={[]} />)
     expect(screen.getByText("Décision (ID Vainqueur)")).toBeInTheDocument()
     expect(screen.getByText('Diagonale (ID 0)')).toBeInTheDocument()
-    expect(screen.getByText('01')).toBeInTheDocument()
+    const label = screen.getByText('La satisfaction de transmettre des connaissances')
+    expect(label).toBeInTheDocument()
+    expect(label).not.toHaveClass('truncate')
   })
 
   test('renders winner cell values from matrix upper triangle', () => {
