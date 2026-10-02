@@ -128,7 +128,7 @@ export class ExerciseResultsService {
       if (awaitsQualitativeAnalysisInline()) {
         await analysis
       } else {
-        void analysis.catch((error) => {
+        void Promise.resolve(analysis).catch((error: unknown) => {
           logger.error(
             {
               exerciseResultId: resultRow.id,
