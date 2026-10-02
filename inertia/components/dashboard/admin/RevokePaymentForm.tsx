@@ -18,7 +18,7 @@ export function RevokePaymentForm({ paymentId, onCancel }: RevokePaymentFormProp
       aria-label="Retirer l’accès"
       onSubmit={(event) => {
         event.preventDefault()
-        post(BILLING_ADMIN_PATHS.revoke(paymentId), { preserveScroll: true })
+        post(BILLING_ADMIN_PATHS.revoke(paymentId), { preserveScroll: true, onSuccess: onCancel })
       }}
     >
       <Textarea

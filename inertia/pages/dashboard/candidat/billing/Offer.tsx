@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react'
 import { CheckCircle2, Sparkles } from 'lucide-react'
+import { BILLING_PATHS } from '#shared/constants/billing'
 import { formatPrice } from '#shared/helpers/billing/format_price'
 import type { OfferView } from '#shared/types/billing/checkout'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -23,7 +24,10 @@ export default function OfferPage({ offer }: OfferPageProps) {
     <DashboardLayout>
       <Head title="Forfait" />
       <div className="mx-auto w-full max-w-3xl space-y-6 animate-fade-in">
-        <AppLink href="/dashboard/candidat" className="text-sm font-medium text-accent hover:underline">
+        <AppLink
+          href={BILLING_PATHS.home}
+          className="text-sm font-medium text-accent hover:underline"
+        >
           ← Retour à mon espace
         </AppLink>
         <EmailVerificationBanner />
@@ -36,11 +40,14 @@ export default function OfferPage({ offer }: OfferPageProps) {
               Tous les exercices, leurs analyses IA et votre synthèse sont accessibles.
             </p>
             <div className="flex flex-wrap gap-3">
-              <AppLink href="/dashboard/candidat" className={buttonClassName({ variant: 'primary' })}>
+              <AppLink
+                href={BILLING_PATHS.home}
+                className={buttonClassName({ variant: 'primary' })}
+              >
                 Reprendre mon parcours
               </AppLink>
               <AppLink
-                href="/dashboard/candidat/synthesis"
+                href={BILLING_PATHS.synthesis}
                 className={buttonClassName({ variant: 'outline' })}
               >
                 Voir ma synthèse
@@ -62,7 +69,10 @@ export default function OfferPage({ offer }: OfferPageProps) {
               <ul className="space-y-2">
                 {RESULTS_BENEFITS.map((benefit) => (
                   <li key={benefit} className="flex items-start gap-2 text-sm text-ink-soft">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                    <CheckCircle2
+                      className="mt-0.5 h-4 w-4 shrink-0 text-success"
+                      aria-hidden="true"
+                    />
                     <span>{benefit}</span>
                   </li>
                 ))}

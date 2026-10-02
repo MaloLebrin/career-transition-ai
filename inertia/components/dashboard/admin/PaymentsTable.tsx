@@ -1,5 +1,9 @@
 import { Fragment, useState } from 'react'
-import { PAYMENT_STATUS_LABELS, PAYMENT_STATUSES } from '#shared/constants/billing'
+import {
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUSES,
+} from '#shared/constants/billing'
 import { formatPrice } from '#shared/helpers/billing/format_price'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import type { PaymentRow } from '#shared/types/billing/admin'
@@ -71,7 +75,7 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                 <td className="px-5 py-3 text-ink-soft">
                   {formatPrice(payment.amountCents, payment.currency)}
                   <div className="text-muted">
-                    {payment.provider === 'manual'
+                    {payment.provider === PAYMENT_PROVIDERS.MANUAL
                       ? `Octroi manuel${payment.grantedBy ? ` · ${payment.grantedBy.name}` : ''}`
                       : 'Stripe'}
                   </div>

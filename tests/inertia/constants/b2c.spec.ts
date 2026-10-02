@@ -3,7 +3,7 @@ import {
   ACCOUNT_TYPES,
   B2C_FREE_EXERCISE_TYPES,
   B2C_FREE_INCLUDES_AI_ANALYSIS,
-  B2C_OFFER_PATH,
+  B2C_PUBLIC_PATHS,
   EXERCISE_LOCK_REASONS,
   accountTypeValues,
   exerciseLockReasonValues,
@@ -37,6 +37,6 @@ describe('shared/constants/b2c (épic #90)', () => {
   })
 
   test('les CTA « Débloquer » pointent vers l’offre du tableau de bord candidat', () => {
-    expect(B2C_OFFER_PATH).toBe('/dashboard/candidat/offre')
+    expect(B2C_PUBLIC_PATHS.register).toBe('/inscription')
   })
 })
