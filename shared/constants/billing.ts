@@ -115,8 +115,11 @@ export const BILLING_ADMIN_PATHS = {
   revoke: (paymentId: number) => `/dashboard/super-admin/payments/${paymentId}/revoke`,
 } as const
 
+/** Taille de page des listes du back-office B2C (paiements, particuliers ; #107). */
+export const ADMIN_LIST_PAGE_SIZE = 50
+
 /** Taille de page de la liste des paiements du back-office (#107). */
-export const PAYMENTS_PAGE_SIZE = 50
+export const PAYMENTS_PAGE_SIZE = ADMIN_LIST_PAGE_SIZE
 
 /** Longueur maximale du motif de révocation d'un accès (#107). */
 export const REVOKE_REASON_MAX = 500

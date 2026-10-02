@@ -61,7 +61,9 @@ test.group('Super admin — particuliers (#107)', (group) => {
     const response = await client.get(BILLING_ADMIN_PATHS.b2c).loginAs(superAdmin).withInertia()
 
     const props = assertPage(assert, response, PAGE, ['candidates', 'stats'])
-    const candidates = props.candidates as Array<Record<string, unknown>>
+    const result = props.candidates as Record<string, unknown>
+    assert.include(result, { page: 1, total: 2, lastPage: 1 })
+    const candidates = result.items as Array<Record<string, unknown>>
     assert.sameMembers(
       candidates.map((c) => c.id),
       [paid.employee.id, free.employee.id]

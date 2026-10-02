@@ -5,9 +5,19 @@ import Organization from '#models/organization'
 import User from '#models/user'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
-import { BILLING_CURRENCY, PAYMENT_PROVIDERS, PAYMENT_STATUSES } from '#shared/constants/billing'
+import {
+  ADMIN_LIST_PAGE_SIZE,
+  BILLING_CURRENCY,
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUSES,
+} from '#shared/constants/billing'
 import { EXPERT_REQUEST_STATUSES } from '#shared/constants/expert_request'
-import type { B2cCandidateRow, B2cStats, SuperAdminHomeStats } from '#shared/types/billing/admin'
+import type {
+  B2cCandidateRow,
+  B2cCandidatesListResult,
+  B2cStats,
+  SuperAdminHomeStats,
+} from '#shared/types/billing/admin'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
@@ -21,17 +31,37 @@ import { DateTime } from 'luxon'
 export class SuperAdminB2cService {
   constructor(private platformOrganization: PlatformOrganizationService) {}
 
-  public async listCandidates(): Promise<B2cCandidateRow[]> {
+  /** Numéro de page lu depuis la query string : entier ≥ 1. */
+  public parsePage(raw: Record<string, unknown>): number {
+    const page = Number.parseInt(String(raw.page ?? '1'), 10)
+    return Number.isInteger(page) && page > 0 ? page : 1
+  }
+
+  public async listCandidates(
+    page = 1,
+    pageSize = ADMIN_LIST_PAGE_SIZE
+  ): Promise<B2cCandidatesListResult> {
     const platformId = await this.platformOrganization.getId()
-    const employees = await Employee.query()
+    const paginator = await Employee.query()
       .where('organizationId', platformId)
       .where('accountType', ACCOUNT_TYPES.B2C)
       .whereNull('deletedAt')
       .preload('user', (q) => q.select('id', 'emailVerifiedAt'))
       .preload('advisor', (q) => q.select('id', 'name'))
-      .orderBy('createdAt', 'desc')
+      .orderBy([
+        { column: 'createdAt', order: 'desc' },
+        { column: 'id', order: 'desc' },
+      ])
+      .paginate(page, pageSize)
 
-    if (employees.length === 0) return []
+    const employees = paginator.all()
+    const result = (items: B2cCandidateRow[]): B2cCandidatesListResult => ({
+      items,
+      page,
+      total: paginator.total,
+      lastPage: paginator.lastPage,
+    })
+    if (employees.length === 0) return result([])
     const ids = employees.map((e) => e.id)
     const pending = await ExpertRequest.query()
       .whereIn('employeeId', ids)
@@ -63,7 +93,7 @@ export class SuperAdminB2cService {
         pendingExpertRequest: pendingIds.has(employee.id),
       })
     }
-    return rows
+    return result(rows)
   }
 
   public async stats(): Promise<B2cStats> {

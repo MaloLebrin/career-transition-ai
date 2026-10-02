@@ -14,6 +14,14 @@ export interface B2cCandidateRow {
   pendingExpertRequest: boolean
 }
 
+/** Page de particuliers du back-office (#107). */
+export interface B2cCandidatesListResult {
+  items: B2cCandidateRow[]
+  page: number
+  total: number
+  lastPage: number
+}
+
 /** Indicateurs B2C de l'accueil super admin et de la page des particuliers (#107). */
 export interface B2cStats {
   candidates: number

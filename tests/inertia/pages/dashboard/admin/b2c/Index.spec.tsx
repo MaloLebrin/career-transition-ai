@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { renderWithUser } from '../../../../support/render'
 
 import B2cAdmin from '../../../../../../inertia/pages/dashboard/admin/b2c/Index'
-import { resetInertiaMock } from '../../../../support/inertia_mock'
+import { resetInertiaMock, routerSpies } from '../../../../support/inertia_mock'
 
 vi.mock('@inertiajs/react', async () => {
   const { inertiaMock } = await import('../../../../support/inertia_mock')
@@ -21,19 +22,24 @@ describe('B2cAdmin page (#107)', () => {
   test('indicateurs et tableau des particuliers', () => {
     render(
       <B2cAdmin
-        candidates={[
-          {
-            id: 1,
-            name: 'Camille Durand',
-            email: 'camille@example.test',
-            emailVerified: true,
-            createdAt: '2026-10-02T10:00:00.000Z',
-            hasPaidAccess: true,
-            activePaymentId: 11,
-            expert: null,
-            pendingExpertRequest: false,
-          },
-        ]}
+        candidates={{
+          page: 1,
+          total: 1,
+          lastPage: 1,
+          items: [
+            {
+              id: 1,
+              name: 'Camille Durand',
+              email: 'camille@example.test',
+              emailVerified: true,
+              createdAt: '2026-10-02T10:00:00.000Z',
+              hasPaidAccess: true,
+              activePaymentId: 11,
+              expert: null,
+              pendingExpertRequest: false,
+            },
+          ],
+        }}
         stats={{
           candidates: 12,
           paid: 4,
@@ -55,6 +61,35 @@ describe('B2cAdmin page (#107)', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('table', { name: 'Particuliers inscrits' })).toHaveTextContent(
       'Camille Durand'
+    )
+  })
+
+  test('pagination des particuliers via router.get', async () => {
+    const { user } = renderWithUser(
+      <B2cAdmin
+        candidates={{ items: [], page: 2, total: 120, lastPage: 3 }}
+        stats={{
+          candidates: 120,
+          paid: 0,
+          monthRevenueCents: 0,
+          currency: 'eur',
+          pendingExpertRequests: 0,
+        }}
+      />
+    )
+
+    expect(screen.getByText('Page 2 / 3')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Suivant' }))
+    expect(routerSpies.get).toHaveBeenLastCalledWith(
+      '/dashboard/super-admin/b2c',
+      { page: '3' },
+      expect.objectContaining({ preserveScroll: true, only: ['candidates'] })
+    )
+    await user.click(screen.getByRole('button', { name: 'Précédent' }))
+    expect(routerSpies.get).toHaveBeenLastCalledWith(
+      '/dashboard/super-admin/b2c',
+      {},
+      expect.anything()
     )
   })
 })
