@@ -42,7 +42,7 @@ export default function RegisterCandidatePage({ error }: RegisterCandidatePagePr
       footer={
         <p>
           Vous avez déjà un compte ?{' '}
-          <AppLink href="/auth/login" className="font-medium text-primary hover:underline">
+          <AppLink href="/auth/login" className="font-medium text-accent hover:underline">
             Se connecter
           </AppLink>
         </p>
@@ -94,7 +94,7 @@ export default function RegisterCandidatePage({ error }: RegisterCandidatePagePr
         />
 
         <div>
-          <label className="flex items-start gap-3 text-sm text-foreground">
+          <label className="flex items-start gap-3 text-sm text-ink-soft">
             <input
               type="checkbox"
               name="acceptTerms"
@@ -102,18 +102,18 @@ export default function RegisterCandidatePage({ error }: RegisterCandidatePagePr
               onChange={(e) => setData('acceptTerms', e.target.checked)}
               aria-invalid={Boolean(errors.acceptTerms)}
               aria-describedby={errors.acceptTerms ? 'accept-terms-error' : undefined}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-hairline text-primary focus:ring-primary"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-hairline-strong accent-primary focus:ring-accent"
             />
             <span>
               J’ai lu et j’accepte les{' '}
-              <AppLink href="/cgu" external className="font-medium text-primary hover:underline">
+              <AppLink href="/cgu" external className="font-medium text-accent hover:underline">
                 conditions générales d’utilisation
               </AppLink>{' '}
               et la{' '}
               <AppLink
                 href="/confidentialite"
                 external
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-accent hover:underline"
               >
                 politique de confidentialité
               </AppLink>

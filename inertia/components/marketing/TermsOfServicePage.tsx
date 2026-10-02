@@ -3,7 +3,7 @@ import AppLink from '~/components/ui/AppLink'
 import { LegalDocument } from './LegalDocument'
 import { LegalSection, Placeholder, Term } from './LegalSection'
 
-const LINK_CLASS = 'font-medium text-primary underline-offset-4 hover:underline'
+const LINK_CLASS = 'font-medium text-accent underline-offset-4 hover:underline'
 
 /** Mention portée par chaque section rédigée sans relecture juridique (#95). */
 export const LEGAL_REVIEW_NOTICE = '[à valider par un conseil juridique]'
