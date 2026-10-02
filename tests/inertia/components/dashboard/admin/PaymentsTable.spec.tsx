@@ -66,6 +66,24 @@ describe('PaymentsTable (#107)', () => {
     expect(within(rows[1]).queryByRole('button')).not.toBeInTheDocument()
   })
 
+  test('révocation manuelle : affiche le super admin à côté du motif ; absent pour un remboursement', () => {
+    render(
+      <PaymentsTable
+        payments={[
+          { ...manualRevoked, revokedBy: { id: 2, name: 'Alex Admin' } },
+          { ...manualRevoked, id: 13, revokeReason: 'Remboursement Stripe', revokedBy: null },
+        ]}
+      />
+    )
+
+    const rows = within(screen.getByRole('table', { name: 'Paiements du forfait' }))
+      .getAllByRole('row')
+      .slice(1)
+    expect(rows[0]).toHaveTextContent('Litige (par l’utilisateur #1) · Retiré par Alex Admin')
+    expect(rows[1]).toHaveTextContent('Remboursement Stripe')
+    expect(rows[1]).not.toHaveTextContent('Retiré par')
+  })
+
   test('retirer l’accès : motif saisi puis POST sur la route de révocation', async () => {
     const { user } = renderWithUser(<PaymentsTable payments={[paid]} />)
 

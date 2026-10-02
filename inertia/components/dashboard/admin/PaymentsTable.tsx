@@ -86,7 +86,10 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                     )}
                   </div>
                   {payment.revokeReason && (
-                    <div className="mt-1 text-muted">{payment.revokeReason}</div>
+                    <div className="mt-1 text-muted">
+                      {payment.revokeReason}
+                      {payment.revokedBy ? ` · Retiré par ${payment.revokedBy.name}` : ''}
+                    </div>
                   )}
                 </td>
                 <td className="px-5 py-3 text-ink-soft">
