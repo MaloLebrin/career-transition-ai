@@ -8,27 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class CandidatePaymentSchema extends BaseModel {
-  static $columns = [
-    'amountCents',
-    'createdAt',
-    'currency',
-    'employeeId',
-    'grantedByUserId',
-    'id',
-    'organizationId',
-    'paidAt',
-    'productCode',
-    'provider',
-    'refundedAt',
-    'revokeReason',
-    'revokedAt',
-    'status',
-    'stripeCheckoutSessionId',
-    'stripePaymentIntentId',
-    'updatedAt',
-    'userId',
-    'withdrawalWaivedAt',
-  ] as const
+  static $columns = ['amountCents', 'createdAt', 'currency', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'provider', 'refundedAt', 'revokeReason', 'revokedAt', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
   $columns = CandidatePaymentSchema.$columns
   @column()
   declare amountCents: number
@@ -71,18 +51,7 @@ export class CandidatePaymentSchema extends BaseModel {
 }
 
 export class ContactRequestSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'email',
-    'id',
-    'message',
-    'name',
-    'organization',
-    'phone',
-    'status',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'email', 'id', 'message', 'name', 'organization', 'phone', 'status', 'type', 'updatedAt'] as const
   $columns = ContactRequestSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -107,19 +76,7 @@ export class ContactRequestSchema extends BaseModel {
 }
 
 export class EducationSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'degree',
-    'description',
-    'employeeId',
-    'endDate',
-    'id',
-    'isCurrent',
-    'school',
-    'sortOrder',
-    'startDate',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'degree', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'school', 'sortOrder', 'startDate', 'updatedAt'] as const
   $columns = EducationSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -163,19 +120,7 @@ export class EmployeeSkillSchema extends BaseModel {
 }
 
 export class EmployeeSynthesisSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'employeeId',
-    'executiveSummaryOverride',
-    'expertCommentsShared',
-    'expertNotesInternal',
-    'id',
-    'organizationId',
-    'shareStatus',
-    'sharedAt',
-    'sharedByUserId',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'employeeId', 'executiveSummaryOverride', 'expertCommentsShared', 'expertNotesInternal', 'id', 'organizationId', 'shareStatus', 'sharedAt', 'sharedByUserId', 'updatedAt'] as const
   $columns = EmployeeSynthesisSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -202,25 +147,7 @@ export class EmployeeSynthesisSchema extends BaseModel {
 }
 
 export class EmployeeSchema extends BaseModel {
-  static $columns = [
-    'accountType',
-    'advisorId',
-    'advisorNotes',
-    'createdAt',
-    'currentRole',
-    'deletedAt',
-    'email',
-    'erasureRequestedAt',
-    'id',
-    'name',
-    'onboarded',
-    'organizationId',
-    'status',
-    'summary',
-    'targetRole',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['accountType', 'advisorId', 'advisorNotes', 'createdAt', 'currentRole', 'deletedAt', 'email', 'erasureRequestedAt', 'id', 'name', 'onboarded', 'organizationId', 'status', 'summary', 'targetRole', 'updatedAt', 'userId'] as const
   $columns = EmployeeSchema.$columns
   @column()
   declare accountType: string
@@ -259,20 +186,7 @@ export class EmployeeSchema extends BaseModel {
 }
 
 export class ExerciseResultSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'data',
-    'date',
-    'duration',
-    'employeeId',
-    'id',
-    'progressPercent',
-    'qualitativeAnalysis',
-    'quantitativeScore',
-    'status',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'data', 'date', 'duration', 'employeeId', 'id', 'progressPercent', 'qualitativeAnalysis', 'quantitativeScore', 'status', 'type', 'updatedAt'] as const
   $columns = ExerciseResultSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -301,20 +215,7 @@ export class ExerciseResultSchema extends BaseModel {
 }
 
 export class ExperienceSchema extends BaseModel {
-  static $columns = [
-    'company',
-    'createdAt',
-    'description',
-    'employeeId',
-    'endDate',
-    'id',
-    'isCurrent',
-    'sortOrder',
-    'startDate',
-    'title',
-    'type',
-    'updatedAt',
-  ] as const
+  static $columns = ['company', 'createdAt', 'description', 'employeeId', 'endDate', 'id', 'isCurrent', 'sortOrder', 'startDate', 'title', 'type', 'updatedAt'] as const
   $columns = ExperienceSchema.$columns
   @column()
   declare company: string
@@ -342,23 +243,37 @@ export class ExperienceSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class ExpertRequestSchema extends BaseModel {
+  static $columns = ['assignedExpertUserId', 'availability', 'createdAt', 'declineReason', 'employeeId', 'handledAt', 'handledByUserId', 'id', 'message', 'organizationId', 'status', 'updatedAt'] as const
+  $columns = ExpertRequestSchema.$columns
+  @column()
+  declare assignedExpertUserId: number | null
+  @column()
+  declare availability: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare declineReason: string | null
+  @column()
+  declare employeeId: number
+  @column.dateTime()
+  declare handledAt: DateTime | null
+  @column()
+  declare handledByUserId: number | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare message: string
+  @column()
+  declare organizationId: number
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class MediaSchema extends BaseModel {
-  static $columns = [
-    'bytes',
-    'cloudinaryPublicId',
-    'createdAt',
-    'deliveryType',
-    'entityId',
-    'entityType',
-    'format',
-    'id',
-    'kind',
-    'organizationId',
-    'originalFilename',
-    'resourceType',
-    'updatedAt',
-    'uploadedById',
-  ] as const
+  static $columns = ['bytes', 'cloudinaryPublicId', 'createdAt', 'deliveryType', 'entityId', 'entityType', 'format', 'id', 'kind', 'organizationId', 'originalFilename', 'resourceType', 'updatedAt', 'uploadedById'] as const
   $columns = MediaSchema.$columns
   @column()
   declare bytes: number
@@ -391,19 +306,7 @@ export class MediaSchema extends BaseModel {
 }
 
 export class NoteSchema extends BaseModel {
-  static $columns = [
-    'authorId',
-    'content',
-    'createdAt',
-    'deletedAt',
-    'employeeId',
-    'exerciseResultId',
-    'id',
-    'organizationId',
-    'supportPlanStepId',
-    'updatedAt',
-    'visibility',
-  ] as const
+  static $columns = ['authorId', 'content', 'createdAt', 'deletedAt', 'employeeId', 'exerciseResultId', 'id', 'organizationId', 'supportPlanStepId', 'updatedAt', 'visibility'] as const
   $columns = NoteSchema.$columns
   @column()
   declare authorId: number
@@ -430,18 +333,7 @@ export class NoteSchema extends BaseModel {
 }
 
 export class NotificationSchema extends BaseModel {
-  static $columns = [
-    'body',
-    'createdAt',
-    'id',
-    'meta',
-    'readAt',
-    'status',
-    'title',
-    'type',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['body', 'createdAt', 'id', 'meta', 'readAt', 'status', 'title', 'type', 'updatedAt', 'userId'] as const
   $columns = NotificationSchema.$columns
   @column()
   declare body: string | null
@@ -483,17 +375,7 @@ export class OnboardingTokenSchema extends BaseModel {
 }
 
 export class OrganizationSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'deletedAt',
-    'id',
-    'isPlatform',
-    'logoPublicId',
-    'logoUrl',
-    'name',
-    'slug',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'deletedAt', 'id', 'isPlatform', 'logoPublicId', 'logoUrl', 'name', 'slug', 'updatedAt'] as const
   $columns = OrganizationSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -533,23 +415,7 @@ export class PasswordResetTokenSchema extends BaseModel {
 }
 
 export class PdfExportSchema extends BaseModel {
-  static $columns = [
-    'advisorUserId',
-    'createdAt',
-    'employeeId',
-    'errorMessage',
-    'fileName',
-    'filePath',
-    'finishedAt',
-    'id',
-    'mimeType',
-    'organizationId',
-    'size',
-    'startedAt',
-    'status',
-    'updatedAt',
-    'userId',
-  ] as const
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
   $columns = PdfExportSchema.$columns
   @column()
   declare advisorUserId: number | null
@@ -584,18 +450,7 @@ export class PdfExportSchema extends BaseModel {
 }
 
 export class QueueJobSchema extends BaseModel {
-  static $columns = [
-    'acquiredAt',
-    'data',
-    'error',
-    'executeAt',
-    'finishedAt',
-    'id',
-    'queue',
-    'score',
-    'status',
-    'workerId',
-  ] as const
+  static $columns = ['acquiredAt', 'data', 'error', 'executeAt', 'finishedAt', 'id', 'queue', 'score', 'status', 'workerId'] as const
   $columns = QueueJobSchema.$columns
   @column()
   declare acquiredAt: bigint | number | null
@@ -620,22 +475,7 @@ export class QueueJobSchema extends BaseModel {
 }
 
 export class QueueScheduleSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'cronExpression',
-    'everyMs',
-    'fromDate',
-    'id',
-    'lastRunAt',
-    'name',
-    'nextRunAt',
-    'payload',
-    'runCount',
-    'runLimit',
-    'status',
-    'timezone',
-    'toDate',
-  ] as const
+  static $columns = ['createdAt', 'cronExpression', 'everyMs', 'fromDate', 'id', 'lastRunAt', 'name', 'nextRunAt', 'payload', 'runCount', 'runLimit', 'status', 'timezone', 'toDate'] as const
   $columns = QueueScheduleSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -668,16 +508,7 @@ export class QueueScheduleSchema extends BaseModel {
 }
 
 export class SkillSchema extends BaseModel {
-  static $columns = [
-    'category',
-    'createdAt',
-    'deletedAt',
-    'id',
-    'name',
-    'organizationId',
-    'slug',
-    'updatedAt',
-  ] as const
+  static $columns = ['category', 'createdAt', 'deletedAt', 'id', 'name', 'organizationId', 'slug', 'updatedAt'] as const
   $columns = SkillSchema.$columns
   @column()
   declare category: string | null
@@ -697,15 +528,25 @@ export class SkillSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class StripeEventSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'livemode', 'processedAt', 'stripeEventId', 'type'] as const
+  $columns = StripeEventSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare livemode: boolean
+  @column.dateTime()
+  declare processedAt: DateTime | null
+  @column()
+  declare stripeEventId: string
+  @column()
+  declare type: string
+}
+
 export class SupportPlanStepExerciseSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'exerciseType',
-    'id',
-    'sortOrder',
-    'supportPlanStepId',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'exerciseType', 'id', 'sortOrder', 'supportPlanStepId', 'updatedAt'] as const
   $columns = SupportPlanStepExerciseSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -722,25 +563,7 @@ export class SupportPlanStepExerciseSchema extends BaseModel {
 }
 
 export class SupportPlanStepSchema extends BaseModel {
-  static $columns = [
-    'advisorId',
-    'completed',
-    'createdAt',
-    'description',
-    'dueDate',
-    'employeeId',
-    'endedAt',
-    'id',
-    'instructions',
-    'isLocked',
-    'locationOrLink',
-    'notes',
-    'scheduledAt',
-    'sortOrder',
-    'status',
-    'title',
-    'updatedAt',
-  ] as const
+  static $columns = ['advisorId', 'completed', 'createdAt', 'description', 'dueDate', 'employeeId', 'endedAt', 'id', 'instructions', 'isLocked', 'locationOrLink', 'notes', 'scheduledAt', 'sortOrder', 'status', 'title', 'updatedAt'] as const
   $columns = SupportPlanStepSchema.$columns
   @column()
   declare advisorId: number | null
@@ -779,21 +602,7 @@ export class SupportPlanStepSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'deletedAt',
-    'email',
-    'emailVerifiedAt',
-    'id',
-    'name',
-    'onboardingCompletedAt',
-    'organizationId',
-    'password',
-    'role',
-    'termsAcceptedAt',
-    'termsVersion',
-    'updatedAt',
-  ] as const
+  static $columns = ['createdAt', 'deletedAt', 'email', 'emailVerifiedAt', 'id', 'name', 'onboardingCompletedAt', 'organizationId', 'password', 'role', 'termsAcceptedAt', 'termsVersion', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
