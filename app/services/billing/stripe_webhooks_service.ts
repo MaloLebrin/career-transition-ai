@@ -120,13 +120,13 @@ export class StripeWebhooksService {
       }
       case STRIPE_WEBHOOK_EVENTS.ASYNC_PAYMENT_FAILED: {
         const payment = await this.findCheckoutPayment(object)
-        if (!payment) return this.unmatched(event)
+        if (!payment || !this.referencesSession(payment, object)) return this.unmatched(event)
         await this.payments.markFailed(payment)
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
       case STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED: {
         const payment = await this.findCheckoutPayment(object)
-        if (!payment) return this.unmatched(event)
+        if (!payment || !this.referencesSession(payment, object)) return this.unmatched(event)
         await this.payments.markCanceled(payment)
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
@@ -155,6 +155,14 @@ export class StripeWebhooksService {
     }
     const sessionId = stringOrNull(session.id)
     return sessionId ? this.payments.findByCheckoutSession(sessionId) : null
+  }
+
+  /** `client_reference_id` pointant vers le paiement d'une autre session : on ne le touche pas. */
+  private referencesSession(
+    payment: Parameters<PaymentsService['sessionMatches']>[0],
+    session: Record<string, unknown>
+  ): boolean {
+    return this.payments.sessionMatches(payment, { sessionId: stringOrNull(session.id) })
   }
 
   private unmatched(event: PaymentGatewayWebhookEvent) {

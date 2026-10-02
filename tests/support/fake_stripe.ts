@@ -11,6 +11,15 @@ import app from '@adonisjs/core/services/app'
 /** Signature acceptée par la passerelle factice (`constructWebhookEvent`). */
 export const FAKE_STRIPE_SIGNATURE = 'fake-stripe-signature'
 
+/** Événement webhook Stripe minimal, prêt à être sérialisé vers `constructWebhookEvent`. */
+export function fakeStripeEvent(
+  type: string,
+  object: Record<string, unknown>,
+  id = `evt_fake_${Math.random().toString(36).slice(2, 10)}`
+): PaymentGatewayWebhookEvent {
+  return { id, type, livemode: false, data: { object } }
+}
+
 /**
  * Remplace `StripePaymentGateway` par une passerelle en mémoire (pattern
  * `swapFakeCloudinary`). Aucun appel réseau : les sessions créées sont gardées

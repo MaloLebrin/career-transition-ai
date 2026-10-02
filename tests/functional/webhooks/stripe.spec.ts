@@ -349,4 +349,133 @@ test.group('Webhook Stripe (#104)', (group) => {
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
     assert.isTrue(open.isProcessed)
   })
+
+  test('erreur interne : 500 (Stripe retentera), ligne laissée ouverte, puis reprise en 200', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const payment = await pendingPayment(employee, 'cs_boom')
+    const body = event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+      id: 'cs_boom',
+      client_reference_id: String(payment.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_boom',
+    })
+    let broken = true
+    spy.runUnlockEffects = async (...args) => {
+      if (broken) throw new Error('base indisponible')
+      return EntitlementsService.prototype.runUnlockEffects.apply(spy, args)
+    }
+
+    const failed = await deliver(client, body)
+
+    failed.assertStatus(500)
+    const [row] = await StripeEvent.all()
+    assert.isFalse(row.isProcessed)
+
+    broken = false
+    const retry = await deliver(client, body)
+    retry.assertStatus(200)
+    await row.refresh()
+    assert.isTrue(row.isProcessed)
+  })
+
+  test('completed unpaid : 200, paiement resté pending, aucun droit', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const payment = await pendingPayment(employee, 'cs_unpaid')
+
+    const response = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_unpaid',
+        client_reference_id: String(payment.id),
+        payment_status: 'unpaid',
+      })
+    )
+
+    response.assertStatus(200)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.isFalse(await makeEntitlements().hasResultsAccess(employee.id))
+    assert.lengthOf(spy.dispatched, 0)
+  })
+
+  test('ordre inversé : expired après paid sans effet ; refund avant completed → 200 unmatched puis paiement ouvert', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const paid = await pendingPayment(employee, 'cs_order_a')
+    const paidObject = {
+      id: 'cs_order_a',
+      client_reference_id: String(paid.id),
+      payment_status: 'paid',
+      payment_intent: 'pi_order_a',
+    }
+    ;(
+      await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, paidObject))
+    ).assertStatus(200)
+    ;(
+      await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, paidObject))
+    ).assertStatus(200)
+    await paid.refresh()
+    assert.equal(paid.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(paid.revokedAt)
+
+    const { employee: other } = await createB2cCandidate()
+    const late = await pendingPayment(other, 'cs_order_b')
+    const refund = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, { payment_intent: 'pi_order_b', refunded: true })
+    )
+    refund.assertStatus(200)
+    ;(
+      await deliver(
+        client,
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+          id: 'cs_order_b',
+          client_reference_id: String(late.id),
+          payment_status: 'paid',
+          payment_intent: 'pi_order_b',
+        })
+      )
+    ).assertStatus(200)
+    await late.refresh()
+    assert.equal(late.status, PAYMENT_STATUSES.PAID)
+  })
+
+  test('client_reference_id incohérent : 200, le paiement visé par erreur n’est pas touché', async ({
+    client,
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const victim = await pendingPayment(employee, 'cs_victim')
+
+    for (const reference of [String(victim.id), 'not-a-number']) {
+      const response = await deliver(
+        client,
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, {
+          id: 'cs_elsewhere',
+          client_reference_id: reference,
+        })
+      )
+      response.assertStatus(200)
+    }
+    const paidWrong = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_elsewhere',
+        client_reference_id: String(victim.id),
+        payment_status: 'paid',
+      })
+    )
+    paidWrong.assertStatus(200)
+
+    await victim.refresh()
+    assert.equal(victim.status, PAYMENT_STATUSES.PENDING)
+  })
 })
