@@ -1,8 +1,12 @@
 import billingConfig from '#config/billing'
 import { EntitlementAlreadyGrantedError, PaymentNotFoundError } from '#exceptions/billing_errors'
+import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
+import ExerciseResult from '#models/exercise_result'
 import type User from '#models/user'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
+import { NotificationService } from '#services/notification_service'
 import { ACCOUNT_TYPES, B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
 import {
   BILLING_CURRENCY,
@@ -12,7 +16,9 @@ import {
 } from '#shared/constants/billing'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { ResultsEntitlement } from '#shared/types/billing/entitlement'
+import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import type { RevokeEntitlementInput } from '#shared/types/billing/inputs'
+import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import { DateTime } from 'luxon'
 
 /**
@@ -22,10 +28,17 @@ import { DateTime } from 'luxon'
  * ont toujours accès (l'accès est porté par le contrat du cabinet) : les
  * helpers de `#shared/helpers/b2c_access` restent ainsi neutres pour eux.
  *
- * `onResultsUnlocked` / `onResultsRevoked` sont les points d'extension du
- * webhook Stripe (#104) : relance des analyses IA différées, notifications.
+ * `onResultsUnlocked` / `onResultsRevoked` (#104) : au déblocage, les
+ * exercices complétés sans analyse (verrouillés jusque-là) partent en analyse
+ * IA et le particulier est prévenu ; au retrait, il est prévenu aussi.
  */
 export class EntitlementsService {
+  constructor(
+    private notifications: CandidateNotificationsService = new CandidateNotificationsService(
+      new NotificationService()
+    )
+  ) {}
+
   /** Paiement qui ouvre l'accès aujourd'hui, ou `null`. */
   public async findActivePayment(employeeId: number): Promise<CandidatePayment | null> {
     return CandidatePayment.query()
@@ -117,15 +130,36 @@ export class EntitlementsService {
     await this.onResultsUnlocked(employee, payment)
   }
 
-  /** Point d'extension (#104) : analyses IA différées, notification `results_unlocked`. */
-  protected async onResultsUnlocked(
-    _employee: Employee,
-    _payment: CandidatePayment
-  ): Promise<void> {}
+  /** Retrait d'un droit par remboursement Stripe (`PaymentsService.refund`, #104). */
+  public async revokeResults(employee: Employee, payment: CandidatePayment): Promise<void> {
+    await this.onResultsRevoked(employee, payment)
+  }
 
-  /** Point d'extension (#104) : notification `results_access_revoked`. */
-  protected async onResultsRevoked(
-    _employee: Employee,
-    _payment: CandidatePayment
-  ): Promise<void> {}
+  /**
+   * Droit ouvert (#104) : chaque exercice complété sans analyse — les exercices
+   * du forfait, dont l'analyse n'était pas lancée (`docs/AI_JOBS.md`) — part
+   * en analyse IA, puis le particulier est prévenu.
+   */
+  protected async onResultsUnlocked(employee: Employee, _payment: CandidatePayment): Promise<void> {
+    const pending = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('status', exerciceResultStatusValues.COMPLETED)
+      .whereNull('qualitativeAnalysis')
+      .orderBy('id', 'asc')
+      .select('id')
+    for (const result of pending) {
+      await this.dispatchAnalysis(result.id)
+    }
+    await this.notifications.resultsUnlocked(employee)
+  }
+
+  /** Droit retiré (#104, #107) : notification `results_access_revoked`. */
+  protected async onResultsRevoked(employee: Employee, _payment: CandidatePayment): Promise<void> {
+    await this.notifications.resultsAccessRevoked(employee)
+  }
+
+  /** Isolé pour être observé en test (le driver `sync` exécuterait le job inline). */
+  protected async dispatchAnalysis(exerciseResultId: number): Promise<void> {
+    await AnalyzeExerciseQualitativeJob.dispatch({ exerciseResultId }).toQueue(QUEUE_NAMES.ai)
+  }
 }

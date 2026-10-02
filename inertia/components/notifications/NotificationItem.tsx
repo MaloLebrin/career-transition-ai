@@ -142,6 +142,40 @@ function TypeIcon({ type }: { type: NotificationItemType['type'] }) {
           />
         </svg>
       )
+    case NOTIFICATION_TYPES.RESULTS_UNLOCKED:
+      return (
+        <svg
+          className="w-4 h-4 text-accent shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+          />
+        </svg>
+      )
+    case NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED:
+      return (
+        <svg
+          className="w-4 h-4 text-muted shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+          />
+        </svg>
+      )
     case NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED:
       return (
         <svg

@@ -23,24 +23,24 @@ ses résultats (`EntitlementsService`, #94).
 
 ## Fichiers
 
-| Rôle                 | Fichier                                                  |
-| -------------------- | -------------------------------------------------------- |
-| Flag et prix         | `config/billing.ts` (`STRIPE_ENABLED`, `B2C_RESULTS_PRICE_CENTS`) |
-| Clés et garde prod   | `config/stripe.ts`                                       |
-| Passerelle           | `app/services/billing/payment_gateway.ts` (interface), `stripe_payment_gateway.ts` |
-| Checkout             | `app/services/billing/checkout_service.ts`, `app/controllers/billing_controller.ts`, `start/routes/dashboard/candidat/billing.ts` |
-| Paiements            | `app/services/billing/payments_service.ts`, modèle `CandidatePayment` |
-| Pages                | `inertia/pages/dashboard/candidat/billing/{Offer,Success}.tsx`, `inertia/components/dashboard/b2c/CheckoutConsentForm.tsx` |
-| Fake de test         | `tests/support/fake_stripe.ts` (`swapFakeStripe()` / `restoreStripe()`) |
+| Rôle               | Fichier                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Flag et prix       | `config/billing.ts` (`STRIPE_ENABLED`, `B2C_RESULTS_PRICE_CENTS`)                                                                 |
+| Clés et garde prod | `config/stripe.ts`                                                                                                                |
+| Passerelle         | `app/services/billing/payment_gateway.ts` (interface), `stripe_payment_gateway.ts`                                                |
+| Checkout           | `app/services/billing/checkout_service.ts`, `app/controllers/billing_controller.ts`, `start/routes/dashboard/candidat/billing.ts` |
+| Paiements          | `app/services/billing/payments_service.ts`, modèle `CandidatePayment`                                                             |
+| Pages              | `inertia/pages/dashboard/candidat/billing/{Offer,Success}.tsx`, `inertia/components/dashboard/b2c/CheckoutConsentForm.tsx`        |
+| Fake de test       | `tests/support/fake_stripe.ts` (`swapFakeStripe()` / `restoreStripe()`)                                                           |
 
 ## Variables d'environnement
 
-| Variable                | Défaut  | Rôle                                                                 |
-| ----------------------- | ------- | -------------------------------------------------------------------- |
-| `STRIPE_ENABLED`        | `false` | Ouvre le paiement. Tant que faux : bouton « Bientôt disponible », `POST …/checkout` → 503. |
-| `STRIPE_SECRET_KEY`     | —       | `sk_test_…` en dev / staging, `sk_live_…` en production.             |
-| `STRIPE_WEBHOOK_SECRET` | —       | `whsec_…` du endpoint webhook (ou de `stripe listen`).               |
-| `B2C_RESULTS_PRICE_CENTS` | `4900` | Prix TTC en centimes (`config/billing.ts`).                         |
+| Variable                  | Défaut  | Rôle                                                                                       |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `STRIPE_ENABLED`          | `false` | Ouvre le paiement. Tant que faux : bouton « Bientôt disponible », `POST …/checkout` → 503. |
+| `STRIPE_SECRET_KEY`       | —       | `sk_test_…` en dev / staging, `sk_live_…` en production.                                   |
+| `STRIPE_WEBHOOK_SECRET`   | —       | `whsec_…` du endpoint webhook (ou de `stripe listen`).                                     |
+| `B2C_RESULTS_PRICE_CENTS` | `4900`  | Prix TTC en centimes (`config/billing.ts`).                                                |
 
 **Garde de démarrage** (`config/stripe.ts`) : en production, `STRIPE_ENABLED=true`
 sans les deux clés (ou avec des clés mal formées) empêche le serveur de démarrer.
@@ -63,6 +63,41 @@ confirmé par le PO.
    `charge.refunded`. Copier le `whsec_…`.
 5. Passer en mode live : nouvelles clés, nouveau endpoint webhook, nouveau `whsec_`.
 
+## Webhook (#104)
+
+`POST /webhooks/stripe` (`start/routes/webhooks.ts`, `StripeWebhooksController`,
+`#services/billing/stripe_webhooks_service`) : hors `guest` / `auth`, exempté de
+CSRF (`config/shield.ts`), sans throttle — chaque appel est authentifié par la
+signature `stripe-signature` vérifiée avec `STRIPE_WEBHOOK_SECRET` sur le corps
+brut (`request.raw()`, conservé par le bodyparser).
+
+| Événement                                  | Effet                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `checkout.session.completed`               | `payment_status = paid` → paiement `paid`, droit ouvert ; `unpaid` (différé) → attente |
+| `checkout.session.async_payment_succeeded` | Paiement différé confirmé → `paid`, droit ouvert                                       |
+| `checkout.session.async_payment_failed`    | Paiement `failed`                                                                      |
+| `checkout.session.expired`                 | Paiement `canceled`                                                                    |
+| `charge.refunded`                          | Paiement `refunded` (`refunded_at`, `revoked_at`), accès retiré, candidat prévenu      |
+| autre                                      | Accusé réception, ignoré                                                               |
+
+Le paiement local est retrouvé par `client_reference_id` (id de
+`candidate_payments`), à défaut par l'id de session ; un remboursement par
+`payment_intent`. Aucun paiement correspondant → journalisé, 200.
+
+**Idempotence.** Chaque événement est inscrit dans `stripe_events` (id, type,
+`livemode`, `processed_at` — jamais de payload). Un id déjà traité est ignoré ;
+une ligne sans `processed_at` (traitement interrompu, 500 renvoyé à Stripe) est
+reprise à la livraison suivante. Les transitions de `PaymentsService` sont
+elles-mêmes idempotentes (`WHERE status = 'pending'` / `'paid'`), si bien que
+webhook et réconciliation de la page de succès peuvent arriver dans n'importe
+quel ordre.
+
+**Au déblocage** (`EntitlementsService.onResultsUnlocked`), chaque exercice
+complété sans analyse — les exercices du forfait, dont l'analyse n'était pas
+lancée — part dans la queue `ai` (`AnalyzeExerciseQualitativeJob`) et le
+particulier reçoit `results_unlocked` ; au retrait, `results_access_revoked`.
+Un échec de traitement est remonté à Sentry (`reportError`, ids seulement).
+
 ## En local
 
 ```bash
@@ -73,6 +108,9 @@ STRIPE_WEBHOOK_SECRET=whsec_…   # celui affiché par `stripe listen`
 
 stripe login
 stripe listen --forward-to localhost:3333/webhooks/stripe
+# puis, dans un autre terminal, pour vérifier le déblocage / le remboursement :
+stripe trigger checkout.session.completed
+stripe trigger charge.refunded
 ```
 
 Carte de test : `4242 4242 4242 4242`, date future, CVC quelconque. Parcours

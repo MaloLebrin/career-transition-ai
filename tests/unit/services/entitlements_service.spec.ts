@@ -1,4 +1,7 @@
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
+import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import Notification from '#models/notification'
+import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { EntitlementAlreadyGrantedError, PaymentNotFoundError } from '#exceptions/billing_errors'
 import CandidatePayment from '#models/candidate_payment'
 import { EntitlementsService } from '#services/entitlements_service'
@@ -184,5 +187,65 @@ test.group('EntitlementsService — octroi et révocation manuels', (group) => {
     await service.grantManual(employee, superAdmin)
 
     assert.isTrue(await service.hasResultsAccess(employee.id))
+  })
+})
+
+/** Dispatch observé : le driver `sync` des tests exécuterait le job inline. */
+class SpyDispatchEntitlements extends EntitlementsService {
+  dispatched: number[] = []
+  protected async dispatchAnalysis(exerciseResultId: number) {
+    this.dispatched.push(exerciseResultId)
+  }
+}
+
+test.group('EntitlementsService — déblocage et retrait (#104)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('unlockResults lance l’analyse des exercices complétés sans analyse et prévient le particulier', async ({
+    assert,
+  }) => {
+    const service = new SpyDispatchEntitlements()
+    const { employee, user } = await createB2cCandidate()
+    const locked = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      qualitativeAnalysis: 'déjà analysé',
+    }).create()
+    const other = await createB2cCandidate()
+    await ExerciseResultFactory.merge({ employeeId: other.employee.id }).create()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+
+    await service.unlockResults(employee, payment)
+
+    assert.deepEqual(service.dispatched, [locked.id])
+    const [notification] = await Notification.query().where('userId', user.id)
+    assert.equal(notification.type, NOTIFICATION_TYPES.RESULTS_UNLOCKED)
+    assert.deepEqual(notification.meta, { employeeId: employee.id, href: '/dashboard/candidat' })
+    assert.lengthOf(await Notification.query().where('userId', other.user.id), 0)
+  })
+
+  test('grantManual déclenche le même déblocage ; revoke prévient du retrait', async ({
+    assert,
+  }) => {
+    const service = new SpyDispatchEntitlements()
+    const { employee, user } = await createB2cCandidate()
+    const result = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
+    const superAdmin = await createSuperAdmin()
+
+    const payment = await service.grantManual(employee, superAdmin)
+    assert.deepEqual(service.dispatched, [result.id])
+
+    await service.revoke({ paymentId: payment.id, reason: 'Erreur de saisie' }, superAdmin)
+
+    const rows = await Notification.query().where('userId', user.id).orderBy('id')
+    assert.deepEqual(
+      rows.map((n) => n.type),
+      [NOTIFICATION_TYPES.RESULTS_UNLOCKED, NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED]
+    )
   })
 })

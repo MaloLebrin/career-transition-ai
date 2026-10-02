@@ -116,6 +116,9 @@ Rappel :
 - Queue : `ai`
 - Provider côté serveur : `AI_PROVIDER` (`mistral` / `none`)
 - Variables associées : `MISTRAL_API_KEY`, `MISTRAL_MODEL` (optionnel)
+- Déclenché à la complétion d'un exercice (politique B2C : [AI_JOBS.md](AI_JOBS.md)) et,
+  pour un particulier, au règlement du forfait (#104, `EntitlementsService.onResultsUnlocked`,
+  via le webhook Stripe ou la réconciliation) : un job par exercice complété sans analyse.
 
 ## Lancer un worker
 

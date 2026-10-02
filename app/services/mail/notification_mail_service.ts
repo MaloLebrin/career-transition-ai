@@ -31,6 +31,8 @@ const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.SYNTHESIS_SHARED]: 'Votre synthèse est disponible',
   [NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED]: 'Demande d’effacement de données à traiter',
   [NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE]: 'Votre analyse IA est disponible',
+  [NOTIFICATION_TYPES.RESULTS_UNLOCKED]: 'Vos résultats sont débloqués',
+  [NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED]: 'Votre accès aux résultats a été retiré',
   [NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED]: 'Demande d’accompagnement par un expert à traiter',
 }
 
