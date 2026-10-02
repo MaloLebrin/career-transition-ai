@@ -1,5 +1,5 @@
 import { Lock, Sparkles } from 'lucide-react'
-import { B2C_OFFER_PATH } from '#shared/constants/b2c'
+import { BILLING_PATHS } from '#shared/constants/billing'
 import { formatPrice } from '#shared/helpers/billing/format_price'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
@@ -66,11 +66,15 @@ export function ResultsLockedCard({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         {price && (
           <p className="text-sm text-ink-soft">
-            <span className="font-display text-title-lg text-ink">{price}</span> TTC, paiement unique
+            <span className="font-display text-title-lg text-ink">{price}</span> TTC, paiement
+            unique
           </p>
         )}
         {paymentsEnabled ? (
-          <AppLink href={B2C_OFFER_PATH} className={buttonClassName({ variant: 'primary', size: 'md' })}>
+          <AppLink
+            href={BILLING_PATHS.offer}
+            className={buttonClassName({ variant: 'primary', size: 'md' })}
+          >
             Débloquer mes résultats
           </AppLink>
         ) : (

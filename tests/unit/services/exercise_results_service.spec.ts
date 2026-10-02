@@ -626,3 +626,43 @@ test.group('ExerciseResultsService.findDraftOrCompletedForCandidate (#100)', (gr
     assert.equal(state.exerciseProgressPercent, 100)
   })
 })
+
+test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('completed → draft → saveDraft ne rouvre pas le droit à une analyse', async ({ assert }) => {
+    const service = new ExerciseResultsService()
+    const { employee } = await createB2cCandidate()
+    const type = EXERCICE_RESULTS_TYPES.VALUES
+    const base = { employeeId: employee.id, type, plan: [] }
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
+    })
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', type)
+      .firstOrFail()
+    row.qualitativeAnalysis = 'Première analyse'
+    await row.save()
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.DRAFT,
+      data: { step: 1 },
+    })
+    await service.saveDraft({ employeeId: employee.id, type, data: { step: 1, edit: true } })
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
+    })
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+  })
+})

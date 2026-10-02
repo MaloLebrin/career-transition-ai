@@ -1,4 +1,5 @@
 import Employee from '#models/employee'
+import Notification from '#models/notification'
 import Organization from '#models/organization'
 import type { UserRole } from '#shared/types/advisor/roles'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
@@ -65,4 +66,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasOne(() => Employee, { foreignKey: 'userId' })
   declare employeeProfile: HasOne<typeof Employee>
+
+  @hasMany(() => Notification)
+  declare notifications: HasMany<typeof Notification>
 }

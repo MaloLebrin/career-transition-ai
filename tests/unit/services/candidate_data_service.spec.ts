@@ -1,6 +1,7 @@
 import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import { EmployeeSynthesisFactory } from '#database/factories/employee_synthesis_factory'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
 import { ExperienceFactory } from '#database/factories/experience_factory'
 import { MediaFactory } from '#database/factories/media_factory'
@@ -45,6 +46,7 @@ import { NOTE_VISIBILITY } from '#shared/constants/note'
 import { test } from '@japa/runner'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
+import { DateTime } from 'luxon'
 
 const TMP_DIR = app.tmpPath('tests-rgpd')
 
@@ -254,6 +256,42 @@ test.group('candidate_data_service | export', (group) => {
     assert.property(snapshot.payments[0], 'revokeReason')
     assert.property(snapshot.payments[0], 'withdrawalWaivedAt')
     assert.isNotNull(snapshot.payments[0].withdrawalWaivedAt)
+  })
+
+  test('l’export couvre type de compte, CGU, e-mail vérifié, effacement, synthèses et notifications', async ({
+    assert,
+  }) => {
+    const { employee, user } = await createB2cCandidate({ emailVerified: true })
+    user.termsVersion = '2026-10-01'
+    await user.save()
+    employee.erasureRequestedAt = DateTime.now()
+    await employee.save()
+    await EmployeeSynthesisFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      expertNotesInternal: 'Note interne expert',
+      expertCommentsShared: 'Commentaire partagé',
+    }).create()
+    await NotificationFactory.merge({ userId: user.id, title: 'Résultats débloqués' }).create()
+    const loaded = await loadCandidateForExport(employee.id)
+
+    const snapshot = candidateDataSnapshot(loaded!)
+    assert.equal(snapshot.candidate.accountType, 'b2c')
+    assert.isNotNull(snapshot.candidate.erasureRequestedAt)
+    assert.equal(snapshot.account?.termsVersion, '2026-10-01')
+    assert.isNotNull(snapshot.account?.emailVerifiedAt)
+    assert.lengthOf(snapshot.syntheses, 1)
+    assert.equal(snapshot.syntheses[0].expertCommentsShared, 'Commentaire partagé')
+    assert.equal(snapshot.syntheses[0].expertNotesInternal, 'Note interne expert')
+    assert.deepEqual(
+      snapshot.notifications.map((n) => n.title),
+      ['Résultats débloqués']
+    )
+
+    // Notes internes de l'expert : même politique que les notes privées (#97).
+    const withheld = candidateDataSnapshot(loaded!, [], { includePrivateNotes: false })
+    assert.isNull(withheld.syntheses[0].expertNotesInternal)
+    assert.equal(withheld.syntheses[0].expertCommentsShared, 'Commentaire partagé')
   })
 
   test('notes (#97) : les partagées dans `notes`, les privées à part, exclues sur demande', async ({

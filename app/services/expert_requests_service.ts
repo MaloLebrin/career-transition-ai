@@ -1,5 +1,6 @@
 import { CandidateProfileNotFoundError } from '#exceptions/candidate_data_errors'
 import {
+  ExpertAlreadyAssignedError,
   ExpertNotEligibleError,
   ExpertRequestAlreadyPendingError,
   ExpertRequestNotAvailableError,
@@ -28,6 +29,7 @@ import type { CreateExpertRequestInput } from '#shared/types/expert_request/inpu
 import type { ExpertRequestView, ExpertSupportView } from '#shared/types/expert_request/views'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 
 /**
@@ -75,6 +77,7 @@ export class ExpertRequestsService {
     if (lockedReason === EXPERT_SUPPORT_LOCK_REASONS.PAYMENT) {
       throw new ExpertRequestRequiresPaymentError()
     }
+    if (employee.advisorId !== null) throw new ExpertAlreadyAssignedError()
 
     const pending = await ExpertRequest.query()
       .where('employeeId', employee.id)
@@ -117,6 +120,9 @@ export class ExpertRequestsService {
         { column: 'id', order: 'desc' },
       ])
 
+    const paid = await this.entitlements.employeeIdsWithResultsAccess(
+      rows.map((row) => row.employeeId)
+    )
     const result: AdminExpertRequestRow[] = []
     for (const row of rows) {
       result.push({
@@ -125,7 +131,7 @@ export class ExpertRequestsService {
           id: row.employee.id,
           name: row.employee.name,
           email: row.employee.email,
-          hasPaidAccess: await this.entitlements.hasResultsAccess(row.employee.id),
+          hasPaidAccess: paid.has(row.employee.id),
         },
         assignedExpert: row.assignedExpert
           ? { id: row.assignedExpert.id, name: row.assignedExpert.name }
@@ -142,17 +148,32 @@ export class ExpertRequestsService {
    * traitée, 422 utilisateur hors équipe interne.
    */
   public async assign(actor: User, input: AssignExpertInput): Promise<ExpertRequest> {
-    const request = await this.pendingRequest(input.requestId)
-    const expert = await this.team.findEligibleExpert(input.expertUserId)
-    if (!expert) throw new ExpertNotEligibleError()
-    const employee = await Employee.findOrFail(request.employeeId)
+    const outcome = await db.transaction(async (trx) => {
+      const request = await this.lockPendingRequest(input.requestId, trx)
+      const employee = await Employee.query({ client: trx })
+        .where('id', request.employeeId)
+        .whereNull('deletedAt')
+        .forUpdate()
+        .first()
+      if (!employee) throw new ExpertRequestNotFoundError()
 
-    await db.transaction(async (trx) => {
-      employee.useTransaction(trx)
+      // Le candidat est déjà suivi : la demande n'a plus d'objet, on la clôt.
+      if (employee.advisorId !== null) {
+        request.merge({
+          status: EXPERT_REQUEST_STATUSES.CLOSED,
+          handledByUserId: actor.id,
+          handledAt: DateTime.now(),
+        })
+        await request.save()
+        return { closed: true as const }
+      }
+
+      // Éligibilité revérifiée dans la transaction (rôle ou compte changé entre-temps).
+      const expert = await this.team.findEligibleExpert(input.expertUserId)
+      if (!expert) throw new ExpertNotEligibleError()
+
       employee.advisorId = expert.id
       await employee.save()
-
-      request.useTransaction(trx)
       request.merge({
         status: EXPERT_REQUEST_STATUSES.ACCEPTED,
         handledByUserId: actor.id,
@@ -161,32 +182,44 @@ export class ExpertRequestsService {
         declineReason: null,
       })
       await request.save()
+      return { closed: false as const, request, employee, expert }
     })
 
-    await this.notifications.expertAssigned(employee, expert)
-    await this.notifications.candidateAssigned(expert, employee)
-    return request
+    if (outcome.closed) throw new ExpertAlreadyAssignedError()
+    await this.notifications.expertAssigned(outcome.employee, outcome.expert)
+    await this.notifications.candidateAssigned(outcome.expert, outcome.employee)
+    return outcome.request
   }
 
   /** Refuse une demande en attente avec un motif ; le candidat est prévenu et peut redemander. */
   public async decline(actor: User, input: DeclineExpertRequestInput): Promise<ExpertRequest> {
-    const request = await this.pendingRequest(input.requestId)
     const reason = input.reason.trim()
-    request.merge({
-      status: EXPERT_REQUEST_STATUSES.DECLINED,
-      handledByUserId: actor.id,
-      handledAt: DateTime.now(),
-      declineReason: reason,
+    const request = await db.transaction(async (trx) => {
+      const locked = await this.lockPendingRequest(input.requestId, trx)
+      locked.merge({
+        status: EXPERT_REQUEST_STATUSES.DECLINED,
+        handledByUserId: actor.id,
+        handledAt: DateTime.now(),
+        declineReason: reason,
+      })
+      await locked.save()
+      return locked
     })
-    await request.save()
 
     const employee = await Employee.find(request.employeeId)
     if (employee) await this.notifications.expertRequestDeclined(employee, reason)
     return request
   }
 
-  private async pendingRequest(requestId: number): Promise<ExpertRequest> {
-    const request = await ExpertRequest.find(requestId)
+  /** Demande verrouillée (`FOR UPDATE`) : deux traitements simultanés ne passent pas ensemble. */
+  private async lockPendingRequest(
+    requestId: number,
+    trx: TransactionClientContract
+  ): Promise<ExpertRequest> {
+    const request = await ExpertRequest.query({ client: trx })
+      .where('id', requestId)
+      .forUpdate()
+      .first()
     if (!request) throw new ExpertRequestNotFoundError()
     if (!request.isPending) throw new ExpertRequestNotPendingError()
     return request

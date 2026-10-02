@@ -3,6 +3,7 @@ import {
   PRIVACY_CONTACT_EMAIL,
   PRIVACY_REQUEST_DELAY,
   PRIVATE_NOTES_IN_EXPORT,
+  RETENTION_NOTICE,
   RETENTION_PERIODS,
   SELLER_IDENTITY,
   SUBPROCESSORS,
@@ -75,6 +76,9 @@ describe('shared/constants/legal (source de /confidentialite et /securite)', () 
       const stripe = SUBPROCESSORS.find((s) => s.name === 'Stripe')
       expect(stripe?.purpose).toMatch(/données de carte ne transitent jamais par nos serveurs/)
       expect(stripe?.purpose).toMatch(/factures/)
+      // Seul l'e-mail part chez Stripe (customer_email), jamais le nom.
+      expect(stripe?.purpose).toMatch(/e-mail, montant/)
+      expect(stripe?.purpose).not.toMatch(/nom/)
     })
   })
 
@@ -126,6 +130,15 @@ describe('shared/constants/legal (source de /confidentialite et /securite)', () 
       expect(payments?.duration).toMatch(/10 ans/)
       expect(payments?.duration).toMatch(/L123-22/)
       expect(payments?.duration).toMatch(/anonymisé/)
+    })
+
+    test('durées annoncées comme des maximums, purge automatique non promise', () => {
+      expect(RETENTION_NOTICE).toMatch(/maximums/)
+      expect(RETENTION_NOTICE).toMatch(/à la demande/)
+      expect(RETENTION_NOTICE).toMatch(/automatisation à venir/)
+      for (const period of RETENTION_PERIODS.filter((r) => /3 ans|1 an/.test(r.duration))) {
+        expect(period.duration, period.data).toMatch(/au maximum/)
+      }
     })
 
     test('chaque catégorie est unique et a une durée renseignée', () => {

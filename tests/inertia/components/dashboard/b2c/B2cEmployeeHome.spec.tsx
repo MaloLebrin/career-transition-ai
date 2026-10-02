@@ -73,7 +73,7 @@ describe('B2cEmployeeHome (#100)', () => {
     )
   })
 
-  test('affiche l’expert assigné, ses conseils et les compétences (5 max) quand il y en a', () => {
+  test('affiche l’expert assigné (sans ses notes) et les compétences (5 max) quand il y en a', () => {
     render(
       <B2cEmployeeHome
         {...baseProps}
@@ -94,7 +94,9 @@ describe('B2cEmployeeHome (#100)', () => {
     expect(
       screen.getByRole('heading', { name: 'Votre expert : Nadia Experte' })
     ).toBeInTheDocument()
-    expect(screen.getByText(/Mets en avant ta reconversion/)).toBeInTheDocument()
+    // Les notes du conseiller ne sont jamais montrées au candidat.
+    expect(screen.queryByText(/Mets en avant ta reconversion/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Conseils de votre expert/)).not.toBeInTheDocument()
     expect(screen.getByText('Compétence 5')).toBeInTheDocument()
     expect(screen.queryByText('Compétence 6')).not.toBeInTheDocument()
     expect(

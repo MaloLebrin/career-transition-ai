@@ -15,6 +15,7 @@ const PREVIOUS_TYPES = [
   'synthesis_shared',
   'data_erasure_requested',
   'ai_analysis_ready_candidate',
+  'expert_request_created',
 ]
 
 export default class extends BaseSchema {

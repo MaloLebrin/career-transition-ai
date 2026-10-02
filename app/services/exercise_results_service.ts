@@ -220,6 +220,8 @@ export class ExerciseResultsService {
    * Saves or updates a draft for a given employee + exercise type.
    * Uses the same ExerciseResult table with status = "draft".
    * When the exercise is completed, saveResult will overwrite this record.
+   * Une analyse IA existante n'est jamais effacée : sinon un retour
+   * completed → draft rouvrirait le droit à une analyse gratuite (B2C, #100).
    */
   public async saveDraft(input: SaveDraftInput): Promise<void> {
     const employee = await Employee.findOrFail(input.employeeId)
@@ -241,7 +243,6 @@ export class ExerciseResultsService {
         progressPercent,
         data: input.data,
         quantitativeScore: null,
-        qualitativeAnalysis: null,
       })
       await existingDraft.save()
       return
@@ -311,7 +312,6 @@ export class ExerciseResultsService {
         progressPercent,
         data: input.data,
         quantitativeScore: null,
-        qualitativeAnalysis: null,
       })
       await winnerDraft.save()
     }

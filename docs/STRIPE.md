@@ -21,6 +21,17 @@ ses résultats (`EntitlementsService`, #94).
   — jamais de nom. Stripe est déclaré sous-traitant (`shared/constants/legal.ts`,
   `docs/RGPD.md`).
 
+## Conservation et effacement (RGPD)
+
+- Les paiements (`candidate_payments`) sont des pièces comptables **conservées
+  10 ans** (art. L123-22 Code de commerce), avec `stripe_checkout_session_id` et
+  `stripe_payment_intent_id` pour le rapprochement avec Stripe. `candidate:purge`
+  les anonymise (`employee_id` / `user_id` à `NULL`) sans les supprimer.
+- **Aucune suppression du client côté Stripe n'est faite par la plateforme** :
+  seul l'e-mail (`customer_email`, non pseudonymisé) y est transmis, jamais le
+  nom. Sur demande d'effacement, supprimer le client à la main dans le tableau de
+  bord Stripe (voir `docs/RGPD.md` §5).
+
 ## Fichiers
 
 | Rôle               | Fichier                                                                                                                           |

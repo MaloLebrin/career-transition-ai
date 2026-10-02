@@ -57,6 +57,8 @@ export const RESULTS_PRODUCT_NAME = 'Forfait Transition Carrière — accès com
 
 /** Routes du parcours de paiement (#102), côté candidat. */
 export const BILLING_PATHS = {
+  home: '/dashboard/candidat',
+  synthesis: '/dashboard/candidat/synthesis',
   offer: '/dashboard/candidat/offre',
   checkout: '/dashboard/candidat/offre/checkout',
   success: '/dashboard/candidat/billing/success',

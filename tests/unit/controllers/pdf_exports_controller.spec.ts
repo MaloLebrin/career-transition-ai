@@ -2,6 +2,7 @@ import PdfExportsController from '#controllers/pdf_exports_controller'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import PdfExport from '#models/pdf_export'
+import { PdfExportsService } from '#services/pdf_exports_service'
 import User from '#models/user'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -82,7 +83,7 @@ test.group('PdfExportsController.index', (group) => {
       status: PDF_EXPORT_STATUSES.PENDING,
     })
 
-    const controller = new PdfExportsController()
+    const controller = new PdfExportsController(new PdfExportsService())
     const ctx = makeCtx({
       auth: {
         user: {
@@ -122,7 +123,7 @@ test.group('PdfExportsController.index', (group) => {
       status: PDF_EXPORT_STATUSES.PENDING,
     })
 
-    const controller = new PdfExportsController()
+    const controller = new PdfExportsController(new PdfExportsService())
     const ctx = makeCtx({
       auth: {
         user: {
@@ -164,7 +165,7 @@ test.group('PdfExportsController.index', (group) => {
       status: PDF_EXPORT_STATUSES.PENDING,
     })
 
-    const controller = new PdfExportsController()
+    const controller = new PdfExportsController(new PdfExportsService())
     const ctx = makeCtx({
       auth: { user: { id: admin.id, organizationId: org.id, role: USERS_ROLES.ADMIN } },
       request: { qs: () => ({ status: 'completed' }) },
@@ -200,7 +201,7 @@ test.group('PdfExportsController.index', (group) => {
       size: 10,
     })
 
-    const controller = new PdfExportsController()
+    const controller = new PdfExportsController(new PdfExportsService())
     const ctx = makeCtx({
       auth: { user: { id: admin.id, organizationId: org.id, role: USERS_ROLES.ADMIN } },
       request: { qs: () => ({ status: 'not_a_real_status' }) },
@@ -215,7 +216,7 @@ test.group('PdfExportsController.index', (group) => {
   })
 
   test('retourne sans render si utilisateur non authentifié', async ({ assert }) => {
-    const controller = new PdfExportsController()
+    const controller = new PdfExportsController(new PdfExportsService())
     const ctx = makeCtx({ auth: { user: null } })
 
     // @ts-expect-error minimal context

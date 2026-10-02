@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/react'
 import { Gift, Sparkles, UserRound } from 'lucide-react'
 import React from 'react'
-import { B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
+import { B2C_FREE_EXERCISE_TYPES, B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
 import { BILLING_CURRENCY, DEFAULT_RESULTS_PRICE_CENTS } from '#shared/constants/billing'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { formatPrice } from '#shared/helpers/billing/format_price'
@@ -18,18 +18,39 @@ import { FeatureCard } from './FeatureCard'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
 
+const NUMBER_WORDS = [
+  'zéro',
+  'un',
+  'deux',
+  'trois',
+  'quatre',
+  'cinq',
+  'six',
+  'sept',
+  'huit',
+  'neuf',
+]
+
+/** Compteur en lettres, dérivé des constantes partagées (jamais écrit en dur). */
+function countWord(count: number): string {
+  return NUMBER_WORDS[count] ?? String(count)
+}
+
+const TOTAL_WORD = countWord(EXERCISE_LIST.length)
+const FREE_WORD = countWord(B2C_FREE_EXERCISE_TYPES.length)
+const FREE_TITLE = `${FREE_WORD.charAt(0).toUpperCase()}${FREE_WORD.slice(1)} exercices offerts`
+
 const FEATURES = [
   {
     icon: <Gift size={20} />,
-    title: 'Deux exercices offerts',
+    title: FREE_TITLE,
     description:
       'Motivations et Valeurs, avec leurs résultats et leur analyse, sans carte bancaire ni engagement.',
   },
   {
     icon: <Sparkles size={20} />,
     title: 'Un forfait, une fois',
-    description:
-      'Débloquez les huit exercices, les analyses IA et votre synthèse de parcours avec un paiement unique.',
+    description: `Débloquez les ${TOTAL_WORD} exercices, les analyses IA et votre synthèse de parcours avec un paiement unique.`,
   },
   {
     icon: <UserRound size={20} />,
@@ -57,7 +78,7 @@ const STEPS = [
 ]
 
 const INCLUDED = [
-  'Les huit exercices du parcours et leurs résultats détaillés',
+  `Les ${TOTAL_WORD} exercices du parcours et leurs résultats détaillés`,
   'Les analyses IA de chaque exercice',
   'Votre synthèse de parcours et son export PDF',
   'La possibilité de demander un accompagnement par un expert',
@@ -93,7 +114,10 @@ export default function IndividualsPage() {
   )
 
   const primaryCta = registrationOpen ? (
-    <AppLink href="/inscription" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+    <AppLink
+      href={B2C_PUBLIC_PATHS.register}
+      className={buttonClassName({ variant: 'primary', size: 'lg' })}
+    >
       Commencer gratuitement
     </AppLink>
   ) : (
@@ -116,7 +140,10 @@ export default function IndividualsPage() {
             />
             <div className="flex flex-col gap-3 sm:flex-row">
               {primaryCta}
-              <AppLink href="/tarifs" className={buttonClassName({ variant: 'outline', size: 'lg' })}>
+              <AppLink
+                href={B2C_PUBLIC_PATHS.pricing}
+                className={buttonClassName({ variant: 'outline', size: 'lg' })}
+              >
                 Voir le tarif
               </AppLink>
             </div>
@@ -190,11 +217,14 @@ export default function IndividualsPage() {
               </ul>
             </div>
             <div className="mt-auto flex flex-wrap gap-x-6 gap-y-2 border-t border-on-ink/15 pt-6">
-              <AppLink href="/cgv" className="text-sm font-medium text-accent-on-ink hover:underline">
+              <AppLink
+                href={B2C_PUBLIC_PATHS.terms}
+                className="text-sm font-medium text-accent-on-ink hover:underline"
+              >
                 Conditions de vente
               </AppLink>
               <AppLink
-                href="/confidentialite"
+                href={B2C_PUBLIC_PATHS.privacy}
                 className="text-sm font-medium text-accent-on-ink hover:underline"
               >
                 Politique de confidentialité
@@ -217,19 +247,19 @@ export default function IndividualsPage() {
 
       <CtaBand
         eyebrow="Pour les particuliers"
-        title="Deux exercices offerts pour commencer."
+        title={`${FREE_TITLE} pour commencer.`}
         description="Pas de carte bancaire, pas d’engagement. Vous décidez ensuite si la suite vaut le forfait."
         actions={
           registrationOpen ? (
             <>
               <AppLink
-                href="/inscription"
+                href={B2C_PUBLIC_PATHS.register}
                 className={buttonClassName({ variant: 'secondary', size: 'lg' })}
               >
                 Commencer gratuitement
               </AppLink>
               <AppLink
-                href="/tarifs"
+                href={B2C_PUBLIC_PATHS.pricing}
                 className={buttonClassName({
                   variant: 'outline',
                   size: 'lg',

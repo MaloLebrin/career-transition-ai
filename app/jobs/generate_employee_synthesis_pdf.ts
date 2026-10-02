@@ -40,7 +40,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
 
     const notifyUserIds: number[] = [pdfExport.userId]
     if (pdfExport.advisorUserId) notifyUserIds.push(pdfExport.advisorUserId)
-    broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
+    await broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
 
     const entitlements = await app.container.make(EntitlementsService)
     try {
@@ -59,7 +59,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
         pdfExport.errorMessage = RESULTS_LOCKED_MESSAGE
         pdfExport.finishedAt = DateTime.now()
         await pdfExport.save()
-        broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
+        await broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
         logger.warn('GenerateEmployeeSynthesisPdf: accès aux résultats révoqué', {
           pdfExportId,
           employeeId: employee.id,
@@ -89,7 +89,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
       pdfExport.status = PDF_EXPORT_STATUSES.COMPLETED
       pdfExport.finishedAt = DateTime.now()
       await pdfExport.save()
-      broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
+      await broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
 
       const notifService = new NotificationService()
       for (const uid of notifyUserIds) {
@@ -107,7 +107,7 @@ export default class GenerateEmployeeSynthesisPdf extends Job<GenerateEmployeeSy
         error?.message || 'Unknown error while generating employee synthesis PDF'
       pdfExport.finishedAt = DateTime.now()
       await pdfExport.save()
-      broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
+      await broadcastPdfExportUpdatedToUsers(pdfExport, notifyUserIds)
 
       logger.error('GenerateEmployeeSynthesisPdf failed', {
         pdfExportId,

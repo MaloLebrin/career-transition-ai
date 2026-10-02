@@ -135,7 +135,7 @@ Organisation plateforme (épic B2C #90, `docs/epics/b2c.md`) : `organizations.is
 
 Ordre standard : `auth()` → middleware de rôle.
 
-Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding`, `throttleForgotPassword`, `throttlePasswordReset`, `throttleChangePassword`, `throttleDataExport`, `throttleEmailVerification`, `throttleCheckout` (10/h par compte, `POST /dashboard/candidat/offre/checkout`) (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
+Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding`, `throttleForgotPassword`, `throttlePasswordReset`, `throttleChangePassword`, `throttleDataExport`, `throttleEmailVerification`, `throttleExerciseSave` (60/min par compte sur les sauvegardes d'exercice candidat), `throttleCheckout` (10/h par compte, `POST /dashboard/candidat/offre/checkout`) (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
 
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 

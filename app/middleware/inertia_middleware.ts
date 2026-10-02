@@ -4,6 +4,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import billingConfig from '#config/billing'
 import Employee from '#models/employee'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EntitlementsService } from '#services/entitlements_service'
 import { NotificationService } from '#services/notification_service'
 import { receivesNotifications } from '#shared/helpers/roles'
@@ -38,8 +39,11 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       if (user.role === 'advisor') {
         employees = await Employee.query().where('advisorId', user.id).orderBy('name', 'asc')
       } else if (user.role === 'admin' || user.role === 'super_admin') {
+        // Les particuliers B2C (organisation plateforme) ne sont pas listés ici : ils
+        // ont leurs écrans dédiés et ne doivent pas gonfler chaque réponse Inertia.
         employees = await Employee.query()
           .where('organizationId', user.organizationId)
+          .whereNot('accountType', ACCOUNT_TYPES.B2C)
           .orderBy('name', 'asc')
       }
     }

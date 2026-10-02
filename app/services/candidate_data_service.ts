@@ -10,6 +10,10 @@ import { deletePdf } from '#services/pdf_storage_service'
 import { MEDIA_ENTITY_TYPES } from '#shared/constants/media'
 import { NOTE_VISIBILITY } from '#shared/constants/note'
 import type { CandidateExportOptions } from '#shared/types/candidate_data/export_options'
+import type {
+  CandidateExportNotification,
+  CandidateExportSynthesis,
+} from '#shared/types/candidate_data/snapshot'
 import { PRIVATE_NOTES_IN_EXPORT } from '#shared/constants/legal'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import app from '@adonisjs/core/services/app'
@@ -43,13 +47,14 @@ function mediaService(): Promise<MediaService> {
 export async function loadCandidateForExport(employeeId: number): Promise<Employee | null> {
   return Employee.query()
     .where('id', employeeId)
-    .preload('user')
+    .preload('user', (q) => q.preload('notifications'))
     .preload('skills', (q) => q.pivotColumns(['level']))
     .preload('experiences')
     .preload('educations')
     .preload('exerciseResults')
     .preload('supportPlanSteps')
     .preload('notes', (q) => q.whereNull('deletedAt'))
+    .preload('syntheses')
     .preload('payments')
     .preload('expertRequests')
     .first()
@@ -88,6 +93,8 @@ export function candidateDataSnapshot(
       targetRole: employee.targetRole,
       summary: employee.summary,
       status: employee.status,
+      accountType: employee.accountType,
+      erasureRequestedAt: employee.erasureRequestedAt?.toISO() ?? null,
       createdAt: employee.createdAt?.toISO() ?? null,
     },
     account: user
@@ -95,6 +102,9 @@ export function candidateDataSnapshot(
           email: user.email,
           name: user.name,
           role: user.role,
+          termsAcceptedAt: user.termsAcceptedAt?.toISO() ?? null,
+          termsVersion: user.termsVersion,
+          emailVerifiedAt: user.emailVerifiedAt?.toISO() ?? null,
           createdAt: user.createdAt?.toISO() ?? null,
         }
       : null,
@@ -115,6 +125,29 @@ export function candidateDataSnapshot(
     notes: sharedNotes.map(serializeNote),
     advisorPrivateNotes: options.includePrivateNotes ? privateNotes.map(serializeNote) : null,
     advisorPrivateNotesWithheld: options.includePrivateNotes ? 0 : privateNotes.length,
+    // Synthèses d'accompagnement ; les notes internes de l'expert suivent la politique des notes privées.
+    syntheses: (employee.syntheses ?? []).map(
+      (synthesis): CandidateExportSynthesis => ({
+        shareStatus: synthesis.shareStatus,
+        sharedAt: synthesis.sharedAt?.toISO() ?? null,
+        expertCommentsShared: synthesis.expertCommentsShared,
+        expertNotesInternal: options.includePrivateNotes ? synthesis.expertNotesInternal : null,
+        executiveSummaryOverride: synthesis.executiveSummaryOverride,
+        createdAt: synthesis.createdAt?.toISO() ?? null,
+        updatedAt: synthesis.updatedAt?.toISO() ?? null,
+      })
+    ),
+    // Notifications reçues par le compte du candidat (cloche et e-mails).
+    notifications: (user?.notifications ?? []).map(
+      (notification): CandidateExportNotification => ({
+        type: notification.type,
+        status: notification.status,
+        title: notification.title,
+        body: notification.body,
+        readAt: notification.readAt?.toISO() ?? null,
+        createdAt: notification.createdAt?.toISO() ?? null,
+      })
+    ),
     // Forfait particuliers (#94) : la pièce comptable survit anonymisée à la purge.
     payments: (employee.payments ?? []).map((payment) => ({
       product: payment.productCode,

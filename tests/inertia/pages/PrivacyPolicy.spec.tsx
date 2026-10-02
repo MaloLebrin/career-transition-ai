@@ -1,7 +1,12 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import PrivacyPolicy from '../../../inertia/pages/PrivacyPolicy'
-import { PRIVACY_CONTACT_EMAIL, RETENTION_PERIODS, SUBPROCESSORS } from '#shared/constants/legal'
+import {
+  PRIVACY_CONTACT_EMAIL,
+  RETENTION_NOTICE,
+  RETENTION_PERIODS,
+  SUBPROCESSORS,
+} from '#shared/constants/legal'
 
 vi.mock('@inertiajs/react', async () => {
   const { inertiaMock } = await import('../support/inertia_mock')
@@ -57,6 +62,7 @@ describe('PrivacyPolicy page', () => {
     for (const period of RETENTION_PERIODS) {
       expect(screen.getByText(period.duration)).toBeInTheDocument()
     }
+    expect(screen.getByText(RETENTION_NOTICE)).toBeInTheDocument()
   })
 
   test('donne un contact pour exercer ses droits, sans placeholder', () => {

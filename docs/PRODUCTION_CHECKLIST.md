@@ -23,6 +23,10 @@ Checklist des points à traiter avant ou pour la mise en production.
 - [ ] **Stripe en production** — compte activé, factures configurées, `STRIPE_ENABLED=true`, `STRIPE_SECRET_KEY=sk_live_…`, endpoint `https://<domaine>/webhooks/stripe` abonné aux cinq événements ([STRIPE.md](STRIPE.md)) et `STRIPE_WEBHOOK_SECRET=whsec_…` ; parcours complet rejoué en mode test juste avant.
 - [ ] **Équipe interne** — au moins un expert interne invité depuis `/dashboard/super-admin/team` avant d'ouvrir les demandes d'accompagnement.
 
+## Rétention RGPD (écart connu)
+
+- [ ] Les durées publiées sur `/confidentialite` (3 ans, 1 an…) sont des **maximums** : seule la purge des exports PDF est automatique. Prévoir un passage manuel au moins annuel (`node ace candidate:purge <id>` pour les comptes particuliers inactifs depuis 3 ans et les dossiers clos depuis 3 ans, SQL de `docs/RGPD.md` §5 pour les demandes de contact) et vérifier la rétention des journaux (hébergeur, Sentry), jusqu'à l'automatisation (`docs/RGPD.md` §3).
+
 ## Qualité & robustesse
 
 - [ ] **Tests** — Ajouter ou compléter les tests (onboarding, super admin, parcours critiques) pour limiter les régressions.

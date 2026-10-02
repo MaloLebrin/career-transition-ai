@@ -7,6 +7,7 @@ import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { EntitlementsService } from '#services/entitlements_service'
 import { ACCOUNT_TYPES, EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
 import type { HttpContext } from '@adonisjs/core/http'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 import GenerateEmployeeSynthesisPdf from '#jobs/generate_employee_synthesis_pdf'
@@ -33,6 +34,7 @@ export default class EmployeeSynthesesController {
     const payload = await this.synthesisService.buildForAdvisor({
       organizationId: user.organizationId,
       employeeId,
+      viewer: user,
     })
 
     return (ctx.inertia as any).render('dashboard/conseiller/employees/Synthesis', {
@@ -56,10 +58,7 @@ export default class EmployeeSynthesesController {
     const employeeId = Number(ctx.params.id)
 
     // org scoping safety (middleware should already protect, but we keep the scope constraint)
-    await Employee.query()
-      .where('id', employeeId)
-      .where('organizationId', user.organizationId)
-      .firstOrFail()
+    await Employee.query().where('id', employeeId).where(teamEmployeeScope(user)).firstOrFail()
 
     const synthesis = await this.synthesisService.getOrCreateRow({
       organizationId: user.organizationId,
@@ -96,7 +95,7 @@ export default class EmployeeSynthesesController {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
 
     const synthesis = await this.synthesisService.getOrCreateRow({
@@ -121,10 +120,7 @@ export default class EmployeeSynthesesController {
     const user = ctx.auth.user!
     const employeeId = Number(ctx.params.id)
 
-    await Employee.query()
-      .where('id', employeeId)
-      .where('organizationId', user.organizationId)
-      .firstOrFail()
+    await Employee.query().where('id', employeeId).where(teamEmployeeScope(user)).firstOrFail()
 
     const synthesis = await this.synthesisService.getOrCreateRow({
       organizationId: user.organizationId,
@@ -207,7 +203,7 @@ export default class EmployeeSynthesesController {
     // Ensure employee exists and is org-scoped
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
 
     const pdfExport = await PdfExport.create({

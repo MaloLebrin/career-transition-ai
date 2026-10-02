@@ -1,6 +1,7 @@
 import { makeEntitlements } from '#tests/support/entitlements'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
 import {
+  ExpertAlreadyAssignedError,
   ExpertNotEligibleError,
   ExpertRequestAlreadyPendingError,
   ExpertRequestNotAvailableError,
@@ -8,6 +9,7 @@ import {
   ExpertRequestNotPendingError,
   ExpertRequestRequiresPaymentError,
 } from '#exceptions/expert_request_errors'
+import { countQueries } from '#tests/utils/query_counter'
 import { CandidateProfileNotFoundError } from '#exceptions/candidate_data_errors'
 import Employee from '#models/employee'
 import ExpertRequest from '#models/expert_request'
@@ -32,6 +34,7 @@ import {
 } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 
 /** Notifications observées au lieu d'être écrites. */
 class SpyNotifications extends CandidateNotificationsService {
@@ -109,6 +112,19 @@ test.group('ExpertRequestsService.createForUser (#103)', (group) => {
     const advisor = await createAdvisor()
     await assert.rejects(() => service.createForUser(advisor, input), CandidateProfileNotFoundError)
     assert.lengthOf(notifications.requested, 0)
+  })
+
+  test('refuse un candidat qui a déjà un conseiller ou un expert (409)', async ({ assert }) => {
+    const { service } = makeService()
+    const actor = await createB2cCandidate({ paid: true })
+    const otherExpert = await createInHouseExpert()
+    actor.employee.advisorId = otherExpert.id
+    await actor.employee.save()
+
+    await assert.rejects(
+      () => service.createForUser(actor.user, { message: 'Aidez-moi' }),
+      ExpertAlreadyAssignedError
+    )
   })
 
   test('une seule demande en attente : 409, mais possible après refus ou clôture', async ({
@@ -267,6 +283,46 @@ test.group('ExpertRequestsService — back-office (#105)', (group) => {
       () => service.decline(superAdmin, { requestId: request.id, reason: 'Encore.' }),
       ExpertRequestNotPendingError
     )
+  })
+
+  test('assign : candidat déjà suivi → 409 et demande clôturée, fiche soft-deleted → 404', async ({
+    assert,
+  }) => {
+    const { service, notifications } = makeService()
+    const superAdmin = await createSuperAdmin()
+    const expert = await createInHouseExpert()
+    const followed = await pendingRequest()
+    const otherExpert = await createInHouseExpert()
+    followed.employee.advisorId = otherExpert.id
+    await followed.employee.save()
+
+    await assert.rejects(
+      () => service.assign(superAdmin, { requestId: followed.request.id, expertUserId: expert.id }),
+      ExpertAlreadyAssignedError
+    )
+    const closed = await ExpertRequest.findOrFail(followed.request.id)
+    assert.equal(closed.status, EXPERT_REQUEST_STATUSES.CLOSED)
+
+    const deleted = await pendingRequest()
+    deleted.employee.deletedAt = DateTime.now()
+    await deleted.employee.save()
+    await assert.rejects(
+      () => service.assign(superAdmin, { requestId: deleted.request.id, expertUserId: expert.id }),
+      ExpertRequestNotFoundError
+    )
+    assert.lengthOf(notifications.assigned, 0)
+    const stillPending = await ExpertRequest.findOrFail(deleted.request.id)
+    assert.equal(stillPending.status, EXPERT_REQUEST_STATUSES.PENDING)
+  })
+
+  test('listForAdmin : nombre de requêtes constant (pas de N+1)', async ({ assert }) => {
+    const { service } = makeService()
+    await pendingRequest()
+    const few = await countQueries(() => service.listForAdmin())
+    await pendingRequest()
+    await pendingRequest()
+    const many = await countQueries(() => service.listForAdmin())
+    assert.equal(many, few)
   })
 
   test('listForAdmin : les plus récentes d’abord, avec candidat, droit, expert et traitant', async ({
