@@ -22,8 +22,14 @@ export default class CandidateExport extends BaseCommand {
   @flags.string({ description: 'Chemin du ZIP produit (défaut : tmp/rgpd/<fichier>.zip)' })
   declare out?: string
 
+  @flags.boolean({
+    description:
+      'Exclure les notes privées des conseillers de donnees.json (arbitrage RGPD en cours, #97)',
+  })
+  declare withoutPrivateNotes: boolean
+
   async run() {
-    const { buildCandidateExportArchive, loadCandidateForExport } =
+    const { buildCandidateExportArchive, DEFAULT_EXPORT_OPTIONS, loadCandidateForExport } =
       await import('#services/candidate_data_service')
     const { dossierZipFilename } = await import('#services/dossier_export_service')
 
@@ -37,8 +43,16 @@ export default class CandidateExport extends BaseCommand {
 
     const target = resolve(this.out ?? `tmp/rgpd/${dossierZipFilename(employee.name)}`)
     await mkdir(dirname(target), { recursive: true })
-    await pipeline(await buildCandidateExportArchive(employee), createWriteStream(target))
+    const includePrivateNotes = this.withoutPrivateNotes
+      ? false
+      : DEFAULT_EXPORT_OPTIONS.includePrivateNotes
+    await pipeline(
+      await buildCandidateExportArchive(employee, { includePrivateNotes }),
+      createWriteStream(target)
+    )
 
-    this.logger.success(`Export du candidat #${employee.id} écrit dans ${target}`)
+    this.logger.success(
+      `Export du candidat #${employee.id} écrit dans ${target} (notes privées des conseillers ${includePrivateNotes ? 'incluses' : 'exclues'})`
+    )
   }
 }
