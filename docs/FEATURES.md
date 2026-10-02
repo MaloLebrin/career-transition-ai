@@ -19,6 +19,15 @@
     - “Accès Expert” (usage par les cabinets).
   - Cohérence graphique (logo, couleurs, typographies, animations) entre la landing, l’auth et le portail.
 
+- **Acquisition B2C (épic #90, #99)**
+  - Page `/particuliers` : promesse en autonomie, Motivations et Valeurs offerts, forfait
+    unique TTC (prix de la prop partagée `billing`), accompagnement par un expert sur demande,
+    CTA vers `/inscription` quand `B2C_REGISTRATION_ENABLED` est vrai, formulaire de contact
+    « être prévenu » sinon.
+  - `/tarifs` : bloc « Vous êtes un particulier ? » (prix TTC, inclus / non inclus), le libellé
+    HT étant réservé aux offres cabinets. Lien « Particuliers » dans l’en-tête et le pied de
+    page, lien secondaire sur la landing. `noindex` conservé par défaut (`SEO_INDEXING`).
+
 ---
 
 ## 2. Authentification & gestion des accès
@@ -364,6 +373,15 @@
   assistée (cartographie, ciblage) sont refusés de même. Carte « réservé au forfait »
   avec le prix TTC.
 
-### 11.3 À venir
+### 11.3 Paiement du forfait (#102)
 
+- Page `/dashboard/candidat/offre` : rappel du forfait, prix TTC, cases CGV et
+  renonciation au droit de rétractation (art. L221-28 13°), bouton « Payer » → Stripe
+  Checkout hébergé (one-shot, facture Stripe). Retour sur `/billing/success` avec
+  réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
+- Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
+
+### 11.4 À venir
+
+Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
 Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).

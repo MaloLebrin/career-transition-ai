@@ -5,13 +5,20 @@ import {
   COPYRIGHT,
   DEMO_ACTION,
   FOOTER_COLUMNS,
+  INDIVIDUALS_ACTION,
   LOGIN_ACTION,
   MARKETING_NAV,
 } from '../../../inertia/config/marketing'
 
 describe('config/marketing', () => {
-  test('navigation points to the three marketing pages', () => {
-    expect(MARKETING_NAV.map((item) => item.href)).toEqual(['/offre', '/tarifs', '/methodologie'])
+  test('navigation points to the four marketing pages (particuliers inclus, #99)', () => {
+    expect(MARKETING_NAV.map((item) => item.href)).toEqual([
+      '/offre',
+      '/tarifs',
+      '/particuliers',
+      '/methodologie',
+    ])
+    expect(INDIVIDUALS_ACTION.href).toBe('/particuliers')
   })
 
   test('actions and footer are consistent', () => {
