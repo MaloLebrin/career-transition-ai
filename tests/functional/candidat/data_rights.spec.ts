@@ -2,7 +2,13 @@ import Notification from '#models/notification'
 import Organization from '#models/organization'
 import { NotificationFactory } from '#database/factories/notification_factory'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
-import { createAdvisor, createCandidate, createSuperAdmin } from '#tests/support/actors'
+import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createSuperAdmin,
+} from '#tests/support/actors'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
@@ -37,6 +43,27 @@ test.group('Candidat — droits RGPD en libre-service', (group) => {
     const disposition = response.header('content-disposition')
     if (!/^attachment; filename="Dossier_.+\.zip"$/.test(disposition)) {
       throw new Error(`Content-Disposition inattendu : ${disposition}`)
+    }
+  })
+
+  test('un particulier exporte aussi ses paiements et ses demandes d’accompagnement (#106)', async ({
+    client,
+  }) => {
+    const { user, employee } = await createB2cCandidate({ paid: true })
+    await ExpertRequestFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+
+    const response = await client.get(EXPORT).loginAs(user)
+
+    response.assertStatus(200)
+    response.assertHeader('content-type', 'application/zip')
+    // Archive ZIP valide dont l'entrée donnees.json est listée (contenu détaillé : tests unitaires).
+    const body = Buffer.isBuffer(response.body()) ? response.body() : Buffer.from(response.text())
+    if (body.subarray(0, 2).toString() !== 'PK') throw new Error('Archive ZIP attendue')
+    if (!body.toString('latin1').includes('donnees.json')) {
+      throw new Error('donnees.json absent de l’archive')
     }
   })
 

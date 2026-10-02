@@ -1,13 +1,17 @@
 import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
 import { ExperienceFactory } from '#database/factories/experience_factory'
 import { MediaFactory } from '#database/factories/media_factory'
+import { NoteFactory } from '#database/factories/note_factory'
 import { NotificationFactory } from '#database/factories/notification_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Experience from '#models/experience'
+import CandidatePayment from '#models/candidate_payment'
+import ExpertRequest from '#models/expert_request'
 import Media from '#models/media'
 import Notification from '#models/notification'
 import PdfExport from '#models/pdf_export'
@@ -15,6 +19,7 @@ import User from '#models/user'
 import { CloudinaryService } from '#services/cloudinary_service'
 import { pdfExportKey, storePdf } from '#services/pdf_storage_service'
 import {
+  DEFAULT_EXPORT_OPTIONS,
   CANDIDATE_DATA_FILENAME,
   buildCandidateExportArchive,
   candidateDataSnapshot,
@@ -36,6 +41,7 @@ import {
   restoreCloudinary,
   swapFakeCloudinary,
 } from '#tests/support/fake_cloudinary'
+import { NOTE_VISIBILITY } from '#shared/constants/note'
 import { test } from '@japa/runner'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -150,6 +156,34 @@ test.group('candidate_data_service | purge', (group) => {
     assert.lengthOf(await Media.query().where('entityId', employee.id), 0)
   })
 
+  test('particulier (#106) : demandes d’accompagnement supprimées, paiements conservés anonymisés', async ({
+    assert,
+  }) => {
+    const { employee, user } = await createB2cCandidate({ paid: true })
+    await ExpertRequestFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+    const [payment] = await CandidatePayment.query().where('employeeId', employee.id)
+
+    const preview = await previewCandidatePurge(employee.id)
+    assert.include(preview!, { expertRequests: 1, paymentsAnonymized: 1, userDeleted: true })
+
+    const summary = await purgeCandidate(employee.id)
+
+    assert.include(summary!, { expertRequests: 1, paymentsAnonymized: 1 })
+    assert.isNull(await Employee.find(employee.id))
+    assert.isNull(await User.find(user.id))
+    assert.lengthOf(await ExpertRequest.query().where('employeeId', employee.id), 0)
+    const kept = await CandidatePayment.findOrFail(payment.id)
+    assert.isNull(kept.employeeId)
+    assert.isNull(kept.userId)
+    assert.equal(kept.status, 'paid')
+    assert.equal(kept.amountCents, payment.amountCents)
+    assert.notInclude(JSON.stringify(kept.serialize()), employee.email)
+    assert.notInclude(JSON.stringify(kept.serialize()), employee.name)
+  })
+
   test("ne supprime jamais un compte qui n'a pas le rôle candidat", async ({ assert }) => {
     const advisor = await createAdvisor()
     const { employee } = await createCandidate()
@@ -218,6 +252,79 @@ test.group('candidate_data_service | export', (group) => {
     assert.match(snapshot.payments[0].stripeCheckoutSessionId ?? '', /^cs_test_/)
   })
 
+  test('notes (#97) : les partagées dans `notes`, les privées à part, exclues sur demande', async ({
+    assert,
+  }) => {
+    const { employee, advisor } = await seedCandidate()
+    await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: advisor.id,
+      visibility: NOTE_VISIBILITY.SHARED,
+      content: 'Note partagée avec le candidat',
+    }).create()
+    await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: advisor.id,
+      visibility: NOTE_VISIBILITY.PRIVATE,
+      content: 'Appréciation interne du conseiller',
+    }).create()
+    const loaded = await loadCandidateForExport(employee.id)
+
+    const included = candidateDataSnapshot(loaded!, [], { includePrivateNotes: true })
+    assert.deepEqual(
+      included.notes.map((n) => n.content),
+      ['Note partagée avec le candidat']
+    )
+    assert.deepEqual(
+      included.advisorPrivateNotes?.map((n) => n.content),
+      ['Appréciation interne du conseiller']
+    )
+    assert.equal(included.advisorPrivateNotesWithheld, 0)
+
+    const excluded = candidateDataSnapshot(loaded!, [], { includePrivateNotes: false })
+    assert.deepEqual(
+      excluded.notes.map((n) => n.content),
+      ['Note partagée avec le candidat']
+    )
+    assert.isNull(excluded.advisorPrivateNotes)
+    assert.equal(excluded.advisorPrivateNotesWithheld, 1)
+    assert.notInclude(JSON.stringify(excluded), 'Appréciation interne du conseiller')
+
+    // Sans option : la politique par défaut (`PRIVATE_NOTES_IN_EXPORT`).
+    const byDefault = candidateDataSnapshot(loaded!)
+    assert.equal(
+      byDefault.advisorPrivateNotes === null,
+      !DEFAULT_EXPORT_OPTIONS.includePrivateNotes
+    )
+  })
+
+  test('l’export d’un particulier liste ses demandes d’accompagnement (#106)', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate({ paid: true })
+    await ExpertRequestFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+      message: 'Je veux construire mon plan.',
+    })
+      .apply('declined')
+      .create()
+
+    const loaded = await loadCandidateForExport(employee.id)
+    const snapshot = candidateDataSnapshot(loaded!)
+
+    assert.lengthOf(snapshot.expertRequests, 1)
+    assert.include(snapshot.expertRequests[0], {
+      status: 'declined',
+      message: 'Je veux construire mon plan.',
+      declineReason: 'Aucun expert disponible pour le moment',
+    })
+    assert.isNotNull(snapshot.expertRequests[0].createdAt)
+    assert.isNotNull(snapshot.expertRequests[0].handledAt)
+  })
+
   test('l’archive contient la liste et le contenu des documents déposés', async ({ assert }) => {
     const { employee } = await seedCandidate()
     const [document] = await Media.query().where('entityId', employee.id)
@@ -270,6 +377,25 @@ test.group('commandes candidate:export et candidate:purge', (group) => {
     assert.include(zip.toString('latin1'), CANDIDATE_DATA_FILENAME)
   })
 
+  test('candidate:export --without-private-notes écarte les notes privées (#97)', async ({
+    assert,
+  }) => {
+    const { employee } = await seedCandidate()
+    const out = join(TMP_DIR, `export-sans-notes-${employee.id}.zip`)
+
+    const command = await ace.create(CandidateExport, [
+      String(employee.id),
+      `--out=${out}`,
+      '--without-private-notes',
+    ])
+    await command.exec()
+
+    command.assertSucceeded()
+    command.assertLogMatches(/notes privées des conseillers exclues/)
+    const zip = await readFile(out)
+    assert.equal(zip.subarray(0, 2).toString(), 'PK')
+  })
+
   test('candidate:purge --force supprime le candidat', async ({ assert }) => {
     const { employee } = await seedCandidate()
 
@@ -278,6 +404,25 @@ test.group('commandes candidate:export et candidate:purge', (group) => {
 
     command.assertSucceeded()
     assert.isNull(await Employee.find(employee.id))
+  })
+
+  test('candidate:purge affiche les compteurs des demandes et des paiements conservés (#106)', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate({ paid: true })
+    await ExpertRequestFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+
+    const command = await ace.create(CandidatePurge, [String(employee.id), '--force'])
+    await command.exec()
+
+    command.assertSucceeded()
+    command.assertLogMatches(/1 demande\(s\) d'accompagnement supprimée\(s\)/)
+    command.assertLogMatches(/1 paiement\(s\) conservé\(s\) comme pièce comptable/)
+    assert.isNull(await Employee.find(employee.id))
+    assert.lengthOf(await CandidatePayment.query().whereNull('employeeId'), 1)
   })
 
   test('candidate:purge sans confirmation ne supprime rien', async ({ assert }) => {

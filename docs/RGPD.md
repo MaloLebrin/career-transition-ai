@@ -107,11 +107,25 @@ un candidat qui n'a plus accès à son compte.
    `profil.pdf`, `resultats/<exercice>.pdf`) et `donnees.json` : fiche,
    compte (sans mot de passe ni jeton), compétences, expériences, formations,
    résultats d'exercices bruts et analyses IA, plan d'accompagnement, notes,
-   liste des documents déposés ; les documents eux-mêmes sont dans
-   `documents/<id>_<nom d'origine>`.
+   paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
+   jamais de numéro de carte, Stripe seul les détient), demandes
+   d'accompagnement par un expert (#103 : message, disponibilités, statut,
+   motif de refus, dates), liste des documents déposés ; les documents
+   eux-mêmes sont dans `documents/<id>_<nom d'origine>`.
 
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
    serveur (`tmp/rgpd/`).
+
+**Notes des conseillers (#97).** `donnees.json` sépare les notes partagées avec
+le candidat (`notes`) des notes `private` des conseillers
+(`advisorPrivateNotes`). Leur restitution au titre du droit d'accès (art. 15)
+contre la protection des appréciations internes est **en cours d'arbitrage**
+(PO / juridique, question 9 de l'épic #90) ; avec les experts internes du
+parcours B2C, la question porte aussi sur nos propres notes. En attendant,
+statu quo : elles sont incluses (`PRIVATE_NOTES_IN_EXPORT`,
+`shared/constants/legal.ts`), et `node ace candidate:export <id>
+--without-private-notes` les écarte au cas par cas (`advisorPrivateNotes: null`,
+`advisorPrivateNotesWithheld` donne leur nombre).
 
 **Particuliers (B2C, #101).** L'export n'est **pas expurgé** des résultats
 « réservés au forfait » : le droit d'accès (art. 15) porte sur toutes les données
@@ -157,12 +171,21 @@ Suppression **définitive**, en une transaction :
   `SET NULL`, donc non couvert par la cascade) et, en cascade, ses jetons
   d'onboarding, jetons de réinitialisation de mot de passe et notifications — un compte conseiller/admin n'est jamais
   supprimé par cette commande ;
-- les notifications des conseillers qui portent sur ce candidat
-  (`meta.employeeId`, leur titre contient son nom) ;
+- les notifications de l'équipe qui portent sur ce candidat
+  (`meta.employeeId` : conseillers, super admins, expert interne — y compris
+  celles du parcours B2C : demande d'accompagnement, assignation, forfait) ;
 - les documents déposés (table `media`, polymorphe donc hors cascade) ;
 - après validation de la transaction, les fichiers sur Cloudinary : PDF
   générés (`pdf_exports.file_path`) et documents (`media.cloudinary_public_id`),
   supprimés avec invalidation du cache CDN.
+
+**Conservés, anonymisés** : les paiements du forfait (`candidate_payments`, #94)
+sont des pièces comptables gardées 10 ans (art. L123-22 Code de commerce). Leurs
+clés `employee_id` et `user_id` sont en `ON DELETE SET NULL` : la ligne survit
+sans aucun champ identifiant (montant, statut, dates, identifiants techniques
+Stripe seulement). La commande affiche le nombre de paiements ainsi anonymisés
+(`paymentsAnonymized`) et de demandes d'accompagnement supprimées
+(`expertRequests`).
 
 Restent hors de portée de la commande, à traiter à la main si nécessaire :
 les **sauvegardes** de la base (l'effacement y devient effectif à leur
