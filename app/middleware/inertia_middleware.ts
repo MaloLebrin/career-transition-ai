@@ -60,8 +60,9 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       csrfToken: request.csrfToken,
       notifications: ctx.inertia.always(notifications),
       unreadNotificationsCount: ctx.inertia.always(unreadNotificationsCount),
-      // Masque le lien d'inscription quand /auth/register est fermé.
+      // Masquent les liens d'inscription quand /auth/register ou /inscription est fermé.
       registrationEnabled: config.get<boolean>('registration.enabled'),
+      b2cRegistrationEnabled: config.get<boolean>('registration.candidateEnabled'),
     }
   }
 

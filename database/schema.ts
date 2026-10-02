@@ -783,12 +783,15 @@ export class UserSchema extends BaseModel {
     'createdAt',
     'deletedAt',
     'email',
+    'emailVerifiedAt',
     'id',
     'name',
     'onboardingCompletedAt',
     'organizationId',
     'password',
     'role',
+    'termsAcceptedAt',
+    'termsVersion',
     'updatedAt',
   ] as const
   $columns = UserSchema.$columns
@@ -798,6 +801,8 @@ export class UserSchema extends BaseModel {
   declare deletedAt: DateTime | null
   @column()
   declare email: string
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
   @column({ isPrimary: true })
   declare id: number
   @column()
@@ -810,6 +815,10 @@ export class UserSchema extends BaseModel {
   declare password: string
   @column()
   declare role: string
+  @column.dateTime()
+  declare termsAcceptedAt: DateTime | null
+  @column()
+  declare termsVersion: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

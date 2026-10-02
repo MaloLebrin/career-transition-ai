@@ -63,6 +63,8 @@ export const envSchema = {
   | Défaut : `false` en production (beta fermée), `true` ailleurs.
   */
   REGISTRATION_ENABLED: Env.schema.boolean.optional(),
+  /** Inscription des particuliers (`/inscription`, épic B2C #93) : même défaut. */
+  B2C_REGISTRATION_ENABLED: Env.schema.boolean.optional(),
 
   /*
   |----------------------------------------------------------

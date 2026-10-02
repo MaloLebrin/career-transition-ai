@@ -95,6 +95,7 @@ for (const file of ['.env.production.example', 'deploy/.env.example']) {
       const { parsed } = validate(await parseEnvFile(file))
       assert.equal(parsed.NODE_ENV, 'production')
       assert.equal(parsed.REGISTRATION_ENABLED, false)
+      assert.equal(parsed.B2C_REGISTRATION_ENABLED, false)
       assert.isString(parsed.MAIL_FROM_EMAIL)
       assert.isNotEmpty(parsed.MAIL_FROM_EMAIL)
     })

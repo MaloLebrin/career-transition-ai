@@ -86,6 +86,23 @@ test.group('InertiaMiddleware.share', () => {
     assert.isFalse(closed.registrationEnabled)
   })
 
+  test('b2cRegistrationEnabled reflète registration.candidateEnabled (#93)', async ({
+    assert,
+    cleanup,
+  }) => {
+    const previous = config.get<boolean>('registration.candidateEnabled')
+    cleanup(() => config.set('registration.candidateEnabled', previous))
+
+    config.set('registration.candidateEnabled', true)
+    const open = await share(makeShareCtx())
+    assert.isTrue(open.b2cRegistrationEnabled)
+
+    config.set('registration.candidateEnabled', false)
+    const closed = await share(makeShareCtx())
+    assert.isFalse(closed.b2cRegistrationEnabled)
+    assert.isTrue(closed.registrationEnabled, 'flag conseillers indépendant')
+  })
+
   test('sans session : flash vide et aucune erreur', async ({ assert }) => {
     const props = await share(makeShareCtx({ withSession: false }))
 

@@ -17,6 +17,10 @@ router
     router.on('/securite').renderInertia('Security', {})
     router.on('/auth/login').renderInertia('Login', {})
     router.on('/auth/register').renderInertia('Register', {}).use(middleware.registrationOpen())
+    router
+      .on('/inscription')
+      .renderInertia('RegisterCandidate', {})
+      .use(middleware.registrationOpen({ kind: 'candidate' }))
   })
   .use([middleware.guest()])
 

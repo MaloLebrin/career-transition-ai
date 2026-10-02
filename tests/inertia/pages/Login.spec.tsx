@@ -44,6 +44,23 @@ describe('Login page', () => {
     expect(screen.queryByRole('button', { name: /inscrire gratuitement/i })).not.toBeInTheDocument()
   })
 
+  test('affiche le lien particulier quand b2cRegistrationEnabled est vrai (#93)', () => {
+    pageProps.current = { csrfToken: 'tok', b2cRegistrationEnabled: true }
+    render(<Login />)
+
+    fireEvent.click(screen.getByRole('button', { name: /créer mon compte/i }))
+    expect(visit).toHaveBeenCalledWith('/inscription')
+    expect(screen.queryByRole('button', { name: /inscrire gratuitement/i })).not.toBeInTheDocument()
+  })
+
+  test('masque le lien particulier quand l’inscription B2C est fermée ou absente', () => {
+    pageProps.current = { csrfToken: 'tok', registrationEnabled: true, b2cRegistrationEnabled: false }
+    render(<Login />)
+
+    expect(screen.queryByRole('button', { name: /créer mon compte/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /inscrire gratuitement/i })).toBeInTheDocument()
+  })
+
   test('affiche le message flash (ex. inscriptions fermées)', () => {
     pageProps.current = { flash: { error: 'Les inscriptions sont fermées.' } }
     render(<Login />)

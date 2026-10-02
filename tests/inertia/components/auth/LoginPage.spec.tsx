@@ -29,6 +29,15 @@ describe('LoginPage', () => {
     expect(defaultProps.onGoToRegister).toHaveBeenCalledTimes(1)
   })
 
+  test('propose l’inscription particulier quand onGoToRegisterCandidate est fourni (#93)', () => {
+    const onGoToRegisterCandidate = vi.fn()
+    render(<LoginPage {...defaultProps} onGoToRegisterCandidate={onGoToRegisterCandidate} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /créer mon compte/i }))
+    expect(onGoToRegisterCandidate).toHaveBeenCalledTimes(1)
+    expect(screen.getByText(/Vous êtes un particulier/)).toBeInTheDocument()
+  })
+
   test('hides the register link when onGoToRegister is not provided (registration closed)', () => {
     render(<LoginPage {...defaultProps} onGoToRegister={undefined} />)
     expect(screen.queryByRole('button', { name: /inscrire gratuitement/i })).not.toBeInTheDocument()

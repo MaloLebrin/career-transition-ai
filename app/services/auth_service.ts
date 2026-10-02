@@ -2,9 +2,15 @@ import type { UserSessionDto } from '#dtos/auth_dto'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
+import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { PlatformOrganizationService } from '#services/platform_organization_service'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { TERMS_VERSION } from '#shared/constants/legal'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
+import type { RegisterCandidateInput } from '#shared/types/auth/register_candidate'
 import { toSessionDto } from '#utils/dto'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
@@ -26,6 +32,10 @@ type UpdateProfileInput = {
 
 @inject()
 export class AuthService {
+  constructor(
+    private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService()
+  ) {}
+
   /**
    * Verifies user credentials and returns the user model.
    * Throws if credentials are invalid.
@@ -76,6 +86,64 @@ export class AuthService {
       )
       await trx.commit()
       return toSessionDto(user)
+    } catch (err) {
+      await trx.rollback()
+      throw err
+    }
+  }
+
+  /**
+   * Inscription d'un particulier (#93) : compte `employee` **et** fiche
+   * candidat `b2c` dans l'organisation plateforme, sans conseiller. La fiche
+   * reste `onboarded: false` : `checkOnboarding()` envoie le nouvel inscrit
+   * vers l'onboarding existant. L'acceptation des CGU est horodatée avec la
+   * version en vigueur. L'e-mail est unique sur toute la plateforme (login
+   * global). Lance `PlatformOrganizationMissingError` (503) sans organisation
+   * plateforme seedée.
+   */
+  public async registerCandidate(input: RegisterCandidateInput): Promise<UserSessionDto> {
+    const existingUser = await User.findBy('email', input.email)
+    if (existingUser) {
+      throw new EmailAlreadyUsedException()
+    }
+
+    const platformOrganizationId = await this.platformOrganizationService.getId()
+    const name = input.name.trim()
+
+    const trx = await db.transaction()
+    try {
+      const user = await User.create(
+        {
+          organizationId: platformOrganizationId,
+          email: input.email,
+          name,
+          password: input.password,
+          role: USERS_ROLES.EMPLOYEE,
+          onboardingCompletedAt: DateTime.now(),
+          termsAcceptedAt: DateTime.now(),
+          termsVersion: TERMS_VERSION,
+        },
+        { client: trx }
+      )
+      await Employee.create(
+        {
+          organizationId: platformOrganizationId,
+          advisorId: null,
+          userId: user.id,
+          name,
+          email: input.email,
+          currentRole: '',
+          targetRole: null,
+          summary: null,
+          advisorNotes: null,
+          status: EMPLOYEES_STATUS.ONBOARDING,
+          onboarded: false,
+          accountType: ACCOUNT_TYPES.B2C,
+        },
+        { client: trx }
+      )
+      await trx.commit()
+      return { ...toSessionDto(user), accountType: ACCOUNT_TYPES.B2C }
     } catch (err) {
       await trx.rollback()
       throw err

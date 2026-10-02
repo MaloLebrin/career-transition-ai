@@ -70,7 +70,7 @@ Sommaire :
 | `MAIL_FROM_NAME`, `ADMIN_CONTACT_EMAIL`, `RESEND_API_KEY`, `MAIL_RESEND_TEST_*`                                                                                      | optionnels                              | `RESEND_API_KEY` requis si `resend` ; `MAIL_RESEND_TEST_*` ignorées en prod. |
 | `ADMIN_PASSWORD`                                                                                                                                                     | optionnel                               | requis par `admin_seeder` uniquement (plus par les migrations).              |
 | `APP_NAME`                                                                                                                                                           | optionnel                               | nom du logger.                                                               |
-| `CLOUDINARY_*` (requises en production), `SENTRY_*`, `REGISTRATION_ENABLED`, `SEO_INDEXING`, `GOOGLE_SITE_VERIFICATION`, `STRIPE_ENABLED`, `B2C_RESULTS_PRICE_CENTS` | optionnels                              | voir DEPLOYMENT.md §5.                                                       |
+| `CLOUDINARY_*` (requises en production), `SENTRY_*`, `REGISTRATION_ENABLED`, `B2C_REGISTRATION_ENABLED`, `SEO_INDEXING`, `GOOGLE_SITE_VERIFICATION`, `STRIPE_ENABLED`, `B2C_RESULTS_PRICE_CENTS` | optionnels                              | voir DEPLOYMENT.md §5.                                                       |
 
 **Hors schéma** : `TZ` (Node, `Europe/Paris`), `NODE_OPTIONS`, et côté scripts de dev `QUEUE_WORKER_QUEUES` / `QUEUE_NAMES` / `QUEUE_WORKER_CONCURRENCY` (`bin/dev-with-worker.mjs`).
 

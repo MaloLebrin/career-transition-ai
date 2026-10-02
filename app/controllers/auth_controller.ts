@@ -1,6 +1,7 @@
 import { AuthService } from '#services/auth_service'
 import { CandidatProfileService } from '#services/candidat_profile_service'
 import { loginValidator } from '#validators/auth/auth_login_validator'
+import { registerCandidateValidator } from '#validators/auth/auth_register_candidate_validator'
 import { registerValidator } from '#validators/auth/auth_register_validator'
 import { candidatProfileUpdateValidator } from '#validators/profile/candidat_profile_update_validator'
 import { userProfileUpdateValidator } from '#validators/user/user_profile_update_validator'
@@ -25,6 +26,25 @@ export default class AuthController {
   public async register({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(registerValidator)
     await this.authService.register(payload)
+    const user = await this.authService.verifyCredentials(payload.email, payload.password)
+    await auth.use('web').login(user)
+
+    return response.redirect().status(303).toPath('/dashboard')
+  }
+
+  /**
+   * POST /auth/register/candidat (#93) : inscription d'un particulier, puis
+   * session ouverte. `/dashboard` l'envoie vers l'onboarding candidat
+   * (`checkOnboarding()`), la fiche n'étant pas encore onboardée.
+   */
+  public async registerCandidate({ request, auth, response }: HttpContext) {
+    const payload = await request.validateUsing(registerCandidateValidator)
+    // La case CGU est validée puis horodatée par le service : elle ne fait pas partie de l'entrée.
+    await this.authService.registerCandidate({
+      email: payload.email,
+      password: payload.password,
+      name: payload.name,
+    })
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
 
