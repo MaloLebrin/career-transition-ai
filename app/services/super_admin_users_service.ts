@@ -18,8 +18,10 @@ type CreatePlatformUserInput = {
   name: string
   email: string
   role: SuperAdminCreatableRole
-  /** Organisation plateforme du super admin : interdite comme cible de création. */
+  /** Organisation plateforme du super admin : interdite comme cible de création… */
   platformOrganizationId: number
+  /** …sauf pour l'équipe interne (`PlatformTeamService.invite`, #105). */
+  allowPlatformOrganization?: boolean
 }
 
 @inject()
@@ -38,7 +40,7 @@ export class SuperAdminUsersService {
   }
 
   public async createUserWithInvite(input: CreatePlatformUserInput): Promise<User> {
-    if (input.organizationId === input.platformOrganizationId) {
+    if (input.organizationId === input.platformOrganizationId && !input.allowPlatformOrganization) {
       throw new DomainException('Vous ne pouvez pas créer d’utilisateur dans cette organisation.', {
         status: 403,
       })

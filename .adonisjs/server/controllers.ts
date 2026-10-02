@@ -19,6 +19,7 @@ export const controllers = {
   Employees: () => import('#controllers/employees_controller'),
   ExerciseResults: () => import('#controllers/exercise_results_controller'),
   Experiences: () => import('#controllers/experiences_controller'),
+  ExpertRequests: () => import('#controllers/expert_requests_controller'),
   HealthChecks: () => import('#controllers/health_checks_controller'),
   Notes: () => import('#controllers/notes_controller'),
   Notifications: () => import('#controllers/notifications_controller'),
@@ -30,6 +31,8 @@ export const controllers = {
   PdfExports: () => import('#controllers/pdf_exports_controller'),
   Robots: () => import('#controllers/robots_controller'),
   Skills: () => import('#controllers/skills_controller'),
+  StripeWebhooks: () => import('#controllers/stripe_webhooks_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
+  SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

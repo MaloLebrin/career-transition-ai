@@ -95,4 +95,66 @@ describe('NotificationItem', () => {
     expect(screen.getByText('Votre analyse IA est disponible')).toBeInTheDocument()
     expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
   })
+
+  test('rend la notification « demande d’accompagnement » des super admins (#103)', () => {
+    const { container } = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'expert_request_created',
+          title: 'Demande d’accompagnement — candidat #12',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Demande d’accompagnement — candidat #12')).toBeInTheDocument()
+    expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
+  })
+
+  test('rend les notifications d’assignation d’un expert (#105)', () => {
+    for (const [type, title] of [
+      ['expert_assigned', 'Votre expert : Nadia Experte'],
+      ['candidate_assigned', 'Nouveau candidat à accompagner'],
+      ['expert_request_declined', 'Votre demande d’accompagnement n’a pas pu aboutir'],
+    ] as const) {
+      const { container, unmount } = render(
+        <NotificationItem
+          notification={{ ...baseNotification, type, title }}
+          onMarkAsRead={vi.fn()}
+        />
+      )
+      expect(screen.getByText(title)).toBeInTheDocument()
+      expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
+      unmount()
+    }
+  })
+
+  test('rend les notifications de forfait débloqué et d’accès retiré (#104)', () => {
+    const unlocked = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'results_unlocked',
+          title: 'Vos résultats sont débloqués',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Vos résultats sont débloqués')).toBeInTheDocument()
+    expect(unlocked.container.querySelector('svg.text-accent')).toBeInTheDocument()
+    unlocked.unmount()
+
+    const revoked = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'results_access_revoked',
+          title: 'Votre accès aux résultats a été retiré',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Votre accès aux résultats a été retiré')).toBeInTheDocument()
+    expect(revoked.container.querySelector('svg.text-muted')).toBeInTheDocument()
+  })
 })

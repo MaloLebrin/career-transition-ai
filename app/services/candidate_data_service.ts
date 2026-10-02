@@ -51,6 +51,7 @@ export async function loadCandidateForExport(employeeId: number): Promise<Employ
     .preload('supportPlanSteps')
     .preload('notes', (q) => q.whereNull('deletedAt'))
     .preload('payments')
+    .preload('expertRequests')
     .first()
 }
 
@@ -128,6 +129,15 @@ export function candidateDataSnapshot(
       revokedAt: payment.revokedAt?.toISO() ?? null,
       createdAt: payment.createdAt?.toISO() ?? null,
     })),
+    // Demandes d'accompagnement par un expert (#103) : supprimées avec la fiche.
+    expertRequests: (employee.expertRequests ?? []).map((request) => ({
+      status: request.status,
+      message: request.message,
+      availability: request.availability,
+      declineReason: request.declineReason,
+      createdAt: request.createdAt?.toISO() ?? null,
+      handledAt: request.handledAt?.toISO() ?? null,
+    })),
     documents: documents.map((document) => ({
       kind: document.kind,
       originalFilename: document.originalFilename,
@@ -191,6 +201,15 @@ export interface CandidatePurgeSummary {
   notifications: number
   /** Documents déposés (table `media`, issue #50). */
   documents: number
+  /** Demandes d'accompagnement par un expert (#103), supprimées en cascade. */
+  expertRequests: number
+  /**
+   * Paiements du forfait (#94) **conservés** comme pièces comptables (10 ans,
+   * art. L123-22 Code de commerce) : leurs FK `employee_id` / `user_id`
+   * passent à `NULL` (`ON DELETE SET NULL`), aucun champ identifiant n'y est
+   * stocké — c'est l'anonymisation.
+   */
+  paymentsAnonymized: number
   /** Fichiers supprimés du stockage : PDF (`pdf_exports.file_path`) et documents. */
   filesDeleted: number
   /** Compte utilisateur supprimé (seulement s'il a le rôle candidat). */
@@ -237,6 +256,8 @@ export async function previewCandidatePurge(
       .count('* as total')
       .then(([row]) => Number(row.$extras.total)),
     documents,
+    expertRequests: await countWhere('expert_requests', 'employee_id', employeeId),
+    paymentsAnonymized: await countWhere('candidate_payments', 'employee_id', employeeId),
     filesDeleted: pdfExports.filter((pdf) => pdf.filePath).length + documents,
     userDeleted: user?.role === USERS_ROLES.EMPLOYEE,
   }
@@ -255,7 +276,11 @@ function notificationsAbout(employeeId: number) {
  *
  * - La fiche `employees` est supprimée ; les clés étrangères `ON DELETE
  *   CASCADE` emportent résultats d'exercices, expériences, formations,
- *   compétences, notes, étapes du plan, synthèses et exports PDF.
+ *   compétences, notes, étapes du plan, synthèses, exports PDF et demandes
+ *   d'accompagnement par un expert (#103).
+ * - Les paiements du forfait (#94) sont conservés : `candidate_payments`
+ *   est en `ON DELETE SET NULL`, la ligne reste comme pièce comptable sans
+ *   aucun identifiant (voir `CandidatePurgeSummary.paymentsAnonymized`).
  * - Le compte `users` lié (`employees.user_id` est en `SET NULL`, donc non
  *   couvert par la cascade) est supprimé s'il a le rôle candidat — jamais un
  *   compte conseiller ou admin rattaché par erreur.

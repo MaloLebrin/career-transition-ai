@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
   ROLE_DESCRIPTIONS,
+  PLATFORM_TEAM_ROLES,
   ROLE_FILTER_ALL_DESCRIPTION,
   SUPER_ADMIN_CREATABLE_ROLES,
 } from '#shared/constants/roles'
@@ -40,5 +41,11 @@ describe('shared/constants/roles', () => {
     expect([...SUPER_ADMIN_CREATABLE_ROLES]).toEqual(['advisor', 'admin', 'expert'])
     expect(SUPER_ADMIN_CREATABLE_ROLES).not.toContain(USERS_ROLES.EMPLOYEE)
     expect(SUPER_ADMIN_CREATABLE_ROLES).not.toContain(USERS_ROLES.SUPER_ADMIN)
+  })
+
+  test('équipe interne (#105) : advisor en tête, jamais employee ni super_admin', () => {
+    expect([...PLATFORM_TEAM_ROLES]).toEqual(['advisor', 'expert', 'admin'])
+    expect(PLATFORM_TEAM_ROLES).not.toContain('employee')
+    expect(PLATFORM_TEAM_ROLES).not.toContain('super_admin')
   })
 })

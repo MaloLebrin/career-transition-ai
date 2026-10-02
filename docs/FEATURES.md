@@ -19,15 +19,6 @@
     - “Accès Expert” (usage par les cabinets).
   - Cohérence graphique (logo, couleurs, typographies, animations) entre la landing, l’auth et le portail.
 
-- **Acquisition B2C (épic #90, #99)**
-  - Page `/particuliers` : promesse en autonomie, Motivations et Valeurs offerts, forfait
-    unique TTC (prix de la prop partagée `billing`), accompagnement par un expert sur demande,
-    CTA vers `/inscription` quand `B2C_REGISTRATION_ENABLED` est vrai, formulaire de contact
-    « être prévenu » sinon.
-  - `/tarifs` : bloc « Vous êtes un particulier ? » (prix TTC, inclus / non inclus), le libellé
-    HT étant réservé aux offres cabinets. Lien « Particuliers » dans l’en-tête et le pied de
-    page, lien secondaire sur la landing. `noindex` conservé par défaut (`SEO_INDEXING`).
-
 ---
 
 ## 2. Authentification & gestion des accès
@@ -268,6 +259,18 @@
   - Passage d’un utilisateur à un rôle supérieur (admin, super admin) ou différent.
   - Vérification des impacts sur les accès (visible vs non visible dans certains écrans).
 
+### 7.3 Demandes d'accompagnement et équipe interne (#105)
+
+- **Demandes d'accompagnement** (`/dashboard/super-admin/expert-requests`) : les demandes des
+  particuliers (#103) avec candidat, forfait réglé ou non, message, disponibilités, statut ;
+  filtre par statut. Assignation d'un membre de l'équipe interne (`employees.advisor_id`
+  posé, demande acceptée, candidat et expert notifiés) ou refus motivé (candidat notifié,
+  nouvelle demande possible).
+- **Équipe interne** (`/dashboard/super-admin/team`) : membres de l'organisation plateforme
+  (rôles `advisor`, `expert`, `admin`) avec le nombre de particuliers suivis ; invitation par
+  e-mail (même activation que les cabinets). L'expert interne retrouve ses particuliers dans
+  `/dashboard/conseiller` et peut créer étapes et notes.
+
 ---
 
 ## 8. Jobs de fond & industrialisation
@@ -381,7 +384,28 @@
   réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
 - Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
 
-### 11.4 À venir
+### 11.4 Webhook Stripe (#104)
 
-Webhook Stripe (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
-Stripe Checkout (#102) et webhook (#104), demande d'accompagnement par un expert (#103), back-office (#105, #107).
+- `POST /webhooks/stripe` : source de vérité des paiements, signée, exemptée de CSRF,
+  idempotente (`stripe_events`, sans payload). Paiement confirmé → forfait débloqué,
+  analyses IA des exercices complétés sans analyse lancées, notification « Vos résultats
+  sont débloqués » ; paiement différé refusé → `failed` ; session expirée → `canceled` ;
+  remboursement → `refunded`, accès retiré, notification « Votre accès aux résultats a été
+  retiré ». Rejouer un événement est sans effet.
+
+### 11.5 Accompagnement par un expert (#103)
+
+- Page `/dashboard/candidat/accompagnement` : un particulier au forfait réglé dépose une
+  demande (message libre, disponibilités) ; une seule demande en attente à la fois ; statut
+  (en attente, acceptée, refusée, clôturée) et expert assigné affichés. Les super admins sont
+  notifiés (« Demande d'accompagnement — candidat #id », lien vers le back-office #105).
+- CTA sur l'accueil B2C (payé, sans expert) et la synthèse. Candidat B2B : page lisible mais
+  l'accompagnement passe par son conseiller (403 au dépôt) ; non payé : carte « réservé au
+  forfait » (403 au dépôt). Tarif et contrat de l'accompagnement hors plateforme pour l'instant.
+- Traitement par les super admins (#105, § 7.3) : assignation d'un expert interne → « Votre
+  expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
+  notification, nouvelle demande possible.
+
+### 11.6 À venir
+
+Back-office B2C : paiements, octroi et révocation manuels (#107).

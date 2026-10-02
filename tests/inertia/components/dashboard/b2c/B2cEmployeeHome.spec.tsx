@@ -59,7 +59,9 @@ describe('B2cEmployeeHome (#100)', () => {
     expect(screen.queryByText(/Votre expert/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Conseils de votre expert/)).not.toBeInTheDocument()
     // #101 : carte « forfait » compacte tant que le forfait n'est pas réglé.
-    expect(screen.getByRole('region', { name: 'Débloquez tout votre parcours' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Débloquez tout votre parcours' })
+    ).toBeInTheDocument()
     expect(screen.getByText(/49 €/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mon profil' })).toHaveAttribute(
       'href',
@@ -89,11 +91,52 @@ describe('B2cEmployeeHome (#100)', () => {
       />
     )
 
-    expect(screen.getByRole('heading', { name: 'Votre expert : Nadia Experte' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Votre expert : Nadia Experte' })
+    ).toBeInTheDocument()
     expect(screen.getByText(/Mets en avant ta reconversion/)).toBeInTheDocument()
     expect(screen.getByText('Compétence 5')).toBeInTheDocument()
     expect(screen.queryByText('Compétence 6')).not.toBeInTheDocument()
-    expect(screen.getByText(/Tous les exercices et vos résultats sont débloqués/)).toBeInTheDocument()
-    expect(screen.queryByRole('region', { name: 'Débloquez tout votre parcours' })).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Tous les exercices et vos résultats sont débloqués/)
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('region', { name: 'Débloquez tout votre parcours' })
+    ).not.toBeInTheDocument()
+    // #103 : expert déjà assigné → pas de CTA de demande.
+    expect(
+      screen.queryByRole('link', { name: 'Demander un accompagnement' })
+    ).not.toBeInTheDocument()
+  })
+
+  test('payé sans expert (#103) : CTA vers la demande d’accompagnement', () => {
+    render(
+      <B2cEmployeeHome
+        {...baseProps}
+        employee={makeEmployee()}
+        advisor={null}
+        exerciseAccess={{ ...unpaid, hasPaidAccess: true }}
+      />
+    )
+
+    expect(screen.getByRole('link', { name: 'Demander un accompagnement' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/accompagnement'
+    )
+  })
+
+  test('non payé : pas de CTA de demande d’accompagnement', () => {
+    render(
+      <B2cEmployeeHome
+        {...baseProps}
+        employee={makeEmployee()}
+        advisor={null}
+        exerciseAccess={unpaid}
+      />
+    )
+
+    expect(
+      screen.queryByRole('link', { name: 'Demander un accompagnement' })
+    ).not.toBeInTheDocument()
   })
 })

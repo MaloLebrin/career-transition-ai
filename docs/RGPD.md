@@ -63,6 +63,7 @@ Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
 | Compte particulier (libre-service) et son dossier | 3 ans après la dernière connexion, ou dès la demande d'effacement                               |
 | Données de paiement et factures (forfait)         | 10 ans (art. L123-22 Code de commerce) ; enregistrement anonymisé après effacement du compte    |
 | Demandes de contact (prospection B2B)             | 3 ans après le dernier contact                                                                  |
+| Demande d'accompagnement par un expert (B2C)      | Avec le dossier candidat : supprimée en cascade avec la fiche (`expert_requests`, #103)         |
 | Documents du candidat (table `media`, Cloudinary) | Jusqu'à leur suppression (candidat ou conseiller), celle du dossier ou une demande d'effacement |
 | Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                              |
 | Journaux techniques et de sécurité                | 1 an                                                                                            |
@@ -106,8 +107,11 @@ un candidat qui n'a plus accès à son compte.
    `profil.pdf`, `resultats/<exercice>.pdf`) et `donnees.json` : fiche,
    compte (sans mot de passe ni jeton), compétences, expériences, formations,
    résultats d'exercices bruts et analyses IA, plan d'accompagnement, notes,
-   liste des documents déposés ; les documents eux-mêmes sont dans
-   `documents/<id>_<nom d'origine>`.
+   paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
+   jamais de numéro de carte, Stripe seul les détient), demandes
+   d'accompagnement par un expert (#103 : message, disponibilités, statut,
+   motif de refus, dates), liste des documents déposés ; les documents
+   eux-mêmes sont dans `documents/<id>_<nom d'origine>`.
 
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
    serveur (`tmp/rgpd/`).
@@ -161,17 +165,27 @@ Suppression **définitive**, en une transaction :
 
 - la fiche `employees` et, par `ON DELETE CASCADE` : résultats d'exercices,
   expériences, formations, compétences, notes, étapes du plan / rendez-vous,
-  synthèses, exports PDF ;
+  synthèses, exports PDF, demandes d'accompagnement par un expert (#103 : le
+  message libre du candidat part avec sa fiche) ;
 - le compte `users` lié s'il a le rôle candidat (`employees.user_id` est en
   `SET NULL`, donc non couvert par la cascade) et, en cascade, ses jetons
   d'onboarding, jetons de réinitialisation de mot de passe et notifications — un compte conseiller/admin n'est jamais
   supprimé par cette commande ;
-- les notifications des conseillers qui portent sur ce candidat
-  (`meta.employeeId`, leur titre contient son nom) ;
+- les notifications de l'équipe qui portent sur ce candidat
+  (`meta.employeeId` : conseillers, super admins, expert interne — y compris
+  celles du parcours B2C : demande d'accompagnement, assignation, forfait) ;
 - les documents déposés (table `media`, polymorphe donc hors cascade) ;
 - après validation de la transaction, les fichiers sur Cloudinary : PDF
   générés (`pdf_exports.file_path`) et documents (`media.cloudinary_public_id`),
   supprimés avec invalidation du cache CDN.
+
+**Conservés, anonymisés** : les paiements du forfait (`candidate_payments`, #94)
+sont des pièces comptables gardées 10 ans (art. L123-22 Code de commerce). Leurs
+clés `employee_id` et `user_id` sont en `ON DELETE SET NULL` : la ligne survit
+sans aucun champ identifiant (montant, statut, dates, identifiants techniques
+Stripe seulement). La commande affiche le nombre de paiements ainsi anonymisés
+(`paymentsAnonymized`) et de demandes d'accompagnement supprimées
+(`expertRequests`).
 
 Restent hors de portée de la commande, à traiter à la main si nécessaire :
 les **sauvegardes** de la base (l'effacement y devient effectif à leur

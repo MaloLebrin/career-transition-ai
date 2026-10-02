@@ -323,6 +323,32 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
     - Le rôle affiché est mis à jour.
     - Le comportement de l’utilisateur (accès aux écrans) change en conséquence.
 
+### 7.3. Demandes d'accompagnement et équipe interne (B2C, #105)
+
+- **Pré-requis** : `node ace db:seed` (particulier au forfait avec une demande en attente), compte super admin.
+
+- **Inviter un expert interne**
+  - **Étapes**
+    1. `/dashboard/super-admin/team` → « Inviter un membre » (rôle Consultant Accompagnateur).
+    2. Ouvrir le lien d'activation reçu (console mail en dev), choisir un mot de passe.
+  - **Vérifications**
+    - Le membre apparaît dans le tableau avec « Activé » et 0 candidat suivi.
+    - Les rôles « Talent » et « Super admin » ne sont pas proposés.
+
+- **Assigner un expert**
+  - **Étapes**
+    1. `/dashboard/super-admin/expert-requests` → sur la demande en attente, choisir l'expert, « Assigner ».
+  - **Vérifications**
+    - La demande passe « Acceptée » avec l'expert et le traitant.
+    - Le particulier voit « Votre expert : X » sur son accueil et une notification.
+    - L'expert reçoit « Nouveau candidat à accompagner » et voit le particulier dans `/dashboard/conseiller`.
+
+- **Refuser une demande**
+  - **Étapes**
+    1. « Refuser la demande », saisir un motif, « Confirmer le refus ».
+  - **Vérifications**
+    - La demande passe « Refusée » avec le motif ; le particulier est notifié et peut redemander.
+
 ---
 
 ## 8. Jobs de fond

@@ -112,7 +112,7 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: 'Durée du contrat avec le cabinet, puis 3 ans',
   },
   {
-    data: 'Compte particulier (inscription en libre-service) et son dossier',
+    data: 'Compte particulier (inscription en libre-service) et son dossier, y compris ses demandes d’accompagnement',
     duration: '3 ans après la dernière connexion, ou dès la demande d’effacement',
   },
   {

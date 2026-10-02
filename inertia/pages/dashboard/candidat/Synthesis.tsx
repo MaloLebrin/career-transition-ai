@@ -1,11 +1,14 @@
-import type { ExerciseLockReason } from '#shared/constants/b2c'
+import { ACCOUNT_TYPES, type ExerciseLockReason } from '#shared/constants/b2c'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import Card from '~/components/ui/Card'
 import Button from '~/components/ui/Button'
+import { useAuth } from '~/hooks/use_auth'
 import { useLivePdfExport, type LivePdfExport } from '~/hooks/use_live_pdf_export'
+import AppLink from '~/components/ui/AppLink'
 import type { Employee } from '~/types/employee'
 
 type CandidateSynthesisProps =
@@ -74,6 +77,9 @@ function SharedSynthesis({
 }: Extract<CandidateSynthesisProps, { shared: true }>) {
   // Statut du PDF poussé par Transmit : pas besoin de recharger la page (#70).
   const pdfJob = useLivePdfExport(employeeId, latestPdfJob)
+  // #103 : un particulier (forfait réglé, puisqu'il voit sa synthèse) peut demander un expert.
+  const { user } = useAuth()
+  const isB2c = user?.accountType === ACCOUNT_TYPES.B2C
   const pdfInProgress =
     pdfJob?.status === PDF_EXPORT_STATUSES.PENDING ||
     pdfJob?.status === PDF_EXPORT_STATUSES.PROCESSING
@@ -139,6 +145,17 @@ function SharedSynthesis({
           <div className="text-sm text-brand-navy whitespace-pre-wrap">
             {synthesis.expertCommentsShared || 'Aucun commentaire partagé pour le moment.'}
           </div>
+          {isB2c && (
+            <p className="mt-4 text-sm text-ink-soft">
+              Envie d’aller plus loin ?{' '}
+              <AppLink
+                href={EXPERT_REQUEST_PATHS.page}
+                className="font-medium text-accent hover:underline"
+              >
+                Être accompagné par un expert
+              </AppLink>
+            </p>
+          )}
         </Card>
       </div>
     </DashboardLayout>

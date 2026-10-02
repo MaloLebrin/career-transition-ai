@@ -1,9 +1,12 @@
 import type Employee from '#models/employee'
 import type ExerciseResult from '#models/exercise_result'
+import type ExpertRequest from '#models/expert_request'
 import type SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
 import { NotificationService } from '#services/notification_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
+import { BILLING_PATHS } from '#shared/constants/billing'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -14,6 +17,8 @@ export const CANDIDATE_NOTIFICATION_LINKS = {
   step: (stepId: number) => `/dashboard/candidat/steps/${stepId}`,
   synthesis: '/dashboard/candidat/synthesis',
   exercise: (type: string) => `/dashboard/candidat/exercises/${type}`,
+  home: '/dashboard/candidat',
+  offer: BILLING_PATHS.offer,
 } as const
 
 /**
@@ -90,6 +95,94 @@ export class CandidateNotificationsService {
         exerciseType: result.type,
         href: CANDIDATE_NOTIFICATION_LINKS.exercise(result.type),
       },
+    })
+  }
+
+  /**
+   * Forfait réglé (webhook ou réconciliation, #104) ou octroi manuel (#107) :
+   * le particulier est prévenu que tout son parcours est ouvert.
+   */
+  async resultsUnlocked(employee: Employee): Promise<void> {
+    if (!employee.userId || employee.accountType !== ACCOUNT_TYPES.B2C) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.RESULTS_UNLOCKED,
+      title: 'Vos résultats sont débloqués',
+      body: 'Tous les exercices, vos résultats, vos analyses et votre synthèse sont désormais accessibles.',
+      meta: { employeeId: employee.id, href: CANDIDATE_NOTIFICATION_LINKS.home },
+    })
+  }
+
+  /** Remboursement Stripe (#104) ou révocation par un super admin (#107). */
+  async resultsAccessRevoked(employee: Employee): Promise<void> {
+    if (!employee.userId || employee.accountType !== ACCOUNT_TYPES.B2C) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.RESULTS_ACCESS_REVOKED,
+      title: 'Votre accès aux résultats a été retiré',
+      body: 'Les exercices gratuits restent disponibles. Contactez-nous si vous pensez qu’il s’agit d’une erreur.',
+      meta: { employeeId: employee.id, href: CANDIDATE_NOTIFICATION_LINKS.offer },
+    })
+  }
+
+  /**
+   * Demande d'accompagnement d'un particulier (#103) : prévient les super
+   * admins, qui assignent un expert depuis le back-office (#105). Id du
+   * candidat seulement, jamais son nom.
+   */
+  async expertRequested(employee: Employee, request: ExpertRequest): Promise<void> {
+    const superAdmins = await User.query()
+      .where('role', USERS_ROLES.SUPER_ADMIN)
+      .whereNull('deletedAt')
+      .select('id')
+
+    for (const admin of superAdmins) {
+      await this.notifications.notify({
+        userId: admin.id,
+        type: NOTIFICATION_TYPES.EXPERT_REQUEST_CREATED,
+        title: `Demande d'accompagnement — candidat #${employee.id}`,
+        body: 'Un particulier au forfait demande un expert : à assigner depuis le back-office.',
+        meta: {
+          employeeId: employee.id,
+          expertRequestId: request.id,
+          href: EXPERT_REQUEST_PATHS.admin,
+        },
+      })
+    }
+  }
+
+  /** Expert assigné (#105) : le particulier connaît désormais son interlocuteur. */
+  async expertAssigned(employee: Employee, expert: User): Promise<void> {
+    if (!employee.userId) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.EXPERT_ASSIGNED,
+      title: `Votre expert : ${expert.name}`,
+      body: 'Il suit désormais votre parcours et peut vous proposer des étapes et des notes.',
+      meta: { employeeId: employee.id, expertUserId: expert.id, href: '/dashboard/candidat' },
+    })
+  }
+
+  /** Nouveau candidat pour l'expert interne (#105) : id du candidat seulement, jamais son nom. */
+  async candidateAssigned(expert: User, employee: Employee): Promise<void> {
+    await this.notifications.notify({
+      userId: expert.id,
+      type: NOTIFICATION_TYPES.CANDIDATE_ASSIGNED,
+      title: 'Nouveau candidat à accompagner',
+      body: `Un particulier vous a été assigné (candidat #${employee.id}) : retrouvez-le dans vos candidats.`,
+      meta: { employeeId: employee.id, href: `/dashboard/conseiller/employees/${employee.id}` },
+    })
+  }
+
+  /** Demande refusée (#105) : motif transmis, nouvelle demande possible. */
+  async expertRequestDeclined(employee: Employee, reason: string): Promise<void> {
+    if (!employee.userId) return
+    await this.notifications.notify({
+      userId: employee.userId,
+      type: NOTIFICATION_TYPES.EXPERT_REQUEST_DECLINED,
+      title: 'Votre demande d’accompagnement n’a pas pu aboutir',
+      body: `${reason} Vous pouvez déposer une nouvelle demande.`,
+      meta: { employeeId: employee.id, href: EXPERT_REQUEST_PATHS.page },
     })
   }
 
