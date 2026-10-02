@@ -17,6 +17,7 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/securite', 'Security'],
   ['/auth/login', 'Login'],
   ['/auth/register', 'Register'],
+  ['/inscription', 'RegisterCandidate'],
 ]
 
 /** CGU / CGV (#95) : hors `guest()`, un utilisateur connecté doit pouvoir les relire. */

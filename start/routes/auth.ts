@@ -19,6 +19,10 @@ router
     router
       .post('/register', [AuthController, 'register'])
       .use([throttleRegister, middleware.registrationOpen()])
+    // Particuliers (#93) : même quota d'inscriptions par IP, flag distinct.
+    router
+      .post('/register/candidat', [AuthController, 'registerCandidate'])
+      .use([throttleRegister, middleware.registrationOpen({ kind: 'candidate' })])
     router.post('/logout', [AuthController, 'logout'])
     router
       .group(() => {

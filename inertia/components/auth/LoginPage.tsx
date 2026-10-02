@@ -14,9 +14,17 @@ interface LoginPageProps {
   success?: string | null
   /** Absent quand l'inscription publique est fermée : le lien est masqué. */
   onGoToRegister?: () => void
+  /** Absent quand l'inscription des particuliers (#93) est fermée : le lien est masqué. */
+  onGoToRegisterCandidate?: () => void
 }
 
-export default function LoginPage({ csrfToken, error, success, onGoToRegister }: LoginPageProps) {
+export default function LoginPage({
+  csrfToken,
+  error,
+  success,
+  onGoToRegister,
+  onGoToRegisterCandidate,
+}: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -52,17 +60,33 @@ export default function LoginPage({ csrfToken, error, success, onGoToRegister }:
       title="Connexion"
       subtitle="Saisissez vos identifiants pour continuer."
       footer={
-        onGoToRegister ? (
-          <p>
-            Vous n’avez pas encore de compte ?{' '}
-            <button
-              type="button"
-              onClick={onGoToRegister}
-              className="font-medium text-primary hover:underline cursor-pointer"
-            >
-              S’inscrire gratuitement
-            </button>
-          </p>
+        onGoToRegister || onGoToRegisterCandidate ? (
+          <div className="space-y-2">
+            {onGoToRegister && (
+              <p>
+                Vous n’avez pas encore de compte ?{' '}
+                <button
+                  type="button"
+                  onClick={onGoToRegister}
+                  className="font-medium text-primary hover:underline cursor-pointer"
+                >
+                  S’inscrire gratuitement
+                </button>
+              </p>
+            )}
+            {onGoToRegisterCandidate && (
+              <p>
+                Vous êtes un particulier ?{' '}
+                <button
+                  type="button"
+                  onClick={onGoToRegisterCandidate}
+                  className="font-medium text-primary hover:underline cursor-pointer"
+                >
+                  Créer mon compte
+                </button>
+              </p>
+            )}
+          </div>
         ) : undefined
       }
     >

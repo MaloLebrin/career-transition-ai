@@ -129,7 +129,7 @@ Organisation plateforme (épic B2C #90, `docs/epics/b2c.md`) : `organizations.is
 | `middleware.notificationRecipient()` | Destinataires de notifications (`receivesNotifications` : advisor, admin, super admin, candidat) |
 | `middleware.candidate()`             | Candidat                                                                                         |
 | `middleware.checkOnboarding()`       | Vérification onboarding                                                                          |
-| `middleware.registrationOpen()`      | Inscription publique ouverte (`REGISTRATION_ENABLED`, fermée par défaut en prod)                 |
+| `middleware.registrationOpen()`      | Inscription publique ouverte (`REGISTRATION_ENABLED`, fermée par défaut en prod) ; `registrationOpen({ kind: 'candidate' })` : inscription des particuliers (`B2C_REGISTRATION_ENABLED`, #93) |
 
 Ordre standard : `auth()` → middleware de rôle.
 

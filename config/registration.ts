@@ -2,19 +2,23 @@ import env from '#start/env'
 import app from '@adonisjs/core/services/app'
 
 /**
- * Inscription publique d'un conseiller (`/auth/register`), qui crée un compte
- * **et son organisation** sans invitation.
+ * Inscriptions publiques, toutes deux **fermées par défaut en production**
+ * (beta fermée) et ouvertes ailleurs :
  *
- * Fermée par défaut en production (beta fermée) : les comptes se créent alors
- * depuis l'UI super admin, puis par l'onboarding sur invitation. Ouverte par
- * défaut en développement et en test. `REGISTRATION_ENABLED` force l'un ou
- * l'autre.
+ * - `enabled` (`REGISTRATION_ENABLED`) : un conseiller crée son compte **et
+ *   son organisation** sur `/auth/register`. Fermée, les comptes se créent
+ *   depuis l'UI super admin, puis par l'onboarding sur invitation.
+ * - `candidateEnabled` (`B2C_REGISTRATION_ENABLED`, #93) : un particulier
+ *   crée son compte candidat dans l'organisation plateforme sur
+ *   `/inscription`.
  *
- * Lue à chaque requête (middleware `registrationOpen`, prop partagée
- * `registrationEnabled`) : les tests la basculent avec `config.set()`.
+ * Lues à chaque requête (middleware `registrationOpen`, props partagées
+ * `registrationEnabled` / `b2cRegistrationEnabled`) : les tests les basculent
+ * avec `config.set()`.
  */
 const registrationConfig = {
   enabled: env.get('REGISTRATION_ENABLED', !app.inProduction),
+  candidateEnabled: env.get('B2C_REGISTRATION_ENABLED', !app.inProduction),
 }
 
 export default registrationConfig
