@@ -18,8 +18,17 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
+const { authState } = vi.hoisted(() => ({
+  authState: {
+    user: { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2b' } as Record<
+      string,
+      unknown
+    >,
+  },
+}))
+
 vi.mock('../../../../../inertia/hooks/use_auth', () => ({
-  useAuth: () => ({ user: { id: 5, role: 'employee', name: 'Jean Dupont' } }),
+  useAuth: () => ({ user: authState.user }),
 }))
 
 vi.mock('../../../../../inertia/hooks/use_billing', () => ({
@@ -273,5 +282,41 @@ describe('CandidateSynthesisPage — verrouillage forfait (#101)', () => {
 
     expect(screen.getByText('Votre synthèse')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Générer le PDF/i })).toBeInTheDocument()
+  })
+})
+
+describe('CandidateSynthesisPage — accompagnement par un expert (#103)', () => {
+  test('un particulier voit le lien vers la demande d’accompagnement, pas un candidat B2B', () => {
+    authState.user = { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2c' }
+    const { unmount } = render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(screen.getByRole('link', { name: 'Être accompagné par un expert' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/accompagnement'
+    )
+    unmount()
+
+    authState.user = { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2b' }
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(
+      screen.queryByRole('link', { name: 'Être accompagné par un expert' })
+    ).not.toBeInTheDocument()
   })
 })

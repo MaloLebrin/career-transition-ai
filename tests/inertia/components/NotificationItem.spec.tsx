@@ -96,6 +96,21 @@ describe('NotificationItem', () => {
     expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
   })
 
+  test('rend la notification « demande d’accompagnement » des super admins (#103)', () => {
+    const { container } = render(
+      <NotificationItem
+        notification={{
+          ...baseNotification,
+          type: 'expert_request_created',
+          title: 'Demande d’accompagnement — candidat #12',
+        }}
+        onMarkAsRead={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Demande d’accompagnement — candidat #12')).toBeInTheDocument()
+    expect(container.querySelector('svg.text-accent')).toBeInTheDocument()
+  })
+
   test('rend les notifications de forfait débloqué et d’accès retiré (#104)', () => {
     const unlocked = render(
       <NotificationItem

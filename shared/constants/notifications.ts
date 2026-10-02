@@ -13,6 +13,8 @@ export const NOTIFICATION_TYPES = {
   // Particulier B2C : forfait réglé, résultats débloqués / accès retiré (remboursement, révocation) (#104)
   RESULTS_UNLOCKED: 'results_unlocked',
   RESULTS_ACCESS_REVOKED: 'results_access_revoked',
+  // Super admins : un particulier demande un accompagnement par un expert (#103)
+  EXPERT_REQUEST_CREATED: 'expert_request_created',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]
