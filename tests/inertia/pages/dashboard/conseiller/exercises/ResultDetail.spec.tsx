@@ -5,12 +5,27 @@ import ExerciseResultDetail from '~/pages/dashboard/conseiller/exercises/ResultD
 import { resetInertiaMock } from '../../../../support/inertia_mock'
 import { makeNote } from '../../../../support/factories'
 
+const { layoutProps } = vi.hoisted(() => ({
+  layoutProps: [] as Array<{ hideSidebar?: boolean; selectedEmployeeId?: string | null }>,
+}))
+
 vi.mock('@inertiajs/react', async () => {
   const { inertiaMock } = await import('../../../../support/inertia_mock')
   return inertiaMock()
 })
 vi.mock('~/components/dashboard/DashboardLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({
+    children,
+    hideSidebar,
+    selectedEmployeeId,
+  }: {
+    children: React.ReactNode
+    hideSidebar?: boolean
+    selectedEmployeeId?: string | null
+  }) => {
+    layoutProps.push({ hideSidebar, selectedEmployeeId })
+    return <div>{children}</div>
+  },
 }))
 vi.mock('~/components/exercises/ExerciseResultVisualization', () => ({
   default: ({ result }: { result: { type: string } }) => <div>Visualisation {result.type}</div>,
@@ -28,7 +43,18 @@ const result = {
 }
 
 describe('Détail d’un résultat d’exercice (conseiller)', () => {
-  beforeEach(() => resetInertiaMock())
+  beforeEach(() => {
+    resetInertiaMock()
+    layoutProps.length = 0
+  })
+
+  test('conserve le menu latéral (pas de hideSidebar)', () => {
+    render(
+      <ExerciseResultDetail employeeId="5" employeeName="Camille" exerciseTitle="Valeurs" result={null} />
+    )
+    expect(layoutProps.at(-1)?.hideSidebar).toBeFalsy()
+    expect(layoutProps.at(-1)?.selectedEmployeeId).toBe('5')
+  })
 
   test('sans résultat : message dédié et lien retour', () => {
     render(<ExerciseResultDetail employeeId="5" employeeName="Camille" exerciseTitle="Valeurs" result={null} />)

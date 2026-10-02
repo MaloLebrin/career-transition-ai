@@ -4,16 +4,40 @@ import { render, screen } from '@testing-library/react'
 import ConseillerExerciseList from '~/pages/dashboard/conseiller/exercises/List'
 import { resetInertiaMock } from '../../../../support/inertia_mock'
 
+const { layoutProps } = vi.hoisted(() => ({
+  layoutProps: [] as Array<{ hideSidebar?: boolean; selectedEmployeeId?: string | null }>,
+}))
+
 vi.mock('@inertiajs/react', async () => {
   const { inertiaMock } = await import('../../../../support/inertia_mock')
   return inertiaMock()
 })
 vi.mock('~/components/dashboard/DashboardLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({
+    children,
+    hideSidebar,
+    selectedEmployeeId,
+  }: {
+    children: React.ReactNode
+    hideSidebar?: boolean
+    selectedEmployeeId?: string | null
+  }) => {
+    layoutProps.push({ hideSidebar, selectedEmployeeId })
+    return <div>{children}</div>
+  },
 }))
 
 describe('Liste des résultats d’exercices (conseiller)', () => {
-  beforeEach(() => resetInertiaMock())
+  beforeEach(() => {
+    resetInertiaMock()
+    layoutProps.length = 0
+  })
+
+  test('conserve le menu latéral (pas de hideSidebar)', () => {
+    render(<ConseillerExerciseList employeeId="5" results={[]} />)
+    expect(layoutProps.at(-1)?.hideSidebar).toBeFalsy()
+    expect(layoutProps.at(-1)?.selectedEmployeeId).toBe('5')
+  })
 
   test('état vide et lien retour vers la fiche', () => {
     render(<ConseillerExerciseList employeeId="5" results={[]} />)
