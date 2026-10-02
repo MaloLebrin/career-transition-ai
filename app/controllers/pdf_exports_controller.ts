@@ -1,10 +1,12 @@
 import { serializePdfExport } from '#mappers/pdf_export_mapper'
-import PdfExport from '#models/pdf_export'
-import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { PdfExportsService } from '#services/pdf_exports_service'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
+@inject()
 export default class PdfExportsController {
+  constructor(private pdfExports: PdfExportsService) {}
+
   public async index({ auth, request, inertia }: HttpContext) {
     const user = auth.user
     if (!user) {
@@ -12,18 +14,7 @@ export default class PdfExportsController {
     }
 
     const qs = request.qs() as { status?: string }
-
-    let query = PdfExport.query()
-
-    if (user.role !== USERS_ROLES.SUPER_ADMIN) {
-      query = query.where('organizationId', user.organizationId)
-    }
-
-    if (qs.status && Object.values(PDF_EXPORT_STATUSES).includes(qs.status as PdfExportStatus)) {
-      query = query.where('status', qs.status)
-    }
-
-    const rows = await query.preload('employee').orderBy('createdAt', 'desc').limit(100)
+    const rows = await this.pdfExports.listForUser(user, { status: qs.status })
     const exports = rows.map((row) => serializePdfExport(row, row.employee?.name ?? null))
 
     return (inertia as any).render('dashboard/admin/jobs/Index', { exports })
