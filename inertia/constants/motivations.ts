@@ -18,7 +18,7 @@ export const MOTIVATIONS_LIST = [
   'Développer de nouvelles compétences',
   'La complexité des tâches à réaliser',
   'La hauteur des enjeux stratégiques',
-  "S'exposer, prendre des risks",
+  "S'exposer, prendre des risques",
   "Le sentiment d'utilité sociale",
   'Prendre des décisions',
 ]
