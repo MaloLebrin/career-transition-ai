@@ -54,7 +54,8 @@ nouvel appel serveur à un fournisseur IA passe ses données par
 
 ## 3. Durées de conservation
 
-Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
+Source : `RETENTION_PERIODS` et `RETENTION_NOTICE` (`shared/constants/legal.ts`).
+Les durées publiées (3 ans, 1 an) sont des **durées maximales** de conservation.
 
 | Données                                           | Durée                                                                                           |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -68,9 +69,20 @@ Source : `RETENTION_PERIODS` (`shared/constants/legal.ts`).
 | Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                              |
 | Journaux techniques et de sécurité                | 1 an                                                                                            |
 
-Seuls les exports PDF sont purgés automatiquement. Pour le reste, il n'existe **pas encore de purge automatique** : à l'échéance, appliquer la
-procédure d'effacement ci-dessous (ou le SQL du §5 pour les demandes de
-contact).
+**Écart entre durée annoncée et pratique réelle.** Seuls les exports PDF sont
+purgés automatiquement (`PurgeExpiredPdfExportsJob`, `start/scheduler.ts`). Il
+n'existe **pas encore de purge automatique** des comptes particuliers inactifs,
+des dossiers clôturés, des demandes de contact ni des journaux. Les pages
+publiques le disent (`RETENTION_NOTICE` : durées maximales, effacement à la
+demande, purges à l'échéance faites par l'équipe, automatisation à venir).
+En pratique :
+
+- sur demande d'effacement : `node ace candidate:purge <id>` (§5) ;
+- à l'échéance : traitement **manuel** par l'équipe avec la même commande (ou le
+  SQL du §5 pour les demandes de contact) ; la rétention des journaux est celle
+  de l'hébergeur et de Sentry, à vérifier à la mise en production ;
+- tant que l'automatisation n'existe pas, un passage manuel périodique (au moins
+  annuel) doit être planifié ; suivi dans `PRODUCTION_CHECKLIST.md`.
 
 ### Cookies
 

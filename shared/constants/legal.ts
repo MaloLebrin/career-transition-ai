@@ -102,31 +102,43 @@ export interface RetentionPeriod {
   duration: string
 }
 
+/**
+ * Les durées sont des **maximums** : à ce jour, seule la purge des exports PDF
+ * est automatique (`PurgeExpiredPdfExportsJob`). Le reste est effacé à la
+ * demande de la personne ou par traitement manuel (`candidate:purge`), en
+ * attendant une purge automatique. Cf. docs/RGPD.md §3.
+ */
+export const RETENTION_NOTICE =
+  'Ces durées sont des maximums de conservation. Vous pouvez demander l’effacement de vos données à tout moment ; les effacements sont traités à la demande et les purges à l’échéance sont effectuées par notre équipe (automatisation à venir).'
+
 export const RETENTION_PERIODS: RetentionPeriod[] = [
   {
     data: 'Dossier candidat (profil, exercices, notes, plan d’accompagnement)',
-    duration: 'Durée de l’accompagnement, puis 3 ans après sa fin',
+    duration: 'Durée de l’accompagnement, puis 3 ans au maximum après sa fin',
   },
   {
     data: 'Comptes utilisateurs des cabinets (conseillers, administrateurs, candidats invités)',
-    duration: 'Durée du contrat avec le cabinet, puis 3 ans',
+    duration: 'Durée du contrat avec le cabinet, puis 3 ans au maximum',
   },
   {
     data: 'Compte particulier (inscription en libre-service) et son dossier, y compris ses demandes d’accompagnement',
-    duration: '3 ans après la dernière connexion, ou dès la demande d’effacement',
+    duration: '3 ans au maximum après la dernière connexion, ou dès la demande d’effacement',
   },
   {
     data: 'Données de paiement et factures du forfait particuliers',
     duration:
       '10 ans (art. L123-22 du Code de commerce) ; enregistrement anonymisé après effacement du compte',
   },
-  { data: 'Demandes de contact et prospection B2B', duration: '3 ans après le dernier contact' },
+  {
+    data: 'Demandes de contact et prospection B2B',
+    duration: '3 ans au maximum après le dernier contact',
+  },
   {
     data: 'Documents du candidat (CV importé, diplômes, attestations…)',
     duration: 'Jusqu’à leur suppression, celle du dossier ou une demande d’effacement',
   },
   { data: 'Exports PDF générés (synthèses)', duration: '30 jours, puis régénérables' },
-  { data: 'Journaux techniques et de sécurité', duration: '1 an' },
+  { data: 'Journaux techniques et de sécurité', duration: '1 an au maximum' },
 ]
 
 /**
