@@ -1,9 +1,13 @@
-import { describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 import CandidatHome from '../../../../../../inertia/pages/dashboard/employee/home/Home'
 
-const { employeeHomeSpy } = vi.hoisted(() => ({ employeeHomeSpy: vi.fn() }))
+const { employeeHomeSpy, b2cHomeSpy, authState } = vi.hoisted(() => ({
+  employeeHomeSpy: vi.fn(),
+  b2cHomeSpy: vi.fn(),
+  authState: { user: { id: 2, role: 'employee', accountType: 'b2b' } as Record<string, unknown> },
+}))
 
 vi.mock('@inertiajs/react', () => ({
   Head: () => null,
@@ -17,6 +21,17 @@ vi.mock('../../../../../../inertia/components/dashboard/EmailVerificationBanner'
   EmailVerificationBanner: () => <div data-testid="email-verification-banner" />,
 }))
 
+vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
+  useAuth: () => ({ user: authState.user }),
+}))
+
+vi.mock('../../../../../../inertia/components/dashboard/b2c/B2cEmployeeHome', () => ({
+  B2cEmployeeHome: (props: any) => {
+    b2cHomeSpy(props)
+    return <div data-testid="b2c-employee-home" />
+  },
+}))
+
 vi.mock('../../../../../../inertia/components/dashboard/EmployeeHome', () => ({
   default: (props: any) => {
     employeeHomeSpy(props)
@@ -24,7 +39,22 @@ vi.mock('../../../../../../inertia/components/dashboard/EmployeeHome', () => ({
   },
 }))
 
+const b2cAccess = {
+  accountType: 'b2c' as const,
+  unlockedExerciseSlugs: ['motivation' as const, 'values' as const],
+  lockedReason: 'payment' as const,
+  hasPaidAccess: false,
+  freeExerciseTypes: ['motivation' as const, 'values' as const],
+  paymentsEnabled: false,
+}
+
 describe('Dashboard candidat - Home', () => {
+  beforeEach(() => {
+    employeeHomeSpy.mockClear()
+    b2cHomeSpy.mockClear()
+    authState.user = { id: 2, role: 'employee', accountType: 'b2b' }
+  })
+
   test('passes completion props to EmployeeHome', () => {
     const employee = {
       id: 1,
@@ -68,5 +98,52 @@ describe('Dashboard candidat - Home', () => {
         exerciseProgressByType: { motivation: 40, values: 100 },
       })
     )
+    expect(b2cHomeSpy).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('b2c-employee-home')).not.toBeInTheDocument()
+  })
+
+  test('un particulier B2C voit son accueil dédié (#100)', () => {
+    authState.user = { id: 2, role: 'employee', accountType: 'b2c' }
+    const employee = { id: 1, name: 'Camille Martin', skills: [], exercises: [], plan: [] } as any
+
+    render(
+      <CandidatHome
+        employee={employee}
+        completedExercises={1}
+        totalExercises={8}
+        exerciseCompletionPercent={12}
+        exerciseProgressByType={{ motivation: 100 }}
+        advisor={{ name: 'Nadia Experte' }}
+        exerciseAccess={b2cAccess}
+      />
+    )
+
+    expect(screen.getByTestId('b2c-employee-home')).toBeInTheDocument()
+    expect(employeeHomeSpy).not.toHaveBeenCalled()
+    expect(b2cHomeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        employee,
+        advisor: { name: 'Nadia Experte' },
+        exerciseAccess: b2cAccess,
+        completedExercises: 1,
+      })
+    )
+  })
+
+  test('sans prop exerciseAccess, un B2C retombe sur l’accueil classique', () => {
+    authState.user = { id: 2, role: 'employee', accountType: 'b2c' }
+    const employee = { id: 1, name: 'Camille Martin', skills: [], exercises: [], plan: [] } as any
+
+    render(
+      <CandidatHome
+        employee={employee}
+        completedExercises={0}
+        totalExercises={8}
+        exerciseCompletionPercent={0}
+        exerciseProgressByType={{}}
+      />
+    )
+
+    expect(screen.getByTestId('employee-home')).toBeInTheDocument()
   })
 })

@@ -3,7 +3,10 @@ import {
   ACCOUNT_TYPES,
   B2C_FREE_EXERCISE_TYPES,
   B2C_FREE_INCLUDES_AI_ANALYSIS,
+  B2C_OFFER_PATH,
+  EXERCISE_LOCK_REASONS,
   accountTypeValues,
+  exerciseLockReasonValues,
 } from '#shared/constants/b2c'
 import { EXERCISE_LIST, exerciceResultTypesValues } from '#shared/constants/exercises'
 import { expectConsistentEnum } from './enum_contract.js'
@@ -27,5 +30,13 @@ describe('shared/constants/b2c (épic #90)', () => {
 
   test('l’analyse IA des exercices gratuits est offerte (décision PO, question 2 de #90)', () => {
     expect(B2C_FREE_INCLUDES_AI_ANALYSIS).toBe(true)
+  })
+
+  test('motifs de verrouillage (#100) : plan (B2B) ou paiement (B2C)', () => {
+    expectConsistentEnum(EXERCISE_LOCK_REASONS, exerciseLockReasonValues, ['plan', 'payment'])
+  })
+
+  test('les CTA « Débloquer » pointent vers l’offre du tableau de bord candidat', () => {
+    expect(B2C_OFFER_PATH).toBe('/dashboard/candidat/offre')
   })
 })

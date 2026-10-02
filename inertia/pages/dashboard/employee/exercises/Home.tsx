@@ -1,4 +1,7 @@
 import { Head, router } from '@inertiajs/react'
+import { Lock } from 'lucide-react'
+import { B2C_OFFER_PATH, type ExerciseLockReason } from '#shared/constants/b2c'
+import type { ExerciseAccess } from '#shared/types/exercise/access'
 import 'react-datepicker/dist/react-datepicker.css'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import CircleOfControlTool from '~/components/exercises/CircleOfControlTool'
@@ -11,7 +14,8 @@ import SkillMappingTool from '~/components/exercises/SkillMappingTool'
 import TargetingTool from '~/components/exercises/TargetingTool'
 import ValuesTool from '~/components/exercises/ValuesTool'
 import AppLink from '~/components/ui/AppLink'
-import Button from '~/components/ui/Button'
+import Button, { buttonClassName } from '~/components/ui/Button'
+import Card from '~/components/ui/Card'
 import { EXERCISE_SLUGS } from '~/config/exercises'
 import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
 import { useEmployee } from '~/hooks/use_employee'
@@ -26,6 +30,9 @@ interface CandidatExerciseProps {
   initialDraftsByType?: Record<string, ExerciseDraft | null>
   accessGranted?: boolean
   blockedMessage?: string
+  /** Motif du verrou (#100) : `plan` (B2B) ou `payment` (B2C, forfait). */
+  lockedReason?: ExerciseLockReason
+  exerciseAccess?: ExerciseAccess
   exerciseProgressPercent?: number
 }
 
@@ -46,6 +53,8 @@ export default function CandidatExercise({
   initialDraftsByType,
   accessGranted = true,
   blockedMessage,
+  lockedReason = 'plan',
+  exerciseAccess,
   exerciseProgressPercent = 0,
 }: CandidatExerciseProps) {
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeFromPage?.id ?? null, employeeFromPage ?? null)
@@ -93,44 +102,53 @@ export default function CandidatExercise({
       : null
 
   if (accessGranted === false) {
+    const paymentLock = lockedReason === 'payment'
     return (
       <>
         <Head title={`Exercice ${type}`} />
         <DashboardLayout hideSidebar>
-          <div className="animate-fadeIn w-full">
-            <div className="flex justify-between items-center mb-10">
-              <AppLink href="/dashboard/candidat">
-                <Button variant="ghost" size="sm">
-                  ← Retour
-                </Button>
+          <div className="w-full animate-fade-in">
+            <div className="mb-10 flex items-center justify-between">
+              <AppLink href="/dashboard/candidat" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
+                ← Retour
               </AppLink>
             </div>
 
-            <div className="mt-6 bg-amber-50 border border-amber-100 text-amber-800 px-4 py-4 rounded-xl">
-              <div className="flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 shrink-0 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div>
-                  <h2 className="text-sm font-bold">Accès verrouillé</h2>
-                  <p className="text-sm text-amber-700 mt-1">
-                    {blockedMessage ??
-                      'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'}
-                  </p>
-                </div>
+            <Card
+              variant={paymentLock ? 'sun' : 'flat'}
+              padding="md"
+              className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start"
+              role="status"
+            >
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
+                aria-hidden="true"
+              >
+                <Lock className="h-5 w-5" />
+              </span>
+              <div className="space-y-2">
+                <h2 className="text-title-md text-ink">
+                  {paymentLock ? 'Exercice inclus dans le forfait' : 'Accès verrouillé'}
+                </h2>
+                <p className="text-sm text-ink-soft">
+                  {blockedMessage ??
+                    (paymentLock
+                      ? 'Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder.'
+                      : 'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.')}
+                </p>
+                {paymentLock &&
+                  (exerciseAccess?.paymentsEnabled ? (
+                    <AppLink
+                      href={B2C_OFFER_PATH}
+                      className={buttonClassName({ variant: 'primary', size: 'sm', className: 'mt-2' })}
+                    >
+                      Débloquer
+                    </AppLink>
+                  ) : (
+                    <p className="text-caption text-muted">Paiement bientôt disponible.</p>
+                  ))}
               </div>
-            </div>
+            </Card>
           </div>
         </DashboardLayout>
       </>

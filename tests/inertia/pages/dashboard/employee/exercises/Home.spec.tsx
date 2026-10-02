@@ -48,8 +48,9 @@ vi.mock('../../../../../../inertia/components/ui/AppLink', () => ({
   ),
 }))
 
-vi.mock('../../../../../../inertia/components/ui/Button', () => ({
-  default: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+vi.mock('../../../../../../inertia/components/ui/Button', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../inertia/components/ui/Button')>()),
+  default: ({ children, isLoading: _l, ...rest }: any) => <button {...rest}>{children}</button>,
 }))
 
 vi.mock('../../../../../../inertia/components/exercises/MotivationTool', () => ({
@@ -127,6 +128,44 @@ describe('Dashboard candidat - Exercise Home', () => {
     expect(screen.getByText('Verrouillé par l\'expert')).toBeInTheDocument()
 
     expect(screen.queryByTestId('tool-motivation')).not.toBeInTheDocument()
+  })
+
+  test('verrou « payment » (#100) : exercice du forfait, CTA « Débloquer » si le paiement est activé', () => {
+    render(
+      <ExerciseHome
+        type="disc"
+        initialDraftsByType={{}}
+        accessGranted={false}
+        lockedReason="payment"
+        blockedMessage="Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder."
+        exerciseAccess={{
+          accountType: 'b2c',
+          unlockedExerciseSlugs: ['motivation', 'values'],
+          lockedReason: 'payment',
+          hasPaidAccess: false,
+          freeExerciseTypes: ['motivation', 'values'],
+          paymentsEnabled: true,
+        }}
+      />
+    )
+
+    expect(screen.getByText('Exercice inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText(/Cet exercice fait partie du forfait/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Débloquer' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/offre'
+    )
+    expect(screen.queryByTestId('tool-disc')).not.toBeInTheDocument()
+  })
+
+  test('verrou « payment » sans paiement activé : « bientôt disponible », pas de CTA', () => {
+    render(
+      <ExerciseHome type="disc" initialDraftsByType={{}} accessGranted={false} lockedReason="payment" />
+    )
+
+    expect(screen.getByText('Exercice inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText('Paiement bientôt disponible.')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Débloquer' })).not.toBeInTheDocument()
   })
 
   test('passes completed result fallback as initial draft for candidate tool hydration', async () => {

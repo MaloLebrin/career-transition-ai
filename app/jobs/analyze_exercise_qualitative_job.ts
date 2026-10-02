@@ -1,6 +1,7 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
@@ -69,8 +70,8 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       result.qualitativeAnalysis = text
       await result.save()
 
+      const notifService = new NotificationService()
       if (employee.advisorId) {
-        const notifService = new NotificationService()
         await notifService.notify({
           userId: employee.advisorId,
           type: NOTIFICATION_TYPES.AI_SYNTHESIS_READY,
@@ -79,6 +80,8 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
           meta: { exerciseResultId: result.id, employeeId: employee.id, exerciseType: result.type },
         })
       }
+      // Particulier B2C (#100) : prévenu directement, avec ou sans expert assigné.
+      await new CandidateNotificationsService(notifService).aiAnalysisReady(employee, result)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       console.error(error)

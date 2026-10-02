@@ -4,11 +4,14 @@ import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
-import SupportPlanStepExercise from '#models/support_plan_step_exercise'
+import { EntitlementsService } from '#services/entitlements_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
+import type { CandidateExerciseState, ExerciseInitialDraft } from '#shared/types/exercise/access'
+import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
 
@@ -30,40 +33,71 @@ type SaveDraftInput = {
   data: Record<string, unknown>
 }
 
+@inject()
 export class ExerciseResultsService {
   /**
-   * Candidate access rules:
-   * An exercise is accessible if there exists at least one support plan step
-   * linked to that exercise type for the employee, and that step is NOT locked.
+   * L'accès aux exercices (plan B2B / forfait B2C) vit dans
+   * `ExerciseAccessService` (#100) ; ce service ne décide que de l'analyse IA.
    */
-  public async getUnlockedExerciseSlugsForEmployee(
-    employeeId: number
-  ): Promise<Array<ExerciseResult['type']>> {
-    const rows = await SupportPlanStepExercise.query()
-      .whereHas('supportPlanStep', (query) => {
-        query.where('employeeId', employeeId).where('isLocked', false)
-      })
-      .select('exerciseType')
+  constructor(
+    private access: ExerciseAccessService = new ExerciseAccessService(new EntitlementsService())
+  ) {}
 
-    const unique = new Set<ExerciseResult['type']>()
-    for (const row of rows) {
-      unique.add(row.exerciseType)
-    }
-    return Array.from(unique)
-  }
-
-  public async canAccessExerciseForEmployee(
+  /** Dernier brouillon d'un candidat pour un type d'exercice, ou `null`. */
+  public async findLatestDraft(
     employeeId: number,
-    exerciseType: ExerciseResult['type']
-  ): Promise<boolean> {
-    const unlocked = await SupportPlanStepExercise.query()
-      .where('exerciseType', exerciseType)
-      .whereHas('supportPlanStep', (query) => {
-        query.where('employeeId', employeeId).where('isLocked', false)
-      })
+    type: ExerciseResult['type']
+  ): Promise<ExerciseInitialDraft | null> {
+    const draft = await ExerciseResult.query()
+      .where('employeeId', employeeId)
+      .andWhere('type', type)
+      .andWhere('status', exerciceResultStatusValues.DRAFT)
+      .orderBy('updatedAt', 'desc')
       .first()
 
-    return Boolean(unlocked)
+    return draft ? toInitialDraft(draft, draft.data ?? {}) : null
+  }
+
+  /**
+   * État repris par l'outil d'exercice côté candidat : le brouillon en cours,
+   * sinon le résultat terminé pré-rempli à l'étape 2 (les outils attendent
+   * `step` dans leurs données), sinon rien.
+   */
+  public async findDraftOrCompletedForCandidate(
+    employeeId: number,
+    type: ExerciseResult['type']
+  ): Promise<CandidateExerciseState> {
+    const draft = await this.findLatestDraft(employeeId, type)
+    if (draft) {
+      return {
+        initialDraft: draft,
+        exerciseProgressPercent: getExerciseProgress(
+          String(type),
+          draft.data,
+          exerciceResultStatusValues.DRAFT
+        ),
+      }
+    }
+
+    const completed = await ExerciseResult.query()
+      .where('employeeId', employeeId)
+      .andWhere('type', type)
+      .andWhere('status', exerciceResultStatusValues.COMPLETED)
+      .orderBy('date', 'desc')
+      .orderBy('updatedAt', 'desc')
+      .first()
+    if (!completed) {
+      return { initialDraft: null, exerciseProgressPercent: 0 }
+    }
+
+    return {
+      initialDraft: toInitialDraft(completed, { ...(completed.data ?? {}), step: 2 }),
+      exerciseProgressPercent: getExerciseProgress(
+        String(type),
+        completed.data ?? {},
+        completed.status
+      ),
+    }
   }
 
   public async saveResult(input: SaveResultInput): Promise<EmployeeDto> {
@@ -75,6 +109,9 @@ export class ExerciseResultsService {
       .where('employeeId', employee.id)
       .andWhere('type', input.type)
       .first()
+
+    // Politique B2C (#100) : un exercice gratuit n'est analysé qu'une fois.
+    const hadAnalysis = Boolean(existing?.qualitativeAnalysis)
 
     let resultRow: ExerciseResult
     if (existing) {
@@ -104,9 +141,11 @@ export class ExerciseResultsService {
     }
 
     if (resultRow.status === exerciceResultStatusValues.COMPLETED) {
-      await AnalyzeExerciseQualitativeJob.dispatch({
-        exerciseResultId: resultRow.id,
-      }).toQueue('ai')
+      if (await this.access.shouldRunAiAnalysis(employee, input.type, hadAnalysis)) {
+        await AnalyzeExerciseQualitativeJob.dispatch({
+          exerciseResultId: resultRow.id,
+        }).toQueue('ai')
+      }
 
       if (employee.advisorId) {
         const notifService = new NotificationService()
@@ -281,31 +320,17 @@ export class ExerciseResultsService {
     }
   }
 
-  /**
-   * Returns the latest draft for an employee + exercise type, or null.
-   */
-  public async fetchDraft(input: SaveDraftInput): Promise<{
-    employeeId: number
-    type: ExerciseResult['type']
-    lastUpdated: string
-    data: Record<string, unknown>
-  } | null> {
-    const draft = await ExerciseResult.query()
-      .where('employeeId', input.employeeId)
-      .andWhere('type', input.type)
-      .andWhere('status', 'draft')
-      .orderBy('updatedAt', 'desc')
-      .first()
+  /** @deprecated utiliser `findLatestDraft(employeeId, type)`. */
+  public async fetchDraft(input: SaveDraftInput): Promise<ExerciseInitialDraft | null> {
+    return this.findLatestDraft(input.employeeId, input.type)
+  }
+}
 
-    if (!draft) {
-      return null
-    }
-
-    return {
-      employeeId: draft.employeeId,
-      type: draft.type,
-      lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-      data: draft.data,
-    }
+function toInitialDraft(row: ExerciseResult, data: Record<string, unknown>): ExerciseInitialDraft {
+  return {
+    employeeId: row.employeeId,
+    type: row.type,
+    lastUpdated: row.updatedAt.toISO() || new Date().toISOString(),
+    data,
   }
 }

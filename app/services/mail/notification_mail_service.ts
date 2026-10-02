@@ -30,6 +30,7 @@ const SUBJECT_BY_TYPE: Record<NotificationType, string> = {
   [NOTIFICATION_TYPES.APPOINTMENT_SCHEDULED]: 'Un rendez-vous a été planifié',
   [NOTIFICATION_TYPES.SYNTHESIS_SHARED]: 'Votre synthèse est disponible',
   [NOTIFICATION_TYPES.DATA_ERASURE_REQUESTED]: 'Demande d’effacement de données à traiter',
+  [NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE]: 'Votre analyse IA est disponible',
 }
 
 type NotificationWithUser = Notification & { user: User }

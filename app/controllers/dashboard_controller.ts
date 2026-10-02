@@ -1,17 +1,26 @@
 import Employee from '#models/employee'
+import { EmployeesService } from '#services/employees_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import EmployeeTransformer from '#transformers/employee_transformer'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
 /**
  * Redirects authenticated user to the correct dashboard area based on role.
  */
+@inject()
 export default class DashboardController {
+  constructor(
+    private employeesService: EmployeesService,
+    private exerciseAccess: ExerciseAccessService
+  ) {}
+
   public async index({ auth, response }: HttpContext) {
     const user = auth.user
     if (!user) {
@@ -143,14 +152,7 @@ export default class DashboardController {
       return response.unauthorized()
     }
 
-    const employee = await Employee.query()
-      .where('user_id', user.id)
-      .preload('skills')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-      .preload('experiences')
-      .preload('educations')
-      .first()
+    const employee = await this.employeesService.findEmployeeForUser(user, { withAdvisor: true })
 
     if (!employee) {
       return response.unauthorized()
@@ -185,6 +187,9 @@ export default class DashboardController {
       totalExercises,
       exerciseCompletionPercent,
       exerciseProgressByType,
+      // #100 : expert assigné (nom seul) et accès aux exercices (plan ou forfait).
+      advisor: employee.advisor ? { name: employee.advisor.name } : null,
+      exerciseAccess: await this.exerciseAccess.resolve(employee),
     })
   }
 
