@@ -117,12 +117,16 @@ un candidat qui n'a plus accès à son compte.
 
    Le ZIP contient le dossier PDF (identique au téléchargement conseiller :
    `profil.pdf`, `resultats/<exercice>.pdf`) et `donnees.json` : fiche,
-   compte (sans mot de passe ni jeton), compétences, expériences, formations,
+   compte (sans mot de passe ni jeton : e-mail, rôle, version des CGU acceptée,
+   date de vérification de l'e-mail), type de compte (`accountType` : cabinet ou
+   particulier) et date de demande d'effacement, compétences, expériences, formations,
    résultats d'exercices bruts et analyses IA, plan d'accompagnement, notes,
    paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
    jamais de numéro de carte, Stripe seul les détient), demandes
    d'accompagnement par un expert (#103 : message, disponibilités, statut,
-   motif de refus, dates), liste des documents déposés ; les documents
+   motif de refus, dates), synthèses d'accompagnement (`syntheses` ; les notes internes de l'expert
+   suivent la politique des notes privées ci-dessous), notifications reçues par
+   le compte (`notifications`), liste des documents déposés ; les documents
    eux-mêmes sont dans `documents/<id>_<nom d'origine>`.
 
 4. Transmettre le fichier par un canal sûr, puis **supprimer le ZIP** du
@@ -137,7 +141,14 @@ parcours B2C, la question porte aussi sur nos propres notes. En attendant,
 statu quo : elles sont incluses (`PRIVATE_NOTES_IN_EXPORT`,
 `shared/constants/legal.ts`), et `node ace candidate:export <id>
 --without-private-notes` les écarte au cas par cas (`advisorPrivateNotes: null`,
-`advisorPrivateNotesWithheld` donne leur nombre).
+`advisorPrivateNotesWithheld` donne leur nombre ; `syntheses[].expertNotesInternal`
+est aussi mis à `null`).
+
+**Hors export.** La table `ai_generations` (historique des générations IA) a été
+supprimée (migration `drop_ai_generations_table`) : il n'y a rien à restituer.
+Les identifiants Stripe des paiements sont restitués ; le motif de retrait, la
+renonciation à la rétractation et l'auteur de l'octroi manuel (`candidate_payments`)
+seront ajoutés avec la branche `fix/b2c-billing`.
 
 **Particuliers (B2C, #101).** L'export n'est **pas expurgé** des résultats
 « réservés au forfait » : le droit d'accès (art. 15) porte sur toutes les données
