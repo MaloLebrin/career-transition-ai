@@ -416,12 +416,13 @@ test.group('Webhook Stripe (#104)', (group) => {
       payment_status: 'paid',
       payment_intent: 'pi_order_a',
     }
-    ;(
-      await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, paidObject))
-    ).assertStatus(200)
-    ;(
-      await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, paidObject))
-    ).assertStatus(200)
+    const completed = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, paidObject)
+    )
+    const expired = await deliver(client, event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_EXPIRED, paidObject))
+    completed.assertStatus(200)
+    expired.assertStatus(200)
     await paid.refresh()
     assert.equal(paid.status, PAYMENT_STATUSES.PAID)
     assert.isNull(paid.revokedAt)
@@ -433,17 +434,16 @@ test.group('Webhook Stripe (#104)', (group) => {
       event(STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED, { payment_intent: 'pi_order_b', refunded: true })
     )
     refund.assertStatus(200)
-    ;(
-      await deliver(
-        client,
-        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
-          id: 'cs_order_b',
-          client_reference_id: String(late.id),
-          payment_status: 'paid',
-          payment_intent: 'pi_order_b',
-        })
-      )
-    ).assertStatus(200)
+    const lateCompleted = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_order_b',
+        client_reference_id: String(late.id),
+        payment_status: 'paid',
+        payment_intent: 'pi_order_b',
+      })
+    )
+    lateCompleted.assertStatus(200)
     await late.refresh()
     assert.equal(late.status, PAYMENT_STATUSES.PAID)
   })
