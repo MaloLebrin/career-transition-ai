@@ -271,6 +271,18 @@
   e-mail (même activation que les cabinets). L'expert interne retrouve ses particuliers dans
   `/dashboard/conseiller` et peut créer étapes et notes.
 
+### 7.4 Particuliers et paiements du forfait (#107)
+
+- **Particuliers** (`/dashboard/super-admin/b2c`) : comptes B2C de l'organisation plateforme
+  (exclus des listes « Organisations » et « Utilisateurs ») avec e-mail vérifié, forfait réglé,
+  expert assigné, demande d'accompagnement en attente ; indicateurs (inscrits, forfaits réglés,
+  chiffre d'affaires Stripe du mois, demandes en attente, repris sur l'accueil super admin).
+  **Octroi manuel** d'un accès (paiement `manual` à 0 €, analyses IA lancées, particulier
+  prévenu), confirmé par une modale.
+- **Paiements** (`/dashboard/super-admin/payments`) : tous les paiements du forfait, filtre par
+  statut, pagination ; **retrait d'un accès** avec motif consigné (particulier prévenu). Un
+  remboursement se fait dans Stripe : le webhook (#104) retire l'accès.
+
 ---
 
 ## 8. Jobs de fond & industrialisation
@@ -406,6 +418,6 @@
   expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
   notification, nouvelle demande possible.
 
-### 11.6 À venir
+### 11.6 Back-office B2C (#107)
 
-Back-office B2C : paiements, octroi et révocation manuels (#107).
+Voir § 7.4 : particuliers, indicateurs, octroi manuel d'un accès, paiements et retrait d'un accès.

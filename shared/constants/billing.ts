@@ -99,3 +99,17 @@ export type WebhookOutcome = (typeof WEBHOOK_OUTCOMES)[keyof typeof WEBHOOK_OUTC
 
 /** Motif posé sur `candidate_payments.revoke_reason` lors d'un remboursement Stripe. */
 export const STRIPE_REFUND_REVOKE_REASON = 'Remboursement Stripe'
+
+/** Back-office super admin des particuliers et des paiements (#107). */
+export const BILLING_ADMIN_PATHS = {
+  b2c: '/dashboard/super-admin/b2c',
+  payments: '/dashboard/super-admin/payments',
+  grant: (employeeId: number) => `/dashboard/super-admin/b2c/${employeeId}/entitlement/grant`,
+  revoke: (paymentId: number) => `/dashboard/super-admin/payments/${paymentId}/revoke`,
+} as const
+
+/** Taille de page de la liste des paiements du back-office (#107). */
+export const PAYMENTS_PAGE_SIZE = 50
+
+/** Longueur maximale du motif de révocation d'un accès (#107). */
+export const REVOKE_REASON_MAX = 500
