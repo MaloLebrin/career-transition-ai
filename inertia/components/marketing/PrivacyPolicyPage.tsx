@@ -1,9 +1,11 @@
 import {
   PRIVACY_CONTACT_EMAIL,
   PRIVACY_REQUEST_DELAY,
+  RETENTION_NOTICE,
   RETENTION_PERIODS,
   SUBPROCESSORS,
 } from '#shared/constants/legal'
+import AppLink from '~/components/ui/AppLink'
 import { LegalDocument } from './LegalDocument'
 import { LegalSection, Term } from './LegalSection'
 
@@ -54,7 +56,27 @@ export default function PrivacyPolicyPage() {
         </ul>
       </LegalSection>
 
+      <LegalSection title="Particuliers inscrits en libre-service">
+        <p>
+          Pour un compte créé sans cabinet, <Term>Transition Carrière</Term> est responsable de
+          traitement. Le traitement repose sur l’exécution du contrat (
+          <AppLink href="/cgu" className={MAIL_LINK_CLASS}>
+            conditions d’utilisation
+          </AppLink>
+          ,{' '}
+          <AppLink href="/cgv" className={MAIL_LINK_CLASS}>
+            conditions de vente
+          </AppLink>
+          ) : parcours, résultats, analyses assistées par IA pseudonymisées, demande
+          d’accompagnement. Le paiement du forfait est confié à Stripe ; nous ne recevons que la
+          confirmation du paiement, le montant et l’identifiant de la transaction, jamais les
+          données de carte. Les factures sont conservées dix ans au titre des obligations
+          comptables, sous une forme anonymisée après effacement du compte.
+        </p>
+      </LegalSection>
+
       <LegalSection title="Durées de conservation">
+        <p>{RETENTION_NOTICE}</p>
         <ul className="list-disc space-y-2 pl-5">
           {RETENTION_PERIODS.map((period) => (
             <li key={period.data}>

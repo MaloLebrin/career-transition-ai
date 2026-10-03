@@ -235,6 +235,8 @@ test.group('Conseiller — candidats : fiche et mise à jour', (group) => {
     const org = await Organization.findOrFail(advisor.organizationId)
     const colleague = await createAdvisor(org)
     const employee = await createEmployeeFor(advisor)
+    employee.advisorNotes = 'Suivi interne'
+    await employee.save()
     const own = await NoteFactory.merge({
       organizationId: org.id,
       employeeId: employee.id,
@@ -262,6 +264,8 @@ test.group('Conseiller — candidats : fiche et mise à jour', (group) => {
       'notes',
     ])
     assert.equal(props.employeeId, String(employee.id))
+    // L'équipe garde les notes du conseiller (jamais transmises au candidat).
+    assert.equal((props.employee as { advisorNotes?: string }).advisorNotes, 'Suivi interne')
     const notes = props.notes as Array<{ id: number; canEdit: boolean; authorName: string }>
     assert.sameMembers(
       notes.map((n) => n.id),

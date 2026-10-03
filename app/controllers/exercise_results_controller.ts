@@ -1,13 +1,25 @@
+import { redactEmployeePayload } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
 import { EmployeesService } from '#services/employees_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { ExerciseResultsService } from '#services/exercise_results_service'
-import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
-import { getExerciseProgress } from '#shared/helpers/exercise_progress'
-import EmployeeTransformer from '#transformers/employee_transformer'
+import { EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
+import {
+  EXERCICE_RESULTS_TYPES,
+  EXERCISE_LIST,
+  exerciceResultTypesValues,
+  type ExerciceResultType,
+} from '#shared/constants/exercises'
+import { isB2cAccount, orderExercisesForB2c } from '#shared/helpers/b2c_access'
+import { canAccessExercise } from '#shared/helpers/exercise_access'
+import type { ExerciseAccess } from '#shared/types/exercise/access'
+import EmployeeTransformer, { employeeToObject } from '#transformers/employee_transformer'
 import { saveExerciseDraftValidator } from '#validators/exercise/exercise_draft_validator'
 import { saveExerciseResultValidator } from '#validators/exercise/exercise_result_save_validator'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import type User from '#models/user'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -27,11 +39,36 @@ const EXERCISE_TYPE_TO_PAGE: Record<string, string> = {
   [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: 'dashboard/shared/exercises/CircleOfControl',
 }
 
+/** Messages affichés quand l'exercice demandé n'est pas accessible (#100). */
+export const EXERCISE_LOCKED_MESSAGES = {
+  [EXERCISE_LOCK_REASONS.PLAN]:
+    'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.',
+  [EXERCISE_LOCK_REASONS.PAYMENT]:
+    'Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder.',
+} as const
+
+function isExerciseType(value: string): value is ExerciceResultType {
+  return (exerciceResultTypesValues as string[]).includes(value)
+}
+
+/** Types dont l'outil reprend un brouillon ou un résultat (ceux qui ont une page dédiée). */
+function isDraftableType(value: string): value is ExerciceResultType {
+  return isExerciseType(value) && value in EXERCISE_TYPE_TO_PAGE
+}
+
+/** Flash court après un POST refusé : l'étape (B2B) ou le forfait (B2C). */
+function lockedFlashMessage(access: ExerciseAccess): string {
+  return access.lockedReason === EXERCISE_LOCK_REASONS.PAYMENT
+    ? 'Cet exercice fait partie du forfait.'
+    : 'Cette étape est verrouillée.'
+}
+
 @inject()
 export default class ExerciseResultsController {
   constructor(
     private service: ExerciseResultsService,
-    private employeesService: EmployeesService
+    private employeesService: EmployeesService,
+    private access: ExerciseAccessService
   ) {}
 
   /**
@@ -40,11 +77,11 @@ export default class ExerciseResultsController {
    * quelle organisation écrivait des résultats (et déclenchait l'analyse IA et
    * les notifications) sur le candidat d'une autre.
    */
-  private async employeeIdInOrganization(user: { organizationId: number }, id: string) {
+  private async employeeIdInOrganization(user: User, id: string) {
     const employee = await Employee.query()
       .select('id')
       .where('id', Number(id))
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .firstOrFail()
     return employee.id
   }
@@ -118,9 +155,7 @@ export default class ExerciseResultsController {
     }
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
-    const unlockedExerciseSlugs = await this.service.getUnlockedExerciseSlugsForEmployee(
-      employee.id
-    )
+    const access = await this.access.resolve(employee)
 
     const latestStatusByType = new Map<string, { status: string; date: string }>()
     for (const r of employee.exerciseResults || []) {
@@ -140,10 +175,18 @@ export default class ExerciseResultsController {
       }
     }
 
+    // B2C (#100) : exercices gratuits d'abord, le reste du catalogue ensuite.
+    const exercises = isB2cAccount(access.accountType)
+      ? orderExercisesForB2c(EXERCISE_LIST, access.freeExerciseTypes)
+      : EXERCISE_LIST
+
     return (inertia as any).render('dashboard/employee/exercises/List', {
-      exercises: EXERCISE_LIST,
-      unlockedExerciseSlugs,
+      exercises,
+      unlockedExerciseSlugs: access.unlockedExerciseSlugs,
       completedExerciseSlugs,
+      lockedReason: access.lockedReason,
+      accountType: access.accountType,
+      exerciseAccess: access,
     })
   }
 
@@ -159,7 +202,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .preload('exerciseResults')
         .firstOrFail()
     } catch {
@@ -212,7 +255,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .firstOrFail()
     } catch {
       session.flash('error', 'Candidat introuvable.')
@@ -280,7 +323,7 @@ export default class ExerciseResultsController {
     try {
       employee = await Employee.query()
         .where('id', employeeId)
-        .where('organizationId', auth.user.organizationId)
+        .where(teamEmployeeScope(auth.user))
         .preload('skills', (q) => q.pivotColumns(['level']))
         .preload('exerciseResults')
         .preload('supportPlanSteps', (q) => q.preload('exercises'))
@@ -294,35 +337,12 @@ export default class ExerciseResultsController {
 
     const employeeRecord = employee
 
-    const draftTypes = [
-      EXERCICE_RESULTS_TYPES.MOTIVATION,
-      EXERCICE_RESULTS_TYPES.VALUES,
-      EXERCICE_RESULTS_TYPES.PERSONALITY,
-      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
-      EXERCICE_RESULTS_TYPES.TARGETING,
-      EXERCICE_RESULTS_TYPES.DISC,
-      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
-      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
-    ] as const
-
     const initialDraftsByType: Record<string, any> = {}
-    for (const exerciseType of draftTypes) {
-      if (typeParam !== exerciseType) continue
-      const draft = await ExerciseResult.query()
-        .where('employeeId', employeeRecord.id)
-        .andWhere('type', exerciseType)
-        .andWhere('status', 'draft')
-        .orderBy('updatedAt', 'desc')
-        .first()
-      initialDraftsByType[exerciseType] = draft
-        ? {
-            employeeId: employeeRecord.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
-        : null
-      break
+    if (isDraftableType(typeParam)) {
+      initialDraftsByType[typeParam] = await this.service.findLatestDraft(
+        employeeRecord.id,
+        typeParam
+      )
     }
 
     const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/conseiller/exercises/Home'
@@ -362,37 +382,12 @@ export default class ExerciseResultsController {
       }
       return (inertia as any).render(exercisePage, { initialDraftsByType: {} })
     }
-    const draftTypes = [
-      EXERCICE_RESULTS_TYPES.MOTIVATION,
-      EXERCICE_RESULTS_TYPES.VALUES,
-      EXERCICE_RESULTS_TYPES.PERSONALITY,
-      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
-      EXERCICE_RESULTS_TYPES.TARGETING,
-      EXERCICE_RESULTS_TYPES.DISC,
-      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
-      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
-    ] as const
     const initialDraftsByType: Record<string, any> = {}
-    for (const exerciseType of draftTypes) {
-      if (typeParam !== exerciseType) continue
-      const draft = await ExerciseResult.query()
-        .where('employeeId', employee.id)
-        .andWhere('type', exerciseType)
-        .andWhere('status', 'draft')
-        .orderBy('updatedAt', 'desc')
-        .first()
-      initialDraftsByType[exerciseType] = draft
-        ? {
-            employeeId: employee.id,
-            type: exerciseType,
-            lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-            data: draft.data,
-          }
-        : null
-      break
+    if (isDraftableType(typeParam)) {
+      initialDraftsByType[typeParam] = await this.service.findLatestDraft(employee.id, typeParam)
     }
     const pageName = EXERCISE_TYPE_TO_PAGE[typeParam] ?? 'dashboard/employee/exercises/Home'
-    const employeePayload = EmployeeTransformer.transform(employee)
+    const employeePayload = employeeToObject(employee)
     const props =
       pageName === 'dashboard/employee/exercises/Home'
         ? { type: params.type, employee: employeePayload, initialDraftsByType }
@@ -410,96 +405,38 @@ export default class ExerciseResultsController {
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const typeParam = String(params.type).toLowerCase()
+    const access = await this.access.resolve(employee)
 
-    const accessGranted = await this.service.canAccessExerciseForEmployee(
-      employee.id,
-      typeParam as any
-    )
-
-    const draftTypes = [
-      EXERCICE_RESULTS_TYPES.MOTIVATION,
-      EXERCICE_RESULTS_TYPES.VALUES,
-      EXERCICE_RESULTS_TYPES.PERSONALITY,
-      EXERCICE_RESULTS_TYPES.LIFE_CURVE,
-      EXERCICE_RESULTS_TYPES.TARGETING,
-      EXERCICE_RESULTS_TYPES.DISC,
-      EXERCICE_RESULTS_TYPES.SKILL_MAPPING,
-      EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL,
-    ] as const
-
-    const initialDraftsByType: Record<string, any> = {}
-    let exerciseProgressPercent = 0
-
-    if (!accessGranted) {
-      session.flash(
-        'error',
-        'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'
-      )
+    if (!isExerciseType(typeParam) || !canAccessExercise(access, typeParam)) {
+      const blockedMessage = EXERCISE_LOCKED_MESSAGES[access.lockedReason]
+      session.flash('error', blockedMessage)
       return (inertia as any).render('dashboard/employee/exercises/Home', {
         type: params.type,
-        employee: EmployeeTransformer.transform(employee),
+        employee: redactEmployeePayload(employeeToObject(employee), access),
         initialDraftsByType: {},
         accessGranted: false,
-        blockedMessage:
-          'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.',
+        blockedMessage,
+        lockedReason: access.lockedReason,
+        exerciseAccess: access,
       })
     }
 
-    for (const exerciseType of draftTypes) {
-      if (typeParam !== exerciseType) continue
-
-      const draft = await ExerciseResult.query()
-        .where('employeeId', employee.id)
-        .andWhere('type', exerciseType)
-        .andWhere('status', 'draft')
-        .orderBy('updatedAt', 'desc')
-        .first()
-
-      // If there's no draft but there is a completed result, prefill the exercise.
-      const completed = await ExerciseResult.query()
-        .where('employeeId', employee.id)
-        .andWhere('type', exerciseType)
-        .andWhere('status', 'completed')
-        .orderBy('date', 'desc')
-        .orderBy('updatedAt', 'desc')
-        .first()
-
-      if (draft) {
-        initialDraftsByType[exerciseType] = {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: draft.updatedAt.toISO() || new Date().toISOString(),
-          data: draft.data,
-        }
-        exerciseProgressPercent = getExerciseProgress(exerciseType, draft.data ?? {}, draft.status)
-      } else if (completed) {
-        initialDraftsByType[exerciseType] = {
-          employeeId: employee.id,
-          type: exerciseType,
-          lastUpdated: completed.updatedAt.toISO() || new Date().toISOString(),
-          // The tools expect `step` inside their draft data.
-          // When a result is completed, we want to land on step 2.
-          data: { ...(completed.data ?? {}), step: 2 },
-        }
-        exerciseProgressPercent = getExerciseProgress(
-          exerciseType,
-          completed.data ?? {},
-          completed.status
-        )
-      } else {
-        initialDraftsByType[exerciseType] = null
-        exerciseProgressPercent = 0
-      }
-
-      break
+    const initialDraftsByType: Record<string, any> = {}
+    let exerciseProgressPercent = 0
+    if (isDraftableType(typeParam)) {
+      const state = await this.service.findDraftOrCompletedForCandidate(employee.id, typeParam)
+      initialDraftsByType[typeParam] = state.initialDraft
+      exerciseProgressPercent = state.exerciseProgressPercent
     }
 
     return (inertia as any).render('dashboard/employee/exercises/Home', {
       type: params.type,
-      employee: EmployeeTransformer.transform(employee),
+      // #101 : les autres résultats du candidat suivent la même règle de verrouillage.
+      employee: redactEmployeePayload(employeeToObject(employee), access),
       initialDraftsByType,
       accessGranted: true,
       exerciseProgressPercent,
+      exerciseAccess: access,
     })
   }
 
@@ -513,13 +450,10 @@ export default class ExerciseResultsController {
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const payload = await request.validateUsing(saveExerciseDraftValidator)
-    const accessGranted = await this.service.canAccessExerciseForEmployee(
-      employee.id,
-      payload.type as any
-    )
+    const access = await this.access.resolve(employee)
 
-    if (!accessGranted) {
-      session.flash('error', 'Cette étape est verrouillée.')
+    if (!canAccessExercise(access, payload.type)) {
+      session.flash('error', lockedFlashMessage(access))
       return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 
@@ -542,13 +476,10 @@ export default class ExerciseResultsController {
 
     const employee = await this.employeesService.getEmployeeForUser(auth.user)
     const payload = await request.validateUsing(saveExerciseResultValidator)
-    const accessGranted = await this.service.canAccessExerciseForEmployee(
-      employee.id,
-      payload.type as any
-    )
+    const access = await this.access.resolve(employee)
 
-    if (!accessGranted) {
-      session.flash('error', 'Cette étape est verrouillée.')
+    if (!canAccessExercise(access, payload.type)) {
+      session.flash('error', lockedFlashMessage(access))
       return response.redirect().toPath(`/dashboard/candidat/exercises/${payload.type}`)
     }
 

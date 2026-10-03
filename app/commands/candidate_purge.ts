@@ -31,6 +31,16 @@ export default class CandidatePurge extends BaseCommand {
 
     this.logger.info(`Suppression définitive du candidat #${id} :`)
     this.logger.log(JSON.stringify(preview, null, 2))
+    if (preview.expertRequests > 0) {
+      this.logger.info(
+        `${preview.expertRequests} demande(s) d'accompagnement supprimée(s) avec la fiche.`
+      )
+    }
+    if (preview.paymentsAnonymized > 0) {
+      this.logger.info(
+        `${preview.paymentsAnonymized} paiement(s) conservé(s) comme pièce comptable (10 ans), anonymisé(s) : employee_id et user_id passent à NULL.`
+      )
+    }
 
     if (!this.force) {
       const confirmed = await this.prompt.confirm('Confirmer la suppression définitive ?')

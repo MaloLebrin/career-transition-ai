@@ -1,17 +1,28 @@
+import { redactEmployeePayload } from '#mappers/results_access_mapper'
 import Employee from '#models/employee'
+import { EmployeesService } from '#services/employees_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { getExerciseProgressByType } from '#shared/helpers/exercise_progress'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import EmployeeTransformer from '#transformers/employee_transformer'
+import { employeeToObject } from '#transformers/employee_transformer'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 
 /**
  * Redirects authenticated user to the correct dashboard area based on role.
  */
+@inject()
 export default class DashboardController {
+  constructor(
+    private employeesService: EmployeesService,
+    private exerciseAccess: ExerciseAccessService
+  ) {}
+
   public async index({ auth, response }: HttpContext) {
     const user = auth.user
     if (!user) {
@@ -45,7 +56,7 @@ export default class DashboardController {
     if (user.role === USERS_ROLES.ADVISOR) {
       query.where('advisorId', user.id)
     } else {
-      query.where('organizationId', user.organizationId)
+      query.where(teamEmployeeScope(user))
     }
 
     const employees = await query
@@ -143,14 +154,7 @@ export default class DashboardController {
       return response.unauthorized()
     }
 
-    const employee = await Employee.query()
-      .where('user_id', user.id)
-      .preload('skills')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-      .preload('experiences')
-      .preload('educations')
-      .first()
+    const employee = await this.employeesService.findEmployeeForUser(user, { withAdvisor: true })
 
     if (!employee) {
       return response.unauthorized()
@@ -179,12 +183,18 @@ export default class DashboardController {
       totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
     const exerciseProgressByType = getExerciseProgressByType(employee.exerciseResults as any)
 
+    // #100 : accès aux exercices (plan ou forfait) ; #101 : les résultats réservés
+    // au forfait ne quittent pas le serveur pour un particulier non payé.
+    const exerciseAccess = await this.exerciseAccess.resolve(employee)
+
     return (inertia as any).render('dashboard/employee/home/Home', {
-      employee: EmployeeTransformer.transform(employee),
+      employee: redactEmployeePayload(employeeToObject(employee), exerciseAccess),
       completedExercises,
       totalExercises,
       exerciseCompletionPercent,
       exerciseProgressByType,
+      advisor: employee.advisor ? { name: employee.advisor.name } : null,
+      exerciseAccess,
     })
   }
 
@@ -215,7 +225,7 @@ export default class DashboardController {
     }
 
     return (inertia as any).render('dashboard/employee/onboarding/Onboarding', {
-      employee: EmployeeTransformer.transform(employee),
+      employee: employeeToObject(employee),
     })
   }
 }

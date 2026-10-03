@@ -12,12 +12,11 @@ import { readdir, readFile } from 'node:fs/promises'
  * jamais la relever.
  */
 const BASELINE: Record<string, number> = {
-  'dashboard_controller.ts': 3,
-  'employee_syntheses_controller.ts': 11,
+  'dashboard_controller.ts': 2,
+  'employee_syntheses_controller.ts': 4,
   'employees_controller.ts': 16,
-  'exercise_results_controller.ts': 10,
-  'pdf_exports_controller.ts': 1,
-  'super_admin_controller.ts': 8,
+  'exercise_results_controller.ts': 6,
+  'super_admin_controller.ts': 6,
   'support_plan_steps_controller.ts': 11,
 }
 

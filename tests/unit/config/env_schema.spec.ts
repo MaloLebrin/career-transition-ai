@@ -1,5 +1,6 @@
 import { missingCloudinaryEnv } from '#config/cloudinary'
 import { mailProductionErrors } from '#config/mail'
+import { stripeProductionErrors } from '#config/stripe'
 import queueConfig from '#config/queue'
 import { envSchema } from '#start/env_schema'
 import { EnvParser } from '@adonisjs/core/env'
@@ -95,6 +96,7 @@ for (const file of ['.env.production.example', 'deploy/.env.example']) {
       const { parsed } = validate(await parseEnvFile(file))
       assert.equal(parsed.NODE_ENV, 'production')
       assert.equal(parsed.REGISTRATION_ENABLED, false)
+      assert.equal(parsed.B2C_REGISTRATION_ENABLED, false)
       assert.isString(parsed.MAIL_FROM_EMAIL)
       assert.isNotEmpty(parsed.MAIL_FROM_EMAIL)
     })
@@ -103,6 +105,20 @@ for (const file of ['.env.production.example', 'deploy/.env.example']) {
       const { parsed } = validate(await parseEnvFile(file))
       assert.deepEqual(
         missingCloudinaryEnv((name) => parsed[name] as string | undefined),
+        []
+      )
+    })
+
+    test('paiement désactivé par défaut, garde Stripe du démarrage sans erreur (#102)', async ({
+      assert,
+    }) => {
+      const { parsed } = validate(await parseEnvFile(file))
+      assert.notEqual(parsed.STRIPE_ENABLED, true)
+      assert.deepEqual(
+        stripeProductionErrors((name) => {
+          const value = parsed[name]
+          return value === undefined ? undefined : String(value)
+        }),
         []
       )
     })

@@ -7,9 +7,14 @@ function fakeService() {
     extractCv: [],
     extractSkillMapping: [],
     suggestTargets: [],
+    assertResultsAccess: [],
   }
   return {
     calls,
+    // #101 : vérifié avant la cartographie et le ciblage, jamais avant l'import de CV.
+    assertResultsAccess: async (...args: unknown[]) => {
+      calls.assertResultsAccess.push(args)
+    },
     extractCv: async (...args: unknown[]) => {
       calls.extractCv.push(args)
       return { name: 'Camille' }
@@ -100,6 +105,7 @@ test.group('AiAssistController', () => {
     await controller.extractSkillMapping(ctx)
 
     assert.deepEqual(service.calls.extractSkillMapping, [['récit', user]])
+    assert.deepEqual(service.calls.assertResultsAccess, [[user]])
     assert.deepEqual(response.body, { mapping: [] })
   })
 
@@ -107,11 +113,12 @@ test.group('AiAssistController', () => {
     const service = fakeService()
     const controller = new AiAssistController(service as any)
     const profile = { skills: ['SQL'], targetRole: 'Data analyst' }
-    const { ctx, response } = makeCtx(profile)
+    const { ctx, response } = makeCtx(profile, { id: 7 })
 
     await controller.suggestTargets(ctx)
 
     assert.deepEqual(service.calls.suggestTargets, [[profile]])
+    assert.lengthOf(service.calls.assertResultsAccess, 1)
     assert.deepEqual(response.body, { companies: ['Acme'], sectors: [] })
   })
 })

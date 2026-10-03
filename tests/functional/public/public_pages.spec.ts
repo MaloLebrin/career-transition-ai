@@ -4,18 +4,27 @@ import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
 
 /**
- * Pages vitrine (start/routes/public.ts) : toutes derrière `guest()`.
+ * Pages vitrine (start/routes/public.ts) : toutes derrière `guest()`, sauf les
+ * conditions (`LEGAL_PAGES`), lisibles connecté.
  */
 const PUBLIC_PAGES: Array<[string, string]> = [
   ['/', 'home'],
   ['/methodologie', 'Methodology'],
   ['/offre', 'Offer'],
   ['/tarifs', 'Pricing'],
+  ['/particuliers', 'Individuals'],
   ['/mentions-legales', 'LegalNotice'],
   ['/confidentialite', 'PrivacyPolicy'],
   ['/securite', 'Security'],
   ['/auth/login', 'Login'],
   ['/auth/register', 'Register'],
+  ['/inscription', 'RegisterCandidate'],
+]
+
+/** CGU / CGV (#95) : hors `guest()`, un utilisateur connecté doit pouvoir les relire. */
+const LEGAL_PAGES: Array<[string, string]> = [
+  ['/cgu', 'TermsOfService'],
+  ['/cgv', 'TermsOfSale'],
 ]
 
 test.group('Pages publiques — invité (functional)', (group) => {
@@ -28,6 +37,40 @@ test.group('Pages publiques — invité (functional)', (group) => {
       const props = assertPage(assert, response, component, ['errors', 'flash', 'employees'])
       assert.notProperty(props, 'user')
       assert.deepEqual(props.employees, [])
+    })
+  }
+})
+
+test.group('Conditions générales — invité et connecté (functional)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  for (const [url, component] of LEGAL_PAGES) {
+    test(`GET ${url} rend ${component} à un invité`, async ({ assert, client }) => {
+      const response = await client.get(url).withInertia()
+
+      const props = assertPage(assert, response, component, ['errors', 'flash', 'employees'])
+      assert.notProperty(props, 'user')
+    })
+
+    test(`GET ${url} rend ${component} à un candidat connecté, sans redirection`, async ({
+      assert,
+      client,
+    }) => {
+      const { user } = await createCandidate()
+
+      const response = await client.get(url).loginAs(user).withInertia().redirects(0)
+
+      const props = assertPage(assert, response, component, ['user'])
+      assert.equal((props.user as { id: number }).id, user.id)
+    })
+
+    test(`GET ${url} rend ${component} à un conseiller connecté`, async ({ client }) => {
+      const advisor = await createAdvisor()
+
+      const response = await client.get(url).loginAs(advisor).withInertia().redirects(0)
+
+      response.assertStatus(200)
+      response.assertInertiaComponent(component)
     })
   }
 })

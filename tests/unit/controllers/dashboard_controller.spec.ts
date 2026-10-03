@@ -1,4 +1,8 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import DashboardController from '#controllers/dashboard_controller'
+import { EmployeesService } from '#services/employees_service'
+import { EntitlementsService } from '#services/entitlements_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
@@ -12,6 +16,14 @@ import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
+
+/** Services réels (#100) : l'accueil candidat lit la fiche et l'accès aux exercices via eux. */
+function makeController() {
+  return new DashboardController(
+    new EmployeesService({ sendSetPasswordLink: async () => {} } as any),
+    new ExerciseAccessService(makeEntitlements())
+  )
+}
 
 function makeCtx(user: any) {
   let renderedPage: string | null = null
@@ -148,7 +160,7 @@ test.group('DashboardController.advisorHome', (group) => {
       isLocked: false,
     })
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(advisorUser)
     await controller.advisorHome(ctx)
 
@@ -203,7 +215,7 @@ test.group('DashboardController.advisorHome', (group) => {
       onboarded: true,
     })
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(advisorUser)
     await controller.advisorHome(ctx)
 
@@ -213,7 +225,7 @@ test.group('DashboardController.advisorHome', (group) => {
   })
 
   test('returns unauthorized when user is not authenticated', async ({ assert }) => {
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(undefined)
     await controller.advisorHome(ctx)
     assert.isTrue(ctx.response.unauthorizedCalled)
@@ -245,7 +257,7 @@ test.group('DashboardController.advisorHome', (group) => {
       isLocked: false,
     })
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(advisorUser)
     await controller.advisorHome(ctx)
 
@@ -269,7 +281,7 @@ test.group('DashboardController.advisorHome', (group) => {
       isLocked: false,
     })
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(advisorUser)
     await controller.advisorHome(ctx)
 
@@ -279,7 +291,7 @@ test.group('DashboardController.advisorHome', (group) => {
   test('active employees sorted first in accompaniments', async ({ assert }) => {
     const { advisorUser } = await createAdvisorFixture()
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(advisorUser)
     await controller.advisorHome(ctx)
 
@@ -331,7 +343,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
       qualitativeAnalysis: null,
     })
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(user)
 
     await controller.candidatHome(ctx)
@@ -352,7 +364,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
 
   test('returns 0% when no exercise is completed', async ({ assert }) => {
     const { user } = await createCandidateFixture()
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(user)
 
     await controller.candidatHome(ctx)
@@ -378,7 +390,7 @@ test.group('DashboardController.candidatHome completion stats', (group) => {
       })
     }
 
-    const controller = new DashboardController()
+    const controller = makeController()
     const ctx = makeCtx(user)
 
     await controller.candidatHome(ctx)

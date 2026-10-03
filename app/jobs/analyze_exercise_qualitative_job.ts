@@ -1,6 +1,9 @@
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import { resolveAiTextCompletionProvider } from '#services/ai/resolve_ai_text_provider'
+import { CandidateNotificationsService } from '#services/candidate_notifications_service'
+import { EntitlementsService } from '#services/entitlements_service'
+import { ExerciseAccessService } from '#services/exercise_access_service'
 import { NotificationService } from '#services/notification_service'
 import { exerciceResultStatusValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
@@ -55,6 +58,24 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       return
     }
 
+    // Droit B2C revérifié à l'exécution (#100) : forfait remboursé ou analyse
+    // gratuite déjà consommée entre la mise en file et le traitement.
+    const access = new ExerciseAccessService(
+      new EntitlementsService(new CandidateNotificationsService(new NotificationService()))
+    )
+    const allowed = await access.shouldRunAiAnalysis(
+      employee,
+      result.type,
+      Boolean(result.qualitativeAnalysis)
+    )
+    if (!allowed) {
+      logger.warn(
+        { exerciseResultId, employeeId: employee.id },
+        'AnalyzeExerciseQualitativeJob: ignoré (analyse non autorisée)'
+      )
+      return
+    }
+
     const provider = resolveAiTextCompletionProvider()
     // Données pseudonymisées avant envoi au fournisseur IA (RGPD, docs/RGPD.md) :
     // ni nom ni e-mail du candidat dans le prompt, y compris dans le texte libre.
@@ -64,13 +85,28 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       exerciseData: pseudonymizeForAi(result.data, identity),
     })
 
+    let text: string
     try {
-      const text = await provider.completeText(prompt)
-      result.qualitativeAnalysis = text
-      await result.save()
+      text = await provider.completeText(prompt)
+    } catch (error) {
+      // Aucun texte d'erreur dans `qualitativeAnalysis` : il compterait comme
+      // « analyse existante » (politique B2C, relance au déverrouillage).
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(
+        { err: error, exerciseResultId, message },
+        'AnalyzeExerciseQualitativeJob: échec IA'
+      )
+      return
+    }
 
+    result.qualitativeAnalysis = text
+    await result.save()
+
+    // Les notifications sont hors du `try` : leur échec ne doit pas écraser
+    // une analyse valide déjà enregistrée.
+    try {
+      const notifService = new NotificationService()
       if (employee.advisorId) {
-        const notifService = new NotificationService()
         await notifService.notify({
           userId: employee.advisorId,
           type: NOTIFICATION_TYPES.AI_SYNTHESIS_READY,
@@ -79,14 +115,15 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
           meta: { exerciseResultId: result.id, employeeId: employee.id, exerciseType: result.type },
         })
       }
+      // Particulier B2C (#100) : prévenu directement, avec ou sans expert assigné.
+      await new CandidateNotificationsService(notifService).aiAnalysisReady(employee, result)
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      console.error(error)
-      logger.error('AnalyzeExerciseQualitativeJob: échec IA', { exerciseResultId, message })
-      result.qualitativeAnalysis = "Erreur lors de la génération de l'analyse."
-      await result.save()
-    } finally {
-      logger.info('AnalyzeExerciseQualitativeJob: terminé', { exerciseResultId })
+      logger.error(
+        { err: error, exerciseResultId },
+        'AnalyzeExerciseQualitativeJob: notification impossible'
+      )
     }
+
+    logger.info({ exerciseResultId }, 'AnalyzeExerciseQualitativeJob: terminé')
   }
 }

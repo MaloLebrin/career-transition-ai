@@ -6,6 +6,7 @@ export default function Login() {
     csrfToken?: string
     flash?: { error?: string; success?: string }
     registrationEnabled?: boolean
+    b2cRegistrationEnabled?: boolean
   }>()
   const flashError = props.flash?.error
 
@@ -18,6 +19,9 @@ export default function Login() {
         success={props.flash?.success ?? null}
         onGoToRegister={
           props.registrationEnabled ? () => router.visit('/auth/register') : undefined
+        }
+        onGoToRegisterCandidate={
+          props.b2cRegistrationEnabled ? () => router.visit('/inscription') : undefined
         }
       />
     </>

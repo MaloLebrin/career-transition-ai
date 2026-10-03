@@ -166,3 +166,13 @@ export const mapEmployee = (employee: Employee): EmployeeDto => {
     plan: steps,
   }
 }
+
+/**
+ * Fiche candidat destinée au candidat lui-même : sans les notes du conseiller
+ * (`advisorNotes`), qui restent réservées à l'équipe.
+ */
+export const mapEmployeeForCandidate = (employee: Employee): EmployeeDto => {
+  const candidateView = mapEmployee(employee)
+  delete candidateView.advisorNotes
+  return candidateView
+}

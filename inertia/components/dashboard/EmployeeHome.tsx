@@ -91,16 +91,6 @@ export default function EmployeeHome({
           </Card>
         </div>
         <div className="lg:col-span-4 space-y-8">
-          {employee.advisorNotes && (
-            <div className="bg-brand-sage/5 p-8 rounded-[40px] border border-brand-sage/10 shadow-sm">
-              <h3 className="text-sm font-bold text-brand-sage uppercase tracking-widest mb-4">
-                Conseils Expert
-              </h3>
-              <p className="text-brand-navy/80 text-sm font-medium italic">
-                &quot;{employee.advisorNotes}&quot;
-              </p>
-            </div>
-          )}
           <Card className="p-8">
             <h3 className="text-sm font-bold text-brand-navy/40 uppercase tracking-widest mb-6">
               Expertises

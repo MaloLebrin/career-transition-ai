@@ -18,6 +18,9 @@ import limiter from '@adonisjs/limiter/services/main'
 import type { errors } from '@adonisjs/limiter'
 import type { HttpContext } from '@adonisjs/core/http'
 
+/** Quota de `throttleExerciseSave` (requêtes par minute et par compte). */
+export const EXERCISE_SAVE_LIMIT = 60
+
 type ThrottleException = InstanceType<typeof errors.E_TOO_MANY_REQUESTS>
 
 function frenchMessage(error: ThrottleException) {
@@ -107,6 +110,21 @@ export const throttleChangePassword = limiter.define(
 )
 
 /**
+ * Renvoi du lien de vérification d'e-mail (#98) : chaque demande envoie un
+ * e-mail (quota Resend). 5 / 15 min par compte.
+ */
+export const throttleEmailVerification = limiter.define(
+  'email_verification',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(5)
+      .every('15 minutes')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
  * Appels au fournisseur IA (quota et facturation) : 20/min par utilisateur.
  * Appliqué après `auth()`, d'où la clé sur l'identifiant du compte.
  */
@@ -128,6 +146,34 @@ export const throttleDataExport = limiter.define(
     return limiter
       .allowRequests(5)
       .every('1 hour')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
+ * Départ vers Stripe Checkout (#102) : chaque appel peut créer une session
+ * chez le prestataire. 10 / heure par compte (clé userId, appliqué après `auth()`).
+ */
+export const throttleCheckout = limiter.define('checkout', ({ auth, request }: HttpContext) => {
+  return limiter
+    .allowRequests(10)
+    .every('1 hour')
+    .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+    .limitExceeded(frenchMessage)
+})
+
+/**
+ * Sauvegarde d'exercice candidat (brouillon et résultat) : écritures en base
+ * et, à la complétion, mise en file d'une analyse IA (quota et facturation).
+ * 60/min par compte — l'enregistrement automatique reste très en deçà.
+ */
+export const throttleExerciseSave = limiter.define(
+  'exercise_save',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(EXERCISE_SAVE_LIMIT)
+      .every('1 minute')
       .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
       .limitExceeded(frenchMessage)
   }

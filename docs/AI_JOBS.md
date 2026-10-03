@@ -28,6 +28,20 @@ await AnalyzeExerciseQualitativeJob.dispatch({
 
 Les formulaires Inertia **candidat** et **conseiller** qui appellent `ExerciseResultsController` → `saveResult` déclenchent donc ce flux après validation.
 
+### Politique B2C (#100)
+
+Le `dispatch` est conditionné par `ExerciseAccessService.shouldRunAiAnalysis(employee, type, hasExistingAnalysis)` :
+
+| Compte                                            | Analyse lancée ?                                                                                         |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| B2B (candidat d'un cabinet)                       | Toujours, à chaque résultat complété (inchangé)                                                          |
+| B2C, forfait réglé                                | Toujours                                                                                                 |
+| B2C, exercice gratuit (`B2C_FREE_EXERCISE_TYPES`) | **Une seule fois** : pas de relance si `qualitative_analysis` est déjà rempli                            |
+| B2C, exercice verrouillé                          | Jamais (le contrôleur refuse d'ailleurs l'écriture ; déblocage au paiement, #104)                        |
+| B2C, forfait réglé a posteriori                   | Au déblocage (#104), un job par exercice complété sans analyse (`EntitlementsService.onResultsUnlocked`) |
+
+Le job notifie le conseiller (`ai_synthesis_ready`) **et**, pour un particulier B2C, le candidat lui-même (`ai_analysis_ready_candidate`, lien vers `/dashboard/candidat/exercises/:type`) : sans conseiller, personne d'autre ne lui relaierait l'information.
+
 ---
 
 ## 2. Déclencher le job manuellement (code serveur)

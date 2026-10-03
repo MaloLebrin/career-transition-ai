@@ -45,6 +45,10 @@ export type ExerciseResultDto = {
   progressPercent?: number
   quantitativeScore: number
   qualitativeAnalysis?: string
+  /** #101 : résultat réservé au forfait (B2C non payé) — `data` vidé, score à 0, analyse retirée. */
+  locked?: true
+  /** #101 : résultat visible mais analyse IA réservée au forfait. */
+  analysisLocked?: true
 }
 
 export type SupportPlanStepStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'

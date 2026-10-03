@@ -7,18 +7,32 @@ import Experience from '#models/experience'
 import Skill from '#models/skill'
 import User from '#models/user'
 import { CandidatProfileService } from '#services/candidat_profile_service'
+import type { EmailVerificationService } from '#services/email_verification_service'
 import { EmployeesService } from '#services/employees_service'
 import type { OnboardingMailService } from '#services/onboarding_mail_service'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXPERIENCES_TYPES } from '#shared/constants/experience'
-import { createAdvisor, createCandidate, createOrganization } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createOrganization,
+} from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
+const sentLinks: number[] = []
+
 function makeService() {
+  sentLinks.length = 0
   const employees = new EmployeesService({} as unknown as OnboardingMailService)
-  return new CandidatProfileService(employees)
+  const verification = {
+    sendLinkSafely: async (user: User) => {
+      sentLinks.push(user.id)
+    },
+  } as unknown as EmailVerificationService
+  return new CandidatProfileService(employees, verification)
 }
 
 test.group('CandidatProfileService.updateForUser — profil', (group) => {
@@ -357,5 +371,64 @@ test.group('CandidatProfileService.updateForUser — compétences', (group) => {
     assert.lengthOf(links, 1)
     const reloaded = await Skill.findOrFail(links[0].skillId)
     assert.equal(reloaded.name, 'X2')
+  })
+})
+
+test.group('CandidatProfileService.updateForUser — changement d’e-mail (M6)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('B2C : e-mail non vérifié, aligné sur la fiche, lien renvoyé', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    user.emailVerifiedAt = DateTime.now()
+    await user.save()
+
+    await makeService().updateForUser(user, { email: 'nouvelle@example.com' })
+
+    const freshUser = await User.findOrFail(user.id)
+    assert.isNull(freshUser.emailVerifiedAt)
+    const freshEmployee = await Employee.findOrFail(employee.id)
+    assert.equal(freshEmployee.email, 'nouvelle@example.com')
+    assert.deepEqual(sentLinks, [user.id])
+  })
+
+  test('avec tableaux (transaction) : même comportement', async ({ assert }) => {
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    user.emailVerifiedAt = DateTime.now()
+    await user.save()
+
+    await makeService().updateForUser(user, { email: 'autre@example.com', experiences: [] })
+
+    const reloaded = await User.findOrFail(user.id)
+    assert.isNull(reloaded.emailVerifiedAt)
+    assert.deepEqual(sentLinks, [user.id])
+  })
+
+  test('e-mail inchangé : vérification conservée, aucun lien', async ({ assert }) => {
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    user.emailVerifiedAt = DateTime.now()
+    await user.save()
+
+    await makeService().updateForUser(user, { email: user.email, name: 'Même mail' })
+
+    const reloaded = await User.findOrFail(user.id)
+    assert.isNotNull(reloaded.emailVerifiedAt)
+    assert.lengthOf(sentLinks, 0)
+  })
+
+  test('B2B : comportement inchangé (vérification conservée, e-mail de fiche, aucun lien)', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    user.emailVerifiedAt = DateTime.now()
+    await user.save()
+
+    await makeService().updateForUser(user, { email: 'b2b-nouveau@example.com' })
+    await makeService().updateForUser(user, { email: 'b2b-tableaux@example.com', skills: [] })
+
+    const reloaded = await User.findOrFail(user.id)
+    assert.isNotNull(reloaded.emailVerifiedAt)
+    const freshEmployee = await Employee.findOrFail(employee.id)
+    assert.equal(freshEmployee.email, employee.email)
+    assert.lengthOf(sentLinks, 0)
   })
 })

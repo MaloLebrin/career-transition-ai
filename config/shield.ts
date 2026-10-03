@@ -1,3 +1,4 @@
+import { STRIPE_WEBHOOK_PATH } from '#shared/constants/billing'
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/shield'
 
@@ -34,7 +35,8 @@ const shieldConfig = defineConfig({
    */
   csrf: {
     enabled: !app.inTest,
-    exceptRoutes: [],
+    // Webhook Stripe (#104) : requête serveur à serveur, authentifiée par signature.
+    exceptRoutes: [STRIPE_WEBHOOK_PATH],
     enableXsrfCookie: true,
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
   },

@@ -2,6 +2,8 @@ import PdfExport from '#models/pdf_export'
 import { broadcastPdfExportUpdatedToUsers } from '#services/pdf_export_events_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import transmit from '@adonisjs/transmit/services/main'
+import { createPlatformOrganization } from '#tests/support/actors'
+import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
@@ -40,14 +42,16 @@ function makeExport(overrides: Partial<PdfExport> = {}): PdfExport {
   return row
 }
 
-test.group('broadcastPdfExportUpdatedToUsers', () => {
-  test("diffuse l'export sérialisé à chaque utilisateur et à l'organisation", ({
+test.group('broadcastPdfExportUpdatedToUsers', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test("diffuse l'export sérialisé à chaque utilisateur et à l'organisation", async ({
     assert,
     cleanup,
   }) => {
     const calls = captureBroadcasts(cleanup)
 
-    broadcastPdfExportUpdatedToUsers(makeExport(), [7, 8])
+    await broadcastPdfExportUpdatedToUsers(makeExport(), [7, 8])
 
     assert.deepEqual(
       calls.map((c) => c.channel),
@@ -66,14 +70,22 @@ test.group('broadcastPdfExportUpdatedToUsers', () => {
       startedAt: '2026-01-02T10:00:00.000Z',
       finishedAt: '2026-01-02T10:01:00.000Z',
     })
-    // Même charge utile sur tous les canaux.
-    assert.isTrue(calls.every((c) => c.payload === calls[0].payload))
+    // Même charge utile pour les propriétaires ; le canal d'organisation n'a pas fileName.
+    assert.strictEqual(calls[0].payload, calls[1].payload)
+    assert.notProperty(calls[2].payload, 'fileName')
+    assert.equal(calls[2].payload.id, 42)
   })
 
-  test('dédoublonne les destinataires et ignore les ids non finis', ({ assert, cleanup }) => {
+  test('dédoublonne les destinataires et ignore les ids non finis', async ({ assert, cleanup }) => {
     const calls = captureBroadcasts(cleanup)
 
-    broadcastPdfExportUpdatedToUsers(makeExport(), [7, 7, Number.NaN, 9, Number.POSITIVE_INFINITY])
+    await broadcastPdfExportUpdatedToUsers(makeExport(), [
+      7,
+      7,
+      Number.NaN,
+      9,
+      Number.POSITIVE_INFINITY,
+    ])
 
     assert.deepEqual(
       calls.map((c) => c.channel),
@@ -81,10 +93,13 @@ test.group('broadcastPdfExportUpdatedToUsers', () => {
     )
   })
 
-  test("sans organisation, aucune diffusion sur un canal d'organisation", ({ assert, cleanup }) => {
+  test("sans organisation, aucune diffusion sur un canal d'organisation", async ({
+    assert,
+    cleanup,
+  }) => {
     const calls = captureBroadcasts(cleanup)
 
-    broadcastPdfExportUpdatedToUsers(makeExport({ organizationId: null }), [7])
+    await broadcastPdfExportUpdatedToUsers(makeExport({ organizationId: null }), [7])
 
     assert.deepEqual(
       calls.map((c) => c.channel),
@@ -92,10 +107,10 @@ test.group('broadcastPdfExportUpdatedToUsers', () => {
     )
   })
 
-  test('dates de démarrage/fin absentes → null ; erreur transmise', ({ assert, cleanup }) => {
+  test('dates de démarrage/fin absentes → null ; erreur transmise', async ({ assert, cleanup }) => {
     const calls = captureBroadcasts(cleanup)
 
-    broadcastPdfExportUpdatedToUsers(
+    await broadcastPdfExportUpdatedToUsers(
       makeExport({
         status: PDF_EXPORT_STATUSES.FAILED,
         errorMessage: 'boom',
@@ -111,9 +126,23 @@ test.group('broadcastPdfExportUpdatedToUsers', () => {
     assert.include(calls[0].payload, {
       status: PDF_EXPORT_STATUSES.FAILED,
       errorMessage: 'boom',
-      fileName: null,
       startedAt: null,
       finishedAt: null,
     })
+  })
+
+  test("organisation plateforme : aucune diffusion sur le canal d'organisation", async ({
+    assert,
+    cleanup,
+  }) => {
+    const calls = captureBroadcasts(cleanup)
+    const platform = await createPlatformOrganization()
+
+    await broadcastPdfExportUpdatedToUsers(makeExport({ organizationId: platform.id }), [7])
+
+    assert.deepEqual(
+      calls.map((c) => c.channel),
+      ['users/7/pdf-exports']
+    )
   })
 })

@@ -18,8 +18,21 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
+const { authState } = vi.hoisted(() => ({
+  authState: {
+    user: { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2b' } as Record<
+      string,
+      unknown
+    >,
+  },
+}))
+
 vi.mock('../../../../../inertia/hooks/use_auth', () => ({
-  useAuth: () => ({ user: { id: 5, role: 'employee', name: 'Jean Dupont' } }),
+  useAuth: () => ({ user: authState.user }),
+}))
+
+vi.mock('../../../../../inertia/hooks/use_billing', () => ({
+  useBilling: () => ({ paymentsEnabled: false, resultsPriceCents: 4900, currency: 'eur' }),
 }))
 
 vi.mock('@adonisjs/transmit-client', () => ({
@@ -213,5 +226,97 @@ describe('CandidateSynthesisPage — synthèse non partagée', () => {
     expect(screen.getByText(/pas encore partagée/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Générer/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Télécharger/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('CandidateSynthesisPage — verrouillage forfait (#101)', () => {
+  test('B2C non payé : carte « réservé au forfait », rien de la synthèse', () => {
+    render(
+      <Synthesis
+        shared={false}
+        lockedReason="payment"
+        employeeId="1"
+        employee={null}
+        synthesis={null}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+
+    expect(
+      screen.getByRole('region', { name: 'Votre synthèse est réservée au forfait' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Paiement bientôt disponible')).toBeInTheDocument()
+    expect(screen.queryByText(/pas encore partagée/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Générer le PDF/i })).not.toBeInTheDocument()
+  })
+
+  test('B2B non partagée : message d’attente inchangé', () => {
+    render(
+      <Synthesis
+        shared={false}
+        lockedReason={null}
+        employeeId="1"
+        employee={null}
+        synthesis={null}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+
+    expect(screen.getByText(/pas encore partagée par votre expert/)).toBeInTheDocument()
+    expect(screen.queryByRole('region')).not.toBeInTheDocument()
+  })
+
+  test('B2C payé sans partage : la synthèse s’affiche sous « Votre synthèse »', () => {
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={{ ...sharedSynthesis, shareStatus: 'draft' as const }}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+
+    expect(screen.getByText('Votre synthèse')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Générer le PDF/i })).toBeInTheDocument()
+  })
+})
+
+describe('CandidateSynthesisPage — accompagnement par un expert (#103)', () => {
+  test('un particulier voit le lien vers la demande d’accompagnement, pas un candidat B2B', () => {
+    authState.user = { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2c' }
+    const { unmount } = render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(screen.getByRole('link', { name: 'Être accompagné par un expert' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/accompagnement'
+    )
+    unmount()
+
+    authState.user = { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2b' }
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(
+      screen.queryByRole('link', { name: 'Être accompagné par un expert' })
+    ).not.toBeInTheDocument()
   })
 })

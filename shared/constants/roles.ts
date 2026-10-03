@@ -17,14 +17,29 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
 export const ROLE_FILTER_ALL_DESCRIPTION = 'Affiche tous les comptes sans filtrer par type de rôle.'
 
 /**
- * Rôles qu’un super admin peut attribuer (création et changement de rôle) :
- * jamais `super_admin`, qui ne s’attribue pas depuis l’interface.
+ * Rôles qu’un super admin peut créer ou attribuer depuis le back-office :
+ * jamais `super_admin` (#66, ne s’attribue pas depuis l’interface) ni
+ * `employee` (#96 : un `User` candidat sans fiche `Employee` ne peut pas se
+ * connecter — un candidat se crée par un conseiller ou par `/inscription`).
  */
-export const SUPER_ADMIN_ASSIGNABLE_ROLES = [
+export const SUPER_ADMIN_CREATABLE_ROLES = [
   USERS_ROLES.ADVISOR,
   USERS_ROLES.ADMIN,
   USERS_ROLES.EXPERT,
-  USERS_ROLES.EMPLOYEE,
 ] as const satisfies readonly UserRole[]
 
-export type SuperAdminAssignableRole = (typeof SUPER_ADMIN_ASSIGNABLE_ROLES)[number]
+export type SuperAdminCreatableRole = (typeof SUPER_ADMIN_CREATABLE_ROLES)[number]
+
+/**
+ * Équipe interne de l'organisation plateforme (#105) : rôles qu'un super admin
+ * peut inviter et assigner comme expert d'un particulier. `advisor` est le rôle
+ * cible (crée étapes et notes, ne voit que ses candidats) ; `expert` et `admin`
+ * restent possibles. Jamais `employee` (#96) ni `super_admin` (#66).
+ */
+export const PLATFORM_TEAM_ROLES = [
+  USERS_ROLES.ADVISOR,
+  USERS_ROLES.EXPERT,
+  USERS_ROLES.ADMIN,
+] as const satisfies readonly UserRole[]
+
+export type PlatformTeamRole = (typeof PLATFORM_TEAM_ROLES)[number]

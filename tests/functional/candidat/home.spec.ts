@@ -5,7 +5,13 @@ import {
   EXERCISE_LIST,
   exerciceResultStatusValues,
 } from '#shared/constants/exercises'
-import { createAdvisor, createCandidate } from '#tests/support/actors'
+import { B2C_FREE_EXERCISE_TYPES, EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createInHouseExpert,
+} from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
 import { DateTime } from 'luxon'
@@ -23,6 +29,18 @@ const PAGE = 'dashboard/employee/home/Home'
 test.group('Candidat — accueil (GET /dashboard/candidat)', (group) => {
   group.each.setup(() => truncateDb())
 
+  test('ne transmet jamais les notes du conseiller (advisorNotes)', async ({ client, assert }) => {
+    const { user, employee } = await createCandidate()
+    employee.advisorNotes = 'Note confidentielle du conseiller'
+    await employee.save()
+
+    const response = await client.get(URL).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, PAGE, ['employee'])
+    assert.notProperty(props.employee as object, 'advisorNotes')
+    assert.notInclude(JSON.stringify(props), 'Note confidentielle du conseiller')
+  })
+
   test('rend la page avec la fiche et une progression vide', async ({ client, assert }) => {
     const { user, employee } = await createCandidate()
 
@@ -34,11 +52,18 @@ test.group('Candidat — accueil (GET /dashboard/candidat)', (group) => {
       'totalExercises',
       'exerciseCompletionPercent',
       'exerciseProgressByType',
+      'advisor',
+      'exerciseAccess',
     ])
     assert.equal((props.employee as { id: number }).id, employee.id)
     assert.equal(props.completedExercises, 0)
     assert.equal(props.totalExercises, EXERCISE_LIST.length)
     assert.equal(props.exerciseCompletionPercent, 0)
+    // #100 : accès par le plan pour un B2B, pas d'expert plateforme.
+    const access = props.exerciseAccess as { accountType: string; lockedReason: string }
+    assert.equal(access.accountType, 'b2b')
+    assert.equal(access.lockedReason, EXERCISE_LOCK_REASONS.PLAN)
+    assert.isNull(props.advisor)
 
     const progress = props.exerciseProgressByType as Record<string, number>
     assert.sameMembers(
@@ -122,5 +147,39 @@ test.group('Candidat — accueil (GET /dashboard/candidat)', (group) => {
 
     response.assertStatus(302)
     response.assertHeader('location', '/auth/login')
+  })
+})
+
+test.group('Candidat B2C — accueil (#100)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('expose l’accès aux exercices gratuits et aucun expert', async ({ client, assert }) => {
+    const { user } = await createB2cCandidate()
+
+    const response = await client.get(URL).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, PAGE, ['advisor', 'exerciseAccess'])
+    assert.isNull(props.advisor)
+    const access = props.exerciseAccess as {
+      accountType: string
+      unlockedExerciseSlugs: string[]
+      lockedReason: string
+      hasPaidAccess: boolean
+    }
+    assert.equal(access.accountType, 'b2c')
+    assert.deepEqual(access.unlockedExerciseSlugs, [...B2C_FREE_EXERCISE_TYPES])
+    assert.equal(access.lockedReason, EXERCISE_LOCK_REASONS.PAYMENT)
+    assert.isFalse(access.hasPaidAccess)
+  })
+
+  test('affiche le nom de l’expert assigné, et rien d’autre de lui', async ({ client, assert }) => {
+    const expert = await createInHouseExpert()
+    const { user } = await createB2cCandidate({ expert, paid: true })
+
+    const response = await client.get(URL).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, PAGE)
+    assert.deepEqual(props.advisor, { name: expert.name })
+    assert.isTrue((props.exerciseAccess as { hasPaidAccess: boolean }).hasPaidAccess)
   })
 })

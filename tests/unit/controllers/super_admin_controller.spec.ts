@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import SuperAdminController from '#controllers/super_admin_controller'
+import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import Organization from '#models/organization'
@@ -37,10 +38,11 @@ function makeCtx(overrides: any = {}) {
 test.group('SuperAdminController.organizations', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('excludes current super admin organization from the list', async ({ assert }) => {
+  test('excludes the platform organization from the list', async ({ assert }) => {
     const platformOrg = await Organization.create({
       name: 'Platform Org',
       slug: `platform-${Date.now()}`,
+      isPlatform: true,
     })
     const clientOrg = await Organization.create({
       name: 'Client Org',
@@ -49,7 +51,8 @@ test.group('SuperAdminController.organizations', (group) => {
 
     const controller = new SuperAdminController(
       {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService
+      {} as SuperAdminUsersService,
+      new PlatformOrganizationService()
     )
     const ctx = makeCtx()
     ctx.auth = {
@@ -75,10 +78,11 @@ test.group('SuperAdminController.organizations', (group) => {
 test.group('SuperAdminController.users', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  test('excludes users in current super admin organization from the list', async ({ assert }) => {
+  test('excludes users of the platform organization from the list', async ({ assert }) => {
     const platformOrg = await Organization.create({
       name: 'Platform Org Users',
       slug: `platform-users-${Date.now()}`,
+      isPlatform: true,
     })
     const clientOrg = await Organization.create({
       name: 'Client Org Users',
@@ -102,7 +106,8 @@ test.group('SuperAdminController.users', (group) => {
 
     const controller = new SuperAdminController(
       {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService
+      {} as SuperAdminUsersService,
+      new PlatformOrganizationService()
     )
     const ctx = makeCtx()
     ctx.auth = {
@@ -196,7 +201,8 @@ test.group('SuperAdminController.exerciseUsage', (group) => {
 
     const controller = new SuperAdminController(
       {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService
+      {} as SuperAdminUsersService,
+      new PlatformOrganizationService()
     )
     const ctx = makeCtx({
       request: {
@@ -258,7 +264,8 @@ test.group('SuperAdminController.exerciseUsageExport', (group) => {
 
     const controller = new SuperAdminController(
       {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService
+      {} as SuperAdminUsersService,
+      new PlatformOrganizationService()
     )
     const bodyChunks: any[] = []
 

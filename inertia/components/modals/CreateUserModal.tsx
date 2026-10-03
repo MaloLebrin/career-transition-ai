@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react'
 import React, { useCallback, useEffect } from 'react'
-import { SUPER_ADMIN_ASSIGNABLE_ROLES } from '#shared/constants/roles'
+import { SUPER_ADMIN_CREATABLE_ROLES } from '#shared/constants/roles'
 import { ROLE_LABELS } from '#shared/helpers/roles'
 import type { UserRole } from '#shared/types/advisor/roles'
 import Button from '../ui/Button'
@@ -170,7 +170,7 @@ export const CreateUserModal: React.FC<Props> = ({ isOpen, onClose, organization
                 onChange={(e) => setData('role', e.target.value as UserRole)}
                 className="w-full border border-brand-navy/10 rounded-2xl text-sm px-4 py-3 text-brand-navy bg-white outline-none focus:ring-2 focus:ring-brand-sage/30"
               >
-                {SUPER_ADMIN_ASSIGNABLE_ROLES.map((r) => (
+                {SUPER_ADMIN_CREATABLE_ROLES.map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABELS[r]}
                   </option>

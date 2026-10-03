@@ -12,15 +12,30 @@ router
     router.on('/methodologie').renderInertia('Methodology', {})
     router.on('/offre').renderInertia('Offer', {})
     router.on('/tarifs').renderInertia('Pricing', {})
+    router.on('/particuliers').renderInertia('Individuals', {})
     router.on('/mentions-legales').renderInertia('LegalNotice', {})
     router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
     router.on('/securite').renderInertia('Security', {})
     router.on('/auth/login').renderInertia('Login', {})
     router.on('/auth/register').renderInertia('Register', {}).use(middleware.registrationOpen())
+    router
+      .on('/inscription')
+      .renderInertia('RegisterCandidate', {})
+      .use(middleware.registrationOpen({ kind: 'candidate' }))
   })
   .use([middleware.guest()])
 
 router.post('/contact-requests', [ContactRequestsController, 'store']).use(throttleContactRequests)
+
+// Hors du groupe `guest` : les conditions se relisent connecté (case CGU de
+// l'inscription, consentements du paiement, lien du pied de page). `silentAuth`
+// expose l'utilisateur connecté aux props partagées sans jamais refuser l'accès.
+router
+  .group(() => {
+    router.on('/cgu').renderInertia('TermsOfService', {})
+    router.on('/cgv').renderInertia('TermsOfSale', {})
+  })
+  .use([middleware.silentAuth()])
 
 // Hors du groupe `guest` : sondé sans session par Docker, Render, UptimeRobot…
 router.get('/health', [HealthChecksController])

@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import {
   ROLE_DESCRIPTIONS,
+  PLATFORM_TEAM_ROLES,
   ROLE_FILTER_ALL_DESCRIPTION,
-  SUPER_ADMIN_ASSIGNABLE_ROLES,
+  SUPER_ADMIN_CREATABLE_ROLES,
 } from '#shared/constants/roles'
 import { USERS_ROLES, userRolesValues } from '#shared/types/advisor/roles'
 import { expectConsistentEnum } from './enum_contract.js'
@@ -36,9 +37,15 @@ describe('shared/constants/roles', () => {
     expect(ROLE_DESCRIPTIONS[USERS_ROLES.ADMIN]).toMatch(/organisation/)
   })
 
-  test('rôles attribuables par le super admin : tous sauf super_admin', () => {
-    expect([...SUPER_ADMIN_ASSIGNABLE_ROLES].sort()).toEqual(
-      userRolesValues.filter((r) => r !== USERS_ROLES.SUPER_ADMIN).sort()
-    )
+  test('rôles créables par le super admin : ni super_admin (#66) ni employee (#96)', () => {
+    expect([...SUPER_ADMIN_CREATABLE_ROLES]).toEqual(['advisor', 'admin', 'expert'])
+    expect(SUPER_ADMIN_CREATABLE_ROLES).not.toContain(USERS_ROLES.EMPLOYEE)
+    expect(SUPER_ADMIN_CREATABLE_ROLES).not.toContain(USERS_ROLES.SUPER_ADMIN)
+  })
+
+  test('équipe interne (#105) : advisor en tête, jamais employee ni super_admin', () => {
+    expect([...PLATFORM_TEAM_ROLES]).toEqual(['advisor', 'expert', 'admin'])
+    expect(PLATFORM_TEAM_ROLES).not.toContain('employee')
+    expect(PLATFORM_TEAM_ROLES).not.toContain('super_admin')
   })
 })

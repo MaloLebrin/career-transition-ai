@@ -1,7 +1,14 @@
+import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { PlatformOrganizationMissingError } from '#exceptions/platform_errors'
 import { AuthService } from '#services/auth_service'
+import type { EmailVerificationService } from '#services/email_verification_service'
+import { ACCOUNT_TYPES } from '#shared/constants/b2c'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { TERMS_VERSION } from '#shared/constants/legal'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import { createAdvisor, createPlatformOrganization } from '#tests/support/actors'
 import hash from '@adonisjs/core/services/hash'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
@@ -175,5 +182,88 @@ test.group('AuthService', (group) => {
     } catch (error: any) {
       assert.include(error.message, 'déjà utilisé')
     }
+  })
+})
+
+test.group('AuthService.registerCandidate (#93)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  /** Double du service de vérification d'e-mail (#98) : enregistre les comptes à qui le lien part. */
+  function makeService() {
+    const linksSentTo: number[] = []
+    const emailVerification = {
+      async sendLinkSafely(user: User) {
+        linksSentTo.push(user.id)
+      },
+    } as unknown as EmailVerificationService
+    return { service: new AuthService(undefined, emailVerification), linksSentTo }
+  }
+
+  const input = () => ({
+    email: `particulier-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`,
+    password: 'motdepasse-8',
+    name: '  Camille Durand ',
+  })
+
+  test('crée le compte employee et la fiche b2c non onboardée dans l’organisation plateforme', async ({
+    assert,
+  }) => {
+    const platform = await createPlatformOrganization()
+    const data = input()
+    const { service, linksSentTo } = makeService()
+
+    const dto = await service.registerCandidate(data)
+
+    assert.equal(dto.email, data.email)
+    assert.equal(dto.name, 'Camille Durand')
+    assert.equal(dto.role, USERS_ROLES.EMPLOYEE)
+    assert.equal(dto.organizationId, platform.id)
+    assert.equal(dto.accountType, ACCOUNT_TYPES.B2C)
+
+    const user = await User.findByOrFail('email', data.email)
+    assert.equal(user.termsVersion, TERMS_VERSION)
+    assert.isNotNull(user.termsAcceptedAt)
+    assert.isNotNull(user.onboardingCompletedAt)
+    assert.isNull(user.emailVerifiedAt)
+    assert.isTrue(await hash.verify(user.password, data.password))
+
+    const employee = await Employee.findByOrFail('userId', user.id)
+    assert.equal(employee.organizationId, platform.id)
+    assert.equal(employee.accountType, ACCOUNT_TYPES.B2C)
+    assert.isNull(employee.advisorId)
+    assert.isFalse(employee.onboarded)
+    assert.equal(employee.status, EMPLOYEES_STATUS.ONBOARDING)
+    assert.equal(employee.name, 'Camille Durand')
+    assert.equal(employee.email, data.email)
+    // Le lien de vérification part après le commit (#98).
+    assert.deepEqual(linksSentTo, [user.id])
+  })
+
+  test('refuse un e-mail déjà pris par un compte de n’importe quelle organisation', async ({
+    assert,
+  }) => {
+    await createPlatformOrganization()
+    const advisor = await createAdvisor()
+    const { service, linksSentTo } = makeService()
+
+    await assert.rejects(
+      () => service.registerCandidate({ ...input(), email: advisor.email }),
+      'Cet email est déjà utilisé.'
+    )
+    assert.lengthOf(await Employee.query().where('email', advisor.email), 0)
+    assert.deepEqual(linksSentTo, [])
+  })
+
+  test('sans organisation plateforme : PlatformOrganizationMissingError, rien de créé', async ({
+    assert,
+  }) => {
+    await Organization.query().where('isPlatform', true).delete()
+    const data = input()
+
+    await assert.rejects(
+      () => makeService().service.registerCandidate(data),
+      PlatformOrganizationMissingError
+    )
+    assert.isNull(await User.findBy('email', data.email))
   })
 })

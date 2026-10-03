@@ -1,3 +1,4 @@
+import app from '@adonisjs/core/services/app'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
@@ -9,6 +10,8 @@ import {
 } from '#services/exercise_results_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
+import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
+import { createB2cCandidate, createCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
@@ -23,7 +26,7 @@ test.group('ExerciseResultsService', (group) => {
     assert.isTrue(awaitsQualitativeAnalysisInline('database', true))
   })
   test('saveResult creates exercise result and updates plan', async ({ assert }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'Exercise Org',
       slug: `exercise-org-${Date.now()}`,
@@ -107,7 +110,7 @@ test.group('ExerciseResultsService', (group) => {
   test('saveResult marks a step completed only when all associated exercises are completed', async ({
     assert,
   }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'Multi Exercise Org',
       slug: `multi-exercise-org-${Date.now()}`,
@@ -188,7 +191,7 @@ test.group('ExerciseResultsService', (group) => {
   })
 
   test('saveDraft creates or updates draft result', async ({ assert }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'Draft Org',
       slug: `draft-org-${Date.now()}`,
@@ -247,7 +250,7 @@ test.group('ExerciseResultsService', (group) => {
   test('saveDraft is safe under concurrent calls (one draft per employee + type)', async ({
     assert,
   }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'Concurrent Draft Org',
       slug: `concurrent-draft-org-${Date.now()}`,
@@ -294,7 +297,7 @@ test.group('ExerciseResultsService', (group) => {
   })
 
   test('saveDraft does not downgrade a completed result', async ({ assert }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'No Downgrade Org',
       slug: `no-downgrade-org-${Date.now()}`,
@@ -346,7 +349,7 @@ test.group('ExerciseResultsService', (group) => {
   })
 
   test('fetchDraft returns null when no draft and dto when exists', async ({ assert }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'FetchDraft Org',
       slug: `fetch-draft-org-${Date.now()}`,
@@ -405,7 +408,7 @@ test.group('ExerciseResultsService', (group) => {
   test('saveResult completed runs qualitative analysis job (QUEUE_DRIVER=sync)', async ({
     assert,
   }) => {
-    const service = new ExerciseResultsService()
+    const service = await app.container.make(ExerciseResultsService)
     const org = await Organization.create({
       name: 'AI Hook Org',
       slug: `ai-hook-org-${Date.now()}`,
@@ -469,5 +472,207 @@ test.group('ExerciseResultsService', (group) => {
     assert.isNotNull(row)
     assert.isString(row!.qualitativeAnalysis)
     assert.isAbove(row!.qualitativeAnalysis!.length, 5)
+  })
+})
+
+/**
+ * Politique d'analyse IA B2C (#100). Queue `sync` + `AI_PROVIDER=none` : quand
+ * le job est lancé, `qualitativeAnalysis` est rempli dans la foulée.
+ */
+test.group('ExerciseResultsService.saveResult — politique IA B2C (#100)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  function completed(type: string) {
+    return {
+      type: type as any,
+      status: exerciceResultStatusValues.COMPLETED,
+      date: '2026-01-05',
+      duration: 30,
+      data: { step: 2 },
+      plan: [],
+    }
+  }
+
+  test('exercice gratuit : analysé une seule fois', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+
+    await service.saveResult({
+      employeeId: employee.id,
+      ...completed(EXERCICE_RESULTS_TYPES.VALUES),
+    })
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.VALUES)
+      .firstOrFail()
+    assert.isNotNull(row.qualitativeAnalysis)
+
+    row.qualitativeAnalysis = 'Première analyse'
+    await row.save()
+    await service.saveResult({
+      employeeId: employee.id,
+      ...completed(EXERCICE_RESULTS_TYPES.VALUES),
+    })
+
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+  })
+
+  test('exercice verrouillé (non payé) : jamais analysé', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+
+    await service.saveResult({ employeeId: employee.id, ...completed(EXERCICE_RESULTS_TYPES.DISC) })
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.DISC)
+      .firstOrFail()
+    assert.isNull(row.qualitativeAnalysis)
+  })
+
+  test('forfait payé : analysé à chaque résultat', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate({ paid: true })
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      qualitativeAnalysis: 'Ancienne analyse',
+    }).create()
+
+    await service.saveResult({ employeeId: employee.id, ...completed(EXERCICE_RESULTS_TYPES.DISC) })
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.DISC)
+      .firstOrFail()
+    assert.notEqual(row.qualitativeAnalysis, 'Ancienne analyse')
+  })
+
+  test('B2B : relancé même si une analyse existe (comportement inchangé)', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createCandidate()
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      status: exerciceResultStatusValues.COMPLETED,
+      qualitativeAnalysis: 'Ancienne analyse',
+    }).create()
+
+    await service.saveResult({
+      employeeId: employee.id,
+      ...completed(EXERCICE_RESULTS_TYPES.MOTIVATION),
+    })
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .firstOrFail()
+    assert.notEqual(row.qualitativeAnalysis, 'Ancienne analyse')
+  })
+})
+
+test.group('ExerciseResultsService.findDraftOrCompletedForCandidate (#100)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('sans historique : rien, progression 0', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createCandidate()
+
+    const state = await service.findDraftOrCompletedForCandidate(
+      employee.id,
+      EXERCICE_RESULTS_TYPES.VALUES
+    )
+
+    assert.deepEqual(state, { initialDraft: null, exerciseProgressPercent: 0 })
+  })
+
+  test('le brouillon prime sur le résultat terminé', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createCandidate()
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 1, profile: 'D' },
+    }).create()
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.DRAFT,
+      date: null,
+      data: { step: 1, answers: [1] },
+    }).create()
+
+    const state = await service.findDraftOrCompletedForCandidate(
+      employee.id,
+      EXERCICE_RESULTS_TYPES.DISC
+    )
+
+    assert.deepEqual(state.initialDraft?.data, { step: 1, answers: [1] })
+    assert.equal(state.initialDraft?.employeeId, employee.id)
+    assert.equal(state.initialDraft?.type, EXERCICE_RESULTS_TYPES.DISC)
+  })
+
+  test('sans brouillon : résultat terminé pré-rempli à l’étape 2, progression 100', async ({
+    assert,
+  }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createCandidate()
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 1, profile: 'D' },
+    }).create()
+
+    const state = await service.findDraftOrCompletedForCandidate(
+      employee.id,
+      EXERCICE_RESULTS_TYPES.DISC
+    )
+
+    assert.deepEqual(state.initialDraft?.data, { step: 2, profile: 'D' })
+    assert.equal(state.exerciseProgressPercent, 100)
+  })
+})
+
+test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('completed → draft → saveDraft ne rouvre pas le droit à une analyse', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+    const type = EXERCICE_RESULTS_TYPES.VALUES
+    const base = { employeeId: employee.id, type, plan: [] }
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
+    })
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', type)
+      .firstOrFail()
+    row.qualitativeAnalysis = 'Première analyse'
+    await row.save()
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.DRAFT,
+      data: { step: 1 },
+    })
+    await service.saveDraft({ employeeId: employee.id, type, data: { step: 1, edit: true } })
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+
+    await service.saveResult({
+      ...base,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
+    })
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Première analyse')
   })
 })

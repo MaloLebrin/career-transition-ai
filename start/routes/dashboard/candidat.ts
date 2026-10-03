@@ -1,5 +1,5 @@
 import { middleware } from '#start/kernel'
-import { throttleDataExport } from '#start/limiter'
+import { throttleDataExport, throttleEmailVerification, throttleExerciseSave } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const EmployeesController = () => import('#controllers/employees_controller')
@@ -10,6 +10,7 @@ const CandidatOnboardingController = () => import('#controllers/candidat_onboard
 const EmployeeSynthesesController = () => import('#controllers/employee_syntheses_controller')
 const CandidateDocumentsController = () => import('#controllers/candidate_documents_controller')
 const CandidateDataController = () => import('#controllers/candidate_data_controller')
+const EmailVerificationController = () => import('#controllers/email_verification_controller')
 
 // Dashboard candidat (employee only)
 router
@@ -40,14 +41,18 @@ router
           .delete('/documents/:mediaId', [CandidateDocumentsController, 'destroy'])
           .where('mediaId', router.matchers.number())
           .as('candidat.documents.destroy')
-        router.post('/exercises/:type/draft', [
-          ExerciseResultsController,
-          'saveDraftFromDashboardCandidat',
-        ])
-        router.post('/exercises/:type/result', [
-          ExerciseResultsController,
-          'storeFromDashboardCandidat',
-        ])
+        router
+          .post('/exercises/:type/draft', [
+            ExerciseResultsController,
+            'saveDraftFromDashboardCandidat',
+          ])
+          .use(throttleExerciseSave)
+        router
+          .post('/exercises/:type/result', [
+            ExerciseResultsController,
+            'storeFromDashboardCandidat',
+          ])
+          .use(throttleExerciseSave)
       })
       .use(middleware.checkOnboarding())
 
@@ -63,6 +68,11 @@ router
     router
       .post('/data/erasure-request', [CandidateDataController, 'requestErasure'])
       .as('candidat.data.erasureRequest')
+    // Renvoi du lien de vérification d'e-mail (#98), sans attendre l'onboarding.
+    router
+      .post('/email-verification/resend', [EmailVerificationController, 'resend'])
+      .use(throttleEmailVerification)
+      .as('candidat.emailVerification.resend')
     router.post('/skills', [() => import('#controllers/employee_skills_controller'), 'store'])
     router.put('/skills', [() => import('#controllers/employee_skills_controller'), 'update'])
   })

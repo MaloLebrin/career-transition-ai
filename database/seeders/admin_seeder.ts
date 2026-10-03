@@ -1,11 +1,12 @@
 import Organization from '#models/organization'
 import User from '#models/user'
+import { PLATFORM_ORGANIZATION_SLUG } from '#shared/constants/organisation'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import env from '#start/env'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
-/** Slug stable de l’organisation plateforme (recherche idempotente). */
-export const PLATFORM_ORG_SLUG = 'ai-transition-carriere'
+/** Slug stable de l’organisation plateforme (recherche idempotente) — source : `#shared/constants/organisation`. */
+export const PLATFORM_ORG_SLUG = PLATFORM_ORGANIZATION_SLUG
 /** Email par défaut du super admin créé par ce seeder (surchargeable via `ADMIN_EMAIL`). */
 export const PLATFORM_ADMIN_EMAIL = 'malolebrin@gmail.com'
 
@@ -24,6 +25,7 @@ export default class AdminSeeder extends BaseSeeder {
       name: 'AI transition carrière',
       slug: PLATFORM_ORG_SLUG,
       logoUrl: null as string | null,
+      isPlatform: true,
     }
 
     const organization = await Organization.updateOrCreate(

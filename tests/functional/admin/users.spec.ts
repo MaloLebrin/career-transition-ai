@@ -11,6 +11,7 @@ import {
   createAdmin,
   createAdvisor,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
   createUser,
 } from '#tests/support/actors'
@@ -167,6 +168,32 @@ test.group('Super admin — utilisateurs : création et relance', (group) => {
     await db.assertCount('users', 1)
   })
 
+  /** Régression #96 : un `User` de rôle `employee` sans fiche candidat ne peut pas se connecter (401). */
+  test('rejette le rôle employee : un candidat se crée par un conseiller ou par inscription', async ({
+    client,
+    assert,
+    db,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const org = await createOrganization()
+
+    const response = await client
+      .post(USERS)
+      .json({
+        organizationId: org.id,
+        name: 'Candidat',
+        email: 'candidat@example.com',
+        role: 'employee',
+      })
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    assertFieldErrors(assert, response, ['role'])
+    await db.assertCount('users', 1)
+    assert.deepEqual(mails.sent, [])
+  })
+
   test('rejette une organisation inexistante (erreur de validation, pas de 500)', async ({
     client,
     assert,
@@ -295,6 +322,23 @@ test.group('Super admin — utilisateurs : changement de rôle', (group) => {
     assert.equal(user.role, USERS_ROLES.ADVISOR)
   })
 
+  /** Régression #96 : rétrograder un compte en `employee` le laisserait sans fiche candidat. */
+  test('rejette le rôle employee', async ({ client, assert }) => {
+    const superAdmin = await createSuperAdmin()
+    const user = await createAdvisor()
+
+    const response = await client
+      .post(`${USERS}/${user.id}/role`)
+      .json({ role: USERS_ROLES.EMPLOYEE })
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+
+    assertFieldErrors(assert, response, ['role'])
+    await user.refresh()
+    assert.equal(user.role, USERS_ROLES.ADVISOR)
+  })
+
   test('un utilisateur inconnu renvoie un flash d’erreur', async ({ client, assert }) => {
     const superAdmin = await createSuperAdmin()
 
@@ -331,14 +375,14 @@ test.group('Super admin — utilisateurs : changement de rôle', (group) => {
     client,
     assert,
   }) => {
-    const platform = await createOrganization()
+    const platform = await createPlatformOrganization()
     const superAdmin = await createSuperAdmin(platform)
     const colleague = await createAdvisor(platform)
 
     for (const target of [superAdmin, colleague]) {
       const response = await client
         .post(`${USERS}/${target.id}/role`)
-        .json({ role: USERS_ROLES.EMPLOYEE })
+        .json({ role: USERS_ROLES.ADMIN })
         .header('referer', USERS)
         .loginAs(superAdmin)
         .withInertia()
@@ -359,7 +403,7 @@ test.group('Super admin — utilisateurs : changement de rôle', (group) => {
 
     const response = await client
       .post(`${USERS}/${other.id}/role`)
-      .json({ role: USERS_ROLES.EMPLOYEE })
+      .json({ role: USERS_ROLES.ADMIN })
       .loginAs(superAdmin)
       .withInertia()
       .redirects(0)

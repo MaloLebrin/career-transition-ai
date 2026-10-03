@@ -1,3 +1,4 @@
+import { makeEntitlements } from '#tests/support/entitlements'
 import EmployeeSynthesesController from '#controllers/employee_syntheses_controller'
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
@@ -8,6 +9,7 @@ import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import type { CandidateNotificationsService } from '#services/candidate_notifications_service'
+import { EntitlementsService } from '#services/entitlements_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import { test } from '@japa/runner'
@@ -93,11 +95,13 @@ async function seedAdvisorWithEmployee(prefix: string) {
   return { org, advisorUser, candidateUser, employee }
 }
 
-// Minimal controller instance — ni la synthèse ni les notifications ne sont appelées ici
+// Vrai service de synthèse (il porte désormais les lectures et la création d'export, #101) ;
+// les notifications ne sont pas appelées ici.
 function makeController() {
   return new EmployeeSynthesesController(
-    {} as EmployeeSynthesisService,
-    {} as CandidateNotificationsService
+    new EmployeeSynthesisService(),
+    {} as CandidateNotificationsService,
+    makeEntitlements()
   )
 }
 

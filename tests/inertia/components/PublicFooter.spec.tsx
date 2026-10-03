@@ -29,6 +29,15 @@ describe('PublicFooter', () => {
       'href',
       '/confidentialite'
     )
+    // CGU / CGV (#95), lisibles connecté comme invité.
+    expect(screen.getByRole('link', { name: 'Conditions d’utilisation' })).toHaveAttribute(
+      'href',
+      '/cgu'
+    )
+    expect(screen.getByRole('link', { name: 'Conditions de vente' })).toHaveAttribute(
+      'href',
+      '/cgv'
+    )
     expect(screen.getByRole('link', { name: 'Se connecter' })).toHaveAttribute(
       'href',
       '/auth/login'

@@ -63,6 +63,21 @@ export const envSchema = {
   | Défaut : `false` en production (beta fermée), `true` ailleurs.
   */
   REGISTRATION_ENABLED: Env.schema.boolean.optional(),
+  /** Inscription des particuliers (`/inscription`, épic B2C #93) : même défaut. */
+  B2C_REGISTRATION_ENABLED: Env.schema.boolean.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Forfait particuliers (épic B2C) — voir config/billing.ts
+  |----------------------------------------------------------
+  | `STRIPE_ENABLED` : `false` par défaut, aucun paiement possible.
+  | `B2C_RESULTS_PRICE_CENTS` : prix TTC en centimes (défaut 4900).
+  */
+  STRIPE_ENABLED: Env.schema.boolean.optional(),
+  B2C_RESULTS_PRICE_CENTS: Env.schema.number.optional(),
+  /** Clés Stripe (#102) : exigées en production dès que `STRIPE_ENABLED=true` (config/stripe.ts). */
+  STRIPE_SECRET_KEY: Env.schema.string.optional(),
+  STRIPE_WEBHOOK_SECRET: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

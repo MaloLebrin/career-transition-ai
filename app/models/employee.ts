@@ -1,3 +1,5 @@
+import CandidatePayment from '#models/candidate_payment'
+import ExpertRequest from '#models/expert_request'
 import Education from '#models/education'
 import Experience from '#models/experience'
 import Note from '#models/note'
@@ -5,6 +7,7 @@ import Organization from '#models/organization'
 import Skill from '#models/skill'
 import SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
+import type { AccountType } from '#shared/constants/b2c'
 import type { EmployeeStatus } from '#shared/constants/employee'
 import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
@@ -47,6 +50,10 @@ export default class Employee extends BaseModel {
 
   @column()
   declare status: EmployeeStatus
+
+  /** `b2b` : invité par un cabinet ; `b2c` : particulier inscrit seul (#92). */
+  @column()
+  declare accountType: AccountType
 
   @column({
     consume: (value) => Boolean(value),
@@ -100,6 +107,14 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => EmployeeSynthesis)
   declare syntheses: HasMany<typeof EmployeeSynthesis>
+
+  /** Paiements du forfait particuliers (#94) ; FK en SET NULL, donc hors cascade de purge. */
+  @hasMany(() => CandidatePayment)
+  declare payments: HasMany<typeof CandidatePayment>
+
+  /** Demandes d'accompagnement par un expert (#103) ; FK en CASCADE. */
+  @hasMany(() => ExpertRequest)
+  declare expertRequests: HasMany<typeof ExpertRequest>
 
   @manyToMany(() => Skill, {
     pivotTable: 'employee_skills',

@@ -3,7 +3,10 @@ import EmployeeSynthesis from '#models/employee_synthesis'
 import Organization from '#models/organization'
 import PdfExport from '#models/pdf_export'
 import User from '#models/user'
-import GenerateEmployeeSynthesisPdf from '#jobs/generate_employee_synthesis_pdf'
+import GenerateEmployeeSynthesisPdf, {
+  RESULTS_LOCKED_MESSAGE,
+} from '#jobs/generate_employee_synthesis_pdf'
+import { createB2cCandidate } from '#tests/support/actors'
 import { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -224,5 +227,43 @@ test.group('GenerateEmployeeSynthesisPdf job — echec', (group) => {
     assert.equal(updated.status, PDF_EXPORT_STATUSES.FAILED)
     assert.include(updated.errorMessage!, 'Service PDF indisponible')
     assert.isNotNull(updated.finishedAt)
+  })
+})
+
+// ─── forfait des particuliers (#101) ──────────────────────────────────────────
+
+test.group('GenerateEmployeeSynthesisPdf job — droit disparu (#101)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
+  })
+
+  test('B2C sans forfait : FAILED avec un motif explicite, aucun PDF, pas de relance', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate()
+    const pdfExport = await createPendingExport(user.id, employee.organizationId, employee.id)
+
+    await assert.doesNotReject(() =>
+      GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+    )
+
+    await pdfExport.refresh()
+    assert.equal(pdfExport.status, PDF_EXPORT_STATUSES.FAILED)
+    assert.equal(pdfExport.errorMessage, RESULTS_LOCKED_MESSAGE)
+    assert.isNull(pdfExport.filePath)
+    assert.isNotNull(pdfExport.finishedAt)
+  })
+
+  test('B2C payé : PDF généré comme pour un B2B', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate({ paid: true })
+    const pdfExport = await createPendingExport(user.id, employee.organizationId, employee.id)
+
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    await pdfExport.refresh()
+    assert.equal(pdfExport.status, PDF_EXPORT_STATUSES.COMPLETED)
+    assert.isNotNull(pdfExport.filePath)
   })
 })

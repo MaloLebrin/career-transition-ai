@@ -2,7 +2,13 @@ import { EmployeeFactory } from '#database/factories/employee_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import type User from '#models/user'
 import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
-import { createAdmin, createAdvisor, createSuperAdmin } from '#tests/support/actors'
+import {
+  createAdmin,
+  createAdvisor,
+  createB2cCandidate,
+  createInHouseExpert,
+  createSuperAdmin,
+} from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
@@ -97,6 +103,36 @@ test.group('Exports PDF — liste', (group) => {
     assert.sameMembers(
       (props.exports as ExportItem[]).map((e) => e.id),
       [a.id, b.id]
+    )
+  })
+
+  test('un expert ne voit que les exports des B2C qui lui sont assignés', async ({
+    client,
+    assert,
+  }) => {
+    const expert = await createInHouseExpert()
+    const { employee: assigned } = await createB2cCandidate({ expert })
+    const { employee: unassigned } = await createB2cCandidate()
+    const mine = await PdfExportFactory.merge({
+      userId: expert.id,
+      organizationId: assigned.organizationId,
+      employeeId: assigned.id,
+    }).create()
+    await PdfExportFactory.merge({
+      userId: expert.id,
+      organizationId: unassigned.organizationId,
+      employeeId: unassigned.id,
+    }).create()
+
+    const response = await client
+      .get('/dashboard/conseiller/pdf-exports')
+      .loginAs(expert)
+      .withInertia()
+
+    const props = assertPage(assert, response, 'dashboard/admin/jobs/Index', ['exports'])
+    assert.deepEqual(
+      (props.exports as ExportItem[]).map((e) => e.id),
+      [mine.id]
     )
   })
 

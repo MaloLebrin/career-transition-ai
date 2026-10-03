@@ -2,6 +2,8 @@ import LogExerciseUsageExport from '#jobs/log_exercise_usage_export'
 import ExerciseResult from '#models/exercise_result'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { PlatformOrganizationService } from '#services/platform_organization_service'
+import { SuperAdminB2cService } from '#services/super_admin_b2c_service'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -17,21 +19,15 @@ import { DateTime } from 'luxon'
 export default class SuperAdminController {
   constructor(
     private superAdminOrganizationsService: SuperAdminOrganizationsService,
-    private superAdminUsersService: SuperAdminUsersService
+    private superAdminUsersService: SuperAdminUsersService,
+    private platformOrganizationService: PlatformOrganizationService,
+    private superAdminB2cService: SuperAdminB2cService
   ) {}
   /**
-   * Inertia page: super admin home with global metrics.
+   * Inertia page: super admin home with global metrics (#107 : B2C inclus).
    */
   public async home({ inertia }: HttpContext) {
-    const organizationsCount = await Organization.query().count('* as total')
-    const usersCount = await User.query().count('* as total')
-
-    const totalOrgs = Number(organizationsCount[0].$extras.total || 0)
-    const totalUsers = Number(usersCount[0].$extras.total || 0)
-    const stats = {
-      organizations: totalOrgs,
-      users: totalUsers,
-    }
+    const stats = await this.superAdminB2cService.homeStats()
 
     logger.info('Super admin home', { stats: JSON.stringify(stats) })
 
@@ -40,14 +36,12 @@ export default class SuperAdminController {
 
   /**
    * Inertia page: list client organizations with basic aggregates.
-   * Excludes the current super admin's own organization (e.g. platform / internal cabinet).
+   * Excludes the platform organization (`organizations.is_platform`, #92).
    */
-  public async organizations({ inertia, auth }: HttpContext) {
-    const currentUser = auth.user!
-    const platformOrganizationId = Number(currentUser.organizationId)
-    const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
+  public async organizations({ inertia }: HttpContext) {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
     const organizations = await Organization.query()
-      .where('id', '!=', excludeOrgId)
+      .where('id', '!=', platformOrganizationId)
       .preload('users', (query) => query.orderBy('id', 'asc'))
       .preload('employees')
 
@@ -231,17 +225,15 @@ export default class SuperAdminController {
 
   /**
    * Inertia page: list users with global filters and role overview.
-   * Excludes users in the current super admin's own organization (e.g. platform / internal cabinet).
+   * Excludes users of the platform organization (`organizations.is_platform`, #92).
    */
-  public async users({ inertia, auth }: HttpContext) {
-    const currentUser = auth.user!
-    const platformOrganizationId = Number(currentUser.organizationId)
-    const excludeOrgId = Number.isFinite(platformOrganizationId) ? platformOrganizationId : -1
+  public async users({ inertia }: HttpContext) {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
 
     const [users, organizationRows] = await Promise.all([
-      User.query().where('organizationId', '!=', excludeOrgId).preload('organization'),
+      User.query().where('organizationId', '!=', platformOrganizationId).preload('organization'),
       Organization.query()
-        .where('id', '!=', excludeOrgId)
+        .where('id', '!=', platformOrganizationId)
         .orderBy('name', 'asc')
         .select('id', 'name', 'slug'),
     ])
@@ -273,16 +265,15 @@ export default class SuperAdminController {
   /**
    * Inertia form: create a user in a client organization and send onboarding email.
    */
-  public async storeUser({ request, response, session, auth }: HttpContext) {
+  public async storeUser({ request, response, session }: HttpContext) {
     const payload = await request.validateUsing(createPlatformUserValidator)
-    const currentUser = auth.user!
 
     await this.superAdminUsersService.createUserWithInvite({
       organizationId: payload.organizationId,
       name: payload.name,
       email: payload.email,
       role: payload.role,
-      platformOrganizationId: currentUser.organizationId,
+      platformOrganizationId: await this.platformOrganizationService.getId(),
     })
 
     session.flash('success', 'Utilisateur créé. Un email d’invitation a été envoyé.')
@@ -292,12 +283,11 @@ export default class SuperAdminController {
   /**
    * Inertia form: resend set-password link for users who have not completed onboarding.
    */
-  public async resendUserOnboarding({ params, response, session, auth }: HttpContext) {
+  public async resendUserOnboarding({ params, response, session }: HttpContext) {
     const id = Number(params.id)
-    const currentUser = auth.user!
     const user = await User.find(id)
 
-    if (!user || user.organizationId === currentUser.organizationId) {
+    if (!user || user.organizationId === (await this.platformOrganizationService.getId())) {
       session.flash('error', 'Utilisateur introuvable.')
       return response.redirect('/dashboard/super-admin/users')
     }
@@ -344,7 +334,7 @@ export default class SuperAdminController {
   /**
    * Inertia form: delete an organization from the Super Admin dashboard.
    */
-  public async destroyOrganization({ params, response, session, auth }: HttpContext) {
+  public async destroyOrganization({ params, response, session }: HttpContext) {
     const id = Number(params.id)
     const organization = await Organization.find(id)
     if (!organization) {
@@ -352,8 +342,8 @@ export default class SuperAdminController {
       return response.redirect('/dashboard/super-admin/organizations')
     }
 
-    if (organization.id === auth.user!.organizationId) {
-      session.flash('error', 'Vous ne pouvez pas supprimer votre propre organisation.')
+    if (organization.isPlatform) {
+      session.flash('error', 'Vous ne pouvez pas supprimer l’organisation plateforme.')
       return response.redirect('/dashboard/super-admin/organizations')
     }
 

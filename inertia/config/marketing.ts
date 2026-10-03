@@ -19,8 +19,15 @@ export interface FooterColumn {
 export const MARKETING_NAV: NavItem[] = [
   { label: 'Offre', href: '/offre' },
   { label: 'Tarifs', href: '/tarifs' },
+  { label: 'Particuliers', href: '/particuliers' },
   { label: 'Méthodologie', href: '/methodologie' },
 ]
+
+/** Page de l'offre particuliers (épic B2C #99). */
+export const INDIVIDUALS_ACTION: ActionItem = {
+  label: 'Vous êtes un particulier ?',
+  href: '/particuliers',
+}
 
 export const LOGIN_ACTION: ActionItem = { label: 'Se connecter', href: '/auth/login' }
 export const DEMO_ACTION: ActionItem = { label: 'Demander une démo', href: '/#demo' }
@@ -36,6 +43,8 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     links: [
       { label: 'Mentions légales', href: '/mentions-legales' },
       { label: 'Politique de confidentialité', href: '/confidentialite' },
+      { label: 'Conditions d’utilisation', href: '/cgu' },
+      { label: 'Conditions de vente', href: '/cgv' },
     ],
   },
 ]

@@ -90,6 +90,18 @@ await mail.send({
 - `app/services/onboarding_notify_service.ts` expose `sendOnboardingEmail(user, token, baseUrl)`
 - Cette fonction construit le message (lien d’activation) puis passe par `MailService`
 
+### E-mails transactionnels existants
+
+| Service                                          | Message                                                                                                                  | Lien (toujours bâti sur `APP_URL`, #64)                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `#services/onboarding_mail_service`              | Création de mot de passe, invitation d'un conseiller                                                                     | `/onboarding/:token` (`OnboardingToken`, haché, 7 j)                                       |
+| `#services/mail/password_mail_service`           | Lien « mot de passe oublié », confirmation de changement (#68)                                                           | `/auth/password-reset/:token` (`PasswordResetToken`, haché, 1 h)                           |
+| `#services/mail/email_verification_mail_service` | Confirmation de l'adresse e-mail d'un particulier (#98), envoyée à l'inscription et sur demande depuis l'espace candidat | `/auth/verify-email/:token` (`OnboardingToken`, haché, 7 j, un seul lien actif par compte) |
+| `#services/mail/notification_mail_service`       | Notifications (étapes, analyses, demandes RGPD…)                                                                         | —                                                                                          |
+| `#services/mail/contact_request_mail_service`    | Demandes de contact et de démo (formulaire public)                                                                       | —                                                                                          |
+
+Un échec d'envoi du lien de vérification **n'annule pas l'inscription** (`EmailVerificationService.sendLinkSafely` : log + `reportError`) ; le candidat redemande le lien depuis le bandeau de son accueil (5 renvois / 15 min par compte).
+
 ---
 
 ## Ajouter un nouveau provider (guide)

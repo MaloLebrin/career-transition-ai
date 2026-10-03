@@ -1,4 +1,5 @@
 import Employee from '#models/employee'
+import Notification from '#models/notification'
 import Organization from '#models/organization'
 import type { UserRole } from '#shared/types/advisor/roles'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
@@ -36,6 +37,18 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime()
   declare onboardingCompletedAt: DateTime | null
 
+  /** Acceptation des CGU à l'inscription en libre-service (#93) ; `null` pour les comptes invités. */
+  @column.dateTime()
+  declare termsAcceptedAt: DateTime | null
+
+  /** Version des CGU acceptées (`TERMS_VERSION`, `shared/constants/legal.ts`). */
+  @column()
+  declare termsVersion: string | null
+
+  /** Adresse e-mail confirmée par lien (#98) ; `null` tant que non vérifiée. */
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -53,4 +66,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasOne(() => Employee, { foreignKey: 'userId' })
   declare employeeProfile: HasOne<typeof Employee>
+
+  @hasMany(() => Notification)
+  declare notifications: HasMany<typeof Notification>
 }

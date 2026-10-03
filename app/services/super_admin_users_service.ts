@@ -7,7 +7,8 @@ import {
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
-import type { SuperAdminAssignableRole } from '#shared/constants/roles'
+import { PlatformOrganizationService } from '#services/platform_organization_service'
+import type { SuperAdminCreatableRole } from '#shared/constants/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { inject } from '@adonisjs/core'
 import { randomBytes } from 'node:crypto'
@@ -16,14 +17,19 @@ type CreatePlatformUserInput = {
   organizationId: number
   name: string
   email: string
-  role: SuperAdminAssignableRole
-  /** Organisation plateforme du super admin : interdite comme cible de création. */
+  role: SuperAdminCreatableRole
+  /** Organisation plateforme du super admin : interdite comme cible de création… */
   platformOrganizationId: number
+  /** …sauf pour l'équipe interne (`PlatformTeamService.invite`, #105). */
+  allowPlatformOrganization?: boolean
 }
 
 @inject()
 export class SuperAdminUsersService {
-  constructor(private onboardingMailService: OnboardingMailService) {}
+  constructor(
+    private onboardingMailService: OnboardingMailService,
+    private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService()
+  ) {}
 
   /**
    * Indique si le compte utilisateur est activé (`users.onboarding_completed_at` renseigné).
@@ -34,7 +40,7 @@ export class SuperAdminUsersService {
   }
 
   public async createUserWithInvite(input: CreatePlatformUserInput): Promise<User> {
-    if (input.organizationId === input.platformOrganizationId) {
+    if (input.organizationId === input.platformOrganizationId && !input.allowPlatformOrganization) {
       throw new DomainException('Vous ne pouvez pas créer d’utilisateur dans cette organisation.', {
         status: 403,
       })
@@ -92,18 +98,19 @@ export class SuperAdminUsersService {
   /**
    * Change le rôle d’un utilisateur d’une organisation cliente.
    *
-   * Hors périmètre (inexistant ou compte de l’organisation plateforme, dont le
-   * super admin lui-même) → 404 ; son propre compte ou un autre super admin → 422.
+   * Hors périmètre (inexistant ou compte de l’organisation plateforme, #92) → 404 ;
+   * son propre compte ou un autre super admin → 422.
    * `super_admin` n’est jamais attribuable (`updateUserRoleValidator`).
    */
   public async updateRole(
     actor: User,
     userId: number,
-    role: SuperAdminAssignableRole
+    role: SuperAdminCreatableRole
   ): Promise<User> {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
     const user = await User.query()
       .where('id', userId)
-      .where('organizationId', '!=', actor.organizationId)
+      .where('organizationId', '!=', platformOrganizationId)
       .first()
     if (!user) {
       throw new SuperAdminUserNotFoundError()

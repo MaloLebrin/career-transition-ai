@@ -323,6 +323,55 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
     - Le rôle affiché est mis à jour.
     - Le comportement de l’utilisateur (accès aux écrans) change en conséquence.
 
+### 7.3. Demandes d'accompagnement et équipe interne (B2C, #105)
+
+- **Pré-requis** : `node ace db:seed` (particulier au forfait avec une demande en attente), compte super admin.
+
+- **Inviter un expert interne**
+  - **Étapes**
+    1. `/dashboard/super-admin/team` → « Inviter un membre » (rôle Consultant Accompagnateur).
+    2. Ouvrir le lien d'activation reçu (console mail en dev), choisir un mot de passe.
+  - **Vérifications**
+    - Le membre apparaît dans le tableau avec « Activé » et 0 candidat suivi.
+    - Les rôles « Talent » et « Super admin » ne sont pas proposés.
+
+- **Assigner un expert**
+  - **Étapes**
+    1. `/dashboard/super-admin/expert-requests` → sur la demande en attente, choisir l'expert, « Assigner ».
+  - **Vérifications**
+    - La demande passe « Acceptée » avec l'expert et le traitant.
+    - Le particulier voit « Votre expert : X » sur son accueil et une notification.
+    - L'expert reçoit « Nouveau candidat à accompagner » et voit le particulier dans `/dashboard/conseiller`.
+
+- **Refuser une demande**
+  - **Étapes**
+    1. « Refuser la demande », saisir un motif, « Confirmer le refus ».
+  - **Vérifications**
+    - La demande passe « Refusée » avec le motif ; le particulier est notifié et peut redemander.
+
+### 7.4. Particuliers et paiements (B2C, #107)
+
+- **Pré-requis** : `node ace db:seed` (particuliers de démo, forfait réglé et non réglé), compte super admin.
+
+- **Ouvrir un accès manuellement**
+  - **Étapes**
+    1. `/dashboard/super-admin/b2c` → sur le particulier non réglé, « Ouvrir l'accès », confirmer.
+  - **Vérifications**
+    - Le forfait passe « Réglé » ; `/dashboard/super-admin/payments` montre un paiement « Octroi manuel » à 0 €.
+    - Le particulier reçoit « Vos résultats sont débloqués » et voit tous ses exercices.
+    - Un second « Ouvrir l'accès » n'est plus proposé (409 côté serveur).
+
+- **Retirer un accès**
+  - **Étapes**
+    1. `/dashboard/super-admin/payments` → « Retirer l'accès » sur un paiement qui ouvre l'accès, saisir un motif, confirmer.
+  - **Vérifications**
+    - Le paiement affiche « Accès retiré » et le motif ; le particulier reçoit « Votre accès aux résultats a été retiré ».
+    - Ses résultats du forfait sont de nouveau verrouillés, le téléchargement PDF renvoie 404.
+
+- **Indicateurs**
+  - **Vérifications**
+    - L'accueil super admin et la page Particuliers affichent inscrits, forfaits réglés, chiffre d'affaires du mois (paiements Stripe payés ce mois, hors octrois manuels), demandes en attente.
+
 ---
 
 ## 8. Jobs de fond
@@ -413,6 +462,68 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
   - Les messages disparaissent après rechargement ou peuvent être fermés (si prévu).
 
 ---
+
+## 11. Parcours particulier (B2C, épic #90)
+
+- **Pré-requis** : `B2C_REGISTRATION_ENABLED=true` (défaut hors production), `STRIPE_ENABLED=true` avec des clés **test** (`sk_test_…`, `whsec_…` de `stripe listen`, voir `STRIPE.md`), `MAIL_PROVIDER=console` (liens lus dans les logs), `node ace db:seed` (organisation plateforme, expert interne `expert.interne@example.fr`, particulier payé et non payé, demande d'accompagnement en attente), un compte super admin.
+
+### 11.1. Inscription et vérification de l'e-mail (#93, #98)
+
+- **Étapes**
+  1. `/particuliers` → « Créer mon compte » → `/inscription` : nom, e-mail, mot de passe, case CGU.
+  2. Valider ; suivre l'onboarding ; ouvrir le lien `/auth/verify-email/<token>` lu dans les logs.
+- **Vérifications**
+  - Compte créé dans l'organisation plateforme, sans conseiller ; bandeau « Confirmez votre adresse » sur l'accueil tant que le lien n'est pas ouvert, puis disparition.
+  - Case CGU obligatoire ; e-mail déjà utilisé refusé ; `/inscription` indisponible quand `B2C_REGISTRATION_ENABLED=false`.
+
+### 11.2. Exercices gratuits et verrouillage (#100, #101)
+
+- **Étapes**
+  1. Accueil B2C : Motivations et Valeurs en premier, badge « Gratuit » ; les autres « Inclus dans le forfait ».
+  2. Terminer Motivations ; attendre la notification « Votre analyse IA est disponible ».
+  3. Ouvrir un exercice du forfait (ex. DISC) et la synthèse.
+- **Vérifications**
+  - Résultat et analyse IA de Motivations visibles ; exercice du forfait : page bloquée avec la carte « réservé au forfait » et le prix ; synthèse et export PDF refusés.
+  - **Contrôle réseau** (onglet Réseau, réponses Inertia `X-Inertia`) : aucune prop ne contient `qualitativeAnalysis` ni `data` d'un exercice verrouillé ; les objets portent `locked: true`.
+
+### 11.3. Paiement du forfait (#102, #104)
+
+- **Étapes**
+  1. `stripe listen --forward-to localhost:3333/webhooks/stripe` dans un terminal.
+  2. `/dashboard/candidat/offre` : cocher CGV et renonciation au droit de rétractation, « Payer » → Stripe Checkout, carte `4242 4242 4242 4242`, date future, CVC quelconque.
+  3. Retour sur `/dashboard/candidat/billing/success`.
+- **Vérifications**
+  - Flash de succès, tous les exercices débloqués, notification « Vos résultats sont débloqués », analyses IA des exercices déjà complétés lancées (worker `ai`).
+  - `stripe listen` montre `checkout.session.completed` → 200 ; `stripe trigger checkout.session.completed` rejoué : 200 sans second effet.
+  - E-mail non vérifié ou forfait déjà réglé : paiement refusé avec un message.
+
+### 11.4. Remboursement et retrait d'accès (#104, #107)
+
+- **Étapes**
+  1. Rembourser le paiement dans le tableau de bord Stripe (ou `stripe trigger charge.refunded` avec le `payment_intent` du paiement).
+  2. Ou, en super admin, `/dashboard/super-admin/payments` → « Retirer l'accès » avec un motif.
+- **Vérifications**
+  - Paiement « Remboursé » (ou « Accès retiré ») ; le particulier reçoit « Votre accès aux résultats a été retiré » ; ses exercices du forfait sont de nouveau verrouillés, le téléchargement PDF renvoie 404.
+  - Octroi manuel (`/dashboard/super-admin/b2c` → « Ouvrir l'accès ») : mêmes effets qu'un paiement (§ 7.4).
+
+### 11.5. Accompagnement par un expert (#103, #105)
+
+- **Étapes**
+  1. Particulier payé : `/dashboard/candidat/accompagnement` → message, disponibilités, « Envoyer ma demande ».
+  2. Super admin : § 7.3 (assigner un expert interne, ou refuser avec un motif).
+- **Vérifications**
+  - Super admins notifiés (id du candidat seulement) ; une seconde demande refusée tant que la première est en attente.
+  - Après assignation : « Votre expert : X » sur l'accueil du particulier ; l'expert voit le particulier dans `/dashboard/conseiller` ; après refus : motif affiché, nouvelle demande possible.
+  - Candidat non payé : carte « réservé au forfait », dépôt refusé.
+
+### 11.6. Droits RGPD (#106, #97)
+
+- **Étapes**
+  1. Particulier : profil → exporter ses données (ZIP).
+  2. Super admin / exploitant : `node ace candidate:export <id> --without-private-notes`, puis `node ace candidate:purge <id>`.
+- **Vérifications**
+  - `donnees.json` contient `payments`, `expertRequests`, `notes` (partagées) et `advisorPrivateNotes` (ou `null` avec le flag).
+  - La purge affiche les demandes supprimées et les paiements conservés anonymisés ; en base, `candidate_payments.employee_id` est `NULL` pour l'ancien particulier.
 
 Ce document doit être utilisé comme **checklist de recette manuelle**.  
 Pour chaque scénario, tu peux noter : _OK_, _KO_, commentaires, date de test, et version de l’application.

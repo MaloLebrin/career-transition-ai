@@ -21,6 +21,14 @@ vi.mock('@inertiajs/react', () => ({
   ),
 }))
 
+const { billingState } = vi.hoisted(() => ({
+  billingState: { paymentsEnabled: true, resultsPriceCents: 4900, currency: 'eur' },
+}))
+
+vi.mock('../../../../../../inertia/hooks/use_billing', () => ({
+  useBilling: () => billingState,
+}))
+
 vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
   useAuth: () => ({
     user: { id: 1, role: 'employee' },
@@ -48,8 +56,9 @@ vi.mock('../../../../../../inertia/components/ui/AppLink', () => ({
   ),
 }))
 
-vi.mock('../../../../../../inertia/components/ui/Button', () => ({
-  default: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
+vi.mock('../../../../../../inertia/components/ui/Button', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../inertia/components/ui/Button')>()),
+  default: ({ children, isLoading: _l, ...rest }: any) => <button {...rest}>{children}</button>,
 }))
 
 vi.mock('../../../../../../inertia/components/exercises/MotivationTool', () => ({
@@ -127,6 +136,46 @@ describe('Dashboard candidat - Exercise Home', () => {
     expect(screen.getByText('Verrouillé par l\'expert')).toBeInTheDocument()
 
     expect(screen.queryByTestId('tool-motivation')).not.toBeInTheDocument()
+  })
+
+  test('verrou « payment » (#100) : exercice du forfait, CTA « Débloquer » si le paiement est activé', () => {
+    render(
+      <ExerciseHome
+        type="disc"
+        initialDraftsByType={{}}
+        accessGranted={false}
+        lockedReason="payment"
+        blockedMessage="Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder."
+        exerciseAccess={{
+          accountType: 'b2c',
+          unlockedExerciseSlugs: ['motivation', 'values'],
+          lockedReason: 'payment',
+          hasPaidAccess: false,
+          freeExerciseTypes: ['motivation', 'values'],
+          paymentsEnabled: true,
+        }}
+      />
+    )
+
+    expect(screen.getByText('Cet exercice est inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText(/Cet exercice fait partie du forfait/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Débloquer mes résultats' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/offre'
+    )
+    expect(screen.queryByTestId('tool-disc')).not.toBeInTheDocument()
+  })
+
+  test('verrou « payment » sans paiement activé : « bientôt disponible », pas de CTA', () => {
+    billingState.paymentsEnabled = false
+    render(
+      <ExerciseHome type="disc" initialDraftsByType={{}} accessGranted={false} lockedReason="payment" />
+    )
+
+    expect(screen.getByText('Cet exercice est inclus dans le forfait')).toBeInTheDocument()
+    expect(screen.getByText('Paiement bientôt disponible')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Débloquer mes résultats' })).not.toBeInTheDocument()
+    billingState.paymentsEnabled = true
   })
 
   test('passes completed result fallback as initial draft for candidate tool hydration', async () => {

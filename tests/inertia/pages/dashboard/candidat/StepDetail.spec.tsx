@@ -95,5 +95,27 @@ describe('Dashboard candidat StepDetail page', () => {
     const link = screen.getByRole('link', { name: /Analyse Motivations/i })
     expect(link).toHaveAttribute('href', '/dashboard/candidat/exercises/motivation')
   })
-})
 
+  test('résultat verrouillé (#101) : mention « réservé au forfait », sans visualisation', () => {
+    setAuthUser({ id: 1, role: 'employee' })
+    render(
+      <StepDetail
+        step={{ ...stepBase, associatedExercises: ['disc'] } as any}
+        results={[
+          {
+            id: 9,
+            type: 'disc',
+            date: '2026-03-18T10:00:00.000Z',
+            duration: 120,
+            data: {},
+            quantitativeScore: 0,
+            locked: true,
+          } as any,
+        ]}
+      />
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent('Résultat réservé au forfait.')
+    expect(screen.queryByTestId('result-vis')).not.toBeInTheDocument()
+  })
+})

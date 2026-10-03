@@ -259,6 +259,30 @@
   - Passage d’un utilisateur à un rôle supérieur (admin, super admin) ou différent.
   - Vérification des impacts sur les accès (visible vs non visible dans certains écrans).
 
+### 7.3 Demandes d'accompagnement et équipe interne (#105)
+
+- **Demandes d'accompagnement** (`/dashboard/super-admin/expert-requests`) : les demandes des
+  particuliers (#103) avec candidat, forfait réglé ou non, message, disponibilités, statut ;
+  filtre par statut. Assignation d'un membre de l'équipe interne (`employees.advisor_id`
+  posé, demande acceptée, candidat et expert notifiés) ou refus motivé (candidat notifié,
+  nouvelle demande possible).
+- **Équipe interne** (`/dashboard/super-admin/team`) : membres de l'organisation plateforme
+  (rôles `advisor`, `expert`, `admin`) avec le nombre de particuliers suivis ; invitation par
+  e-mail (même activation que les cabinets). L'expert interne retrouve ses particuliers dans
+  `/dashboard/conseiller` et peut créer étapes et notes.
+
+### 7.4 Particuliers et paiements du forfait (#107)
+
+- **Particuliers** (`/dashboard/super-admin/b2c`) : comptes B2C de l'organisation plateforme
+  (exclus des listes « Organisations » et « Utilisateurs ») avec e-mail vérifié, forfait réglé,
+  expert assigné, demande d'accompagnement en attente ; indicateurs (inscrits, forfaits réglés,
+  chiffre d'affaires Stripe du mois, demandes en attente, repris sur l'accueil super admin).
+  **Octroi manuel** d'un accès (paiement `manual` à 0 €, analyses IA lancées, particulier
+  prévenu), confirmé par une modale.
+- **Paiements** (`/dashboard/super-admin/payments`) : tous les paiements du forfait, filtre par
+  statut, pagination ; **retrait d'un accès** avec motif consigné (particulier prévenu). Un
+  remboursement se fait dans Stripe : le webhook (#104) retire l'accès.
+
 ---
 
 ## 8. Jobs de fond & industrialisation
@@ -336,3 +360,64 @@
   - Composants réutilisables (boutons, champs, cartes) pour réduire la charge cognitive.
 
 ---
+
+## 11. Parcours particulier (B2C, épic #90)
+
+### 11.1 Inscription et compte
+
+- Inscription publique sur `/inscription` (flag `B2C_REGISTRATION_ENABLED`, #93), compte
+  rattaché à l'organisation plateforme, fiche `account_type = 'b2c'` sans conseiller.
+- Vérification de l'adresse e-mail par lien (#98) : bandeau de rappel sur l'accueil,
+  prérequis au paiement seulement.
+
+### 11.2 Exercices gratuits et forfait (#100)
+
+- **Motivations** et **Valeurs** sont gratuits et affichés en premier ; leurs résultats
+  et leur analyse IA (une seule fois par exercice) sont visibles sans paiement.
+- Les autres exercices sont présentés verrouillés (« Inclus dans le forfait ») avec un
+  CTA « Débloquer » vers l'offre quand le paiement est activé (`STRIPE_ENABLED`, #102),
+  « Bientôt disponible » sinon. Le verrou est appliqué côté serveur (page bloquée,
+  brouillon et résultat refusés), le front n'affiche que l'état.
+- Accueil dédié (`B2cEmployeeHome`) : progression, catalogue, bloc « Votre expert : X »
+  quand un expert interne est assigné (#105), conseils de l'expert s'il en a laissé ;
+  pas de feuille de route (aucun plan d'accompagnement).
+- Notification « Votre analyse IA est disponible » adressée directement au particulier.
+- Verrouillage **côté serveur** (#101) : réponses, scores et analyses des exercices du
+  forfait n'apparaissent dans aucune prop Inertia (accueil, exercice, profil, étape)
+  tant que le forfait n'est pas réglé ; synthèse, export PDF, téléchargement et IA
+  assistée (cartographie, ciblage) sont refusés de même. Carte « réservé au forfait »
+  avec le prix TTC.
+
+### 11.3 Paiement du forfait (#102)
+
+- Page `/dashboard/candidat/offre` : rappel du forfait, prix TTC, cases CGV et
+  renonciation au droit de rétractation (art. L221-28 13°), bouton « Payer » → Stripe
+  Checkout hébergé (one-shot, facture Stripe). Retour sur `/billing/success` avec
+  réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
+- Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
+
+### 11.4 Webhook Stripe (#104)
+
+- `POST /webhooks/stripe` : source de vérité des paiements, signée, exemptée de CSRF,
+  idempotente (`stripe_events`, sans payload). Paiement confirmé → forfait débloqué,
+  analyses IA des exercices complétés sans analyse lancées, notification « Vos résultats
+  sont débloqués » ; paiement différé refusé → `failed` ; session expirée → `canceled` ;
+  remboursement → `refunded`, accès retiré, notification « Votre accès aux résultats a été
+  retiré ». Rejouer un événement est sans effet.
+
+### 11.5 Accompagnement par un expert (#103)
+
+- Page `/dashboard/candidat/accompagnement` : un particulier au forfait réglé dépose une
+  demande (message libre, disponibilités) ; une seule demande en attente à la fois ; statut
+  (en attente, acceptée, refusée, clôturée) et expert assigné affichés. Les super admins sont
+  notifiés (« Demande d'accompagnement — candidat #id », lien vers le back-office #105).
+- CTA sur l'accueil B2C (payé, sans expert) et la synthèse. Candidat B2B : page lisible mais
+  l'accompagnement passe par son conseiller (403 au dépôt) ; non payé : carte « réservé au
+  forfait » (403 au dépôt). Tarif et contrat de l'accompagnement hors plateforme pour l'instant.
+- Traitement par les super admins (#105, § 7.3) : assignation d'un expert interne → « Votre
+  expert : X » sur l'accueil et la page d'accompagnement, notification ; refus motivé →
+  notification, nouvelle demande possible.
+
+### 11.6 Back-office B2C (#107)
+
+Voir § 7.4 : particuliers, indicateurs, octroi manuel d'un accès, paiements et retrait d'un accès.

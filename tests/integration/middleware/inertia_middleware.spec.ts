@@ -8,10 +8,13 @@ import { NOTIFICATION_STATUSES } from '#shared/constants/notifications'
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createCandidate,
   createEmployeeFor,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
+  createUser,
 } from '#tests/support/actors'
 
 /**
@@ -84,6 +87,23 @@ test.group('InertiaMiddleware.share', () => {
     assert.isFalse(closed.registrationEnabled)
   })
 
+  test('b2cRegistrationEnabled reflète registration.candidateEnabled (#93)', async ({
+    assert,
+    cleanup,
+  }) => {
+    const previous = config.get<boolean>('registration.candidateEnabled')
+    cleanup(() => config.set('registration.candidateEnabled', previous))
+
+    config.set('registration.candidateEnabled', true)
+    const open = await share(makeShareCtx())
+    assert.isTrue(open.b2cRegistrationEnabled)
+
+    config.set('registration.candidateEnabled', false)
+    const closed = await share(makeShareCtx())
+    assert.isFalse(closed.b2cRegistrationEnabled)
+    assert.isTrue(closed.registrationEnabled, 'flag conseillers indépendant')
+  })
+
   test('sans session : flash vide et aucune erreur', async ({ assert }) => {
     const props = await share(makeShareCtx({ withSession: false }))
 
@@ -120,6 +140,8 @@ test.group('InertiaMiddleware.share', () => {
       email: advisor.email,
       name: advisor.name,
       role: 'advisor',
+      accountType: null,
+      emailVerified: false,
     })
     assert.deepEqual(
       props.employees.map((e: { name: string }) => e.name),
@@ -144,6 +166,24 @@ test.group('InertiaMiddleware.share', () => {
     assert.isTrue(
       props.employees.every((e: { organizationId: number }) => e.organizationId === org.id)
     )
+  })
+
+  test('admin et super admin : les particuliers B2C de la plateforme sont exclus', async ({
+    assert,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const admin = await createAdmin(await createPlatformOrganization())
+    const { employee: b2c } = await createB2cCandidate()
+    const staffed = await EmployeeFactory.merge({
+      organizationId: superAdmin.organizationId,
+    }).create()
+
+    for (const user of [superAdmin, admin]) {
+      const props = await share(makeShareCtx({ user }))
+      const ids = props.employees.map((e: { id: number }) => e.id)
+      assert.deepEqual(ids, [staffed.id])
+      assert.notInclude(ids, b2c.id)
+    }
   })
 
   test('super admin : expose les candidats de son organisation et ses notifications', async ({
@@ -178,9 +218,83 @@ test.group('InertiaMiddleware.share', () => {
     const props = await share(makeShareCtx({ user }))
 
     assert.equal(props.user.role, 'employee')
+    assert.equal(props.user.accountType, 'b2b')
     assert.deepEqual(props.employees, [])
     assert.lengthOf(props.notifications, 1)
     assert.equal(props.unreadNotificationsCount, 1)
+  })
+
+  test('particulier B2C : accountType b2c (#92) et droits verrouillés (#94)', async ({
+    assert,
+  }) => {
+    const { user } = await createB2cCandidate()
+
+    const props = await share(makeShareCtx({ user }))
+
+    assert.equal(props.user.role, 'employee')
+    assert.equal(props.user.accountType, 'b2c')
+    assert.deepEqual(props.employees, [])
+    assert.deepEqual(props.entitlement, {
+      accountType: 'b2c',
+      hasPaidAccess: false,
+      freeExerciseTypes: ['motivation', 'values'],
+      paymentsEnabled: false,
+    })
+  })
+
+  test('user.emailVerified reflète emailVerifiedAt (#98)', async ({ assert }) => {
+    const unverified = await createB2cCandidate()
+    const verified = await createB2cCandidate({ emailVerified: true })
+
+    const unverifiedProps = await share(makeShareCtx({ user: unverified.user }))
+    const verifiedProps = await share(makeShareCtx({ user: verified.user }))
+
+    assert.isFalse(unverifiedProps.user.emailVerified)
+    assert.isTrue(verifiedProps.user.emailVerified)
+  })
+
+  test('particulier B2C payé : hasPaidAccess ; candidat B2B : toujours vrai', async ({
+    assert,
+  }) => {
+    const paid = await createB2cCandidate({ paid: true })
+    const b2b = await createCandidate()
+
+    const paidProps = await share(makeShareCtx({ user: paid.user }))
+    assert.isTrue(paidProps.entitlement.hasPaidAccess)
+    const b2bProps = await share(makeShareCtx({ user: b2b.user }))
+    assert.equal(b2bProps.entitlement.accountType, 'b2b')
+    assert.isTrue(b2bProps.entitlement.hasPaidAccess)
+  })
+
+  test('compte employee sans fiche : accountType et entitlement null', async ({ assert }) => {
+    const user = await createUser('employee')
+
+    const props = await share(makeShareCtx({ user }))
+
+    assert.isNull(props.user.accountType)
+    assert.notProperty(props, 'entitlement')
+  })
+
+  test('prop billing (#101) : prix du forfait et activation du paiement, pour tous', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+
+    const props = await share(makeShareCtx({ user: advisor }))
+    assert.deepEqual(props.billing, {
+      paymentsEnabled: false,
+      resultsPriceCents: 4900,
+      currency: 'eur',
+    })
+    const guestProps = await share(makeShareCtx())
+    assert.deepEqual(guestProps.billing, props.billing)
+  })
+
+  test('conseiller et invité : pas de prop entitlement', async ({ assert }) => {
+    const advisor = await createAdvisor()
+
+    assert.notProperty(await share(makeShareCtx({ user: advisor })), 'entitlement')
+    assert.notProperty(await share(makeShareCtx()), 'entitlement')
   })
 })
 

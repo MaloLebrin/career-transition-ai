@@ -1,14 +1,21 @@
+import { ACCOUNT_TYPES, type ExerciseLockReason } from '#shared/constants/b2c'
+import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import Card from '~/components/ui/Card'
 import Button from '~/components/ui/Button'
+import { useAuth } from '~/hooks/use_auth'
 import { useLivePdfExport, type LivePdfExport } from '~/hooks/use_live_pdf_export'
+import AppLink from '~/components/ui/AppLink'
 import type { Employee } from '~/types/employee'
 
 type CandidateSynthesisProps =
   | {
       shared: false
+      /** `payment` (#101) : particulier dont le forfait n'est pas réglé ; `null` : pas encore partagée. */
+      lockedReason?: ExerciseLockReason | null
       employeeId: string
       employee: null
       synthesis: null
@@ -17,6 +24,7 @@ type CandidateSynthesisProps =
     }
   | {
       shared: true
+      lockedReason?: null
       employeeId: string
       employee: Employee
       synthesis: {
@@ -31,6 +39,17 @@ type CandidateSynthesisProps =
 
 export default function CandidateSynthesisPage(props: CandidateSynthesisProps) {
   if (!props.shared) {
+    if (props.lockedReason === 'payment') {
+      return (
+        <DashboardLayout>
+          <Head title="Synthèse" />
+          <ResultsLockedCard
+            title="Votre synthèse est réservée au forfait"
+            description="La synthèse rassemble vos résultats, vos analyses IA et les commentaires de votre expert. Elle se débloque avec le forfait."
+          />
+        </DashboardLayout>
+      )
+    }
     return (
       <DashboardLayout>
         <Head title="Synthèse" />
@@ -58,6 +77,9 @@ function SharedSynthesis({
 }: Extract<CandidateSynthesisProps, { shared: true }>) {
   // Statut du PDF poussé par Transmit : pas besoin de recharger la page (#70).
   const pdfJob = useLivePdfExport(employeeId, latestPdfJob)
+  // #103 : un particulier (forfait réglé, puisqu'il voit sa synthèse) peut demander un expert.
+  const { user } = useAuth()
+  const isB2c = user?.accountType === ACCOUNT_TYPES.B2C
   const pdfInProgress =
     pdfJob?.status === PDF_EXPORT_STATUSES.PENDING ||
     pdfJob?.status === PDF_EXPORT_STATUSES.PROCESSING
@@ -68,7 +90,7 @@ function SharedSynthesis({
       <div className="space-y-6">
         <Card className="p-8 border-t-[3px] border-t-brand-sage">
           <div className="text-sm font-bold text-brand-sage uppercase tracking-widest">
-            Synthèse partagée
+            {synthesis.shareStatus === 'shared' ? 'Synthèse partagée' : 'Votre synthèse'}
           </div>
           <div className="mt-2 text-2xl font-bold text-brand-navy">{employee.name}</div>
           <div className="text-sm text-brand-navy/60">{employee.currentRole}</div>
@@ -123,6 +145,17 @@ function SharedSynthesis({
           <div className="text-sm text-brand-navy whitespace-pre-wrap">
             {synthesis.expertCommentsShared || 'Aucun commentaire partagé pour le moment.'}
           </div>
+          {isB2c && (
+            <p className="mt-4 text-sm text-ink-soft">
+              Envie d’aller plus loin ?{' '}
+              <AppLink
+                href={EXPERT_REQUEST_PATHS.page}
+                className="font-medium text-accent hover:underline"
+              >
+                Être accompagné par un expert
+              </AppLink>
+            </p>
+          )}
         </Card>
       </div>
     </DashboardLayout>

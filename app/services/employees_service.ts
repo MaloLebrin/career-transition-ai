@@ -156,9 +156,12 @@ export class EmployeesService {
    * Find the employee record linked to the given user, or null when the user has none
    * (e.g. an advisor or admin).
    */
-  public async findEmployeeForUser(user: User): Promise<Employee | null> {
+  public async findEmployeeForUser(
+    user: User,
+    options: { withAdvisor?: boolean } = {}
+  ): Promise<Employee | null> {
     // TODO: optimise this function
-    return Employee.query()
+    const query = Employee.query()
       .where('userId', user.id)
       .where('organizationId', user.organizationId)
       .preload('skills', (q) => q.pivotColumns(['level']))
@@ -166,7 +169,11 @@ export class EmployeesService {
       .preload('educations')
       .preload('exerciseResults')
       .preload('supportPlanSteps', (q) => q.preload('exercises'))
-      .first()
+    if (options.withAdvisor) {
+      // Accueil B2C (#100) : « Votre expert : X » — le nom seul est exposé.
+      query.preload('advisor', (q) => q.select('id', 'name'))
+    }
+    return query.first()
   }
 
   /**

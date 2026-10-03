@@ -13,7 +13,14 @@ import {
   type ExerciceResultType,
 } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
-import { createAdvisor, createCandidate, createOrganization } from '#tests/support/actors'
+import { B2C_FREE_EXERCISE_TYPES, EXERCISE_LOCK_REASONS } from '#shared/constants/b2c'
+import { orderExercisesForB2c } from '#shared/helpers/b2c_access'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createOrganization,
+} from '#tests/support/actors'
 import { assertPage } from '#tests/support/inertia_page'
 import { assertFieldErrors } from '#tests/support/validation'
 import { truncateDb } from '#tests/utils/db'
@@ -34,6 +41,8 @@ const BASE = '/dashboard/candidat/exercises'
 const LIST_PAGE = 'dashboard/employee/exercises/List'
 const EXERCISE_PAGE = 'dashboard/employee/exercises/Home'
 const LOCKED_MESSAGE = 'Cette étape est verrouillée. Contactez votre conseiller pour la débloquer.'
+const PAYMENT_LOCKED_MESSAGE =
+  'Cet exercice fait partie du forfait. Débloquez vos résultats pour y accéder.'
 
 /** Étape du plan portant `types`, verrouillée ou non. */
 async function planStep(
@@ -165,6 +174,25 @@ test.group('Candidat — exercices : page exercice (GET)', (group) => {
     assert.isFalse(props.accessGranted)
     assert.equal(props.blockedMessage, LOCKED_MESSAGE)
     assert.deepEqual(props.initialDraftsByType, {})
+  })
+
+  test('la page exercice ne transmet jamais advisorNotes au candidat', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    employee.advisorNotes = 'Note confidentielle du conseiller'
+    await employee.save()
+    await planStep(employee, [EXERCICE_RESULTS_TYPES.MOTIVATION])
+
+    const response = await client
+      .get(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}`)
+      .loginAs(user)
+      .withInertia()
+
+    const props = assertPage(assert, response, EXERCISE_PAGE, ['employee'])
+    assert.notProperty(props.employee as object, 'advisorNotes')
+    assert.notInclude(JSON.stringify(props), 'Note confidentielle du conseiller')
   })
 
   test('exercice absent du plan : page bloquée elle aussi', async ({ client, assert }) => {
@@ -526,5 +554,199 @@ test.group('Candidat — exercices : résultat (POST)', (group) => {
 
     response.assertStatus(403)
     assert.lengthOf(await ExerciseResult.all(), 0)
+  })
+})
+
+/**
+ * Particuliers B2C (#100) : Motivations et Valeurs gratuits sans plan
+ * d'accompagnement, le reste verrouillé tant que le forfait n'est pas réglé.
+ * L'analyse IA (queue `sync`, fournisseur `none`) n'est lancée que si autorisée.
+ */
+test.group('Candidat B2C — exercices (#100)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('liste : gratuits d’abord, seuls déverrouillés sans paiement, verrou « payment »', async ({
+    client,
+    assert,
+  }) => {
+    const { user } = await createB2cCandidate()
+
+    const response = await client.get(BASE).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, LIST_PAGE, [
+      'exercises',
+      'unlockedExerciseSlugs',
+      'completedExerciseSlugs',
+      'lockedReason',
+      'accountType',
+      'exerciseAccess',
+    ])
+    assert.deepEqual(
+      (props.exercises as Array<{ slug: string }>).map((e) => e.slug),
+      orderExercisesForB2c(EXERCISE_LIST, B2C_FREE_EXERCISE_TYPES).map((e) => e.slug)
+    )
+    assert.deepEqual(props.unlockedExerciseSlugs, [...B2C_FREE_EXERCISE_TYPES])
+    assert.equal(props.lockedReason, EXERCISE_LOCK_REASONS.PAYMENT)
+    assert.equal(props.accountType, 'b2c')
+    const access = props.exerciseAccess as { hasPaidAccess: boolean; freeExerciseTypes: string[] }
+    assert.isFalse(access.hasPaidAccess)
+    assert.deepEqual(access.freeExerciseTypes, [...B2C_FREE_EXERCISE_TYPES])
+  })
+
+  test('liste : tout le catalogue une fois le forfait réglé', async ({ client, assert }) => {
+    const { user } = await createB2cCandidate({ paid: true })
+
+    const response = await client.get(BASE).loginAs(user).withInertia()
+
+    const props = assertPage(assert, response, LIST_PAGE)
+    assert.sameMembers(
+      props.unlockedExerciseSlugs as string[],
+      EXERCISE_LIST.map((e) => e.slug)
+    )
+    assert.isTrue((props.exerciseAccess as { hasPaidAccess: boolean }).hasPaidAccess)
+  })
+
+  test('exercice gratuit : accessible sans plan d’accompagnement', async ({ client, assert }) => {
+    const { user } = await createB2cCandidate()
+
+    const response = await client
+      .get(`${BASE}/${EXERCICE_RESULTS_TYPES.VALUES}`)
+      .loginAs(user)
+      .withInertia()
+
+    const props = assertPage(assert, response, EXERCISE_PAGE, ['exerciseAccess'])
+    assert.isTrue(props.accessGranted)
+    assert.deepEqual(props.initialDraftsByType, { [EXERCICE_RESULTS_TYPES.VALUES]: null })
+  })
+
+  test('exercice du forfait non payé : page bloquée avec le motif « payment »', async ({
+    client,
+    assert,
+  }) => {
+    const { user } = await createB2cCandidate()
+
+    const response = await client
+      .get(`${BASE}/${EXERCICE_RESULTS_TYPES.DISC}`)
+      .loginAs(user)
+      .withInertia()
+
+    const props = assertPage(assert, response, EXERCISE_PAGE, ['lockedReason', 'blockedMessage'])
+    assert.isFalse(props.accessGranted)
+    assert.equal(props.lockedReason, EXERCISE_LOCK_REASONS.PAYMENT)
+    assert.equal(props.blockedMessage, PAYMENT_LOCKED_MESSAGE)
+    assert.deepEqual(props.initialDraftsByType, {})
+  })
+
+  test('exercice du forfait payé : accessible', async ({ client, assert }) => {
+    const { user } = await createB2cCandidate({ paid: true })
+
+    const response = await client
+      .get(`${BASE}/${EXERCICE_RESULTS_TYPES.DISC}`)
+      .loginAs(user)
+      .withInertia()
+
+    const props = assertPage(assert, response, EXERCISE_PAGE)
+    assert.isTrue(props.accessGranted)
+  })
+
+  test('brouillon et résultat refusés sur un exercice du forfait non payé', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate()
+
+    const draft = await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.DISC}/draft`)
+      .loginAs(user)
+      .json({
+        employeeId: String(employee.id),
+        type: EXERCICE_RESULTS_TYPES.DISC,
+        data: { step: 1 },
+      })
+      .redirects(0)
+    draft.assertStatus(302)
+    draft.assertHeader('location', `${BASE}/${EXERCICE_RESULTS_TYPES.DISC}`)
+    draft.assertFlashMessage('error', 'Cet exercice fait partie du forfait.')
+
+    const result = await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.DISC}/result`)
+      .loginAs(user)
+      .json(resultPayload({ type: EXERCICE_RESULTS_TYPES.DISC }))
+      .redirects(0)
+    result.assertStatus(302)
+    result.assertFlashMessage('error', 'Cet exercice fait partie du forfait.')
+
+    assert.lengthOf(await ExerciseResult.all(), 0)
+  })
+
+  test('exercice gratuit terminé : enregistré, analysé une fois, le particulier est notifié', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate()
+
+    const first = await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
+      .loginAs(user)
+      .json(resultPayload())
+      .redirects(0)
+    first.assertStatus(302)
+    first.assertHeader('location', '/dashboard/candidat')
+
+    const stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .firstOrFail()
+    assert.equal(stored.status, exerciceResultStatusValues.COMPLETED)
+    // Queue `sync` + fournisseur `none` : l'analyse est produite dans la foulée.
+    assert.isNotNull(stored.qualitativeAnalysis)
+    const firstAnalysis = stored.qualitativeAnalysis
+    assert.lengthOf(
+      await Notification.query()
+        .where('userId', user.id)
+        .where('type', NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE),
+      1
+    )
+
+    // Une relance ne déclenche pas de seconde analyse (ni de seconde notification).
+    stored.qualitativeAnalysis = 'Analyse déjà produite'
+    await stored.save()
+    await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
+      .loginAs(user)
+      .json(resultPayload({ data: { step: 2, answers: { autonomie: 1 } } }))
+      .redirects(0)
+
+    await stored.refresh()
+    assert.equal(stored.qualitativeAnalysis, 'Analyse déjà produite')
+    assert.notEqual(stored.qualitativeAnalysis, firstAnalysis)
+    assert.lengthOf(
+      await Notification.query()
+        .where('userId', user.id)
+        .where('type', NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE),
+      1
+    )
+  })
+
+  test('forfait payé : l’analyse IA est relancée à chaque résultat', async ({ client, assert }) => {
+    const { user, employee } = await createB2cCandidate({ paid: true })
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+      status: exerciceResultStatusValues.COMPLETED,
+      qualitativeAnalysis: 'Ancienne analyse',
+    }).create()
+
+    await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.DISC}/result`)
+      .loginAs(user)
+      .json(resultPayload({ type: EXERCICE_RESULTS_TYPES.DISC }))
+      .redirects(0)
+
+    const stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.DISC)
+      .firstOrFail()
+    assert.notEqual(stored.qualitativeAnalysis, 'Ancienne analyse')
   })
 })

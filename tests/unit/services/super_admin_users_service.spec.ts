@@ -12,7 +12,12 @@ import {
   SuperAdminUserNotFoundError,
 } from '#exceptions/super_admin_user_errors'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
-import { createAdvisor, createOrganization, createSuperAdmin } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createOrganization,
+  createPlatformOrganization,
+  createSuperAdmin,
+} from '#tests/support/actors'
 
 test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -228,7 +233,7 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
     const actor = await createSuperAdmin()
 
     await assert.rejects(
-      () => service.updateRole(actor, actor.id, USERS_ROLES.EMPLOYEE),
+      () => service.updateRole(actor, actor.id, USERS_ROLES.ADMIN),
       SuperAdminUserNotFoundError as any
     )
     await actor.refresh()
@@ -236,7 +241,7 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
   })
 
   test('compte de l’organisation plateforme ou inexistant : 404', async ({ assert }) => {
-    const platform = await createOrganization()
+    const platform = await createPlatformOrganization()
     const actor = await createSuperAdmin(platform)
     const colleague = await createAdvisor(platform)
 
@@ -255,10 +260,32 @@ test.group('SuperAdminUsersService.updateRole', (group) => {
     const other = await createSuperAdmin(await createOrganization())
 
     await assert.rejects(
-      () => service.updateRole(actor, other.id, USERS_ROLES.EMPLOYEE),
+      () => service.updateRole(actor, other.id, USERS_ROLES.ADMIN),
       SuperAdminRoleLockedError as any
     )
     await other.refresh()
     assert.equal(other.role, USERS_ROLES.SUPER_ADMIN)
+  })
+})
+
+test.group('SuperAdminUsersService.createUserWithInvite — équipe interne (#105)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('allowPlatformOrganization lève l’interdiction pour l’organisation plateforme', async ({
+    assert,
+  }) => {
+    const platform = await createPlatformOrganization()
+    const service = new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
+    const input = {
+      organizationId: platform.id,
+      name: 'Interne',
+      email: 'interne@plateforme.test',
+      role: USERS_ROLES.ADVISOR,
+      platformOrganizationId: platform.id,
+    } as const
+
+    await assert.rejects(() => service.createUserWithInvite(input), DomainException)
+    const user = await service.createUserWithInvite({ ...input, allowPlatformOrganization: true })
+    assert.equal(user.organizationId, platform.id)
   })
 })

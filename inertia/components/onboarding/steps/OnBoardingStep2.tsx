@@ -47,7 +47,7 @@ export const OnBoardingStep2 = ({ onNext, setFormData }: OnBoardingStep2Props) =
           Notre IA va extraire vos expériences et formations automatiquement.
         </p>
         <p className="text-brand-navy/40 text-xs mt-2">
-          Votre CV est ensuite conservé dans vos documents, visibles par vous et votre conseiller.
+          Votre CV est ensuite conservé dans vos documents, visibles par vous et, si vous êtes accompagné, par votre conseiller.
         </p>
       </div>
 
