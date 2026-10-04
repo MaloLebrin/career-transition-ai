@@ -22,13 +22,13 @@ interface IndividualsHeroProps {
 export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOpen }) => (
   <MarketingSection tone="canvas" className="pt-8 md:pt-12">
     <div
-      className="mb-12 aspect-[16/9] overflow-hidden rounded-2xl border border-hairline shadow-card md:aspect-[3/1] lg:mb-16"
+      className="mb-12 aspect-[16/9] animate-fade-in overflow-hidden rounded-2xl border border-hairline shadow-card md:aspect-[3/1] lg:mb-16"
       data-testid="hero-landscape"
     >
       <LandscapeArt variant="hero" />
     </div>
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
-      <div className="space-y-8 lg:col-span-7">
+      <div className="animate-slide-up space-y-8 [animation-delay:150ms] lg:col-span-7">
         <SectionHeading
           level={1}
           size="display-xl"
@@ -64,7 +64,7 @@ export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOp
         </p>
       </div>
 
-      <Card padding="md" className="lg:col-span-5">
+      <Card padding="md" className="animate-slide-up [animation-delay:300ms] lg:col-span-5">
         <p className="text-eyebrow text-accent">Pour commencer, gratuitement</p>
         <ul className="mt-4 space-y-4">
           {FREE_EXERCISES.map((exercise) => (

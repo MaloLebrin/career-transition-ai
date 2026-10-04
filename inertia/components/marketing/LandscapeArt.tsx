@@ -40,17 +40,19 @@ export const LandscapeArt: React.FC<LandscapeArtProps> = ({ variant = 'hero', cl
 }
 
 /** Oiseaux : deux traits souples, en encre douce. */
-const Birds: React.FC<{ transform?: string }> = ({ transform }) => (
-  <g
-    fill="none"
-    stroke="var(--color-ink-soft)"
-    strokeWidth="2"
-    strokeLinecap="round"
-    opacity="0.55"
-    transform={transform}
-  >
-    <path d="M0 10 q8 -10 16 0 q8 -10 16 0" />
-    <path d="M44 -4 q6 -8 12 0 q6 -8 12 0" />
+const Birds: React.FC<{ transform?: string; animated?: boolean }> = ({ transform, animated }) => (
+  <g transform={transform}>
+    <g
+      className={animated ? 'animate-float' : undefined}
+      fill="none"
+      stroke="var(--color-ink-soft)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      opacity="0.55"
+    >
+      <path d="M0 10 q8 -10 16 0 q8 -10 16 0" />
+      <path d="M44 -4 q6 -8 12 0 q6 -8 12 0" />
+    </g>
   </g>
 )
 
@@ -66,15 +68,30 @@ const HeroScene: React.FC<{ skyId: string }> = ({ skyId }) => (
     {/* Ciel */}
     <rect width="1200" height="400" fill={`url(#${skyId})`} />
     {/* Soleil et son halo */}
-    <circle cx="880" cy="168" r="96" fill="var(--color-sun-soft)" opacity="0.6" />
+    <circle
+      cx="880"
+      cy="168"
+      r="96"
+      fill="var(--color-sun-soft)"
+      opacity="0.6"
+      className="animate-glow"
+    />
     <circle cx="880" cy="168" r="46" fill="var(--color-tint-sun-bold)" />
     {/* Nuages */}
     <g fill="var(--color-surface)" opacity="0.7">
-      <ellipse cx="260" cy="110" rx="90" ry="18" />
-      <ellipse cx="300" cy="98" rx="50" ry="20" />
-      <ellipse cx="1010" cy="80" rx="70" ry="14" />
+      <g className="animate-drift">
+        <ellipse cx="260" cy="110" rx="90" ry="18" />
+        <ellipse cx="300" cy="98" rx="50" ry="20" />
+      </g>
+      <ellipse
+        cx="1010"
+        cy="80"
+        rx="70"
+        ry="14"
+        className="animate-drift [animation-direction:alternate-reverse]"
+      />
     </g>
-    <Birds transform="translate(560 120)" />
+    <Birds transform="translate(560 120)" animated />
     {/* Montagnes lointaines → proches */}
     <path
       d="M0 250 L120 190 L220 232 L330 160 L440 226 L540 186 L640 238 L760 176 L860 230 L960 196 L1080 244 L1200 204 L1200 320 L0 320 Z"

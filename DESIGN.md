@@ -192,7 +192,9 @@ nombre par dossier (cliquet) et interdit tout retour dans `ui/`, `layout/`, `mar
 
 États : focus visible par anneau `accent` (couche base), sélection de texte `sun-soft`, désactivé à 50 %, chargement par
 spinner dans le bouton. Mouvement : `animate-fade-in`, `animate-slide-up`,
-`animate-shake` (erreurs de formulaire), respect de `prefers-reduced-motion`.
+`animate-shake` (erreurs de formulaire), respect de `prefers-reduced-motion`. Pages marketing : `Reveal`
+(`ui/Reveal.tsx`, apparition au scroll, cascade par `delay`) ; paysage du hero animé en douceur
+(`animate-drift` nuages, `animate-float` oiseaux, `animate-glow` halo du soleil) ; cartes qui se soulèvent au survol.
 
 ---
 

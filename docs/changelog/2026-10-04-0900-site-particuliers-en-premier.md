@@ -24,3 +24,10 @@ et leur inscription derrière des liens dédiés. Aucun changement backend d'aut
 - **Tests.** Specs Vitest mises à jour ou ajoutées (config, header, footer, pages `home`,
   `Cabinets`, `CabinetPricing`, `Pricing`, `Login`, composants `individuals/*`, hook) ;
   functional `public_pages.spec.ts` (`/cabinets`, `/cabinets/tarifs`, redirection 301).
+
+## Animations de l'accueil
+
+- `Reveal` (`inertia/components/ui/Reveal.tsx`) : apparition en fondu et glissement quand un bloc entre dans la fenêtre ; sans `IntersectionObserver` le contenu reste visible, `prefers-reduced-motion` supprime la transition.
+- Hero : entrée en cascade (paysage, texte, carte des exercices offerts).
+- Paysage : nuages en dérive, oiseaux flottants, halo du soleil qui respire (`animate-drift`, `animate-float`, `animate-glow`).
+- Cartes d'arguments et catalogue d'exercices : léger soulèvement au survol.

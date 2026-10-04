@@ -6,6 +6,7 @@ import { CABINETS_ACTION } from '~/config/marketing'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
+import { Reveal } from '../ui/Reveal'
 import { SectionHeading } from '../ui/SectionHeading'
 import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
@@ -85,8 +86,10 @@ export default function IndividualsPage() {
 
       <MarketingSection tone="surface">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <FeatureCard key={feature.title} {...feature} />
+          {FEATURES.map((feature, index) => (
+            <Reveal key={feature.title} delay={index * 100}>
+              <FeatureCard {...feature} className="transition-transform hover:-translate-y-1" />
+            </Reveal>
           ))}
         </div>
       </MarketingSection>
@@ -98,7 +101,9 @@ export default function IndividualsPage() {
             title={`${TOTAL_WORD.charAt(0).toUpperCase()}${TOTAL_WORD.slice(1)} exercices pour y voir clair.`}
             description="Du diagnostic des motivations à la cartographie des compétences, chaque exercice alimente votre synthèse de parcours."
           />
-          <ExerciseCatalogue />
+          <Reveal>
+            <ExerciseCatalogue />
+          </Reveal>
         </div>
       </MarketingSection>
 
@@ -112,7 +117,9 @@ export default function IndividualsPage() {
             />
             <BulletList items={STEPS} />
           </div>
-          <ResultsPlanCard />
+          <Reveal delay={150}>
+            <ResultsPlanCard />
+          </Reveal>
         </div>
       </MarketingSection>
 
@@ -129,8 +136,10 @@ export default function IndividualsPage() {
             </AppLink>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-7">
-            {TRUST.map((item) => (
-              <FeatureCard key={item.title} icon={<ShieldCheck size={20} />} {...item} />
+            {TRUST.map((item, index) => (
+              <Reveal key={item.title} delay={index * 100}>
+                <FeatureCard icon={<ShieldCheck size={20} />} {...item} />
+              </Reveal>
             ))}
           </div>
         </div>
