@@ -3,6 +3,7 @@ import React from 'react'
 import { FeatureCard } from '~/components/marketing/FeatureCard'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
 import AppLink from '~/components/ui/AppLink'
+import { Reveal } from '~/components/ui/Reveal'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 
 const FEATURES = [
@@ -48,8 +49,10 @@ export const MethodSection: React.FC = () => (
         </AppLink>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {FEATURES.map((feature) => (
-          <FeatureCard key={feature.title} {...feature} />
+        {FEATURES.map((feature, index) => (
+          <Reveal key={feature.title} delay={index * 120} className="h-full">
+            <FeatureCard {...feature} />
+          </Reveal>
         ))}
       </div>
     </div>

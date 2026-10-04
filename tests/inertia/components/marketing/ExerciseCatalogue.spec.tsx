@@ -15,4 +15,13 @@ describe('ExerciseCatalogue', () => {
       expect(items[index]).toHaveTextContent(`Exercice ${index + 1}`)
     })
   })
+
+  test('chaque exercice a son icône décorative', () => {
+    render(<ExerciseCatalogue />)
+
+    for (const item of screen.getAllByRole('listitem')) {
+      const icon = item.querySelector('span[aria-hidden="true"] svg')
+      expect(icon).not.toBeNull()
+    }
+  })
 })

@@ -2,6 +2,7 @@ import { Check, X } from 'lucide-react'
 import React from 'react'
 import { BulletList } from '~/components/marketing/BulletList'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
+import { Reveal } from '~/components/ui/Reveal'
 import Card from '~/components/ui/Card'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 
@@ -47,7 +48,7 @@ export const AiSection: React.FC = () => (
         />
         <BulletList items={PRINCIPLES} />
       </div>
-      <div className="lg:col-span-6">
+      <Reveal delay={150} className="lg:col-span-6">
         <Card padding="lg" className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           <div className="space-y-3">
             <h3 className="text-title-sm">Ce que l’IA fait</h3>
@@ -72,7 +73,7 @@ export const AiSection: React.FC = () => (
             </ul>
           </div>
         </Card>
-      </div>
+      </Reveal>
     </div>
   </MarketingSection>
 )

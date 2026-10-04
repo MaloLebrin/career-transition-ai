@@ -19,9 +19,13 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
   tint = 'sun',
   className = '',
 }) => (
-  <Card padding="md" className={`flex h-full flex-col gap-4 ${className}`.trim()}>
+  <Card
+    padding="md"
+    interactive
+    className={`group flex h-full flex-col gap-4 transition duration-300 hover:-translate-y-1 ${className}`.trim()}
+  >
     <span
-      className={`flex h-10 w-10 items-center justify-center rounded-lg ${MARKETING_TINTS[tint].surface} ${MARKETING_TINTS[tint].ink}`}
+      className={`flex h-10 w-10 items-center justify-center rounded-lg transition duration-300 group-hover:scale-110 group-hover:-rotate-6 ${MARKETING_TINTS[tint].surface} ${MARKETING_TINTS[tint].ink}`}
       aria-hidden="true"
     >
       {icon}

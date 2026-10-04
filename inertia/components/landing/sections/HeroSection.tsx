@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react'
-import { Check } from 'lucide-react'
+import { Brain, Lock, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react'
 import React from 'react'
 import { LandscapeArt } from '~/components/marketing/LandscapeArt'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
@@ -9,11 +9,34 @@ import { buttonClassName } from '~/components/ui/Button'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 import { INDIVIDUALS_ACTION, LOGIN_ACTION } from '~/config/marketing'
 
-const PROOF_POINTS = [
-  'Huit exercices issus des sciences comportementales',
-  'Données pseudonymisées avant tout traitement par l’IA',
-  'Hébergement et traitements dans l’Union européenne',
+const PROOF_POINTS: Array<{ icon: LucideIcon; label: string }> = [
+  { icon: Brain, label: 'Huit exercices issus des sciences comportementales' },
+  { icon: Lock, label: 'Données pseudonymisées avant tout traitement par l’IA' },
+  { icon: ShieldCheck, label: 'Hébergement et traitements dans l’Union européenne' },
 ]
+
+interface FloatingChipProps {
+  icon: LucideIcon
+  label: string
+  className: string
+  /** Décalage de phase du flottement (secondes, négatif). */
+  delay: number
+}
+
+/** Puce flottante autour de l'aperçu produit : desktop seulement, décorative. */
+const FloatingChip: React.FC<FloatingChipProps> = ({ icon: Icon, label, className, delay }) => (
+  <span
+    className={`pointer-events-none absolute hidden animate-float items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-raised lg:inline-flex ${className}`}
+    style={{ animationDelay: `${delay}s` }}
+    aria-hidden="true"
+  >
+    <Icon className="h-4 w-4" />
+    {label}
+  </span>
+)
+
+/** Entrée en cascade du contenu du hero (`animate-slide-up`, retard par bloc). */
+const enter = (delayMs: number): React.CSSProperties => ({ animationDelay: `${delayMs}ms` })
 
 /**
  * Hero de la page d'accueil : un paysage apaisant en pleine largeur, puis la promesse, deux
@@ -33,14 +56,16 @@ export const HeroSection: React.FC = () => {
       <MarketingSection tone="canvas" className="pt-12 md:pt-16">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="space-y-8 lg:col-span-7">
-            <SectionHeading
-              level={1}
-              size="display-xl"
-              eyebrow="Pour les cabinets de transition professionnelle"
-              title="Structurez vos bilans de compétences, sans perdre la nuance."
-              description="Transition Carrière donne à vos conseillers un parcours d’exercices prêts à l’emploi, une synthèse assistée par l’IA et des livrables clairs. Le conseiller reste celui qui décide."
-            />
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="animate-slide-up">
+              <SectionHeading
+                level={1}
+                size="display-xl"
+                eyebrow="Pour les cabinets de transition professionnelle"
+                title="Structurez vos bilans de compétences, sans perdre la nuance."
+                description="Transition Carrière donne à vos conseillers un parcours d’exercices prêts à l’emploi, une synthèse assistée par l’IA et des livrables clairs. Le conseiller reste celui qui décide."
+              />
+            </div>
+            <div className="flex animate-slide-up flex-col gap-3 sm:flex-row" style={enter(120)}>
               <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
                 Demander une démo
               </a>
@@ -51,7 +76,10 @@ export const HeroSection: React.FC = () => {
                 Voir la méthodologie
               </AppLink>
             </div>
-            <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+            <p
+              className="flex animate-slide-up flex-wrap gap-x-4 gap-y-1 text-sm text-muted"
+              style={enter(200)}
+            >
               <span>
                 Déjà client ?{' '}
                 <AppLink
@@ -68,7 +96,7 @@ export const HeroSection: React.FC = () => {
               )}
             </p>
             {/* Les particuliers ont l'accueil du site, sans brouiller le message cabinet. */}
-            <p className="text-sm text-muted">
+            <p className="animate-slide-up text-sm text-muted" style={enter(260)}>
               <AppLink
                 href={INDIVIDUALS_ACTION.href}
                 className="font-medium text-accent hover:underline"
@@ -78,16 +106,34 @@ export const HeroSection: React.FC = () => {
               Découvrez le parcours en autonomie, avec deux exercices offerts.
             </p>
             <ul className="flex flex-col gap-2 border-t border-hairline pt-6 text-sm text-muted sm:flex-row sm:flex-wrap sm:gap-x-6">
-              {PROOF_POINTS.map((point) => (
-                <li key={point} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                  {point}
+              {PROOF_POINTS.map(({ icon: Icon, label }, index) => (
+                <li
+                  key={label}
+                  className="flex animate-slide-up items-center gap-2"
+                  style={enter(340 + index * 90)}
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                  {label}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="lg:col-span-5">
-            <ProductMockup />
+          <div className="relative animate-slide-up lg:col-span-5" style={enter(200)}>
+            <div className="animate-float [animation-duration:9s]">
+              <ProductMockup />
+            </div>
+            <FloatingChip
+              icon={Sparkles}
+              label="Synthèse prête à relire"
+              className="-left-4 top-10 bg-tint-lavender text-tint-lavender-ink"
+              delay={0}
+            />
+            <FloatingChip
+              icon={ShieldCheck}
+              label="Données pseudonymisées"
+              className="-right-3 bottom-8 bg-tint-meadow text-tint-meadow-ink"
+              delay={-3}
+            />
           </div>
         </div>
       </MarketingSection>
