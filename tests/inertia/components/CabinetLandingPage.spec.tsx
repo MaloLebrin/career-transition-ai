@@ -26,7 +26,7 @@ describe('CabinetLandingPage', () => {
     )
     expect(screen.getByRole('img', { name: /Aperçu du tableau de bord/ })).toBeInTheDocument()
     const landscape = screen.getByTestId('hero-landscape')
-    expect(landscape).toHaveClass('rounded-2xl', 'overflow-hidden')
+    expect(landscape).toHaveClass('w-full', 'overflow-hidden')
     expect(landscape.querySelector('svg[data-variant="hero"]')).toHaveAttribute(
       'aria-hidden',
       'true'
