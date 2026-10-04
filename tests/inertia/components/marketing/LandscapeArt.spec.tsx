@@ -59,4 +59,21 @@ describe('LandscapeArt', () => {
     expect(ids).toHaveLength(2)
     expect(new Set(ids).size).toBe(2)
   })
+
+  test('la variante hero anime nuages, oiseaux, halo du soleil et reflets du lac', () => {
+    const { container } = render(<LandscapeArt variant="hero" />)
+    for (const name of [
+      'landscape-cloud',
+      'landscape-birds',
+      'landscape-sun-halo',
+      'landscape-ripple',
+    ]) {
+      expect(container.querySelector(`.${name}`)).not.toBeNull()
+    }
+  })
+
+  test.each(['dusk', 'horizon'] as const)('la variante %s reste immobile', (variant) => {
+    const { container } = render(<LandscapeArt variant={variant} />)
+    expect(container.querySelector('[class*="landscape-"]')).toBeNull()
+  })
 })

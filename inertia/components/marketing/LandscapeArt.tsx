@@ -18,7 +18,9 @@ const VIEW_BOX: Record<LandscapeArtVariant, string> = {
  * Le seul bloc illustratif du design system (DESIGN.md §1) : un paysage calme — ciel abricot,
  * soleil, montagnes lavande, lac teal, prairie — dessiné en formes plates avec les teintes
  * expressives (`tint-*`, `tint-*-bold`). Aucune couleur en dur : tout passe par les variables
- * du thème. Purement décoratif, masqué aux lecteurs d'écran.
+ * du thème. Purement décoratif, masqué aux lecteurs d'écran. La variante `hero` s'anime
+ * doucement (nuages, oiseaux, halo du soleil, reflets du lac : classes `landscape-*` de
+ * `app.css`, coupées par `prefers-reduced-motion`).
  */
 export const LandscapeArt: React.FC<LandscapeArtProps> = ({ variant = 'hero', className = '' }) => {
   const skyId = `${useId()}-sky`
@@ -43,7 +45,7 @@ export const LandscapeArt: React.FC<LandscapeArtProps> = ({ variant = 'hero', cl
 const Birds: React.FC<{ transform?: string; animated?: boolean }> = ({ transform, animated }) => (
   <g transform={transform}>
     <g
-      className={animated ? 'animate-float' : undefined}
+      className={animated ? 'landscape-birds' : undefined}
       fill="none"
       stroke="var(--color-ink-soft)"
       strokeWidth="2"
@@ -74,22 +76,16 @@ const HeroScene: React.FC<{ skyId: string }> = ({ skyId }) => (
       r="96"
       fill="var(--color-sun-soft)"
       opacity="0.6"
-      className="animate-glow"
+      className="landscape-sun-halo"
     />
     <circle cx="880" cy="168" r="46" fill="var(--color-tint-sun-bold)" />
     {/* Nuages */}
     <g fill="var(--color-surface)" opacity="0.7">
-      <g className="animate-drift">
+      <g className="landscape-cloud landscape-cloud-slow">
         <ellipse cx="260" cy="110" rx="90" ry="18" />
         <ellipse cx="300" cy="98" rx="50" ry="20" />
       </g>
-      <ellipse
-        cx="1010"
-        cy="80"
-        rx="70"
-        ry="14"
-        className="animate-drift [animation-direction:alternate-reverse]"
-      />
+      <ellipse cx="1010" cy="80" rx="70" ry="14" className="landscape-cloud landscape-cloud-fast" />
     </g>
     <Birds transform="translate(560 120)" animated />
     {/* Montagnes lointaines → proches */}
@@ -111,12 +107,20 @@ const HeroScene: React.FC<{ skyId: string }> = ({ skyId }) => (
     {/* Lac */}
     <rect x="0" y="300" width="1200" height="60" fill="var(--color-tint-lake)" />
     <g stroke="var(--color-tint-lake-bold)" strokeWidth="3" strokeLinecap="round" opacity="0.45">
-      <path d="M140 322 h80" />
-      <path d="M460 334 h120" />
-      <path d="M700 316 h60" />
-      <path d="M980 330 h100" />
+      <path className="landscape-ripple" d="M140 322 h80" />
+      <path className="landscape-ripple landscape-ripple-b" d="M460 334 h120" />
+      <path className="landscape-ripple landscape-ripple-c" d="M700 316 h60" />
+      <path className="landscape-ripple landscape-ripple-d" d="M980 330 h100" />
     </g>
-    <ellipse cx="880" cy="322" rx="70" ry="9" fill="var(--color-sun-soft)" opacity="0.8" />
+    <ellipse
+      className="landscape-sun-halo"
+      cx="880"
+      cy="322"
+      rx="70"
+      ry="9"
+      fill="var(--color-sun-soft)"
+      opacity="0.8"
+    />
     {/* Prairie */}
     <path
       d="M0 352 C 200 318, 420 322, 620 348 S 1000 372, 1200 344 L1200 400 L0 400 Z"
