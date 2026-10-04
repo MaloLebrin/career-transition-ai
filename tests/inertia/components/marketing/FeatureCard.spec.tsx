@@ -16,7 +16,23 @@ describe('FeatureCard', () => {
     expect(screen.getByText('Vous passez plus de temps sur l’écoute.')).toBeInTheDocument()
     const tile = screen.getByTestId('icon').parentElement
     expect(tile).toHaveAttribute('aria-hidden', 'true')
-    expect(tile).toHaveClass('bg-tint-sun', 'text-ink')
+    expect(tile).toHaveClass('bg-tint-sun', 'text-tint-sun-ink')
     expect(container.firstChild).toHaveClass('rounded-xl')
+  })
+
+  test('colore la tuile d’icône selon la teinte demandée', () => {
+    render(
+      <FeatureCard
+        icon={<span data-testid="icon" />}
+        title="Données protégées"
+        description="Hébergées dans l’Union européenne."
+        tint="meadow"
+      />
+    )
+
+    expect(screen.getByTestId('icon').parentElement).toHaveClass(
+      'bg-tint-meadow',
+      'text-tint-meadow-ink'
+    )
   })
 })

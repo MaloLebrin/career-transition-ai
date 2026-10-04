@@ -17,7 +17,7 @@ const CabinetLandingPage: React.FC = () => (
   <PublicLayout header={CABINET_HEADER}>
     <HeroSection />
 
-    <MarketingSection tone="surface" id="parcours">
+    <MarketingSection tone="canvas" id="parcours">
       <div className="flex flex-col gap-10">
         <SectionHeading
           eyebrow="Le parcours"
@@ -33,7 +33,7 @@ const CabinetLandingPage: React.FC = () => (
 
     <MarketingDemoSection
       id="demo"
-      tone="surface"
+      tone="sky"
       title="Voyons si c’est un fit pour votre cabinet."
       description="Décrivez votre organisation et vos attentes : nous revenons vers vous sous 48h ouvrées avec une proposition adaptée."
     />

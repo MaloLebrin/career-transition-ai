@@ -7,18 +7,21 @@ import { SectionHeading } from '~/components/ui/SectionHeading'
 
 const FEATURES = [
   {
+    tint: 'lake' as const,
     icon: <ListChecks size={20} />,
     title: 'Un parcours par étapes',
     description:
       'Chaque bilan suit la même trame : exercices, entretiens, synthèse. Le conseiller entre en séance avec une structure, jamais une page blanche.',
   },
   {
+    tint: 'lavender' as const,
     icon: <Sparkles size={20} />,
     title: 'Une synthèse assistée, relue par le conseiller',
     description:
       'L’IA propose une première lecture des réponses, sépare faits, hypothèses et recommandations. Le conseiller corrige, nuance, puis restitue.',
   },
   {
+    tint: 'meadow' as const,
     icon: <ShieldCheck size={20} />,
     title: 'Des données protégées',
     description:
@@ -28,7 +31,7 @@ const FEATURES = [
 
 /** Les trois piliers de la méthode, avec renvoi vers la page méthodologie. */
 export const MethodSection: React.FC = () => (
-  <MarketingSection tone="canvas" id="methode" className="scroll-mt-16">
+  <MarketingSection tone="apricot" id="methode" className="scroll-mt-16">
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <SectionHeading

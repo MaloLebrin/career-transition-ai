@@ -37,7 +37,7 @@ const DOES_NOT = [
 
 /** Le rôle de l'IA, dit sans détour : copilote du conseiller, pas juge du candidat. */
 export const AiSection: React.FC = () => (
-  <MarketingSection tone="soft" id="ia">
+  <MarketingSection tone="lavender" id="ia">
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
       <div className="space-y-8 lg:col-span-6">
         <SectionHeading
