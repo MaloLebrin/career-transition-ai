@@ -1,5 +1,6 @@
 import { FileCheck, GitBranch, Lock, UserCheck } from 'lucide-react'
 import React from 'react'
+import { CABINET_HEADER } from '~/config/marketing'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
@@ -95,7 +96,7 @@ const ETHICS = [
 
 export default function MethodologyPage() {
   return (
-    <PublicLayout>
+    <PublicLayout header={CABINET_HEADER}>
       <MarketingSection tone="canvas">
         <SectionHeading
           level={1}
@@ -195,7 +196,7 @@ export default function MethodologyPage() {
               Poser une question
             </a>
             <AppLink
-              href="/tarifs"
+              href="/cabinets/tarifs"
               className={buttonClassName({
                 variant: 'outline',
                 size: 'lg',

@@ -12,7 +12,7 @@ const PublicFooter: React.FC = () => {
     <footer className="bg-ink py-16 text-on-ink-soft">
       <Container>
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
-          <div className="space-y-5 md:col-span-4">
+          <div className="space-y-5 md:col-span-3">
             <Logo size="md" tone="inverse" />
             <p className="max-w-sm text-sm leading-relaxed text-on-ink-soft">{FOOTER_TAGLINE}</p>
           </div>
@@ -32,10 +32,10 @@ const PublicFooter: React.FC = () => {
             </div>
           ))}
 
-          <div className="space-y-4 md:col-span-4">
+          <div className="space-y-4 md:col-span-3">
             <h2 className="text-sm font-semibold text-on-ink">Contact</h2>
             <p className="text-sm text-on-ink-soft">
-              Une question, une démo, l&apos;exercice de vos droits :
+              Une question, l&apos;exercice de vos droits, une démo pour votre cabinet :
               <br />
               <a
                 href={`mailto:${CONTACT_EMAIL}`}

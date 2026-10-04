@@ -2,10 +2,11 @@ import { usePage } from '@inertiajs/react'
 import { Menu } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import {
-  DEMO_ACTION,
   HOME_ACTION,
   LOGIN_ACTION,
   MARKETING_NAV,
+  REGISTER_ACTION,
+  WAITLIST_ACTION,
   type ActionItem,
   type NavItem,
 } from '~/config/marketing'
@@ -18,7 +19,10 @@ import { MobileMenu } from './MobileMenu'
 export interface PublicHeaderProps {
   /** Liens de navigation (défaut : `MARKETING_NAV`). */
   nav?: NavItem[]
-  /** Action principale (défaut : demander une démo) ; `null` pour la masquer. */
+  /**
+   * Action principale ; `null` pour la masquer. Par défaut : « Commencer gratuitement »
+   * quand l'inscription des particuliers est ouverte, « Être prévenu de l'ouverture » sinon.
+   */
   primaryAction?: ActionItem | null
   /** Action secondaire (défaut : se connecter) ; `null` pour la masquer. */
   secondaryAction?: ActionItem | null
@@ -37,11 +41,17 @@ const NAV_LINK_CLASS =
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({
   nav = MARKETING_NAV,
-  primaryAction = DEMO_ACTION,
+  primaryAction,
   secondaryAction = LOGIN_ACTION,
   minimal = false,
 }) => {
-  const { url } = usePage()
+  const { url, props } = usePage<{ b2cRegistrationEnabled?: boolean }>()
+  const mainAction =
+    primaryAction === undefined
+      ? props.b2cRegistrationEnabled
+        ? REGISTER_ACTION
+        : WAITLIST_ACTION
+      : primaryAction
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = useCallback(() => setMenuOpen(false), [])
 
@@ -85,12 +95,12 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
                   {secondaryAction.label}
                 </AppLink>
               )}
-              {primaryAction && (
+              {mainAction && (
                 <AppLink
-                  href={primaryAction.href}
+                  href={mainAction.href}
                   className={buttonClassName({ variant: 'primary', size: 'sm' })}
                 >
-                  {primaryAction.label}
+                  {mainAction.label}
                 </AppLink>
               )}
             </div>
@@ -108,7 +118,7 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
               open={menuOpen}
               onClose={closeMenu}
               items={nav}
-              primaryAction={primaryAction}
+              primaryAction={mainAction}
               secondaryAction={secondaryAction}
             />
           </>

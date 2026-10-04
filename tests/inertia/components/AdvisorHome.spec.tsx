@@ -120,9 +120,13 @@ describe('AdvisorHome', () => {
       />
     )
     const links = screen.getAllByRole('link')
-    const aliceLink = links.find((l) => l.getAttribute('href') === '/dashboard/conseiller/employees/1')
+    const aliceLink = links.find(
+      (l) => l.getAttribute('href') === '/dashboard/conseiller/employees/1'
+    )
     expect(aliceLink).toBeTruthy()
-    const bobLink = links.find((l) => l.getAttribute('href') === '/dashboard/conseiller/employees/2')
+    const bobLink = links.find(
+      (l) => l.getAttribute('href') === '/dashboard/conseiller/employees/2'
+    )
     expect(bobLink).toBeTruthy()
   })
 
@@ -160,9 +164,7 @@ describe('AdvisorHome', () => {
   })
 
   test('shows "Aucun candidat suivi" when accompaniments list is empty', () => {
-    render(
-      <AdvisorHome stats={baseStats} accompaniments={[]} upcomingAppointments={[]} />
-    )
+    render(<AdvisorHome stats={baseStats} accompaniments={[]} upcomingAppointments={[]} />)
     expect(screen.getByText('Aucun candidat suivi')).toBeInTheDocument()
   })
 

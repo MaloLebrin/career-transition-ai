@@ -50,14 +50,26 @@ describe('Détail d’un résultat d’exercice (conseiller)', () => {
 
   test('conserve le menu latéral (pas de hideSidebar)', () => {
     render(
-      <ExerciseResultDetail employeeId="5" employeeName="Camille" exerciseTitle="Valeurs" result={null} />
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={null}
+      />
     )
     expect(layoutProps.at(-1)?.hideSidebar).toBeFalsy()
     expect(layoutProps.at(-1)?.selectedEmployeeId).toBe('5')
   })
 
   test('sans résultat : message dédié et lien retour', () => {
-    render(<ExerciseResultDetail employeeId="5" employeeName="Camille" exerciseTitle="Valeurs" result={null} />)
+    render(
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={null}
+      />
+    )
     expect(screen.getByText('Aucun résultat enregistré pour cet exercice.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Retour aux résultats/ })).toHaveAttribute(
       'href',

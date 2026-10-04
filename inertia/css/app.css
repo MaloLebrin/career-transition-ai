@@ -146,6 +146,9 @@
   --animate-fade-in: fade-in 0.4s ease-out both;
   --animate-slide-up: slide-up 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-shake: shake 0.4s ease-in-out;
+  --animate-drift: drift 28s ease-in-out infinite alternate;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-glow: glow 6s ease-in-out infinite;
   --animate-fadeIn: var(--animate-fade-in);
   --animate-slideUp: var(--animate-slide-up);
 
@@ -165,6 +168,32 @@
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+  @keyframes drift {
+    from {
+      transform: translateX(-18px);
+    }
+    to {
+      transform: translateX(18px);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 0.9;
     }
   }
   @keyframes shake {

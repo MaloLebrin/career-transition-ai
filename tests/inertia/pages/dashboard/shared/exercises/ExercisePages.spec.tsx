@@ -40,7 +40,13 @@ vi.mock('~/hooks/use_advisor_exercises', () => ({
 }))
 
 vi.mock('~/components/dashboard/DashboardLayout', () => ({
-  default: ({ children, selectedEmployeeId }: { children: React.ReactNode; selectedEmployeeId: string | null }) => (
+  default: ({
+    children,
+    selectedEmployeeId,
+  }: {
+    children: React.ReactNode
+    selectedEmployeeId: string | null
+  }) => (
     <div data-testid="layout" data-employee={selectedEmployeeId ?? ''}>
       {children}
     </div>
@@ -79,14 +85,28 @@ function stubTool(React: ReactModule, name: string) {
   }
 }
 
-vi.mock('~/components/exercises/CircleOfControlTool', async () => stubTool(await import('react'), 'CircleOfControlTool'))
+vi.mock('~/components/exercises/CircleOfControlTool', async () =>
+  stubTool(await import('react'), 'CircleOfControlTool')
+)
 vi.mock('~/components/exercises/DISCTool', async () => stubTool(await import('react'), 'DISCTool'))
-vi.mock('~/components/exercises/LifeCurveTool', async () => stubTool(await import('react'), 'LifeCurveTool'))
-vi.mock('~/components/exercises/MotivationTool', async () => stubTool(await import('react'), 'MotivationTool'))
-vi.mock('~/components/exercises/PersonalityTool', async () => stubTool(await import('react'), 'PersonalityTool'))
-vi.mock('~/components/exercises/SkillMappingTool', async () => stubTool(await import('react'), 'SkillMappingTool'))
-vi.mock('~/components/exercises/TargetingTool', async () => stubTool(await import('react'), 'TargetingTool'))
-vi.mock('~/components/exercises/ValuesTool', async () => stubTool(await import('react'), 'ValuesTool'))
+vi.mock('~/components/exercises/LifeCurveTool', async () =>
+  stubTool(await import('react'), 'LifeCurveTool')
+)
+vi.mock('~/components/exercises/MotivationTool', async () =>
+  stubTool(await import('react'), 'MotivationTool')
+)
+vi.mock('~/components/exercises/PersonalityTool', async () =>
+  stubTool(await import('react'), 'PersonalityTool')
+)
+vi.mock('~/components/exercises/SkillMappingTool', async () =>
+  stubTool(await import('react'), 'SkillMappingTool')
+)
+vi.mock('~/components/exercises/TargetingTool', async () =>
+  stubTool(await import('react'), 'TargetingTool')
+)
+vi.mock('~/components/exercises/ValuesTool', async () =>
+  stubTool(await import('react'), 'ValuesTool')
+)
 
 /** Monte la page puis laisse l'outil factice résoudre son brouillon initial (asynchrone). */
 async function renderPage(ui: React.ReactElement) {
@@ -97,7 +117,10 @@ async function renderPage(ui: React.ReactElement) {
 
 type PageCase = {
   name: string
-  Page: ComponentType<{ employeeId?: string; initialDraftsByType?: Record<string, ExerciseDraft | null> }>
+  Page: ComponentType<{
+    employeeId?: string
+    initialDraftsByType?: Record<string, ExerciseDraft | null>
+  }>
   tool: string
   type: string
   hasDraft: boolean
@@ -105,14 +128,70 @@ type PageCase = {
 }
 
 const pages: PageCase[] = [
-  { name: 'CircleOfControl', Page: CircleOfControlExercise, tool: 'CircleOfControlTool', type: 'circle_of_control', hasDraft: true, requiresUser: false },
-  { name: 'DISC', Page: DISCExercise, tool: 'DISCTool', type: 'disc', hasDraft: true, requiresUser: false },
-  { name: 'LifeCurve', Page: LifeCurveExercise, tool: 'LifeCurveTool', type: 'life_curve', hasDraft: true, requiresUser: true },
-  { name: 'Motivation', Page: MotivationExercise, tool: 'MotivationTool', type: 'motivation', hasDraft: true, requiresUser: true },
-  { name: 'Personality', Page: PersonalityExercise, tool: 'PersonalityTool', type: 'personality', hasDraft: false, requiresUser: true },
-  { name: 'SkillMapping', Page: SkillMappingExercise, tool: 'SkillMappingTool', type: 'skill_mapping', hasDraft: true, requiresUser: false },
-  { name: 'Targeting', Page: TargetingExercise, tool: 'TargetingTool', type: 'targeting', hasDraft: false, requiresUser: true },
-  { name: 'Values', Page: ValuesExercise, tool: 'ValuesTool', type: 'values', hasDraft: true, requiresUser: false },
+  {
+    name: 'CircleOfControl',
+    Page: CircleOfControlExercise,
+    tool: 'CircleOfControlTool',
+    type: 'circle_of_control',
+    hasDraft: true,
+    requiresUser: false,
+  },
+  {
+    name: 'DISC',
+    Page: DISCExercise,
+    tool: 'DISCTool',
+    type: 'disc',
+    hasDraft: true,
+    requiresUser: false,
+  },
+  {
+    name: 'LifeCurve',
+    Page: LifeCurveExercise,
+    tool: 'LifeCurveTool',
+    type: 'life_curve',
+    hasDraft: true,
+    requiresUser: true,
+  },
+  {
+    name: 'Motivation',
+    Page: MotivationExercise,
+    tool: 'MotivationTool',
+    type: 'motivation',
+    hasDraft: true,
+    requiresUser: true,
+  },
+  {
+    name: 'Personality',
+    Page: PersonalityExercise,
+    tool: 'PersonalityTool',
+    type: 'personality',
+    hasDraft: false,
+    requiresUser: true,
+  },
+  {
+    name: 'SkillMapping',
+    Page: SkillMappingExercise,
+    tool: 'SkillMappingTool',
+    type: 'skill_mapping',
+    hasDraft: true,
+    requiresUser: false,
+  },
+  {
+    name: 'Targeting',
+    Page: TargetingExercise,
+    tool: 'TargetingTool',
+    type: 'targeting',
+    hasDraft: false,
+    requiresUser: true,
+  },
+  {
+    name: 'Values',
+    Page: ValuesExercise,
+    tool: 'ValuesTool',
+    type: 'values',
+    hasDraft: true,
+    requiresUser: false,
+  },
 ]
 
 describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, requiresUser }) => {
@@ -130,7 +209,10 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
     await renderPage(<Page employeeId="5" initialDraftsByType={{}} />)
     expect(screen.getByTestId('tool')).toHaveAttribute('data-tool', tool)
     expect(screen.getByTestId('layout')).toHaveAttribute('data-employee', '5')
-    expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute('href', '/dashboard/conseiller/employees/5')
+    expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/employees/5'
+    )
     expect(hook.calls.at(-1)![2]).toMatchObject({
       exercisesBasePath: '/dashboard/conseiller/employees/5/exercises',
     })
@@ -138,8 +220,13 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
 
   test('côté candidat : chemins /dashboard/candidat', async () => {
     await renderPage(<Page />)
-    expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute('href', '/dashboard/candidat')
-    expect(hook.calls.at(-1)![2]).toMatchObject({ exercisesBasePath: '/dashboard/candidat/exercises' })
+    expect(screen.getByRole('link', { name: /Retour/ })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat'
+    )
+    expect(hook.calls.at(-1)![2]).toMatchObject({
+      exercisesBasePath: '/dashboard/candidat/exercises',
+    })
   })
 
   test('enregistrer le résultat transmet le type, les données, le score 10 et la durée', async () => {
@@ -165,9 +252,17 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
 
   if (hasDraft) {
     test('brouillon : l’outil reçoit le brouillon du type et sauvegarde les brouillons', async () => {
-      const draft = { employeeId: '5', type, lastUpdated: '2024-01-01', data: { step: 2 } } as ExerciseDraft
+      const draft = {
+        employeeId: '5',
+        type,
+        lastUpdated: '2024-01-01',
+        data: { step: 2 },
+      } as ExerciseDraft
       const { user } = await renderPage(
-        <Page employeeId="5" initialDraftsByType={{ [type]: draft, autre: { ...draft, data: 'x' } }} />
+        <Page
+          employeeId="5"
+          initialDraftsByType={{ [type]: draft, autre: { ...draft, data: 'x' } }}
+        />
       )
       expect(await screen.findByText('{"step":2}')).toBeInTheDocument()
 

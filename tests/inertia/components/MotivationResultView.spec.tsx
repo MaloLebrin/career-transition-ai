@@ -14,9 +14,7 @@ describe('MotivationResultView', () => {
       scores: {},
       matrix: [],
     }
-    expect(() =>
-      render(<MotivationResultView data={data} {...defaultProps} />)
-    ).not.toThrow()
+    expect(() => render(<MotivationResultView data={data} {...defaultProps} />)).not.toThrow()
     expect(screen.getByText('Date de passage')).toBeInTheDocument()
     expect(screen.getByText('10 mai 2024')).toBeInTheDocument()
   })
@@ -31,9 +29,7 @@ describe('MotivationResultView', () => {
         // row 2+ missing: matrix[2] is undefined
       ],
     }
-    expect(() =>
-      render(<MotivationResultView data={data} {...defaultProps} />)
-    ).not.toThrow()
+    expect(() => render(<MotivationResultView data={data} {...defaultProps} />)).not.toThrow()
     expect(screen.getByText('Date de passage')).toBeInTheDocument()
   })
 
@@ -43,9 +39,7 @@ describe('MotivationResultView', () => {
       scores: {},
       matrix: undefined as unknown as (number | null)[][],
     }
-    expect(() =>
-      render(<MotivationResultView data={data} {...defaultProps} />)
-    ).not.toThrow()
+    expect(() => render(<MotivationResultView data={data} {...defaultProps} />)).not.toThrow()
     expect(screen.getByText('Durée du test')).toBeInTheDocument()
   })
 

@@ -22,9 +22,7 @@ describe('TargetingResultView', () => {
   })
 
   test('renders target comment', () => {
-    const targets = [
-      { id: 1, name: 'Organisme', type: 'Type', comment: 'Mon commentaire' },
-    ]
+    const targets = [{ id: 1, name: 'Organisme', type: 'Type', comment: 'Mon commentaire' }]
     render(<TargetingResultView targets={targets} />)
 
     expect(screen.getByText('"Mon commentaire"')).toBeInTheDocument()
@@ -48,8 +46,6 @@ describe('TargetingResultView', () => {
   test('displays header text', () => {
     render(<TargetingResultView targets={[]} />)
 
-    expect(
-      screen.getByText("Organismes de formation ou d'emploi ciblés")
-    ).toBeInTheDocument()
+    expect(screen.getByText("Organismes de formation ou d'emploi ciblés")).toBeInTheDocument()
   })
 })

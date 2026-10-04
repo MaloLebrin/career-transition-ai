@@ -49,7 +49,9 @@ describe('LifeCurveTool — parcours complet', () => {
     const user = userEvent.setup()
     render(<LifeCurveTool onSave={vi.fn()} onSaveDraft={vi.fn()} />)
     await user.click(screen.getByRole('button', { name: 'Ajouter au graphique' }))
-    expect(screen.getByText('Ajoutez au moins 2 points pour visualiser votre courbe')).toBeInTheDocument()
+    expect(
+      screen.getByText('Ajoutez au moins 2 points pour visualiser votre courbe')
+    ).toBeInTheDocument()
   })
 
   test('ajoute, trie et supprime des points ; le bouton Suivant apparaît à partir de 2 points', async () => {
@@ -195,7 +197,9 @@ describe('LifeCurveTool — parcours complet', () => {
       expect(chart.className).not.toMatch(/\bflex\b/)
 
       await addPoint(user, { year: 2010, label: 'Stage', satisfaction: 4 })
-      expect(screen.getByText('Ajoutez au moins 2 points pour visualiser votre courbe')).toBeInTheDocument()
+      expect(
+        screen.getByText('Ajoutez au moins 2 points pour visualiser votre courbe')
+      ).toBeInTheDocument()
 
       await addPoint(user, { year: 2014, label: 'Premier poste', satisfaction: 8 })
       await addPoint(user, { year: 2019, label: 'Reconversion', satisfaction: 6 })

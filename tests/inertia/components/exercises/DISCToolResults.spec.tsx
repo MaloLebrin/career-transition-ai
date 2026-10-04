@@ -52,4 +52,3 @@ describe('DISCTool results', () => {
     expect(payload.D).toBeLessThanOrEqual(100)
   })
 })
-

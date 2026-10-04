@@ -5,7 +5,7 @@ import MotivationMatrix from '../../../../../inertia/components/exercises/result
 describe('MotivationMatrix', () => {
   test('renders matrix legend and headers', () => {
     render(<MotivationMatrix matrix={[]} />)
-    expect(screen.getByText("Décision (ID Vainqueur)")).toBeInTheDocument()
+    expect(screen.getByText('Décision (ID Vainqueur)')).toBeInTheDocument()
     expect(screen.getByText('Diagonale (ID 0)')).toBeInTheDocument()
     const label = screen.getByText('La satisfaction de transmettre des connaissances')
     expect(label).toBeInTheDocument()
@@ -23,9 +23,11 @@ describe('MotivationMatrix', () => {
   })
 
   test('handles incomplete matrix rows without crashing', () => {
-    const matrix = [[null, 1], [0, null]] as (number | null)[][]
+    const matrix = [
+      [null, 1],
+      [0, null],
+    ] as (number | null)[][]
     expect(() => render(<MotivationMatrix matrix={matrix} />)).not.toThrow()
-    expect(screen.getByText("Décision (ID Vainqueur)")).toBeInTheDocument()
+    expect(screen.getByText('Décision (ID Vainqueur)')).toBeInTheDocument()
   })
 })
-

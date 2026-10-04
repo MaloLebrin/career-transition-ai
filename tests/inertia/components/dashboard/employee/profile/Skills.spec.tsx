@@ -44,6 +44,8 @@ describe('Skills', () => {
     expect(addButton).toBeDisabled()
 
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
-    expect(screen.queryByRole('heading', { name: 'Ajouter une compétence' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Ajouter une compétence' })
+    ).not.toBeInTheDocument()
   })
 })

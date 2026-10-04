@@ -19,7 +19,9 @@ vi.mock('@inertiajs/react', async () => {
 
 function Harness({ experience }: { experience: EmployeeData['experiences'][number] }) {
   const [isEditing, setIsEditing] = useState(false)
-  return <ExperienceItem experience={experience} isEditing={isEditing} setIsEditing={setIsEditing} />
+  return (
+    <ExperienceItem experience={experience} isEditing={isEditing} setIsEditing={setIsEditing} />
+  )
 }
 
 describe('ExperienceItem', () => {
@@ -56,7 +58,9 @@ describe('ExperienceItem', () => {
   test('en mode édition, Annuler revient à l’affichage', async () => {
     const { user } = renderWithUser(<Harness experience={makeExperience()} />)
     await user.click(screen.getByTitle('Modifier'))
-    expect(screen.getByRole('button', { name: 'Enregistrer les modifications' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Enregistrer les modifications' })
+    ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(screen.getByRole('heading', { name: 'Chef de projet' })).toBeInTheDocument()
@@ -91,7 +95,9 @@ describe('ExperienceItem', () => {
 
     await user.click(screen.getByTitle('Supprimer'))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Supprimer' }))
-    expect(screen.getByRole('alert')).toHaveTextContent("Impossible de supprimer l'expérience. Réessaie.")
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "Impossible de supprimer l'expérience. Réessaie."
+    )
   })
 
   test('annuler la suppression ferme la modale sans requête', async () => {

@@ -27,7 +27,9 @@ describe('CircleOfControlTool', () => {
       <CircleOfControlTool
         onSave={onSave}
         onSaveDraft={onSaveDraft}
-        initialDraftPromise={Promise.resolve({ data: { decisions: {}, currentIndex: 0, gameState: 'intro' } } as any)}
+        initialDraftPromise={Promise.resolve({
+          data: { decisions: {}, currentIndex: 0, gameState: 'intro' },
+        } as any)}
       />
     )
 
@@ -72,7 +74,11 @@ describe('CircleOfControlTool — tri complet', () => {
     const onSave = vi.fn()
     const onSaveDraft = vi.fn()
     render(
-      <CircleOfControlTool onSave={onSave} onSaveDraft={onSaveDraft} initialDraftPromise={Promise.resolve(null)} />
+      <CircleOfControlTool
+        onSave={onSave}
+        onSaveDraft={onSaveDraft}
+        initialDraftPromise={Promise.resolve(null)}
+      />
     )
     await act(async () => {})
 
@@ -131,7 +137,11 @@ describe('CircleOfControlTool — tri complet', () => {
         onSave={vi.fn()}
         onSaveDraft={vi.fn()}
         initialDraftPromise={Promise.resolve({
-          data: { decisions: { '1': 'inside', '2': 'outside' }, currentIndex: 19, gameState: 'summary' },
+          data: {
+            decisions: { '1': 'inside', '2': 'outside' },
+            currentIndex: 19,
+            gameState: 'summary',
+          },
         } as any)}
       />
     )

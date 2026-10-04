@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
-import LandingPage from '../../../inertia/components/landing/LandingPage'
+import CabinetLandingPage from '../../../inertia/components/landing/CabinetLandingPage'
 import { resetInertiaMock } from '../support/inertia_mock'
 
 vi.mock('@inertiajs/react', async () => {
@@ -9,17 +9,17 @@ vi.mock('@inertiajs/react', async () => {
   return inertiaMock()
 })
 
-describe('LandingPage', () => {
+describe('CabinetLandingPage', () => {
   beforeEach(() => resetInertiaMock())
 
   test('renders the hero with its promise and the two actions', () => {
-    render(<LandingPage />)
+    render(<CabinetLandingPage />)
 
     expect(
       screen.getByRole('heading', { level: 1, name: /Structurez vos bilans de compétences/ })
     ).toBeInTheDocument()
     const demoLinks = screen.getAllByRole('link', { name: 'Demander une démo' })
-    expect(demoLinks.map((link) => link.getAttribute('href'))).toContain('#demo')
+    expect(demoLinks.map((link) => link.getAttribute('href'))).toContain('/cabinets#demo')
     expect(screen.getByRole('link', { name: 'Voir la méthodologie' })).toHaveAttribute(
       'href',
       '/methodologie'
@@ -34,7 +34,7 @@ describe('LandingPage', () => {
   })
 
   test('shows the real exercise catalogue, the method and the AI sections', () => {
-    render(<LandingPage />)
+    render(<CabinetLandingPage />)
 
     for (const exercise of EXERCISE_LIST) {
       expect(screen.getAllByText(exercise.title).length).toBeGreaterThan(0)
@@ -46,12 +46,15 @@ describe('LandingPage', () => {
   })
 
   test('ends with the demo form and the call-to-action band', () => {
-    render(<LandingPage />)
+    render(<CabinetLandingPage />)
 
     expect(screen.getByRole('button', { name: 'Demander une démo' })).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: /Prêt à structurer vos accompagnements/ })
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Voir les tarifs' })).toHaveAttribute('href', '/tarifs')
+    expect(screen.getByRole('link', { name: 'Voir les tarifs' })).toHaveAttribute(
+      'href',
+      '/cabinets/tarifs'
+    )
   })
 })

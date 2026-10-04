@@ -36,9 +36,7 @@ describe('TargetingTool', () => {
       addButton.click()
     })
 
-    const nameInput = screen.getByPlaceholderText(
-      /AFPA, L'Oréal, Startup X/i
-    ) as HTMLInputElement
+    const nameInput = screen.getByPlaceholderText(/AFPA, L'Oréal, Startup X/i) as HTMLInputElement
     fireEvent.change(nameInput, { target: { value: 'AFPA' } })
 
     const saveButton = screen.getByRole('button', { name: /Valider mon ciblage expert/i })

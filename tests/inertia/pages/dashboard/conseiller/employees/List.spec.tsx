@@ -22,35 +22,27 @@ vi.mock('../../../../../../inertia/components/modals/AddEmployeeModal', () => ({
   ),
 }))
 
-vi.mock(
-  '../../../../../../inertia/components/dashboard/advisor/employees/EmployeesTable',
-  () => ({
-    EmployeesTable: ({
-      employees,
-      allEmployeesCount,
-    }: {
-      employees: Employee[]
-      allEmployeesCount: number
-    }) => (
-      <div data-testid="employees-table" data-all-count={allEmployeesCount}>
-        {employees.map((e) => (
-          <div key={e.id} data-testid="employee-row">
-            {e.name}
-          </div>
-        ))}
-      </div>
-    ),
-  })
-)
+vi.mock('../../../../../../inertia/components/dashboard/advisor/employees/EmployeesTable', () => ({
+  EmployeesTable: ({
+    employees,
+    allEmployeesCount,
+  }: {
+    employees: Employee[]
+    allEmployeesCount: number
+  }) => (
+    <div data-testid="employees-table" data-all-count={allEmployeesCount}>
+      {employees.map((e) => (
+        <div key={e.id} data-testid="employee-row">
+          {e.name}
+        </div>
+      ))}
+    </div>
+  ),
+}))
 
 vi.mock('../../../../../../inertia/components/ui/Input', () => ({
   default: ({ value, onChange, placeholder }: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input
-      data-testid="search-input"
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-    />
+    <input data-testid="search-input" value={value} onChange={onChange} placeholder={placeholder} />
   ),
 }))
 
@@ -64,11 +56,7 @@ vi.mock('../../../../../../inertia/components/ui/SelectField', () => ({
     onChange: (v: string) => void
     options: { value: string; label: string }[]
   }) => (
-    <select
-      data-testid="status-select"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
+    <select data-testid="status-select" value={value} onChange={(e) => onChange(e.target.value)}>
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}

@@ -4,9 +4,7 @@ import SkillMappingTool from '../../../inertia/components/exercises/SkillMapping
 
 vi.mock('../../../inertia/helpers/ai', () => ({
   extractSkillMappingFromText: vi.fn(async () => ({
-    mapping: [
-      { mission: 'Mission A', activity: 'Activité A', proof: 'Preuve A' },
-    ],
+    mapping: [{ mission: 'Mission A', activity: 'Activité A', proof: 'Preuve A' }],
   })),
 }))
 
@@ -16,22 +14,21 @@ describe('SkillMappingTool', () => {
     const onSaveDraft = vi.fn()
 
     const experiences = [
-      { id: 'exp-1', title: 'Développeur', company: 'ACME', startDate: '', endDate: '', isCurrent: false },
+      {
+        id: 'exp-1',
+        title: 'Développeur',
+        company: 'ACME',
+        startDate: '',
+        endDate: '',
+        isCurrent: false,
+      },
     ] as any
 
-    render(
-      <SkillMappingTool
-        onSave={onSave}
-        onSaveDraft={onSaveDraft}
-        experiences={experiences}
-      />
-    )
+    render(<SkillMappingTool onSave={onSave} onSaveDraft={onSaveDraft} experiences={experiences} />)
 
     expect(screen.getByText(/Racontez votre parcours/i)).toBeInTheDocument()
 
-    const textarea = screen.getByPlaceholderText(
-      /Dans mon dernier poste/i
-    ) as HTMLTextAreaElement
+    const textarea = screen.getByPlaceholderText(/Dans mon dernier poste/i) as HTMLTextAreaElement
 
     await act(async () => {
       fireEvent.change(textarea, {
@@ -52,9 +49,7 @@ describe('SkillMappingTool', () => {
 
     // Attendre que la deuxième étape (tableau) apparaisse
     await waitFor(() => {
-      expect(
-        screen.getByText(/Validation des Acquis/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Validation des Acquis/i)).toBeInTheDocument()
     })
 
     // Le draft doit avoir été sauvegardé au moins une fois (useEffect)
@@ -67,21 +62,20 @@ describe('SkillMappingTool', () => {
     const onSaveDraft = vi.fn()
 
     const experiences = [
-      { id: 'exp-1', title: 'Consultant', company: 'ACME', startDate: '', endDate: '', isCurrent: false },
+      {
+        id: 'exp-1',
+        title: 'Consultant',
+        company: 'ACME',
+        startDate: '',
+        endDate: '',
+        isCurrent: false,
+      },
     ] as any
 
-    render(
-      <SkillMappingTool
-        onSave={onSave}
-        onSaveDraft={onSaveDraft}
-        experiences={experiences}
-      />
-    )
+    render(<SkillMappingTool onSave={onSave} onSaveDraft={onSaveDraft} experiences={experiences} />)
 
     // Passer à l'étape 2 en remplissant le récit puis en cliquant sur le bouton
-    const textarea = screen.getByPlaceholderText(
-      /Dans mon dernier poste/i
-    ) as HTMLTextAreaElement
+    const textarea = screen.getByPlaceholderText(/Dans mon dernier poste/i) as HTMLTextAreaElement
 
     await act(async () => {
       fireEvent.change(textarea, {
@@ -132,4 +126,3 @@ describe('SkillMappingTool', () => {
     expect(duration).toBeGreaterThanOrEqual(0)
   })
 })
-

@@ -1,170 +1,83 @@
 import { usePage } from '@inertiajs/react'
-import { Check } from 'lucide-react'
 import React from 'react'
+import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
-import Badge from '../ui/Badge'
 import { buttonClassName } from '../ui/Button'
-import Card from '../ui/Card'
 import { SectionHeading } from '../ui/SectionHeading'
 import { CtaBand } from './CtaBand'
-import { useResultsPriceLabel } from './IndividualsPage'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
-import { PricingTierCard, type PricingTierCardProps } from './PricingTierCard'
-
-const TIERS: PricingTierCardProps[] = [
-  {
-    name: 'Essentiel',
-    tagline: 'Démarrer ou petit cabinet',
-    priceLabel: 'À partir de 149 €',
-    priceSuffix: '/ mois HT',
-    footnote: 'Jusqu’à 2 sièges conseiller · bilans actifs limités',
-    features: ['Exercices et parcours candidat', 'Tableau de bord conseiller', 'Support email'],
-    ctaHref: '#demo',
-    ctaLabel: 'Demander un devis',
-  },
-  {
-    name: 'Professionnel',
-    tagline: 'Le plus choisi par les cabinets',
-    priceLabel: 'À partir de 349 €',
-    priceSuffix: '/ mois HT',
-    footnote: 'Jusqu’à 8 sièges · volume bilans élargi',
-    features: [
-      'Tout Essentiel',
-      'Rapports et synthèses avancés',
-      'Onboarding équipe (1 session)',
-      'Support prioritaire',
-    ],
-    ctaHref: '#demo',
-    ctaLabel: 'Demander un devis',
-    featured: true,
-  },
-  {
-    name: 'Cabinet+',
-    tagline: 'Volume, multi-sites, intégrations',
-    priceLabel: 'Sur mesure',
-    priceSuffix: 'nous contacter',
-    footnote: 'Sièges illimités ou forfait bilan — conditions sur devis',
-    features: [
-      'Tout Professionnel',
-      'SSO / provisioning (selon besoin)',
-      'SLA et référent dédié',
-      'Formation et accompagnement renforcés',
-    ],
-    ctaHref: '#demo',
-    ctaLabel: 'Parler à un conseiller',
-  },
-]
+import { FREE_TITLE, LINK_CLASS } from './individuals/copy'
+import { ResultsPlanCard } from './individuals/ResultsPlanCard'
 
 const FAQ = [
   {
-    question: 'Y a-t-il une période d’essai ?',
+    question: 'Que comprennent les exercices offerts ?',
     answer:
-      'Nous privilégions une démo cadrée puis un pilote court selon votre contexte. Indiquez-le dans votre message : nous adaptons la proposition.',
+      'Motivations et Valeurs, avec leurs résultats et leur analyse. Ils restent acquis, que vous débloquiez la suite ou non.',
   },
   {
-    question: 'Comment sont comptés les sièges ?',
-    answer:
-      'Un siège correspond à un conseiller actif sur la plateforme. Les candidats / salariés accompagnés ne sont pas facturés comme sièges.',
+    question: 'Le forfait est-il un abonnement ?',
+    answer: 'Non. Le forfait est réglé une seule fois, sans reconduction. Le prix affiché est TTC.',
   },
   {
-    question: 'Puis-je résilier ou changer d’offre ?',
+    question: 'Comment se déroule le paiement ?',
     answer:
-      'Oui, les conditions d’engagement et de résiliation sont précisées au devis (souvent engagement annuel avec flexibilité à l’échéance).',
+      'Par Stripe, sur une page de paiement sécurisée. Votre adresse e-mail doit être vérifiée avant de payer, et la facture vous est envoyée par e-mail.',
   },
   {
-    question: 'La TVA s’applique-t-elle ?',
+    question: 'Et l’accompagnement par un expert ?',
     answer:
-      'Selon votre statut et le lieu de facturation. Les montants des offres cabinets sont HT ; la TVA éventuelle est indiquée sur le devis. Le forfait particuliers est affiché TTC.',
+      'Une fois le forfait réglé, vous pouvez demander à être accompagné par un expert. Les séances font l’objet d’un tarif et d’un contrat à part, sur demande.',
+  },
+  {
+    question: 'Où trouver les conditions de vente ?',
+    answer: 'Sur la page Conditions de vente, accessible depuis le pied de page de chaque page.',
   },
 ]
 
-/** Forfait particuliers (épic B2C #99) : ce qu'il comprend, ce qu'il ne comprend pas. */
-const INDIVIDUAL_INCLUDED = [
-  'Motivations et Valeurs offerts, résultats visibles sans paiement',
-  'Les six autres exercices et leurs analyses IA',
-  'Votre synthèse de parcours et son export PDF',
-  'La possibilité de demander un accompagnement par un expert',
-]
-
+/** Tarif public `/tarifs` : le forfait particuliers (TTC). La grille cabinets est sur `/cabinets/tarifs`. */
 export default function PricingPage() {
   const { props } = usePage<{ b2cRegistrationEnabled?: boolean }>()
   const registrationOpen = Boolean(props.b2cRegistrationEnabled)
-  const individualPrice = useResultsPriceLabel()
 
   return (
     <PublicLayout>
       <MarketingSection tone="canvas">
-        <SectionHeading
-          level={1}
-          size="display-lg"
-          align="center"
-          eyebrow="Tarifs pour cabinets et organismes"
-          title="Des offres claires, adaptées à votre volume."
-          description="Prix indicatifs hors taxes pour les cabinets, facturation au choix (mensuelle ou annuelle). Le devis final intègre vos besoins en sièges conseiller, bilans actifs et options."
-        />
-        <p className="mt-4 text-center text-sm text-muted">
-          Montants indicatifs, devis personnalisé sous 48h ouvrées.
-        </p>
-        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {TIERS.map((tier) => (
-            <PricingTierCard key={tier.name} {...tier} />
-          ))}
-        </div>
-      </MarketingSection>
-
-      <MarketingSection tone="soft" id="particuliers" className="scroll-mt-16">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="space-y-6 lg:col-span-6">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="space-y-8 lg:col-span-6">
             <SectionHeading
-              eyebrow="Vous êtes un particulier ?"
+              level={1}
+              size="display-lg"
+              eyebrow="Tarif"
               title="Un forfait unique, réglé une fois."
-              description="Pas de cabinet, pas d’abonnement : vous faites deux exercices gratuitement, puis débloquez l’ensemble du parcours si vous le souhaitez. Prix TTC, paiement sécurisé par Stripe, facture envoyée par e-mail."
+              description="Vous commencez gratuitement avec deux exercices. Si la suite vous parle, un paiement unique débloque l’ensemble du parcours, sans abonnement."
             />
-            <div className="flex flex-wrap gap-3">
-              <AppLink href="/particuliers" className={buttonClassName({ variant: 'outline' })}>
-                Découvrir le parcours particuliers
-              </AppLink>
-              {registrationOpen && (
-                <AppLink href="/inscription" className={buttonClassName({ variant: 'primary' })}>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {registrationOpen ? (
+                <AppLink
+                  href={B2C_PUBLIC_PATHS.register}
+                  className={buttonClassName({ variant: 'primary', size: 'lg' })}
+                >
                   Commencer gratuitement
                 </AppLink>
+              ) : (
+                <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+                  Être prévenu de l’ouverture
+                </a>
               )}
             </div>
-          </div>
-          <Card
-            padding="lg"
-            className="flex h-full flex-col lg:col-span-6"
-            role="group"
-            aria-label="Forfait particuliers"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <h3 className="text-title-lg">Forfait particuliers</h3>
-                <p className="text-sm text-muted">Accès complet aux résultats</p>
-              </div>
-              <Badge variant="sun">Paiement unique</Badge>
-            </div>
-            <div className="mt-6">
-              <p className="text-display-sm text-ink">{individualPrice}</p>
-              <p className="mt-1 text-sm text-muted">TTC, une seule fois</p>
-            </div>
-            <ul className="mt-6 flex-1 space-y-3">
-              {INDIVIDUAL_INCLUDED.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                  <span className="text-ink-soft">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 text-caption text-muted">
-              Les séances avec un expert font l’objet d’un tarif et d’un contrat à part.{' '}
-              <AppLink href="/cgv" className="font-medium text-accent hover:underline">
-                Conditions de vente
+            <p className="text-sm text-muted">
+              Vous êtes un cabinet ?{' '}
+              <AppLink href="/cabinets/tarifs" className={LINK_CLASS}>
+                Voir les tarifs cabinets
               </AppLink>
             </p>
-          </Card>
+          </div>
+          <div className="lg:col-span-6">
+            <ResultsPlanCard />
+          </div>
         </div>
       </MarketingSection>
 
@@ -180,37 +93,34 @@ export default function PricingPage() {
         </dl>
       </MarketingSection>
 
-      <MarketingDemoSection
-        id="demo"
-        tone="soft"
-        eyebrow="Devis personnalisé"
-        title="Affinons le bon niveau pour votre cabinet."
-        description="Décrivez votre organisation et votre volume : nous revenons vers vous avec une grille tarifaire adaptée (sièges, bilans, options)."
-      >
-        <AppLink href="/offre" className="text-sm font-medium text-accent hover:underline">
-          Voir l’offre détaillée
-        </AppLink>
-      </MarketingDemoSection>
+      {!registrationOpen && (
+        <MarketingDemoSection
+          id="contact"
+          tone="soft"
+          variant="contact"
+          eyebrow="Bientôt disponible"
+          title="L’inscription des particuliers ouvre prochainement."
+          description="Laissez-nous votre adresse : nous vous prévenons dès que vous pourrez commencer les exercices offerts."
+        />
+      )}
 
       <CtaBand
-        title="Une question sur la facturation ?"
-        description="Écrivez-nous ou demandez une démo : nous vous proposons une grille claire, sans surprise."
+        eyebrow="Pour les particuliers"
+        title={`${FREE_TITLE} pour commencer.`}
+        description="Pas de carte bancaire, pas d’engagement. Vous décidez ensuite si la suite vaut le forfait."
         actions={
-          <>
-            <a href="#demo" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
-              Demander un devis
-            </a>
+          registrationOpen ? (
             <AppLink
-              href="/offre"
-              className={buttonClassName({
-                variant: 'outline',
-                size: 'lg',
-                className: 'border-on-ink/30 bg-transparent text-on-ink hover:bg-on-ink/10',
-              })}
+              href={B2C_PUBLIC_PATHS.register}
+              className={buttonClassName({ variant: 'secondary', size: 'lg' })}
             >
-              Découvrir l’offre
+              Commencer gratuitement
             </AppLink>
-          </>
+          ) : (
+            <a href="#contact" className={buttonClassName({ variant: 'secondary', size: 'lg' })}>
+              Être prévenu de l’ouverture
+            </a>
+          )
         }
       />
     </PublicLayout>

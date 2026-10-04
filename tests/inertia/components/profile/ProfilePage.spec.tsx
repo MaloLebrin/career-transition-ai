@@ -148,7 +148,9 @@ describe('ProfilePage', () => {
     })
 
     // Ajout : la nouvelle expérience vide arrive en tête
-    const [addExperience] = within(screen.getByRole('heading', { name: 'Parcours Pro' }).parentElement!).getAllByRole('button')
+    const [addExperience] = within(
+      screen.getByRole('heading', { name: 'Parcours Pro' }).parentElement!
+    ).getAllByRole('button')
     await user.click(addExperience)
     expect(screen.getAllByRole('textbox', { name: 'Intitulé' })).toHaveLength(2)
     expect(screen.getAllByRole('textbox', { name: 'Intitulé' })[0]).toHaveValue('')
@@ -181,7 +183,9 @@ describe('ProfilePage', () => {
       isCurrent: true,
     })
 
-    const [addEducation] = within(screen.getByRole('heading', { name: 'Éducation' }).parentElement!).getAllByRole('button')
+    const [addEducation] = within(
+      screen.getByRole('heading', { name: 'Éducation' }).parentElement!
+    ).getAllByRole('button')
     await user.click(addEducation)
     expect(screen.getAllByRole('textbox', { name: 'Diplôme' })).toHaveLength(2)
 
@@ -223,7 +227,8 @@ describe('ProfilePage', () => {
     await user.click(screen.getByRole('button', { name: 'Compétences' }))
     await user.click(screen.getByRole('button', { name: '+ Ajouter une compétence' }))
 
-    const modal = screen.getByRole('heading', { name: 'Ajouter une Compétence' }).parentElement as HTMLElement
+    const modal = screen.getByRole('heading', { name: 'Ajouter une Compétence' })
+      .parentElement as HTMLElement
     const submit = within(modal).getByRole('button', { name: 'Ajouter au profil' })
     expect(submit).toBeDisabled()
     expect(within(modal).getByText('Niveau Confirmé')).toBeInTheDocument()
@@ -248,7 +253,9 @@ describe('ProfilePage', () => {
     await user.clear(nameInput)
     await user.type(nameInput, 'Power BI')
     await user.click(submit)
-    expect(screen.queryByRole('heading', { name: 'Ajouter une Compétence' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Ajouter une Compétence' })
+    ).not.toBeInTheDocument()
     expect(screen.getByText('Power BI')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Sauvegarder' }))
@@ -259,10 +266,13 @@ describe('ProfilePage', () => {
 
     // Réouverture puis fermeture par la croix
     await user.click(screen.getByRole('button', { name: '+ Ajouter une compétence' }))
-    const reopened = screen.getByRole('heading', { name: 'Ajouter une Compétence' }).parentElement as HTMLElement
+    const reopened = screen.getByRole('heading', { name: 'Ajouter une Compétence' })
+      .parentElement as HTMLElement
     expect(within(reopened).getByRole('textbox', { name: 'Nom de la compétence' })).toHaveValue('')
     await user.click(within(reopened).getAllByRole('button')[0])
-    expect(screen.queryByRole('heading', { name: 'Ajouter une Compétence' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Ajouter une Compétence' })
+    ).not.toBeInTheDocument()
   })
 
   test('import de CV : fusionne les données extraites avec le profil', async () => {
@@ -280,7 +290,9 @@ describe('ProfilePage', () => {
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
     await user.upload(fileInput, new File(['%PDF'], 'cv.pdf', { type: 'application/pdf' }))
 
-    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Nom complet' })).toHaveValue('Camille M.'))
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: 'Nom complet' })).toHaveValue('Camille M.')
+    )
     expect(extractCVData).toHaveBeenCalledWith(expect.any(File))
     expect(screen.getByText('Mettre à jour par CV')).toBeInTheDocument()
 
@@ -300,7 +312,9 @@ describe('ProfilePage', () => {
     const { container } = renderPage()
 
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
-    fireEvent.change(fileInput, { target: { files: [new File(['x'], 'cv.png', { type: 'image/png' })] } })
+    fireEvent.change(fileInput, {
+      target: { files: [new File(['x'], 'cv.png', { type: 'image/png' })] },
+    })
     await waitFor(() => expect(extractCVData).toHaveBeenCalled())
     await waitFor(() => expect(screen.getByText('Mettre à jour par CV')).toBeInTheDocument())
     expect(screen.getByRole('textbox', { name: 'Nom complet' })).toHaveValue('Camille Martin')

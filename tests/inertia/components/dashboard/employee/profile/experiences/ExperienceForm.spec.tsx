@@ -48,7 +48,10 @@ describe('ExperienceForm', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'freelance')
     await user.type(screen.getByRole('textbox', { name: /Date de début/ }), '01/2021')
     await user.type(screen.getByRole('textbox', { name: /Date de fin/ }), '12/2022')
-    await user.type(screen.getByPlaceholderText('Décrivez vos missions et réalisations...'), 'API REST')
+    await user.type(
+      screen.getByPlaceholderText('Décrivez vos missions et réalisations...'),
+      'API REST'
+    )
     await user.click(screen.getByRole('button', { name: "Ajouter l'expérience" }))
 
     const submission = formSubmissions.at(-1)!

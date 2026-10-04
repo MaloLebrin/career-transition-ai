@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react'
-import LandingPage from '~/components/landing/LandingPage'
+import IndividualsPage from '~/components/marketing/IndividualsPage'
 
 export default function Home() {
   return (
     <>
-      <Head title="Logiciel de bilan de compétences pour cabinets" />
-      <LandingPage />
+      <Head title="Bilan de carrière en autonomie" />
+      <IndividualsPage />
     </>
   )
 }

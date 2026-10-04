@@ -65,12 +65,16 @@ describe('EmployeesTable', () => {
   })
 
   test('affiche le targetRole quand il est défini', () => {
-    render(<EmployeesTable employees={[makeEmployee({ targetRole: 'CTO' })]} allEmployeesCount={1} />)
+    render(
+      <EmployeesTable employees={[makeEmployee({ targetRole: 'CTO' })]} allEmployeesCount={1} />
+    )
     expect(screen.getByText('CTO')).toBeInTheDocument()
   })
 
   test('affiche "—" quand targetRole est absent', () => {
-    render(<EmployeesTable employees={[makeEmployee({ targetRole: undefined })]} allEmployeesCount={1} />)
+    render(
+      <EmployeesTable employees={[makeEmployee({ targetRole: undefined })]} allEmployeesCount={1} />
+    )
     expect(screen.getByText('—')).toBeInTheDocument()
   })
 
@@ -92,7 +96,9 @@ describe('EmployeesTable', () => {
   })
 
   test('affiche "En attente" quand le candidat n\'est pas accompagné', () => {
-    render(<EmployeesTable employees={[makeEmployee({ onboarded: false })]} allEmployeesCount={1} />)
+    render(
+      <EmployeesTable employees={[makeEmployee({ onboarded: false })]} allEmployeesCount={1} />
+    )
     expect(screen.getByText('En attente')).toBeInTheDocument()
   })
 

@@ -22,9 +22,7 @@ vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
 }))
 
 vi.mock('../../../../../../inertia/components/dashboard/DashboardLayout', () => ({
-  default: ({ children }: any) => (
-    <div data-testid="layout">{children}</div>
-  ),
+  default: ({ children }: any) => <div data-testid="layout">{children}</div>,
 }))
 
 vi.mock('../../../../../../inertia/components/ui/AppLink', () => ({
@@ -50,12 +48,7 @@ const mockExercises: ExerciseListEntry[] = [
 
 describe('Dashboard candidat - Exercise list', () => {
   test('links only to unlocked exercises, and shows locked label otherwise', () => {
-    render(
-      <ExerciseList
-        exercises={mockExercises}
-        unlockedExerciseSlugs={['motivation']}
-      />
-    )
+    render(<ExerciseList exercises={mockExercises} unlockedExerciseSlugs={['motivation']} />)
 
     expect(screen.getByText('Tous les exercices')).toBeInTheDocument()
 
@@ -65,9 +58,7 @@ describe('Dashboard candidat - Exercise list', () => {
     expect(unlockedLink).toHaveAttribute('href', '/dashboard/candidat/exercises/motivation')
 
     // Locked exercise should not be wrapped into a link.
-    expect(
-      screen.queryByRole('link', { name: /Recherche de Valeurs/i })
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Recherche de Valeurs/i })).not.toBeInTheDocument()
 
     expect(screen.getByText('Verrouillé')).toBeInTheDocument()
   })

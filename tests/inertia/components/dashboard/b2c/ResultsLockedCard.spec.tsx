@@ -49,7 +49,9 @@ describe('ResultsLockedCard (#101)', () => {
     billingState.value = { paymentsEnabled: false, resultsPriceCents: 4900, currency: 'eur' }
     render(<ResultsLockedCard title="Votre synthèse est réservée au forfait" />)
 
-    expect(screen.getByRole('region', { name: 'Votre synthèse est réservée au forfait' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Votre synthèse est réservée au forfait' })
+    ).toBeInTheDocument()
     expect(screen.getByText('Paiement bientôt disponible')).toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })

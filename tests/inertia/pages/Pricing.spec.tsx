@@ -8,48 +8,44 @@ vi.mock('@inertiajs/react', async () => {
   return inertiaMock()
 })
 
-describe('Pricing page', () => {
+describe('Pricing page (forfait particuliers)', () => {
   beforeEach(() => resetInertiaMock())
 
-  test('renders three pricing tiers, FAQ and devis CTA', () => {
-    render(<Pricing />)
-
-    expect(
-      screen.getByRole('heading', { level: 1, name: /Des offres claires/i })
-    ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^Essentiel$/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^Professionnel$/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /^Cabinet\+$/i })).toBeInTheDocument()
-    expect(screen.getByText(/Questions fréquentes/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/Demander un devis/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('link', { name: 'Se connecter' }).length).toBeGreaterThan(0)
-  })
-
-  test('bloc « Particuliers » (#99) : prix TTC de la prop billing, lien vers la page, CTA si inscription ouverte', () => {
+  test('forfait TTC de la prop billing, FAQ, CTA d’inscription si ouverte', () => {
     setPageProps({
       b2cRegistrationEnabled: true,
       billing: { paymentsEnabled: false, resultsPriceCents: 5900, currency: 'eur' },
     })
     render(<Pricing />)
 
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Un forfait unique, réglé une fois/ })
+    ).toBeInTheDocument()
     const card = screen.getByRole('group', { name: 'Forfait particuliers' })
     expect(card).toHaveTextContent('59 €')
-    expect(card).toHaveTextContent('TTC, une seule fois')
-    expect(screen.getByRole('link', { name: 'Découvrir le parcours particuliers' })).toHaveAttribute(
+    expect(card).toHaveTextContent('TTC')
+    expect(screen.getByText('Questions fréquentes')).toBeInTheDocument()
+    for (const cta of screen.getAllByRole('link', { name: 'Commencer gratuitement' })) {
+      expect(cta).toHaveAttribute('href', '/inscription')
+    }
+  })
+
+  test('renvoie vers la grille tarifaire des cabinets', () => {
+    render(<Pricing />)
+
+    expect(screen.getByRole('link', { name: 'Voir les tarifs cabinets' })).toHaveAttribute(
       'href',
-      '/particuliers'
-    )
-    expect(screen.getByRole('link', { name: 'Commencer gratuitement' })).toHaveAttribute(
-      'href',
-      '/inscription'
+      '/cabinets/tarifs'
     )
   })
 
-  test('inscription fermée : pas de CTA d’inscription, prix par défaut', () => {
+  test('inscription fermée : liste d’attente, prix par défaut', () => {
     setPageProps({ b2cRegistrationEnabled: false })
     render(<Pricing />)
 
     expect(screen.queryByRole('link', { name: 'Commencer gratuitement' })).not.toBeInTheDocument()
+    const waitlist = screen.getAllByRole('link', { name: 'Être prévenu de l’ouverture' })
+    expect(waitlist.map((link) => link.getAttribute('href'))).toContain('#contact')
     expect(screen.getByRole('group', { name: 'Forfait particuliers' })).toHaveTextContent('49 €')
   })
 })

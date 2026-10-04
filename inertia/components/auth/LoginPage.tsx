@@ -1,6 +1,8 @@
 import { router } from '@inertiajs/react'
 import { AlertCircle } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
+import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
+import { CABINETS_ACTION } from '../../config/marketing'
 import { hasErrors, validateLogin, type LoginErrors } from '../../helpers/auth_validation'
 import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
@@ -12,18 +14,15 @@ interface LoginPageProps {
   error: string | null
   /** Message de succès (ex. après réinitialisation du mot de passe). */
   success?: string | null
-  /** Absent quand l'inscription publique est fermée : le lien est masqué. */
-  onGoToRegister?: () => void
-  /** Absent quand l'inscription des particuliers (#93) est fermée : le lien est masqué. */
-  onGoToRegisterCandidate?: () => void
+  /** Inscription des particuliers (#93) ouverte : sinon le lien « Créer mon compte » est masqué. */
+  candidateRegistrationEnabled?: boolean
 }
 
 export default function LoginPage({
   csrfToken,
   error,
   success,
-  onGoToRegister,
-  onGoToRegisterCandidate,
+  candidateRegistrationEnabled = false,
 }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -60,34 +59,28 @@ export default function LoginPage({
       title="Connexion"
       subtitle="Saisissez vos identifiants pour continuer."
       footer={
-        onGoToRegister || onGoToRegisterCandidate ? (
-          <div className="space-y-2">
-            {onGoToRegister && (
-              <p>
-                Vous n’avez pas encore de compte ?{' '}
-                <button
-                  type="button"
-                  onClick={onGoToRegister}
-                  className="font-medium text-accent hover:underline cursor-pointer"
-                >
-                  S’inscrire gratuitement
-                </button>
-              </p>
-            )}
-            {onGoToRegisterCandidate && (
-              <p>
-                Vous êtes un particulier ?{' '}
-                <button
-                  type="button"
-                  onClick={onGoToRegisterCandidate}
-                  className="font-medium text-accent hover:underline cursor-pointer"
-                >
-                  Créer mon compte
-                </button>
-              </p>
-            )}
-          </div>
-        ) : undefined
+        <div className="space-y-2">
+          {candidateRegistrationEnabled && (
+            <p>
+              Vous n’avez pas encore de compte ?{' '}
+              <AppLink
+                href={B2C_PUBLIC_PATHS.register}
+                className="font-medium text-accent hover:underline"
+              >
+                Créer mon compte
+              </AppLink>
+            </p>
+          )}
+          <p>
+            Vous êtes un cabinet ?{' '}
+            <AppLink
+              href={CABINETS_ACTION.href}
+              className="font-medium text-accent hover:underline"
+            >
+              Espace cabinet
+            </AppLink>
+          </p>
+        </div>
       }
     >
       {error && (

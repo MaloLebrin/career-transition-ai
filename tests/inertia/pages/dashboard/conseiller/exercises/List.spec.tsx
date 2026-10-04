@@ -42,7 +42,10 @@ describe('Liste des résultats d’exercices (conseiller)', () => {
   test('état vide et lien retour vers la fiche', () => {
     render(<ConseillerExerciseList employeeId="5" results={[]} />)
     expect(screen.getByText(/Aucun exercice réalisé/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '← Retour' })).toHaveAttribute('href', '/dashboard/conseiller/employees/5')
+    expect(screen.getByRole('link', { name: '← Retour' })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/employees/5'
+    )
   })
 
   test('liste les résultats avec statut et date formatée', () => {

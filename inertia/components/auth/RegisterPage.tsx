@@ -2,6 +2,8 @@ import { router } from '@inertiajs/react'
 import { AlertCircle } from 'lucide-react'
 import React, { useState } from 'react'
 import { hasErrors, validateRegister, type RegisterErrors } from '../../helpers/auth_validation'
+import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
+import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { AuthShell } from './AuthShell'
@@ -10,9 +12,16 @@ interface RegisterPageProps {
   csrfToken?: string
   onGoToLogin: () => void
   error: string | null
+  /** Inscription des particuliers (#93) ouverte : sinon le renvoi vers `/inscription` est masqué. */
+  candidateRegistrationEnabled?: boolean
 }
 
-export default function RegisterPage({ csrfToken, onGoToLogin, error }: RegisterPageProps) {
+export default function RegisterPage({
+  csrfToken,
+  onGoToLogin,
+  error,
+  candidateRegistrationEnabled = false,
+}: RegisterPageProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,19 +57,32 @@ export default function RegisterPage({ csrfToken, onGoToLogin, error }: Register
 
   return (
     <AuthShell
-      title="Création de compte"
-      subtitle="Remplissez les champs pour créer votre espace."
+      title="Création de compte cabinet"
+      subtitle="Remplissez les champs pour créer l’espace de votre cabinet."
       footer={
-        <p>
-          Vous avez déjà un compte ?{' '}
-          <button
-            type="button"
-            onClick={onGoToLogin}
-            className="font-medium text-accent hover:underline cursor-pointer"
-          >
-            Se connecter
-          </button>
-        </p>
+        <div className="space-y-2">
+          <p>
+            Vous avez déjà un compte ?{' '}
+            <button
+              type="button"
+              onClick={onGoToLogin}
+              className="font-medium text-accent hover:underline cursor-pointer"
+            >
+              Se connecter
+            </button>
+          </p>
+          {candidateRegistrationEnabled && (
+            <p>
+              Vous êtes un particulier ?{' '}
+              <AppLink
+                href={B2C_PUBLIC_PATHS.register}
+                className="font-medium text-accent hover:underline"
+              >
+                Créer mon compte
+              </AppLink>
+            </p>
+          )}
+        </div>
       }
     >
       {error && (

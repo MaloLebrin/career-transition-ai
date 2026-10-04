@@ -24,15 +24,23 @@ const mockExercises = [
 ]
 
 const mockResults = [
-  { slug: 'motivation', title: 'Analyse Motivations', date: '2024-06-05T10:00:00.000Z', status: 'completed' },
-  { slug: 'values', title: 'Recherche de Valeurs', date: '2024-06-01T14:00:00.000Z', status: 'draft' },
+  {
+    slug: 'motivation',
+    title: 'Analyse Motivations',
+    date: '2024-06-05T10:00:00.000Z',
+    status: 'completed',
+  },
+  {
+    slug: 'values',
+    title: 'Recherche de Valeurs',
+    date: '2024-06-01T14:00:00.000Z',
+    status: 'draft',
+  },
 ]
 
 describe('Exercise list page (dashboard/exercises/List)', () => {
   test('renders candidat context with title and exercise cards', () => {
-    render(
-      <ExerciseList exercises={mockExercises} context="candidat" />
-    )
+    render(<ExerciseList exercises={mockExercises} context="candidat" />)
 
     expect(screen.getByText('Tous les exercices')).toBeInTheDocument()
     expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
@@ -47,13 +55,7 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
   })
 
   test('renders conseiller context with results and links to result detail page', () => {
-    render(
-      <ExerciseList
-        results={mockResults}
-        context="conseiller"
-        employeeId="42"
-      />
-    )
+    render(<ExerciseList results={mockResults} context="conseiller" employeeId="42" />)
 
     expect(screen.getByText('Résultats des exercices')).toBeInTheDocument()
     expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
@@ -67,9 +69,7 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
   })
 
   test('conseiller with no results shows empty state', () => {
-    render(
-      <ExerciseList results={[]} context="conseiller" employeeId="42" />
-    )
+    render(<ExerciseList results={[]} context="conseiller" employeeId="42" />)
     expect(screen.getByText('Résultats des exercices')).toBeInTheDocument()
     expect(screen.getByText(/Aucun exercice réalisé pour l'instant/)).toBeInTheDocument()
   })
@@ -81,13 +81,7 @@ describe('Exercise list page (dashboard/exercises/List)', () => {
   })
 
   test('shows Retour link to employee for conseiller', () => {
-    render(
-      <ExerciseList
-        results={mockResults}
-        context="conseiller"
-        employeeId="7"
-      />
-    )
+    render(<ExerciseList results={mockResults} context="conseiller" employeeId="7" />)
     const backLink = screen.getByRole('link', { name: /Retour/i })
     expect(backLink).toHaveAttribute('href', '/dashboard/conseiller/employees/7')
   })

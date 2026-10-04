@@ -15,7 +15,10 @@ describe('AddSkillModal', () => {
 
   test('affiche le titre et le formulaire de compétence', async () => {
     const { user } = renderWithUser(
-      <AddSkillModal onClose={vi.fn()} availableSkills={[{ id: 1, name: 'SQL', category: 'Data' }]} />
+      <AddSkillModal
+        onClose={vi.fn()}
+        availableSkills={[{ id: 1, name: 'SQL', category: 'Data' }]}
+      />
     )
     expect(screen.getByRole('heading', { name: 'Ajouter une compétence' })).toBeInTheDocument()
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'sq')

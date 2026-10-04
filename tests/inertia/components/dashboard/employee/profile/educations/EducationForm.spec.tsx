@@ -37,12 +37,17 @@ describe('EducationForm', () => {
   test('création : envoie un POST avec les champs saisis puis appelle onSuccess', async () => {
     setInertiaOutcome('success')
     const onSuccess = vi.fn()
-    const { user } = renderWithUser(<EducationForm education={emptyEducation} onSuccess={onSuccess} />)
+    const { user } = renderWithUser(
+      <EducationForm education={emptyEducation} onSuccess={onSuccess} />
+    )
 
     await user.type(screen.getByRole('textbox', { name: /Diplôme/ }), 'BTS SIO')
     await user.type(screen.getByRole('textbox', { name: /Ecole/ }), 'Lycée Pasteur')
     await user.type(screen.getByRole('textbox', { name: /Date de début/ }), '09/2019')
-    await user.type(screen.getByPlaceholderText('Décrivez vos missions et réalisations...'), 'Option SLAM')
+    await user.type(
+      screen.getByPlaceholderText('Décrivez vos missions et réalisations...'),
+      'Option SLAM'
+    )
     await user.click(screen.getByRole('button', { name: 'Ajouter la formation' }))
 
     const submission = formSubmissions.at(-1)!
@@ -106,7 +111,9 @@ describe('EducationForm', () => {
 
   test('le bouton Annuler appelle onCancel', async () => {
     const onCancel = vi.fn()
-    const { user } = renderWithUser(<EducationForm education={makeEducation()} onCancel={onCancel} />)
+    const { user } = renderWithUser(
+      <EducationForm education={makeEducation()} onCancel={onCancel} />
+    )
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(onCancel).toHaveBeenCalledTimes(1)
   })
