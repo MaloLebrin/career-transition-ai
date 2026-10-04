@@ -29,6 +29,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 - **[Hébergement à coût minimal](hosting.md)** — analyse des besoins réels (process, DB, env, SSE, disque), options gratuites / quasi-gratuites par scénario, travail préparatoire et checklist post-déploiement.
 - **[Incidents courants](DEPLOYMENT.md#4-incidents-courants)** — symptômes, causes et correctifs (DB, queue, mail, IA, hébergeurs).
 - **[Checklist prod](PRODUCTION_CHECKLIST.md)** — TODOs avant mise en production.
+- **[Audit SEO](SEO_AUDIT.md)** — état technique, contenu et légal du site public, plan de correctifs avant ouverture de l'indexation.
 - **[RGPD](RGPD.md)** — sous-traitants et flux de données, opt-out Mistral, durées de conservation, procédures d’accès et d’effacement (`candidate:export`, `candidate:purge`).
 
 ## Qualité
