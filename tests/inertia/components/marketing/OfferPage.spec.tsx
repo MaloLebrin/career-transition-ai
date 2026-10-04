@@ -31,7 +31,10 @@ describe('OfferPage', () => {
     const privacyLinks = screen.getAllByRole('link', { name: 'Politique de confidentialité' })
     expect(privacyLinks.length).toBeGreaterThan(1)
     for (const link of privacyLinks) expect(link).toHaveAttribute('href', '/confidentialite')
-    expect(screen.getByRole('link', { name: 'Voir les tarifs' })).toHaveAttribute('href', '/tarifs')
+    expect(screen.getByRole('link', { name: 'Voir les tarifs' })).toHaveAttribute(
+      'href',
+      '/cabinets/tarifs'
+    )
     const emptyLinks = screen
       .getAllByRole('link')
       .filter((link) => link.getAttribute('href') === '#')

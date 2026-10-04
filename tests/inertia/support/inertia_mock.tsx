@@ -121,7 +121,9 @@ function fakeUseForm(...args: unknown[]) {
     if (typeof keyOrData === 'string') {
       setDataState((prev) => ({ ...prev, [keyOrData]: value }))
     } else if (typeof keyOrData === 'function') {
-      setDataState((prev) => (keyOrData as (p: Record<string, unknown>) => Record<string, unknown>)(prev))
+      setDataState((prev) =>
+        (keyOrData as (p: Record<string, unknown>) => Record<string, unknown>)(prev)
+      )
     } else {
       setDataState(keyOrData as Record<string, unknown>)
     }
@@ -194,7 +196,8 @@ function fakeUseForm(...args: unknown[]) {
     },
     setDefaults: (keyOrData?: string | Record<string, unknown>, value?: unknown) => {
       if (keyOrData === undefined) setDefaultsState(data)
-      else if (typeof keyOrData === 'string') setDefaultsState((prev) => ({ ...prev, [keyOrData]: value }))
+      else if (typeof keyOrData === 'string')
+        setDefaultsState((prev) => ({ ...prev, [keyOrData]: value }))
       else setDefaultsState((prev) => ({ ...prev, ...keyOrData }))
     },
     reset,
@@ -205,7 +208,11 @@ function fakeUseForm(...args: unknown[]) {
     clearErrors,
     setError,
     cancel: vi.fn(),
-    submit: (methodOrRoute: FormMethod | { method: FormMethod; url: string }, urlOrOptions?: unknown, maybeOptions?: Callbacks) => {
+    submit: (
+      methodOrRoute: FormMethod | { method: FormMethod; url: string },
+      urlOrOptions?: unknown,
+      maybeOptions?: Callbacks
+    ) => {
       if (typeof methodOrRoute === 'object') {
         submit(methodOrRoute.method, methodOrRoute.url, urlOrOptions as Callbacks)
       } else {
@@ -245,7 +252,7 @@ type FakeLinkProps = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>
 function FakeLink({ href, children, ...rest }: FakeLinkProps) {
   const anchorProps: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(rest)) {
-    if (!INERTIA_LINK_PROPS.includes(key) && !key.startsWith('on') ) anchorProps[key] = value
+    if (!INERTIA_LINK_PROPS.includes(key) && !key.startsWith('on')) anchorProps[key] = value
   }
   const url = typeof href === 'string' ? href : href.url
   return (

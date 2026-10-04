@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 
 import { ExperiencesCard } from '~/components/dashboard/employee/profile/experiences/experience_card/ExperiencesCard'
-import { formSubmissions, resetInertiaMock, setInertiaOutcome } from '../../../../../../support/inertia_mock'
+import {
+  formSubmissions,
+  resetInertiaMock,
+  setInertiaOutcome,
+} from '../../../../../../support/inertia_mock'
 import { makeEmployee, makeExperience } from '../../../../../../support/factories'
 import { renderWithUser } from '../../../../../../support/render'
 
@@ -69,7 +73,10 @@ describe('ExperiencesCard', () => {
     await user.type(screen.getByRole('textbox', { name: /Date de début/ }), '02/2023')
     await user.click(screen.getByRole('button', { name: "Ajouter l'expérience" }))
 
-    expect(formSubmissions.at(-1)).toMatchObject({ method: 'post', data: { title: 'Product Owner', type: 'cdi' } })
+    expect(formSubmissions.at(-1)).toMatchObject({
+      method: 'post',
+      data: { title: 'Product Owner', type: 'cdi' },
+    })
     expect(screen.queryByRole('button', { name: "Ajouter l'expérience" })).not.toBeInTheDocument()
   })
 

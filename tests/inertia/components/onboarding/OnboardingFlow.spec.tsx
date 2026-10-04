@@ -124,4 +124,3 @@ describe('OnboardingFlow', () => {
     expect(screen.getByText(/cv-test\.pdf/i)).toBeInTheDocument()
   })
 })
-

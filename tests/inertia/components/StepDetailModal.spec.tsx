@@ -6,7 +6,7 @@ import { ExerciseType } from '../../../inertia/types'
 const mockStep = {
   id: 5,
   title: 'Ciblage Organismes',
-  description: 'Recherche d\'organismes de formation.',
+  description: "Recherche d'organismes de formation.",
   dueDate: '2024-06-05',
   completed: true,
   associatedExercise: ExerciseType.TARGETING,
@@ -43,12 +43,7 @@ describe('StepDetailModal', () => {
     }
 
     render(
-      <StepDetailModal
-        step={mockStep}
-        result={result}
-        onClose={mockOnClose}
-        userRole="advisor"
-      />
+      <StepDetailModal step={mockStep} result={result} onClose={mockOnClose} userRole="advisor" />
     )
 
     expect(screen.getByText('AFPA')).toBeInTheDocument()
@@ -72,12 +67,7 @@ describe('StepDetailModal', () => {
     }
 
     render(
-      <StepDetailModal
-        step={mockStep}
-        result={result}
-        onClose={mockOnClose}
-        userRole="advisor"
-      />
+      <StepDetailModal step={mockStep} result={result} onClose={mockOnClose} userRole="advisor" />
     )
 
     expect(screen.getByText('Aucune cible enregistrée.')).toBeInTheDocument()

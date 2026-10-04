@@ -5,7 +5,6 @@ import LoginPage from '../../../../inertia/components/auth/LoginPage'
 const defaultProps = {
   csrfToken: 'test-csrf-token',
   error: null as string | null,
-  onGoToRegister: vi.fn(),
 }
 
 describe('LoginPage', () => {
@@ -23,25 +22,29 @@ describe('LoginPage', () => {
     expect(screen.getByText(/Identifiants invalides/)).toBeInTheDocument()
   })
 
-  test('calls onGoToRegister when "S\'inscrire gratuitement" is clicked', () => {
+  test('propose « Créer mon compte » vers /inscription quand l’inscription particulier est ouverte (#93)', () => {
+    render(<LoginPage {...defaultProps} candidateRegistrationEnabled />)
+
+    expect(screen.getByRole('link', { name: 'Créer mon compte' })).toHaveAttribute(
+      'href',
+      '/inscription'
+    )
+  })
+
+  test('masque « Créer mon compte » quand l’inscription particulier est fermée', () => {
     render(<LoginPage {...defaultProps} />)
-    fireEvent.click(screen.getByRole('button', { name: /inscrire gratuitement/i }))
-    expect(defaultProps.onGoToRegister).toHaveBeenCalledTimes(1)
-  })
 
-  test('propose l’inscription particulier quand onGoToRegisterCandidate est fourni (#93)', () => {
-    const onGoToRegisterCandidate = vi.fn()
-    render(<LoginPage {...defaultProps} onGoToRegisterCandidate={onGoToRegisterCandidate} />)
-
-    fireEvent.click(screen.getByRole('button', { name: /créer mon compte/i }))
-    expect(onGoToRegisterCandidate).toHaveBeenCalledTimes(1)
-    expect(screen.getByText(/Vous êtes un particulier/)).toBeInTheDocument()
-  })
-
-  test('hides the register link when onGoToRegister is not provided (registration closed)', () => {
-    render(<LoginPage {...defaultProps} onGoToRegister={undefined} />)
-    expect(screen.queryByRole('button', { name: /inscrire gratuitement/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Créer mon compte' })).not.toBeInTheDocument()
     expect(screen.queryByText(/pas encore de compte/)).not.toBeInTheDocument()
+  })
+
+  test('renvoie toujours vers l’espace cabinet', () => {
+    render(<LoginPage {...defaultProps} />)
+
+    expect(screen.getByRole('link', { name: 'Espace cabinet' })).toHaveAttribute(
+      'href',
+      '/cabinets'
+    )
   })
 
   test('shows validation errors when email is empty and does not submit', async () => {

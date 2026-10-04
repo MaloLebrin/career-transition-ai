@@ -94,7 +94,13 @@ describe('ExerciseResultVisualization', () => {
     const result = {
       ...baseResult,
       type: EXERCICE_RESULTS_TYPES.PERSONALITY,
-      data: { openness: 9, neuroticism: 3, extraversion: 9, agreeableness: 4, conscientiousness: 9 },
+      data: {
+        openness: 9,
+        neuroticism: 3,
+        extraversion: 9,
+        agreeableness: 4,
+        conscientiousness: 9,
+      },
     }
     render(<ExerciseResultVisualization result={result} />)
 

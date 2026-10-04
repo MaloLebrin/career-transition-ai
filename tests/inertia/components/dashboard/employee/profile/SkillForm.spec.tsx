@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 
 import SkillForm from '~/components/dashboard/employee/profile/SkillForm'
-import { formSubmissions, resetInertiaMock, setInertiaOutcome } from '../../../../support/inertia_mock'
+import {
+  formSubmissions,
+  resetInertiaMock,
+  setInertiaOutcome,
+} from '../../../../support/inertia_mock'
 import { renderWithUser } from '../../../../support/render'
 
 vi.mock('@inertiajs/react', async () => {
@@ -21,13 +25,17 @@ describe('SkillForm', () => {
   test('le bouton Ajouter est désactivé tant qu’aucune compétence n’est choisie', () => {
     renderWithUser(<SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />)
     expect(screen.getByRole('button', { name: 'Ajouter' })).toBeDisabled()
-    expect(screen.getByText('Tape pour rechercher ou créer une nouvelle compétence')).toBeInTheDocument()
+    expect(
+      screen.getByText('Tape pour rechercher ou créer une nouvelle compétence')
+    ).toBeInTheDocument()
   })
 
   test('sélection d’une compétence existante : POST avec nom, catégorie et niveau choisi', async () => {
     setInertiaOutcome('success')
     const onCancel = vi.fn()
-    const { user } = renderWithUser(<SkillForm onCancel={onCancel} availableSkills={availableSkills} />)
+    const { user } = renderWithUser(
+      <SkillForm onCancel={onCancel} availableSkills={availableSkills} />
+    )
 
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'Type')
     await user.click(await screen.findByRole('option', { name: /TypeScript/ }))
@@ -45,7 +53,9 @@ describe('SkillForm', () => {
   })
 
   test('compétence sans catégorie : catégorie envoyée vide et niveau 3 par défaut', async () => {
-    const { user } = renderWithUser(<SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />)
+    const { user } = renderWithUser(
+      <SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />
+    )
 
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'écoute')
     await user.click(await screen.findByRole('option', { name: /Écoute active/ }))
@@ -55,9 +65,13 @@ describe('SkillForm', () => {
   })
 
   test('création d’une nouvelle compétence : affiche le champ catégorie optionnel', async () => {
-    const { user } = renderWithUser(<SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />)
+    const { user } = renderWithUser(
+      <SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />
+    )
 
-    expect(screen.queryByPlaceholderText('Ex: Frontend, Backend, Soft skills...')).not.toBeInTheDocument()
+    expect(
+      screen.queryByPlaceholderText('Ex: Frontend, Backend, Soft skills...')
+    ).not.toBeInTheDocument()
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'Kubernetes')
     await user.click(await screen.findByText('Créer « Kubernetes »'))
 
@@ -66,11 +80,17 @@ describe('SkillForm', () => {
     await user.click(screen.getByRole('button', { name: '2' }))
     await user.click(screen.getByRole('button', { name: 'Ajouter' }))
 
-    expect(formSubmissions.at(-1)!.data).toEqual({ name: 'Kubernetes', category: 'DevOps', level: 2 })
+    expect(formSubmissions.at(-1)!.data).toEqual({
+      name: 'Kubernetes',
+      category: 'DevOps',
+      level: 2,
+    })
   })
 
   test('effacer la sélection vide le nom et désactive l’envoi', async () => {
-    const { user } = renderWithUser(<SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />)
+    const { user } = renderWithUser(
+      <SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />
+    )
 
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'Type')
     await user.click(await screen.findByRole('option', { name: /TypeScript/ }))
@@ -81,7 +101,9 @@ describe('SkillForm', () => {
   })
 
   test('affiche les erreurs serveur (nom, catégorie, niveau)', async () => {
-    setInertiaOutcome({ errors: { name: 'Nom invalide', category: 'Catégorie trop longue', level: 'Niveau invalide' } })
+    setInertiaOutcome({
+      errors: { name: 'Nom invalide', category: 'Catégorie trop longue', level: 'Niveau invalide' },
+    })
     const onCancel = vi.fn()
     const { user } = renderWithUser(<SkillForm onCancel={onCancel} availableSkills={[]} />)
 
@@ -97,7 +119,9 @@ describe('SkillForm', () => {
   })
 
   test('pendant l’envoi, les boutons sont désactivés et le libellé change', async () => {
-    const { user } = renderWithUser(<SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />)
+    const { user } = renderWithUser(
+      <SkillForm onCancel={vi.fn()} availableSkills={availableSkills} />
+    )
 
     await user.type(screen.getByRole('combobox', { name: /Compétence/ }), 'Type')
     await user.click(await screen.findByRole('option', { name: /TypeScript/ }))

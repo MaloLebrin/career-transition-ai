@@ -24,9 +24,7 @@ vi.mock('@inertiajs/react', () => ({
 
 describe('CreateOrganizationModal', () => {
   test('returns null when closed', () => {
-    const { container } = render(
-      <CreateOrganizationModal isOpen={false} onClose={vi.fn()} />
-    )
+    const { container } = render(<CreateOrganizationModal isOpen={false} onClose={vi.fn()} />)
     expect(container.firstChild).toBeNull()
   })
 

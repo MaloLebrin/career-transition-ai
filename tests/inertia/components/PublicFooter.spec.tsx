@@ -15,8 +15,14 @@ describe('PublicFooter', () => {
   test('links to the product and legal pages, without buttons', () => {
     render(<PublicFooter />)
 
+    expect(screen.getByRole('link', { name: 'Le parcours' })).toHaveAttribute('href', '/#parcours')
+    expect(screen.getByRole('link', { name: 'Tarif' })).toHaveAttribute('href', '/tarifs')
+    expect(screen.getByRole('link', { name: 'Espace cabinet' })).toHaveAttribute(
+      'href',
+      '/cabinets'
+    )
     expect(screen.getByRole('link', { name: 'Offre' })).toHaveAttribute('href', '/offre')
-    expect(screen.getByRole('link', { name: 'Tarifs' })).toHaveAttribute('href', '/tarifs')
+    expect(screen.getByRole('link', { name: 'Tarifs' })).toHaveAttribute('href', '/cabinets/tarifs')
     expect(screen.getByRole('link', { name: 'Méthodologie' })).toHaveAttribute(
       'href',
       '/methodologie'

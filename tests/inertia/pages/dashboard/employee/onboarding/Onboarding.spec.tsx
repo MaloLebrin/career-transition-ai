@@ -14,7 +14,13 @@ vi.mock('~/components/dashboard/DashboardLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 vi.mock('~/components/onboarding/OnboardingFlow', () => ({
-  default: ({ employee, onComplete }: { employee: { name: string }; onComplete: (e: unknown) => void }) => (
+  default: ({
+    employee,
+    onComplete,
+  }: {
+    employee: { name: string }
+    onComplete: (e: unknown) => void
+  }) => (
     <button
       type="button"
       onClick={() =>
@@ -39,7 +45,9 @@ describe('Onboarding candidat (page)', () => {
     setInertiaOutcome('success')
     render(<CandidatOnboarding employee={makeEmployee({ onboarded: false })} />)
 
-    await userEvent.setup().click(screen.getByRole('button', { name: /Terminer l’onboarding de Camille Martin/ }))
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: /Terminer l’onboarding de Camille Martin/ }))
 
     expect(routerSpies.put).toHaveBeenCalledWith(
       '/dashboard/candidat/onboarding',

@@ -31,9 +31,7 @@ const unpaid: ExerciseAccess = {
 
 describe('B2cExerciseGrid (#100)', () => {
   test('gratuits d’abord avec badge « Gratuit », exercice du forfait verrouillé derrière', () => {
-    render(
-      <B2cExerciseGrid exercises={exercises} exerciseAccess={unpaid} progressByType={{}} />
-    )
+    render(<B2cExerciseGrid exercises={exercises} exerciseAccess={unpaid} progressByType={{}} />)
 
     const items = within(screen.getByRole('list', { name: 'Vos exercices' })).getAllByRole(
       'listitem'

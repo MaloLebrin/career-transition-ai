@@ -10,9 +10,7 @@ describe('ExerciseQualitativeAnalysisCard', () => {
   })
 
   test('renders optional exercise title when provided', () => {
-    render(
-      <ExerciseQualitativeAnalysisCard markdown="x" exerciseTitle="Test exercice" />
-    )
+    render(<ExerciseQualitativeAnalysisCard markdown="x" exerciseTitle="Test exercice" />)
     expect(screen.getByText('Test exercice')).toBeInTheDocument()
   })
 

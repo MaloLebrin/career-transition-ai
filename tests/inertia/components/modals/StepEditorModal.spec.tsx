@@ -90,13 +90,7 @@ describe('StepEditorModal', () => {
       sortOrder: 1,
     }
 
-    render(
-      <StepEditorModal
-        employeeId="2"
-        step={step as any}
-        onClose={vi.fn()}
-      />
-    )
+    render(<StepEditorModal employeeId="2" step={step as any} onClose={vi.fn()} />)
 
     const triggerLabel = screen.getByText(/Date et heure du RDV/i)
     expect(triggerLabel).toBeInTheDocument()
@@ -105,13 +99,7 @@ describe('StepEditorModal', () => {
   })
 
   test('submits null scheduledAt when datetime is empty', () => {
-    render(
-      <StepEditorModal
-        employeeId="2"
-        stepNumber={2}
-        onClose={vi.fn()}
-      />
-    )
+    render(<StepEditorModal employeeId="2" stepNumber={2} onClose={vi.fn()} />)
 
     const submitButton = screen.getByRole('button', { name: /Créer/i })
     const form = submitButton.closest('form') as HTMLFormElement

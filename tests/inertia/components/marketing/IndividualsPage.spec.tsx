@@ -8,7 +8,7 @@ vi.mock('@inertiajs/react', async () => {
   return inertiaMock()
 })
 
-describe('IndividualsPage (#99)', () => {
+describe('IndividualsPage (accueil particuliers)', () => {
   beforeEach(() => resetInertiaMock())
 
   test('inscription ouverte : promesse, exercices offerts, forfait TTC et CTA vers /inscription', () => {
@@ -21,7 +21,7 @@ describe('IndividualsPage (#99)', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: /Faites le point sur votre carrière/ })
     ).toBeInTheDocument()
-    expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
+    expect(screen.getByTestId('hero-landscape')).toBeInTheDocument()
     expect(screen.getAllByText('Gratuit')).toHaveLength(2)
     expect(screen.getByText('49 €')).toBeInTheDocument()
     expect(screen.getByText('Deux exercices offerts')).toBeInTheDocument()
@@ -30,12 +30,30 @@ describe('IndividualsPage (#99)', () => {
     const ctas = screen.getAllByRole('link', { name: 'Commencer gratuitement' })
     expect(ctas.length).toBeGreaterThanOrEqual(2)
     for (const cta of ctas) expect(cta).toHaveAttribute('href', '/inscription')
-    expect(screen.getAllByRole('link', { name: 'Voir le tarif' })[0]).toHaveAttribute('href', '/tarifs')
-    expect(screen.getByRole('link', { name: 'Découvrir l’offre pour les cabinets' })).toHaveAttribute(
+    expect(screen.getAllByRole('link', { name: 'Voir le tarif' })[0]).toHaveAttribute(
       'href',
-      '/offre'
+      '/tarifs'
     )
+    for (const link of screen.getAllByRole('link', { name: 'Se connecter' })) {
+      expect(link).toHaveAttribute('href', '/auth/login')
+    }
     expect(screen.queryByText(/Être prévenu de l’ouverture/)).not.toBeInTheDocument()
+  })
+
+  test('présente le catalogue des exercices ancré sur #parcours', () => {
+    render(<IndividualsPage />)
+
+    expect(document.getElementById('parcours')).not.toBeNull()
+    expect(screen.getByRole('heading', { name: /exercices pour y voir clair/ })).toBeInTheDocument()
+  })
+
+  test('renvoie vers l’espace cabinet', () => {
+    render(<IndividualsPage />)
+
+    expect(screen.getByRole('link', { name: 'Découvrir l’espace cabinet' })).toHaveAttribute(
+      'href',
+      '/cabinets'
+    )
   })
 
   test('inscription fermée : formulaire de contact et CTA « Être prévenu », prix par défaut', () => {
@@ -43,10 +61,8 @@ describe('IndividualsPage (#99)', () => {
     render(<IndividualsPage />)
 
     expect(screen.queryByRole('link', { name: 'Commencer gratuitement' })).not.toBeInTheDocument()
-    expect(screen.getAllByRole('link', { name: 'Être prévenu de l’ouverture' })[0]).toHaveAttribute(
-      'href',
-      '#contact'
-    )
+    const waitlist = screen.getAllByRole('link', { name: 'Être prévenu de l’ouverture' })
+    expect(waitlist.map((link) => link.getAttribute('href'))).toContain('#contact')
     expect(screen.getByText(/ouvre prochainement/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Envoyer le message' })).toBeInTheDocument()
     expect(screen.getByText('49 €')).toBeInTheDocument()
@@ -60,7 +76,9 @@ describe('IndividualsPage (#99)', () => {
       'href',
       '/cgv'
     )
-    const emptyLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '#')
+    const emptyLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '#')
     expect(emptyLinks).toHaveLength(0)
   })
 })

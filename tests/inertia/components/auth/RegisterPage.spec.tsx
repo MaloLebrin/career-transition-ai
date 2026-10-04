@@ -12,11 +12,23 @@ describe('RegisterPage', () => {
   test('renders register form with title and fields', () => {
     render(<RegisterPage {...defaultProps} />)
 
-    expect(screen.getAllByText('Création de compte')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('Création de compte cabinet')[0]).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Cabinet Horizon Paris/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/Jean Dupont/)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/votre@email/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Créer mon compte/ })).toBeInTheDocument()
+  })
+
+  test('renvoie vers l’inscription particulier seulement quand elle est ouverte', () => {
+    const { unmount } = render(<RegisterPage {...defaultProps} candidateRegistrationEnabled />)
+    expect(screen.getByRole('link', { name: 'Créer mon compte' })).toHaveAttribute(
+      'href',
+      '/inscription'
+    )
+    unmount()
+
+    render(<RegisterPage {...defaultProps} />)
+    expect(screen.queryByRole('link', { name: 'Créer mon compte' })).not.toBeInTheDocument()
   })
 
   test('displays error when error prop is set', () => {

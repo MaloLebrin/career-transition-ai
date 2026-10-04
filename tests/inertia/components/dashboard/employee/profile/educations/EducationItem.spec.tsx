@@ -36,7 +36,9 @@ describe('EducationItem', () => {
     const { user } = renderWithUser(<EducationItem education={makeEducation()} />)
 
     await user.click(screen.getByTitle('Modifier'))
-    expect(screen.getByRole('button', { name: 'Enregistrer les modifications' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Enregistrer les modifications' })
+    ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(screen.getByRole('heading', { name: 'Master Management' })).toBeInTheDocument()
@@ -50,7 +52,9 @@ describe('EducationItem', () => {
     await user.type(screen.getByRole('textbox', { name: /Ecole/ }), ' 3')
     await user.click(screen.getByRole('button', { name: 'Enregistrer les modifications' }))
 
-    expect(screen.queryByRole('button', { name: 'Enregistrer les modifications' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Enregistrer les modifications' })
+    ).not.toBeInTheDocument()
   })
 
   test('suppression confirmée : DELETE avec l’id puis fermeture de la modale', async () => {
@@ -77,7 +81,9 @@ describe('EducationItem', () => {
     await user.click(screen.getByTitle('Supprimer'))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Supprimer' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Impossible de supprimer la formation. Réessaie.')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Impossible de supprimer la formation. Réessaie.'
+    )
   })
 
   test('annuler la suppression ferme la modale sans requête', async () => {

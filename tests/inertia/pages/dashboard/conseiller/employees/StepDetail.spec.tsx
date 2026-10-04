@@ -72,14 +72,7 @@ describe('Dashboard conseiller employees StepDetail page', () => {
 
   test('renders without crashing when unauthenticated', async () => {
     setAuthUser(null)
-    render(
-      <StepDetail
-        employeeId="42"
-        employeeName="Jean"
-        step={stepBase as any}
-        results={[]}
-      />
-    )
+    render(<StepDetail employeeId="42" employeeName="Jean" step={stepBase as any} results={[]} />)
     const inertia = await import('@inertiajs/react')
     expect(inertia.router.visit).not.toHaveBeenCalled()
     expect(screen.getByTestId('layout')).toBeInTheDocument()
@@ -87,27 +80,13 @@ describe('Dashboard conseiller employees StepDetail page', () => {
 
   test('passes selectedEmployeeId to layout', () => {
     setAuthUser({ id: 1, role: 'advisor' })
-    render(
-      <StepDetail
-        employeeId="42"
-        employeeName="Jean"
-        step={stepBase as any}
-        results={[]}
-      />
-    )
+    render(<StepDetail employeeId="42" employeeName="Jean" step={stepBase as any} results={[]} />)
     expect(screen.getByTestId('layout')).toHaveAttribute('data-selected-employee-id', '42')
   })
 
   test('renders locationOrLink and does not show LinkActions when not a URL', () => {
     setAuthUser({ id: 1, role: 'advisor' })
-    render(
-      <StepDetail
-        employeeId="42"
-        employeeName="Jean"
-        step={stepBase as any}
-        results={[]}
-      />
-    )
+    render(<StepDetail employeeId="42" employeeName="Jean" step={stepBase as any} results={[]} />)
     expect(screen.getByText('Bureau Paris')).toBeInTheDocument()
     expect(screen.queryByTestId('link-actions')).not.toBeInTheDocument()
   })
@@ -126,4 +105,3 @@ describe('Dashboard conseiller employees StepDetail page', () => {
     expect(screen.getByTestId('link-actions')).toHaveTextContent('https://example.com/meet')
   })
 })
-

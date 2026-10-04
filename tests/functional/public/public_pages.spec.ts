@@ -12,7 +12,8 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/methodologie', 'Methodology'],
   ['/offre', 'Offer'],
   ['/tarifs', 'Pricing'],
-  ['/particuliers', 'Individuals'],
+  ['/cabinets', 'Cabinets'],
+  ['/cabinets/tarifs', 'CabinetPricing'],
   ['/mentions-legales', 'LegalNotice'],
   ['/confidentialite', 'PrivacyPolicy'],
   ['/securite', 'Security'],
@@ -20,6 +21,18 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/auth/register', 'Register'],
   ['/inscription', 'RegisterCandidate'],
 ]
+
+/** `/particuliers` (ancienne URL de l'offre particuliers) : redirection permanente vers l'accueil. */
+test.group('Redirection /particuliers (functional)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  test('GET /particuliers redirige en 301 vers /', async ({ client }) => {
+    const response = await client.get('/particuliers').redirects(0)
+
+    response.assertStatus(301)
+    response.assertHeader('location', '/')
+  })
+})
 
 /** CGU / CGV (#95) : hors `guest()`, un utilisateur connecté doit pouvoir les relire. */
 const LEGAL_PAGES: Array<[string, string]> = [

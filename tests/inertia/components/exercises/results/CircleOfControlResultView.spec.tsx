@@ -4,9 +4,7 @@ import CircleOfControlResultView from '../../../../../inertia/components/exercis
 
 describe('CircleOfControlResultView', () => {
   test('renders without crashing with empty arrays', () => {
-    expect(() =>
-      render(<CircleOfControlResultView inControl={[]} outControl={[]} />)
-    ).not.toThrow()
+    expect(() => render(<CircleOfControlResultView inControl={[]} outControl={[]} />)).not.toThrow()
     expect(screen.getByText('Sous contrôle')).toBeInTheDocument()
     expect(screen.getByText('Hors contrôle')).toBeInTheDocument()
   })

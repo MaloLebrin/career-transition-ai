@@ -9,7 +9,9 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
 })
 
 vi.mock('../../../../../../inertia/components/dashboard/DashboardLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="layout">{children}</div>
+  ),
 }))
 
 vi.mock('../../../../../../inertia/components/dashboard/EmailVerificationBanner', () => ({
@@ -52,7 +54,9 @@ describe('Offer page (#102)', () => {
   test('déjà payé : confirmation et liens, sans formulaire', () => {
     render(<OfferPage offer={{ ...offer, hasPaidAccess: true }} />)
 
-    expect(screen.getByRole('heading', { name: 'Vos résultats sont débloqués' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Vos résultats sont débloqués' })
+    ).toBeInTheDocument()
     expect(screen.queryByTestId('consent-form')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Reprendre mon parcours' })).toHaveAttribute(
       'href',

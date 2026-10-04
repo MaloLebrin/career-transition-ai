@@ -19,9 +19,7 @@ vi.mock('recharts', () => ({
 
 describe('LifeCurveResultView', () => {
   test('renders without crashing with empty data', () => {
-    expect(() =>
-      render(<LifeCurveResultView points={[]} reflection={{}} />)
-    ).not.toThrow()
+    expect(() => render(<LifeCurveResultView points={[]} reflection={{}} />)).not.toThrow()
     expect(screen.getByTestId('line-chart')).toBeInTheDocument()
   })
 

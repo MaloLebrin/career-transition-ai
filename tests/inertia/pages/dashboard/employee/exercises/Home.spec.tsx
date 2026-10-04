@@ -133,7 +133,7 @@ describe('Dashboard candidat - Exercise Home', () => {
     )
 
     expect(screen.getByText('Accès verrouillé')).toBeInTheDocument()
-    expect(screen.getByText('Verrouillé par l\'expert')).toBeInTheDocument()
+    expect(screen.getByText("Verrouillé par l'expert")).toBeInTheDocument()
 
     expect(screen.queryByTestId('tool-motivation')).not.toBeInTheDocument()
   })
@@ -169,7 +169,12 @@ describe('Dashboard candidat - Exercise Home', () => {
   test('verrou « payment » sans paiement activé : « bientôt disponible », pas de CTA', () => {
     billingState.paymentsEnabled = false
     render(
-      <ExerciseHome type="disc" initialDraftsByType={{}} accessGranted={false} lockedReason="payment" />
+      <ExerciseHome
+        type="disc"
+        initialDraftsByType={{}}
+        accessGranted={false}
+        lockedReason="payment"
+      />
     )
 
     expect(screen.getByText('Cet exercice est inclus dans le forfait')).toBeInTheDocument()
@@ -223,4 +228,3 @@ describe('Dashboard candidat - Exercise Home', () => {
     expect(getByText(/Progression: 62%/i)).toBeInTheDocument()
   })
 })
-

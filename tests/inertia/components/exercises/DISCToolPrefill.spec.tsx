@@ -50,4 +50,3 @@ describe('DISCTool prefill', () => {
     expect(screen.getByRole('button', { name: 'Suivant' })).toBeEnabled()
   })
 })
-

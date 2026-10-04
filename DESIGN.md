@@ -11,8 +11,9 @@ Cal.com, Intercom, Zapier, Notion), adapté à un métier d'accompagnement humai
 
 ## 1. Vue d'ensemble
 
-Transition Carrière est un logiciel B2B pour les cabinets de transition professionnelle
-(bilans de compétences, outplacement). L'interface doit inspirer **le calme, la rigueur
+Transition Carrière s'adresse d'abord aux particuliers qui font le point sur leur carrière
+en autonomie (accueil `/`), et aux cabinets de transition professionnelle (bilans de
+compétences, outplacement) sur leur espace dédié (`/cabinets`). L'interface doit inspirer **le calme, la rigueur
 et la chaleur** : un cabinet sérieux, pas une start-up qui crie.
 
 Direction « Duna × Ditto » (références getdesign.md) : l'ivoire et l'encre de Ditto, les

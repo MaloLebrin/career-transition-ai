@@ -16,7 +16,10 @@ describe('InvalidToken (onboarding)', () => {
     render(<InvalidToken />)
     expect(screen.getByRole('heading', { name: 'Lien invalide' })).toBeInTheDocument()
     expect(screen.getByText('Ce lien est invalide ou a déjà été utilisé.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Aller à la connexion' })).toHaveAttribute('href', '/auth/login')
+    expect(screen.getByRole('link', { name: 'Aller à la connexion' })).toHaveAttribute(
+      'href',
+      '/auth/login'
+    )
   })
 
   test('lien expiré : invite à contacter le conseiller', () => {

@@ -25,7 +25,9 @@ vi.mock('~/components/modals/StepEditorModal', () => ({
     onClose: () => void
   }) => (
     <div role="dialog" aria-label="Éditeur d'étape">
-      <span>{props.step ? `Édition étape ${props.step.id}` : `Nouvelle étape n°${props.stepNumber}`}</span>
+      <span>
+        {props.step ? `Édition étape ${props.step.id}` : `Nouvelle étape n°${props.stepNumber}`}
+      </span>
       <span>Exercices faits : {props.completedExercises.join(',')}</span>
       <button type="button" onClick={props.onClose}>
         Fermer l’éditeur
@@ -54,9 +56,29 @@ function makeEmployee(overrides: Partial<Employee> = {}): Employee {
       { id: 3, type: 'disc', date: null, data: {} },
     ] as never,
     plan: [
-      { id: 10, sortOrder: 0, completed: true, isLocked: false, associatedExercises: ['values'], scheduledAt: '2024-03-01T09:00:00.000Z', instructions: 'Préparer les valeurs' },
-      { id: 11, sortOrder: 1, completed: false, isLocked: true, associatedExercises: ['motivation', 'life_curve'] },
-      { id: 12, sortOrder: null, completed: false, isLocked: false, associatedExercises: ['targeting'] },
+      {
+        id: 10,
+        sortOrder: 0,
+        completed: true,
+        isLocked: false,
+        associatedExercises: ['values'],
+        scheduledAt: '2024-03-01T09:00:00.000Z',
+        instructions: 'Préparer les valeurs',
+      },
+      {
+        id: 11,
+        sortOrder: 1,
+        completed: false,
+        isLocked: true,
+        associatedExercises: ['motivation', 'life_curve'],
+      },
+      {
+        id: 12,
+        sortOrder: null,
+        completed: false,
+        isLocked: false,
+        associatedExercises: ['targeting'],
+      },
       { id: 13, sortOrder: 3, completed: false, isLocked: false, associatedExercises: [] },
     ] as never,
     ...overrides,
@@ -85,9 +107,18 @@ describe('Fiche accompagné (conseiller)', () => {
     renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
     expect(screen.getByRole('heading', { name: 'Camille Martin' })).toBeInTheDocument()
     expect(screen.getByText('Comptable')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Voir le profil' })).toHaveAttribute('href', '/dashboard/conseiller/employees/5/profile')
-    expect(screen.getByRole('link', { name: 'Synthèse' })).toHaveAttribute('href', '/dashboard/conseiller/employees/5/synthesis')
-    expect(screen.getByRole('link', { name: /Télécharger le dossier/ })).toHaveAttribute('href', '/dashboard/conseiller/employees/5/dossier')
+    expect(screen.getByRole('link', { name: 'Voir le profil' })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/employees/5/profile'
+    )
+    expect(screen.getByRole('link', { name: 'Synthèse' })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/employees/5/synthesis'
+    )
+    expect(screen.getByRole('link', { name: /Télécharger le dossier/ })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/employees/5/dossier'
+    )
     expect(screen.getByText('Excel')).toBeInTheDocument()
   })
 
@@ -118,18 +149,30 @@ describe('Fiche accompagné (conseiller)', () => {
   })
 
   test('verrouiller / déverrouiller une étape envoie la bonne action', async () => {
-    const { user } = renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />
+    )
 
     await user.click(within(stepCard('RDV 2')).getByTitle('Déverrouiller'))
-    expect(routerSpies.post).toHaveBeenCalledWith('/dashboard/conseiller/employees/5/steps/11/unlock', {}, { preserveScroll: true })
+    expect(routerSpies.post).toHaveBeenCalledWith(
+      '/dashboard/conseiller/employees/5/steps/11/unlock',
+      {},
+      { preserveScroll: true }
+    )
 
     await user.click(within(stepCard('RDV 4')).getByTitle('Verrouiller'))
-    expect(routerSpies.post).toHaveBeenCalledWith('/dashboard/conseiller/employees/5/steps/13/lock', {}, { preserveScroll: true })
+    expect(routerSpies.post).toHaveBeenCalledWith(
+      '/dashboard/conseiller/employees/5/steps/13/lock',
+      {},
+      { preserveScroll: true }
+    )
   })
 
   test('supprimer une étape après confirmation', async () => {
     setInertiaOutcome('success')
-    const { user } = renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />
+    )
 
     await user.click(within(stepCard('RDV 4')).getByTitle('Supprimer'))
     const dialog = screen.getByRole('dialog')
@@ -144,14 +187,18 @@ describe('Fiche accompagné (conseiller)', () => {
   })
 
   test('annuler la suppression ne supprime rien', async () => {
-    const { user } = renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />
+    )
     await user.click(within(stepCard('RDV 4')).getByTitle('Supprimer'))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Annuler' }))
     expect(routerSpies.delete).not.toHaveBeenCalled()
   })
 
   test('ajout et édition d’étape ouvrent l’éditeur avec le bon contexte', async () => {
-    const { user } = renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />
+    )
 
     await user.click(screen.getByRole('button', { name: /Ajouter un RDV/ }))
     const editor = screen.getByRole('dialog', { name: "Éditeur d'étape" })
@@ -165,7 +212,9 @@ describe('Fiche accompagné (conseiller)', () => {
   })
 
   test('notes d’accompagnement enregistrées à la perte de focus', async () => {
-    const { user } = renderWithUser(<DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />)
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} />
+    )
     const textarea = screen.getByDisplayValue('Suivi hebdo')
     await user.type(textarea, ' + point mensuel')
     await user.tab()
@@ -200,7 +249,11 @@ describe('Fiche accompagné (conseiller)', () => {
 
   test('les notes de suivi sont affichées', () => {
     renderWithUser(
-      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee()} notes={[makeNote({ content: 'Relancer' })]} />
+      <DashboardEmployeeDetail
+        employeeId="5"
+        employee={makeEmployee()}
+        notes={[makeNote({ content: 'Relancer' })]}
+      />
     )
     expect(screen.getByText('Notes de suivi')).toBeInTheDocument()
     expect(screen.getByText('Relancer')).toBeInTheDocument()

@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 
 import { EducationsCard } from '~/components/dashboard/employee/profile/educations/EducationsCard'
-import { formSubmissions, resetInertiaMock, setInertiaOutcome } from '../../../../../support/inertia_mock'
+import {
+  formSubmissions,
+  resetInertiaMock,
+  setInertiaOutcome,
+} from '../../../../../support/inertia_mock'
 import { makeEducation, makeEmployee } from '../../../../../support/factories'
 import { renderWithUser } from '../../../../../support/render'
 

@@ -37,7 +37,14 @@ describe('NotesSection', () => {
   test('conseiller (modale) : crée une note liée à l’étape puis recharge la page', async () => {
     setInertiaOutcome('success')
     const { user } = renderWithUser(
-      <NotesSection employeeId={4} context="step" supportPlanStepId={9} exerciseResultId={3} isAdvisor initialNotes={notes} />
+      <NotesSection
+        employeeId={4}
+        context="step"
+        supportPlanStepId={9}
+        exerciseResultId={3}
+        isAdvisor
+        initialNotes={notes}
+      />
     )
 
     await user.click(screen.getByRole('button', { name: 'Ajouter' }))
@@ -61,7 +68,14 @@ describe('NotesSection', () => {
 
   test('conseiller (inline) : crée une note liée au résultat d’exercice', async () => {
     const { user } = renderWithUser(
-      <NotesSection employeeId={4} context="exercise" exerciseResultId={21} isAdvisor useModal={false} initialNotes={[]} />
+      <NotesSection
+        employeeId={4}
+        context="exercise"
+        exerciseResultId={21}
+        isAdvisor
+        useModal={false}
+        initialNotes={[]}
+      />
     )
 
     await user.click(screen.getByRole('button', { name: 'Ajouter' }))
@@ -78,7 +92,9 @@ describe('NotesSection', () => {
   })
 
   test('conseiller (inline) : Annuler referme le formulaire d’ajout', async () => {
-    const { user } = renderWithUser(<NotesSection employeeId={4} isAdvisor useModal={false} initialNotes={[]} />)
+    const { user } = renderWithUser(
+      <NotesSection employeeId={4} isAdvisor useModal={false} initialNotes={[]} />
+    )
     await user.click(screen.getByRole('button', { name: 'Ajouter' }))
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(screen.queryByPlaceholderText('Écris ta note ici...')).not.toBeInTheDocument()
@@ -110,7 +126,9 @@ describe('NotesSection', () => {
   })
 
   test('conseiller (inline) : Annuler quitte l’édition', async () => {
-    const { user } = renderWithUser(<NotesSection employeeId={4} isAdvisor useModal={false} initialNotes={notes} />)
+    const { user } = renderWithUser(
+      <NotesSection employeeId={4} isAdvisor useModal={false} initialNotes={notes} />
+    )
     await user.click(screen.getAllByTitle('Modifier')[0])
     await user.click(screen.getByRole('button', { name: 'Annuler' }))
     expect(screen.queryByPlaceholderText('Écris ta note ici...')).not.toBeInTheDocument()

@@ -95,7 +95,11 @@ describe('generateComprehensivePDF', () => {
 
   test('valeurs par défaut sans notes, cible ni compétence avancée', async () => {
     await generateComprehensivePDF(
-      makeEmployee({ advisorNotes: undefined, targetRole: undefined, skills: [{ name: 'Word', level: 1 }] })
+      makeEmployee({
+        advisorNotes: undefined,
+        targetRole: undefined,
+        skills: [{ name: 'Word', level: 1 }],
+      })
     )
     const [, systemic, summary] = pdfMock.captured
     expect(systemic.textContent).toContain('En cours')
@@ -109,7 +113,9 @@ describe('generateComprehensivePDF', () => {
       makeEmployee({
         exercises: [
           exercise('motivation', { ranked }),
-          exercise('values', { selectedValues: ['La bienveillance', "L'autonomie", 'Le pouvoir', 'La tradition'] }),
+          exercise('values', {
+            selectedValues: ['La bienveillance', "L'autonomie", 'Le pouvoir', 'La tradition'],
+          }),
           exercise('disc', { D: 20, I: 70, S: 40, C: 10 }),
           exercise('life_curve', { points: [] }, { date: '2024-06-01' }),
         ],
