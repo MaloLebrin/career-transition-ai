@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react'
+import { PageSeo } from '~/components/seo/PageSeo'
 import TermsOfServicePage from '../components/marketing/TermsOfServicePage'
 
 export default function TermsOfService() {
   return (
     <>
-      <Head title="Conditions générales d’utilisation" />
+      <PageSeo
+        title="Conditions générales d’utilisation"
+        description="Conditions générales d'utilisation de la plateforme Transition Carrière."
+      />
       <TermsOfServicePage />
     </>
   )

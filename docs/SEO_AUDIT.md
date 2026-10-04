@@ -10,25 +10,25 @@ confiance sont plus bloquantes que le technique.
 
 ## 1. Technique
 
-| Sujet                         | État                                                                                                                                                                                  |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Indexation                    | `SEO_INDEXING=false` par défaut (`config/seo.ts`, `render.yaml`) : meta `noindex, nofollow` et `robots.txt` `Disallow: /`. Décision PO ouverte (`PRODUCTION_CHECKLIST.md`).          |
-| `robots.txt` une fois activé  | `Allow: /` sans exclusion de `/dashboard`, `/auth`, `/onboarding`, sans ligne `Sitemap:` (`app/utils/seo.ts`).                                                                         |
-| `sitemap.xml`                 | Absent.                                                                                                                                                                               |
-| Canonical                     | Absent ; `/tarifs/` et `/tarifs` répondent tous deux 200.                                                                                                                             |
-| Meta description              | Une seule, statique, orientée particuliers, sur toutes les pages (`resources/views/inertia_layout.edge`) ; aucune `<Head>` ne la surcharge, y compris sur les pages cabinet.          |
-| Titles                        | Présents mais génériques (« Offre », « Tarifs », « Méthodologie »), suffixe ajouté par `inertia/app.tsx`.                                                                              |
-| Open Graph, Twitter, visuel   | Absents.                                                                                                                                                                              |
-| JSON-LD                       | Absent. Candidats : Organization, WebSite, Offer (`/tarifs`, `/cabinets/tarifs`), FAQPage (ces deux pages ont déjà une FAQ).                                                           |
-| `noindex` des pages d'auth    | Absent : `/auth/*`, `/inscription`, `/onboarding/:token` deviendraient indexables avec le flag.                                                                                       |
-| SSR                           | Actif (`config/inertia.ts`, `inertia/ssr.tsx`) : point fort.                                                                                                                          |
-| Cache des assets              | `config/static.ts` sans `maxAge`/`immutable` ; aucune règle de cache dans `deploy/Caddyfile`.                                                                                         |
-| Compression                   | Assurée par Caddy uniquement (`encode zstd gzip`), pas par l'app (donc dépend de l'hébergeur sur Render).                                                                              |
-| Redirections                  | Pas de www → apex dans le dépôt ; un seul 301 (`/particuliers`).                                                                                                                      |
-| Polices                       | Google Fonts bloquantes, 7 graisses (`inertia_layout.edge`) : coût LCP/CLS et transfert de l'IP des visiteurs à Google (point RGPD, contredit « aucun tiers »).                         |
-| Manifest                      | `theme-color` incohérent (`#f7f5ee` dans le layout, `#1b2140` dans le manifest), pas de `start_url`, pas d'icône maskable.                                                            |
-| Images                        | Aucune image de contenu ; `inertia/assets/images/logo.png` (839 Ko) inutilisé ; avatar DiceBear bloqué par la CSP (`imgSrc`).                                                          |
-| Mesure                        | Aucun analytics ; Search Console par balise (`GOOGLE_SITE_VERIFICATION`) ; pas de Lighthouse CI ; la CSP interdit tout script tiers.                                                   |
+| Sujet                        | État                                                                                                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Indexation                   | `SEO_INDEXING=false` par défaut (`config/seo.ts`, `render.yaml`) : meta `noindex, nofollow` et `robots.txt` `Disallow: /`. Décision PO ouverte (`PRODUCTION_CHECKLIST.md`).  |
+| `robots.txt` une fois activé | `Allow: /` sans exclusion de `/dashboard`, `/auth`, `/onboarding`, sans ligne `Sitemap:` (`app/utils/seo.ts`).                                                               |
+| `sitemap.xml`                | Absent.                                                                                                                                                                      |
+| Canonical                    | Absent ; `/tarifs/` et `/tarifs` répondent tous deux 200.                                                                                                                    |
+| Meta description             | Une seule, statique, orientée particuliers, sur toutes les pages (`resources/views/inertia_layout.edge`) ; aucune `<Head>` ne la surcharge, y compris sur les pages cabinet. |
+| Titles                       | Présents mais génériques (« Offre », « Tarifs », « Méthodologie »), suffixe ajouté par `inertia/app.tsx`.                                                                    |
+| Open Graph, Twitter, visuel  | Absents.                                                                                                                                                                     |
+| JSON-LD                      | Absent. Candidats : Organization, WebSite, Offer (`/tarifs`, `/cabinets/tarifs`), FAQPage (ces deux pages ont déjà une FAQ).                                                 |
+| `noindex` des pages d'auth   | Absent : `/auth/*`, `/inscription`, `/onboarding/:token` deviendraient indexables avec le flag.                                                                              |
+| SSR                          | Actif (`config/inertia.ts`, `inertia/ssr.tsx`) : point fort.                                                                                                                 |
+| Cache des assets             | `config/static.ts` sans `maxAge`/`immutable` ; aucune règle de cache dans `deploy/Caddyfile`.                                                                                |
+| Compression                  | Assurée par Caddy uniquement (`encode zstd gzip`), pas par l'app (donc dépend de l'hébergeur sur Render).                                                                    |
+| Redirections                 | Pas de www → apex dans le dépôt ; un seul 301 (`/particuliers`).                                                                                                             |
+| Polices                      | Google Fonts bloquantes, 7 graisses (`inertia_layout.edge`) : coût LCP/CLS et transfert de l'IP des visiteurs à Google (point RGPD, contredit « aucun tiers »).              |
+| Manifest                     | `theme-color` incohérent (`#f7f5ee` dans le layout, `#1b2140` dans le manifest), pas de `start_url`, pas d'icône maskable.                                                   |
+| Images                       | Aucune image de contenu ; `inertia/assets/images/logo.png` (839 Ko) inutilisé ; avatar DiceBear bloqué par la CSP (`imgSrc`).                                                |
+| Mesure                       | Aucun analytics ; Search Console par balise (`GOOGLE_SITE_VERIFICATION`) ; pas de Lighthouse CI ; la CSP interdit tout script tiers.                                         |
 
 ## 2. Contenu et on-page
 
@@ -60,7 +60,7 @@ confiance sont plus bloquantes que le technique.
 
 Une issue = une branche = une PR par lot (cf. `process/pr-checklist.md`).
 
-**P0 — avant d'ouvrir l'indexation**
+**P0 — avant d'ouvrir l'indexation** (points 1 à 4 livrés, voir `changelog/2026-10-04-1200-seo-p0-indexation.md`)
 
 1. Meta par page : description, canonical, Open Graph et Twitter par `<Head>` (composant dédié),
    descriptions B2B distinctes pour les pages cabinet.
