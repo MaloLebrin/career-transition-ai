@@ -7,13 +7,14 @@ import { MarketingSection } from '~/components/marketing/MarketingSection'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import { SectionHeading } from '~/components/ui/SectionHeading'
+import { CABINET_HEADER } from '~/config/marketing'
 import { AiSection } from './sections/AiSection'
 import { HeroSection } from './sections/HeroSection'
 import { MethodSection } from './sections/MethodSection'
 
-/** Page d'accueil publique : promesse, parcours, méthode, IA, démo. */
-const LandingPage: React.FC = () => (
-  <PublicLayout>
+/** Accueil de l'espace cabinet (`/cabinets`) : promesse, parcours, méthode, IA, démo. */
+const CabinetLandingPage: React.FC = () => (
+  <PublicLayout header={CABINET_HEADER}>
     <HeroSection />
 
     <MarketingSection tone="surface" id="parcours">
@@ -47,7 +48,7 @@ const LandingPage: React.FC = () => (
             Demander une démo
           </a>
           <AppLink
-            href="/tarifs"
+            href="/cabinets/tarifs"
             className={buttonClassName({
               variant: 'outline',
               size: 'lg',
@@ -62,4 +63,4 @@ const LandingPage: React.FC = () => (
   </PublicLayout>
 )
 
-export default LandingPage
+export default CabinetLandingPage

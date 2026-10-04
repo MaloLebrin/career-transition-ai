@@ -14,6 +14,8 @@ declare module '@adonisjs/inertia/types' {
   export interface InertiaPages {
     'auth/ForgotPassword': ExtractProps<(typeof import('../../inertia/pages/auth/ForgotPassword.tsx'))['default']>
     'auth/ResetPassword': ExtractProps<(typeof import('../../inertia/pages/auth/ResetPassword.tsx'))['default']>
+    'CabinetPricing': ExtractProps<(typeof import('../../inertia/pages/CabinetPricing.tsx'))['default']>
+    'Cabinets': ExtractProps<(typeof import('../../inertia/pages/Cabinets.tsx'))['default']>
     'dashboard/admin/b2c/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/b2c/Index.tsx'))['default']>
     'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
     'dashboard/admin/exercises/Usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/exercises/Usage.tsx'))['default']>
@@ -69,7 +71,6 @@ declare module '@adonisjs/inertia/types' {
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
-    'Individuals': ExtractProps<(typeof import('../../inertia/pages/Individuals.tsx'))['default']>
     'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
     'Login': ExtractProps<(typeof import('../../inertia/pages/Login.tsx'))['default']>
     'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>

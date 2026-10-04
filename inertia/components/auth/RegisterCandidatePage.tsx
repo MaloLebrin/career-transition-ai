@@ -40,12 +40,20 @@ export default function RegisterCandidatePage({ error }: RegisterCandidatePagePr
       title="Créer mon compte"
       subtitle="Commencez votre bilan de transition : les exercices Motivations et Valeurs sont gratuits."
       footer={
-        <p>
-          Vous avez déjà un compte ?{' '}
-          <AppLink href="/auth/login" className="font-medium text-accent hover:underline">
-            Se connecter
-          </AppLink>
-        </p>
+        <div className="space-y-2">
+          <p>
+            Vous avez déjà un compte ?{' '}
+            <AppLink href="/auth/login" className="font-medium text-accent hover:underline">
+              Se connecter
+            </AppLink>
+          </p>
+          <p>
+            Vous êtes un cabinet ?{' '}
+            <AppLink href="/cabinets" className="font-medium text-accent hover:underline">
+              Espace cabinet
+            </AppLink>
+          </p>
+        </div>
       }
     >
       {(error || throttled) && (

@@ -12,7 +12,8 @@ router
     router.on('/methodologie').renderInertia('Methodology', {})
     router.on('/offre').renderInertia('Offer', {})
     router.on('/tarifs').renderInertia('Pricing', {})
-    router.on('/particuliers').renderInertia('Individuals', {})
+    router.on('/cabinets').renderInertia('Cabinets', {})
+    router.on('/cabinets/tarifs').renderInertia('CabinetPricing', {})
     router.on('/mentions-legales').renderInertia('LegalNotice', {})
     router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
     router.on('/securite').renderInertia('Security', {})
@@ -26,6 +27,11 @@ router
   .use([middleware.guest()])
 
 router.post('/contact-requests', [ContactRequestsController, 'store']).use(throttleContactRequests)
+
+// Hors du groupe `guest` : l'offre particuliers est l'accueil `/` (le groupe `guest`
+// y renvoie ensuite un utilisateur connecté vers `/dashboard`). L'ancienne URL,
+// déjà partagée, reste valable.
+router.get('/particuliers', ({ response }) => response.redirect().status(301).toPath('/'))
 
 // Hors du groupe `guest` : les conditions se relisent connecté (case CGU de
 // l'inscription, consentements du paiement, lien du pied de page). `silentAuth`

@@ -1,5 +1,6 @@
 import { BarChart3, Clock, ShieldCheck } from 'lucide-react'
 import React from 'react'
+import { CABINET_HEADER } from '~/config/marketing'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
@@ -84,7 +85,7 @@ const LINK_CLASS = 'text-sm font-medium text-accent hover:underline'
 
 export default function OfferPage() {
   return (
-    <PublicLayout>
+    <PublicLayout header={CABINET_HEADER}>
       <MarketingSection tone="canvas">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="space-y-8 lg:col-span-7">
@@ -175,7 +176,7 @@ export default function OfferPage() {
               Demander une démo
             </a>
             <AppLink
-              href="/tarifs"
+              href="/cabinets/tarifs"
               className={buttonClassName({
                 variant: 'outline',
                 size: 'lg',
