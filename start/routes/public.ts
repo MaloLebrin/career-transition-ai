@@ -14,6 +14,7 @@ router
     router.on('/tarifs').renderInertia('Pricing', {})
     router.on('/cabinets').renderInertia('Cabinets', {})
     router.on('/cabinets/tarifs').renderInertia('CabinetPricing', {})
+    router.on('/qui-sommes-nous').renderInertia('AboutUs', {})
     router.on('/mentions-legales').renderInertia('LegalNotice', {})
     router.on('/confidentialite').renderInertia('PrivacyPolicy', {})
     router.on('/securite').renderInertia('Security', {})

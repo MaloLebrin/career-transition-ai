@@ -17,6 +17,7 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/mentions-legales', 'LegalNotice'],
   ['/confidentialite', 'PrivacyPolicy'],
   ['/securite', 'Security'],
+  ['/qui-sommes-nous', 'AboutUs'],
   ['/auth/login', 'Login'],
   ['/auth/register', 'Register'],
   ['/inscription', 'RegisterCandidate'],
