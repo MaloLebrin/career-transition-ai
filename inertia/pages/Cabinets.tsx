@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react'
+import { PageSeo } from '~/components/seo/PageSeo'
 import CabinetLandingPage from '~/components/landing/CabinetLandingPage'
 
 export default function Cabinets() {
   return (
     <>
-      <Head title="Logiciel de bilan de compétences pour cabinets" />
+      <PageSeo
+        title="Logiciel de bilan de compétences pour cabinets"
+        description="Logiciel de bilan de compétences pour cabinets de transition professionnelle et d'outplacement : exercices, synthèses assistées par l'IA, suivi des candidats. Demandez une démo."
+      />
       <CabinetLandingPage />
     </>
   )

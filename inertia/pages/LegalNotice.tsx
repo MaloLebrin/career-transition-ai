@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react'
+import { PageSeo } from '~/components/seo/PageSeo'
 import LegalNoticePage from '../components/marketing/LegalNoticePage'
 
 export default function LegalNotice() {
   return (
     <>
-      <Head title="Mentions légales" />
+      <PageSeo
+        title="Mentions légales"
+        description="Mentions légales de Transition Carrière : éditeur, directeur de la publication et hébergeur."
+      />
       <LegalNoticePage />
     </>
   )

@@ -32,6 +32,10 @@ test.group('RobotsController.handle', (group) => {
     config.set('seo.indexing', true)
     const { ctx } = makeCtx()
 
-    assert.equal(new RobotsController().handle(ctx), 'User-agent: *\nAllow: /\n')
+    const body = new RobotsController().handle(ctx)
+
+    assert.include(body, 'User-agent: *\nAllow: /\n')
+    assert.include(body, 'Disallow: /dashboard\n')
+    assert.match(body, /\nSitemap: https?:\/\/\S+\/sitemap\.xml\n$/)
   })
 })

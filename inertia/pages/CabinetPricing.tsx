@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react'
+import { PageSeo } from '~/components/seo/PageSeo'
 import CabinetPricingPage from '~/components/marketing/CabinetPricingPage'
 
 export default function CabinetPricing() {
   return (
     <>
-      <Head title="Tarifs pour cabinets" />
+      <PageSeo
+        title="Tarifs pour cabinets de transition"
+        description="Offres mensuelles pour cabinets de transition professionnelle et d'outplacement, selon votre volume de candidats. Demandez un devis."
+      />
       <CabinetPricingPage />
     </>
   )
