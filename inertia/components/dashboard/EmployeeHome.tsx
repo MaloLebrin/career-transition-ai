@@ -49,6 +49,11 @@ export default function EmployeeHome({
                 Ma synthèse
               </Button>
             </AppLink>
+            <AppLink href="/dashboard/candidat/chat">
+              <Button variant="outline" className="border-white/30 text-white" size="lg">
+                Discuter avec un expert
+              </Button>
+            </AppLink>
           </div>
         </div>
       </div>

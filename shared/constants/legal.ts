@@ -125,6 +125,11 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: '3 ans au maximum après la dernière connexion, ou dès la demande d’effacement',
   },
   {
+    data: 'Messages du chat avec l’équipe d’experts',
+    duration:
+      'Avec le dossier candidat : 3 ans au maximum après la dernière connexion ou la fin de l’accompagnement, ou dès la demande d’effacement',
+  },
+  {
     data: 'Données de paiement et factures du forfait particuliers',
     duration:
       '10 ans (art. L123-22 du Code de commerce) ; enregistrement anonymisé après effacement du compte',

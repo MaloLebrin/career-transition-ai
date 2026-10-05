@@ -56,6 +56,44 @@ export class CandidatePaymentSchema extends BaseModel {
   declare withdrawalWaivedAt: DateTime | null
 }
 
+export class ChatConversationSchema extends BaseModel {
+  static $columns = ['assignedExpertUserId', 'candidateLastReadAt', 'createdAt', 'employeeId', 'expertLastReadAt', 'id', 'lastMessageAt', 'updatedAt'] as const
+  $columns = ChatConversationSchema.$columns
+  @column()
+  declare assignedExpertUserId: number | null
+  @column.dateTime()
+  declare candidateLastReadAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: number
+  @column.dateTime()
+  declare expertLastReadAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare lastMessageAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ChatMessageSchema extends BaseModel {
+  static $columns = ['authorRole', 'authorUserId', 'body', 'conversationId', 'createdAt', 'id'] as const
+  $columns = ChatMessageSchema.$columns
+  @column()
+  declare authorRole: string
+  @column()
+  declare authorUserId: number
+  @column()
+  declare body: string
+  @column()
+  declare conversationId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
+}
+
 export class ContactRequestSchema extends BaseModel {
   static $columns = ['createdAt', 'email', 'id', 'message', 'name', 'organization', 'phone', 'status', 'type', 'updatedAt'] as const
   $columns = ContactRequestSchema.$columns
@@ -421,7 +459,7 @@ export class PasswordResetTokenSchema extends BaseModel {
 }
 
 export class PdfExportSchema extends BaseModel {
-  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
   $columns = PdfExportSchema.$columns
   @column()
   declare advisorUserId: number | null
@@ -449,6 +487,8 @@ export class PdfExportSchema extends BaseModel {
   declare startedAt: DateTime | null
   @column()
   declare status: string
+  @column()
+  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
