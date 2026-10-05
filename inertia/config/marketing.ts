@@ -21,6 +21,7 @@ export const MARKETING_NAV: NavItem[] = [
   { label: 'Le parcours', href: '/#parcours' },
   { label: 'Tarif', href: '/tarifs' },
   { label: 'Cabinets', href: '/cabinets' },
+  { label: 'Qui sommes-nous', href: '/qui-sommes-nous' },
 ]
 
 /** Navigation de l'espace cabinet (`/cabinets`, `/offre`, `/methodologie`, `/cabinets/tarifs`). */

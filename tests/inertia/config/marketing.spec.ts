@@ -17,7 +17,12 @@ import {
 
 describe('config/marketing', () => {
   test('la navigation par défaut est celle du parcours particulier', () => {
-    expect(MARKETING_NAV.map((item) => item.href)).toEqual(['/#parcours', '/tarifs', '/cabinets'])
+    expect(MARKETING_NAV.map((item) => item.href)).toEqual([
+      '/#parcours',
+      '/tarifs',
+      '/cabinets',
+      '/qui-sommes-nous',
+    ])
     expect(CABINETS_ACTION.href).toBe('/cabinets')
     expect(REGISTER_ACTION.href).toBe('/inscription')
     expect(WAITLIST_ACTION.href).toBe('/#contact')
