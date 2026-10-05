@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/use_auth'
 import Layout from '../layout/Layout'
 import { AdvisorSidebar } from './AdvisorSidebar'
+import { CandidateSidebar } from './CandidateSidebar'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -11,12 +12,15 @@ interface DashboardLayoutProps {
   selectedEmployeeId?: string | null
   /** Hide the sidebar (useful for exercise pages that need full width) */
   hideSidebar?: boolean
+  /** Show the candidate menu on the left (opt-in, candidate pages only) */
+  candidateSidebar?: boolean
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
   selectedEmployeeId = null,
   hideSidebar = false,
+  candidateSidebar = false,
 }) => {
   const { user, logout } = useAuth()
   const [pdfJobStatuses, setPdfJobStatuses] = useState<Record<number, string>>({})
@@ -71,6 +75,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 .length
             }
           />
+          <div className="lg:col-span-5">{children}</div>
+        </div>
+      ) : candidateSidebar && !isAdvisor && !superAdmin ? (
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 flex-1 min-h-0">
+          <CandidateSidebar />
           <div className="lg:col-span-5">{children}</div>
         </div>
       ) : (

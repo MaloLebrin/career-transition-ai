@@ -29,7 +29,7 @@ export default function CandidateChatPage({
   const showOffer = entitlement !== null && !entitlement.hasPaidAccess
 
   return (
-    <DashboardLayout>
+    <DashboardLayout candidateSidebar>
       <Head title="Discuter avec un expert" />
       <div className="mx-auto w-full max-w-3xl space-y-6 animate-fade-in">
         <AppLink
