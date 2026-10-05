@@ -14,10 +14,14 @@ const transmit = vi.hoisted(() => ({
   message: null as null | ((data: unknown) => void),
   handlers: {} as Record<string, () => void>,
   deleted: 0,
+  closed: 0,
 }))
 
 vi.mock('@adonisjs/transmit-client', () => ({
   Transmit: vi.fn().mockImplementation(() => ({
+    close: () => {
+      transmit.closed += 1
+    },
     subscription: (channel: string) => {
       transmit.channels.push(channel)
       return {
@@ -61,6 +65,7 @@ describe('useChatConversation', () => {
     transmit.message = null
     transmit.handlers = {}
     transmit.deleted = 0
+    transmit.closed = 0
   })
 
   test('s’abonne au canal et marque la conversation lue à l’ouverture', async () => {
@@ -149,5 +154,6 @@ describe('useChatConversation', () => {
     const { unmount } = await mount()
     unmount()
     expect(transmit.deleted).toBe(1)
+    expect(transmit.closed).toBe(1)
   })
 })

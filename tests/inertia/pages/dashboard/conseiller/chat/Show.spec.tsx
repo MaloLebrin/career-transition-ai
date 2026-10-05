@@ -15,6 +15,7 @@ vi.mock('../../../../../../inertia/components/dashboard/DashboardLayout', () => 
 
 vi.mock('@adonisjs/transmit-client', () => ({
   Transmit: vi.fn().mockImplementation(() => ({
+    close: () => {},
     subscription: () => ({
       create: () => Promise.resolve(),
       delete: () => Promise.resolve(),

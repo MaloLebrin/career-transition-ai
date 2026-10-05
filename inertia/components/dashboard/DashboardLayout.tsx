@@ -51,6 +51,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return () => {
       if (unsubscribe) unsubscribe()
       subscription.delete().catch(() => {})
+      transmit.close()
     }
   }, [showSidebar, user?.id])
 

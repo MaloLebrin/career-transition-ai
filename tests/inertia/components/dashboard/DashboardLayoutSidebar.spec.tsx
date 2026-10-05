@@ -31,6 +31,7 @@ vi.mock('../../../../inertia/components/dashboard/AdvisorSidebar', () => ({
 
 vi.mock('@adonisjs/transmit-client', () => ({
   Transmit: vi.fn().mockImplementation(() => ({
+    close: vi.fn(),
     subscription: vi.fn().mockReturnValue({
       create: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),

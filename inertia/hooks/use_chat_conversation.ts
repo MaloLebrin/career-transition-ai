@@ -90,6 +90,8 @@ export function useChatConversation({
       subscription.delete().catch(() => {})
       transmit.off('reconnecting', onReconnecting)
       transmit.off('connected', onConnected)
+      // Sans `close()`, l'EventSource reste ouvert : les flux s'accumulent à chaque navigation.
+      transmit.close()
     }
   }, [channel, viewerRole, markRead])
 
