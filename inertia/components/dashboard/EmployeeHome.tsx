@@ -50,7 +50,7 @@ export default function EmployeeHome({
               </Button>
             </AppLink>
             <AppLink href="/dashboard/candidat/chat">
-              <Button variant="outline" className="border-white/30 text-white" size="lg">
+              <Button variant="secondary" size="lg">
                 Discuter avec un expert
               </Button>
             </AppLink>
