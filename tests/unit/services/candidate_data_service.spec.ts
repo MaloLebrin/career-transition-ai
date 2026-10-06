@@ -1,5 +1,6 @@
 import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
+import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
 import { ChatConversationFactory } from '#database/factories/chat_conversation_factory'
 import { ChatMessageFactory } from '#database/factories/chat_message_factory'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
@@ -295,6 +296,32 @@ test.group('candidate_data_service | export', (group) => {
     assert.property(snapshot.payments[0], 'revokeReason')
     assert.property(snapshot.payments[0], 'withdrawalWaivedAt')
     assert.isNotNull(snapshot.payments[0].withdrawalWaivedAt)
+    // Code promo Stripe (#139) : remise, libellé et id exportés.
+    assert.equal(snapshot.payments[0].discountCents, 0)
+    assert.isNull(snapshot.payments[0].promoCode)
+    assert.isNull(snapshot.payments[0].stripePromotionCodeId)
+  })
+
+  test('l’export d’un particulier porte la remise et le code promo du forfait (#139)', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      userId: employee.userId,
+      organizationId: employee.organizationId,
+    })
+      .apply('discounted')
+      .create()
+
+    const loaded = await loadCandidateForExport(employee.id)
+    const snapshot = candidateDataSnapshot(loaded!)
+
+    assert.lengthOf(snapshot.payments, 1)
+    assert.equal(snapshot.payments[0].amountCents, 3920)
+    assert.equal(snapshot.payments[0].discountCents, 980)
+    assert.equal(snapshot.payments[0].promoCode, 'BIENVENUE20')
+    assert.match(snapshot.payments[0].stripePromotionCodeId ?? '', /^promo_test_/)
   })
 
   test('l’export couvre type de compte, CGU, e-mail vérifié, effacement, synthèses et notifications', async ({

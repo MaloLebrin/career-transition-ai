@@ -156,6 +156,10 @@ export function candidateDataSnapshot(
       provider: payment.provider,
       status: payment.status,
       amountCents: payment.amountCents,
+      // Code promo Stripe (#139) : remise, libellé et id du code.
+      discountCents: payment.discountCents,
+      promoCode: payment.promoCode,
+      stripePromotionCodeId: payment.stripePromotionCodeId,
       currency: payment.currency,
       stripeCheckoutSessionId: payment.stripeCheckoutSessionId,
       stripePaymentIntentId: payment.stripePaymentIntentId,

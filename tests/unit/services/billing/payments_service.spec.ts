@@ -8,6 +8,7 @@ import { setErrorReporter, type ErrorContext } from '#services/error_tracking_se
 import {
   DUPLICATE_PAYMENT_REVOKE_REASON,
   PAYMENT_STATUSES,
+  PROMO_CODE_MAX,
   STRIPE_REFUND_REVOKE_REASON,
 } from '#shared/constants/billing'
 import { createB2cCandidate } from '#tests/support/actors'
@@ -366,5 +367,204 @@ test.group('PaymentsService — effets rejouables (#109 M1)', (group) => {
       setErrorReporter(previous)
     }
     assert.lengthOf(reported, 3)
+  })
+
+  test('sessionMatches (#139) : le sous-total Stripe est comparé au prix brut (encaissé + remise), avant comme après règlement', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    // Un seul droit actif par fiche (index unique partiel) : une fiche par état réglé.
+    const make = async (state?: 'discounted' | 'free') => {
+      const { employee } = await createB2cCandidate()
+      const factory = CandidatePaymentFactory.merge({
+        employeeId: employee.id,
+        organizationId: employee.organizationId,
+      })
+      return (state ? factory.apply(state) : factory).create()
+    }
+    const pendingRow = await make()
+    const discounted = await make('discounted')
+    const free = await make('free')
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      // Session remisée annoncée par Stripe : sous-total 49 €, total 39,20 €.
+      const announced = { amountSubtotal: 4900, amountTotal: 3920, currency: 'eur' }
+      assert.isTrue(service.sessionMatches(pendingRow, announced))
+      assert.isTrue(service.sessionMatches(discounted, announced))
+      assert.isTrue(service.sessionMatches(free, { amountSubtotal: 4900, amountTotal: 0 }))
+      assert.equal(discounted.grossAmountCents, 4900)
+      assert.equal(free.grossAmountCents, 4900)
+      // Sous-total différent du prix catalogue : écart.
+      assert.isFalse(
+        service.sessionMatches(pendingRow, { amountSubtotal: 4800, amountTotal: 4800 })
+      )
+      // Sans sous-total (événement allégé) : repli sur le total, un paiement remisé est refusé (côté sûr).
+      assert.isTrue(service.sessionMatches(pendingRow, { amountTotal: 4900 }))
+      assert.isFalse(service.sessionMatches(pendingRow, { amountTotal: 3920 }))
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 2)
+  })
+
+  test('markPaid (#139) : écrit montant encaissé, remise et code promo ; ne réécrit pas une ligne déjà réglée', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { payment } = await pending()
+
+    assert.isTrue(
+      await service.markPaid(payment, {
+        paymentIntentId: 'pi_promo',
+        amountTotalCents: 3920,
+        discountCents: 980,
+        promotionCodeId: 'promo_test_20',
+        promoCode: 'BIENVENUE20',
+      })
+    )
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 3920)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.equal(payment.stripePromotionCodeId, 'promo_test_20')
+    assert.equal(payment.grossAmountCents, 4900)
+
+    // Rejeu (webhook après réconciliation) avec d'autres valeurs : rien ne bouge.
+    assert.isFalse(
+      await service.markPaid(payment, {
+        paymentIntentId: 'pi_promo',
+        amountTotalCents: 4900,
+        discountCents: 0,
+        promoCode: null,
+      })
+    )
+    await payment.refresh()
+    assert.equal(payment.amountCents, 3920)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.equal(entitlements.unlockCalls, 1)
+  })
+
+  test('markPaid (#139) : code à 100 % — 0 € encaissé, sans PaymentIntent, droit ouvert ; sans montant transmis la ligne garde son prix', async ({
+    assert,
+  }) => {
+    const entitlements = new FlakyEntitlements(testNotifications())
+    const service = new PaymentsService(entitlements)
+    const { payment: free } = await pending()
+    const { payment: plain } = await pending()
+
+    assert.isTrue(
+      await service.markPaid(free, {
+        paymentIntentId: null,
+        amountTotalCents: 0,
+        discountCents: 4900,
+        promotionCodeId: 'promo_free',
+        promoCode: 'OFFERT100',
+      })
+    )
+    await free.refresh()
+    assert.equal(free.amountCents, 0)
+    assert.equal(free.discountCents, 4900)
+    assert.isNull(free.stripePaymentIntentId)
+    assert.isTrue(free.grantsAccess)
+
+    assert.isTrue(await service.markPaid(plain, { paymentIntentId: 'pi_plain' }))
+    await plain.refresh()
+    assert.equal(plain.amountCents, 4900)
+    assert.equal(plain.discountCents, 0)
+    assert.isNull(plain.promoCode)
+    assert.isNull(plain.stripePromotionCodeId)
+  })
+
+  test('markPaid (#139) : sans amount_total transmis mais avec remise, le montant encaissé est déduit (invariant brut préservé) ; libellé borné', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { payment } = await pending()
+    const longLabel = 'X'.repeat(PROMO_CODE_MAX + 20)
+
+    assert.isTrue(
+      await service.markPaid(payment, {
+        paymentIntentId: 'pi_no_total',
+        discountCents: 980,
+        promotionCodeId: 'promo_long',
+        promoCode: longLabel,
+      })
+    )
+    await payment.refresh()
+    assert.equal(payment.amountCents, 4900 - 980)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.grossAmountCents, 4900)
+    assert.equal(payment.promoCode?.length, PROMO_CODE_MAX)
+    // Un rejeu annonçant le prix catalogue recoupe toujours.
+    assert.isTrue(service.sessionMatches(payment, { amountSubtotal: 4900, amountTotal: 3920 }))
+  })
+
+  test('sessionMatches (#139) : no_payment_required exige un total nul et une remise couvrant tout le prix', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { payment } = await pending()
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      const base = { amountSubtotal: 4900, paymentStatus: 'no_payment_required' }
+      assert.isTrue(
+        service.sessionMatches(payment, { ...base, amountTotal: 0, discountCents: 4900 })
+      )
+      assert.isFalse(
+        service.sessionMatches(payment, { ...base, amountTotal: 0, discountCents: 980 })
+      )
+      assert.isFalse(
+        service.sessionMatches(payment, { ...base, amountTotal: 10, discountCents: 4900 })
+      )
+      assert.isFalse(service.sessionMatches(payment, { ...base, amountTotal: 0 }))
+      // Un paiement ordinaire n'est pas concerné par cette garde.
+      assert.isTrue(
+        service.sessionMatches(payment, {
+          amountSubtotal: 4900,
+          amountTotal: 4900,
+          paymentStatus: 'paid',
+        })
+      )
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 3)
+  })
+
+  test('doublon (#139) : le règlement remisé est conservé sur la ligne révoquée', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { employee } = await createB2cCandidate({ paid: true })
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+    const previous = setErrorReporter({ capture: () => {} })
+
+    try {
+      assert.isFalse(
+        await service.markPaid(payment, {
+          paymentIntentId: 'pi_dup_promo',
+          amountTotalCents: 3920,
+          discountCents: 980,
+          promotionCodeId: 'promo_dup',
+          promoCode: 'BIENVENUE20',
+        })
+      )
+    } finally {
+      setErrorReporter(previous)
+    }
+    await payment.refresh()
+    assert.equal(payment.revokeReason, DUPLICATE_PAYMENT_REVOKE_REASON)
+    assert.equal(payment.amountCents, 3920)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
   })
 })

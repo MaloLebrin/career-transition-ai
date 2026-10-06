@@ -17,6 +17,8 @@ const paid: PaymentRow = {
   provider: 'stripe',
   status: 'paid',
   amountCents: 4900,
+  discountCents: 0,
+  promoCode: null,
   currency: 'eur',
   paidAt: '2026-10-02T10:00:00.000Z',
   refundedAt: null,
@@ -64,6 +66,31 @@ describe('PaymentsTable (#107)', () => {
     expect(rows[1]).toHaveTextContent('Accès retiré')
     expect(rows[1]).toHaveTextContent('Litige (par l’utilisateur #1)')
     expect(within(rows[1]).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  test('code promo (#139) : remise et libellé sous le montant ; gratuit à 0 € ; libellé manquant → tiret', () => {
+    render(
+      <PaymentsTable
+        payments={[
+          { ...paid, id: 21, amountCents: 3920, discountCents: 980, promoCode: 'BIENVENUE20' },
+          { ...paid, id: 22, amountCents: 0, discountCents: 4900, promoCode: 'OFFERT100' },
+          { ...paid, id: 23, amountCents: 3920, discountCents: 980, promoCode: null },
+        ]}
+      />
+    )
+
+    const rows = within(screen.getByRole('table', { name: 'Paiements du forfait' }))
+      .getAllByRole('row')
+      .slice(1)
+    expect(rows[0]).toHaveTextContent('39,20 €')
+    expect(rows[0]).toHaveTextContent('Code BIENVENUE20 · −9,80 €')
+    expect(rows[1]).toHaveTextContent('Gratuit · code OFFERT100 · −49 €')
+    expect(rows[2]).toHaveTextContent('Code — · −9,80 €')
+  })
+
+  test('sans remise : aucune mention de code promo', () => {
+    render(<PaymentsTable payments={[paid]} />)
+    expect(screen.queryByText(/Code /)).not.toBeInTheDocument()
   })
 
   test('révocation manuelle : affiche le super admin à côté du motif ; absent pour un remboursement', () => {

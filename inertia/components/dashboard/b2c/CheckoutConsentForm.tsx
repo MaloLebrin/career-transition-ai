@@ -21,7 +21,8 @@ const CHECKBOX_CLASS =
 /**
  * Consentements avant Stripe Checkout (#102) : CGV et renonciation expresse au
  * droit de rétractation. Le `POST` répond par une redirection externe
- * (`inertia.location`) vers la page de paiement hébergée.
+ * (`inertia.location`) vers la page de paiement hébergée, où se saisit un
+ * éventuel code promo (#139) — jamais ici.
  */
 export function CheckoutConsentForm({
   paymentsEnabled,
@@ -122,6 +123,11 @@ export function CheckoutConsentForm({
           Paiement sécurisé par Stripe. Vous recevrez une facture par e-mail.
         </p>
       </div>
+      {paymentsEnabled && (
+        <p className="text-caption text-muted">
+          Un code promo ? Saisissez-le à l’étape de paiement sécurisé.
+        </p>
+      )}
     </form>
   )
 }

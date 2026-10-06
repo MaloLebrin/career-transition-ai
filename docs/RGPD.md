@@ -122,8 +122,9 @@ un candidat qui n'a plus accès à son compte.
    date de vérification de l'e-mail), type de compte (`accountType` : cabinet ou
    particulier) et date de demande d'effacement, compétences, expériences, formations,
    résultats d'exercices bruts et analyses IA, plan d'accompagnement, notes,
-   paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
-   jamais de numéro de carte, Stripe seul les détient), demandes
+   paiements du forfait (#94 : date, montant, statut, identifiants Stripe ;
+   #139 : remise, libellé et id du code promo — jamais de numéro de carte,
+   Stripe seul les détient), demandes
    d'accompagnement par un expert (#103 : message, disponibilités, statut,
    motif de refus, dates), messages du chat avec l'équipe d'experts (`chatMessages` :
    rôle de l'auteur, texte, date ; jamais le nom de l'expert), synthèses d'accompagnement (`syntheses` ; les notes internes de l'expert

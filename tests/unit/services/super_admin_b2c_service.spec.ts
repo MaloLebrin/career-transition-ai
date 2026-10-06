@@ -166,6 +166,33 @@ test.group('SuperAdminB2cService (#107)', (group) => {
     assert.equal(stats.monthRevenueCents, recent.amountCents)
   })
 
+  test('stats (#139) : le CA du mois additionne les montants réellement encaissés (remises déduites, code à 100 % à 0 €)', async ({
+    assert,
+  }) => {
+    await createSuperAdmin()
+    const full = await createB2cCandidate({ paid: true })
+    const discounted = await createB2cCandidate()
+    await CandidatePaymentFactory.merge({
+      employeeId: discounted.employee.id,
+      organizationId: discounted.employee.organizationId,
+    })
+      .apply('discounted')
+      .create()
+    const free = await createB2cCandidate()
+    await CandidatePaymentFactory.merge({
+      employeeId: free.employee.id,
+      organizationId: free.employee.organizationId,
+    })
+      .apply('free')
+      .create()
+
+    const stats = await service.stats()
+
+    const [fullPayment] = await CandidatePayment.query().where('employeeId', full.employee.id)
+    assert.equal(stats.paid, 3)
+    assert.equal(stats.monthRevenueCents, fullPayment.amountCents + 3920)
+  })
+
   test('homeStats : organisations, utilisateurs et bloc B2C', async ({ assert }) => {
     await createSuperAdmin()
     // Comptes relatifs : la suite `unit` partage la base avec d'autres suites.
