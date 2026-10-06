@@ -8,7 +8,12 @@ import {
   WEBHOOK_OUTCOMES,
   type WebhookOutcome,
 } from '#shared/constants/billing'
-import { checkoutDiscountCents, isCheckoutSettled } from '#shared/helpers/billing/checkout_session'
+import {
+  checkoutDiscountCents,
+  finiteOrNull,
+  isCheckoutSettled,
+  stripeIdOf,
+} from '#shared/helpers/billing/checkout_session'
 import type { PaymentGatewayWebhookEvent, PaymentSettlement } from '#shared/types/billing/checkout'
 import type { WebhookHandleResult } from '#shared/types/billing/webhooks'
 import { inject } from '@adonisjs/core'
@@ -114,14 +119,20 @@ export class StripeWebhooksService {
         if (!isCheckoutSettled(object.payment_status)) {
           return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
         }
+        const settlement = this.settlementFor(object)
         const consistent = this.payments.sessionMatches(payment, {
-          sessionId: stringOrNull(object.id),
-          amountTotal: numberOrNull(object.amount_total),
-          amountSubtotal: numberOrNull(object.amount_subtotal),
-          currency: stringOrNull(object.currency),
+          sessionId: stripeIdOf(object.id),
+          amountTotal: settlement.amountTotalCents,
+          amountSubtotal: finiteOrNull(object.amount_subtotal),
+          currency: stripeIdOf(object.currency),
+          paymentStatus: stripeIdOf(object.payment_status),
+          discountCents: settlement.discountCents,
         })
         if (!consistent) return this.unmatched(event)
-        await this.payments.markPaid(payment, await this.settlementFor(object))
+        await this.payments.markPaid(payment, {
+          ...settlement,
+          promoCode: await this.promotionCodes.labelFor(settlement.promotionCodeId),
+        })
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
       case STRIPE_WEBHOOK_EVENTS.ASYNC_PAYMENT_FAILED: {
@@ -137,7 +148,7 @@ export class StripeWebhooksService {
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
       case STRIPE_WEBHOOK_EVENTS.CHARGE_REFUNDED: {
-        const intentId = stringOrNull(object.payment_intent)
+        const intentId = stripeIdOf(object.payment_intent)
         const payment = intentId ? await this.payments.findByPaymentIntent(intentId) : null
         if (!payment) return this.unmatched(event)
         // Remboursement partiel : le droit reste ouvert, on ne révoque pas.
@@ -152,33 +163,31 @@ export class StripeWebhooksService {
     }
   }
 
-  /** Ce que Stripe a réglé, lu sur l'objet session de l'événement (#139). */
-  private async settlementFor(session: Record<string, unknown>): Promise<PaymentSettlement> {
+  /** Ce que Stripe a réglé, lu sur l'objet session de l'événement (#139) ; le libellé est relu à part. */
+  private settlementFor(session: Record<string, unknown>): PaymentSettlement {
     const totalDetails = session.total_details as Record<string, unknown> | null | undefined
     const discounts = Array.isArray(session.discounts) ? session.discounts : []
     const first = discounts[0] as Record<string, unknown> | undefined
-    const promotionCodeId = stringOrNull(first?.promotion_code)
     return {
-      paymentIntentId: stringOrNull(session.payment_intent),
-      amountTotalCents: numberOrNull(session.amount_total),
+      paymentIntentId: stripeIdOf(session.payment_intent),
+      amountTotalCents: finiteOrNull(session.amount_total),
       discountCents: checkoutDiscountCents({
-        amountSubtotal: numberOrNull(session.amount_subtotal),
-        amountTotal: numberOrNull(session.amount_total),
-        amountDiscount: numberOrNull(totalDetails?.amount_discount),
+        amountSubtotal: finiteOrNull(session.amount_subtotal),
+        amountTotal: finiteOrNull(session.amount_total),
+        amountDiscount: finiteOrNull(totalDetails?.amount_discount),
       }),
-      promotionCodeId,
-      promoCode: await this.promotionCodes.labelFor(promotionCodeId),
+      promotionCodeId: stripeIdOf(first?.promotion_code),
     }
   }
 
   /** Session Checkout : `client_reference_id` (id du paiement) d'abord, puis l'id de session. */
   private async findCheckoutPayment(session: Record<string, unknown>) {
-    const reference = stringOrNull(session.client_reference_id)
+    const reference = stripeIdOf(session.client_reference_id)
     if (reference) {
       const byId = await this.payments.findById(Number(reference))
       if (byId) return byId
     }
-    const sessionId = stringOrNull(session.id)
+    const sessionId = stripeIdOf(session.id)
     return sessionId ? this.payments.findByCheckoutSession(sessionId) : null
   }
 
@@ -187,7 +196,7 @@ export class StripeWebhooksService {
     payment: Parameters<PaymentsService['sessionMatches']>[0],
     session: Record<string, unknown>
   ): boolean {
-    return this.payments.sessionMatches(payment, { sessionId: stringOrNull(session.id) })
+    return this.payments.sessionMatches(payment, { sessionId: stripeIdOf(session.id) })
   }
 
   private unmatched(event: PaymentGatewayWebhookEvent) {
@@ -206,17 +215,4 @@ function isFullRefund(charge: Record<string, unknown>): boolean {
   return (
     typeof amount === 'number' && typeof refunded === 'number' && amount > 0 && refunded >= amount
   )
-}
-
-function numberOrNull(value: unknown): number | null {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null
-}
-
-/** Stripe renvoie tantôt un id, tantôt l'objet développé (`{ id }`). */
-function stringOrNull(value: unknown): string | null {
-  if (typeof value === 'string' && value.length > 0) return value
-  if (value && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string') {
-    return (value as { id: string }).id
-  }
-  return null
 }

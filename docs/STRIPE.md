@@ -11,7 +11,8 @@ débloque tous ses résultats (`EntitlementsService`, #94).
   `/dashboard/candidat/billing/success?session_id=…`. **Aucun Stripe.js** dans le
   bundle : CSP et `Permissions-Policy: payment=()` inchangés.
 - **Réconciliation** au retour : `CheckoutService.reconcile` relit la session chez
-  Stripe et débloque si `payment_status = paid`, sans attendre le webhook.
+  Stripe et débloque si `payment_status = paid` (ou `no_payment_required`, code
+  promo à 100 %), sans attendre le webhook.
 - **Codes promo** (#139) : créés et gérés dans le tableau de bord Stripe, saisis
   par le candidat **sur la page Stripe** (`allow_promotion_codes`), jamais dans
   l'application. Voir « Codes promo » ci-dessous.

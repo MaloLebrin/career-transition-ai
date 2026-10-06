@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { checkoutDiscountCents, isCheckoutSettled } from '#shared/helpers/billing/checkout_session'
+import {
+  checkoutDiscountCents,
+  finiteOrNull,
+  isCheckoutSettled,
+  stripeIdOf,
+} from '#shared/helpers/billing/checkout_session'
 
 describe('isCheckoutSettled (#139)', () => {
   test('paid et no_payment_required (code promo à 100 %) sont réglés', () => {
@@ -36,5 +41,24 @@ describe('checkoutDiscountCents (#139)', () => {
     expect(checkoutDiscountCents({})).toBe(0)
     expect(checkoutDiscountCents({ amountTotal: 4900 })).toBe(0)
     expect(checkoutDiscountCents({ amountSubtotal: null, amountTotal: null })).toBe(0)
+  })
+})
+
+describe('stripeIdOf / finiteOrNull (#139)', () => {
+  test('id en chaîne ou objet développé, sinon null', () => {
+    expect(stripeIdOf('promo_1')).toBe('promo_1')
+    expect(stripeIdOf({ id: 'promo_2', code: 'X' })).toBe('promo_2')
+    expect(stripeIdOf('')).toBeNull()
+    expect(stripeIdOf(null)).toBeNull()
+    expect(stripeIdOf({ code: 'X' })).toBeNull()
+    expect(stripeIdOf(42)).toBeNull()
+  })
+
+  test('nombre fini seulement', () => {
+    expect(finiteOrNull(0)).toBe(0)
+    expect(finiteOrNull(3920)).toBe(3920)
+    expect(finiteOrNull('3920')).toBeNull()
+    expect(finiteOrNull(Number.NaN)).toBeNull()
+    expect(finiteOrNull(undefined)).toBeNull()
   })
 })

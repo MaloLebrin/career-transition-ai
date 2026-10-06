@@ -62,6 +62,9 @@ export type CheckoutPaymentStatus =
 
 export const checkoutPaymentStatusValues = Object.values(CHECKOUT_PAYMENT_STATUSES)
 
+/** Longueur maximale du libellé d'un code promo conservé (`candidate_payments.promo_code`, #139). */
+export const PROMO_CODE_MAX = 100
+
 /** Devise unique du forfait (code ISO 4217 en minuscules, comme Stripe). */
 export const BILLING_CURRENCY = 'eur'
 

@@ -8,6 +8,7 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
   PAYMENT_STATUS_LABELS,
+  PROMO_CODE_MAX,
   STRIPE_WEBHOOK_EVENTS,
   STRIPE_WEBHOOK_PATH,
   WEBHOOK_OUTCOMES,
@@ -44,6 +45,11 @@ describe('shared/constants/billing (#94)', () => {
       'unpaid',
       'no_payment_required',
     ])
+  })
+
+  test('libellé de code promo borné (#139)', () => {
+    expect(Number.isInteger(PROMO_CODE_MAX)).toBe(true)
+    expect(PROMO_CODE_MAX).toBeGreaterThan(0)
   })
 
   test('chaque statut a un libellé français non vide', () => {

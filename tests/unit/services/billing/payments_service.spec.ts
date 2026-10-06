@@ -8,6 +8,7 @@ import { setErrorReporter, type ErrorContext } from '#services/error_tracking_se
 import {
   DUPLICATE_PAYMENT_REVOKE_REASON,
   PAYMENT_STATUSES,
+  PROMO_CODE_MAX,
   STRIPE_REFUND_REVOKE_REASON,
 } from '#shared/constants/billing'
 import { createB2cCandidate } from '#tests/support/actors'
@@ -381,7 +382,7 @@ test.group('PaymentsService — effets rejouables (#109 M1)', (group) => {
       })
       return (state ? factory.apply(state) : factory).create()
     }
-    const pending = await make()
+    const pendingRow = await make()
     const discounted = await make('discounted')
     const free = await make('free')
     const reported: ErrorContext[] = []
@@ -390,16 +391,18 @@ test.group('PaymentsService — effets rejouables (#109 M1)', (group) => {
     try {
       // Session remisée annoncée par Stripe : sous-total 49 €, total 39,20 €.
       const announced = { amountSubtotal: 4900, amountTotal: 3920, currency: 'eur' }
-      assert.isTrue(service.sessionMatches(pending, announced))
+      assert.isTrue(service.sessionMatches(pendingRow, announced))
       assert.isTrue(service.sessionMatches(discounted, announced))
       assert.isTrue(service.sessionMatches(free, { amountSubtotal: 4900, amountTotal: 0 }))
       assert.equal(discounted.grossAmountCents, 4900)
       assert.equal(free.grossAmountCents, 4900)
       // Sous-total différent du prix catalogue : écart.
-      assert.isFalse(service.sessionMatches(pending, { amountSubtotal: 4800, amountTotal: 4800 }))
+      assert.isFalse(
+        service.sessionMatches(pendingRow, { amountSubtotal: 4800, amountTotal: 4800 })
+      )
       // Sans sous-total (événement allégé) : repli sur le total, un paiement remisé est refusé (côté sûr).
-      assert.isTrue(service.sessionMatches(pending, { amountTotal: 4900 }))
-      assert.isFalse(service.sessionMatches(pending, { amountTotal: 3920 }))
+      assert.isTrue(service.sessionMatches(pendingRow, { amountTotal: 4900 }))
+      assert.isFalse(service.sessionMatches(pendingRow, { amountTotal: 3920 }))
     } finally {
       setErrorReporter(previous)
     }
@@ -474,6 +477,64 @@ test.group('PaymentsService — effets rejouables (#109 M1)', (group) => {
     assert.equal(plain.discountCents, 0)
     assert.isNull(plain.promoCode)
     assert.isNull(plain.stripePromotionCodeId)
+  })
+
+  test('markPaid (#139) : sans amount_total transmis mais avec remise, le montant encaissé est déduit (invariant brut préservé) ; libellé borné', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { payment } = await pending()
+    const longLabel = 'X'.repeat(PROMO_CODE_MAX + 20)
+
+    assert.isTrue(
+      await service.markPaid(payment, {
+        paymentIntentId: 'pi_no_total',
+        discountCents: 980,
+        promotionCodeId: 'promo_long',
+        promoCode: longLabel,
+      })
+    )
+    await payment.refresh()
+    assert.equal(payment.amountCents, 4900 - 980)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.grossAmountCents, 4900)
+    assert.equal(payment.promoCode?.length, PROMO_CODE_MAX)
+    // Un rejeu annonçant le prix catalogue recoupe toujours.
+    assert.isTrue(service.sessionMatches(payment, { amountSubtotal: 4900, amountTotal: 3920 }))
+  })
+
+  test('sessionMatches (#139) : no_payment_required exige un total nul et une remise couvrant tout le prix', async ({
+    assert,
+  }) => {
+    const service = new PaymentsService(new FlakyEntitlements(testNotifications()))
+    const { payment } = await pending()
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      const base = { amountSubtotal: 4900, paymentStatus: 'no_payment_required' }
+      assert.isTrue(
+        service.sessionMatches(payment, { ...base, amountTotal: 0, discountCents: 4900 })
+      )
+      assert.isFalse(
+        service.sessionMatches(payment, { ...base, amountTotal: 0, discountCents: 980 })
+      )
+      assert.isFalse(
+        service.sessionMatches(payment, { ...base, amountTotal: 10, discountCents: 4900 })
+      )
+      assert.isFalse(service.sessionMatches(payment, { ...base, amountTotal: 0 }))
+      // Un paiement ordinaire n'est pas concerné par cette garde.
+      assert.isTrue(
+        service.sessionMatches(payment, {
+          amountSubtotal: 4900,
+          amountTotal: 4900,
+          paymentStatus: 'paid',
+        })
+      )
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 3)
   })
 
   test('doublon (#139) : le règlement remisé est conservé sur la ligne révoquée', async ({

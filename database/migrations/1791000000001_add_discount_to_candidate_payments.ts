@@ -1,3 +1,4 @@
+import { PROMO_CODE_MAX } from '../../shared/constants/billing.js'
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 /**
@@ -17,7 +18,7 @@ export default class extends BaseSchema {
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
       table.integer('discount_cents').notNullable().defaultTo(0)
-      table.string('promo_code', 100).nullable()
+      table.string('promo_code', PROMO_CODE_MAX).nullable()
       table.string('stripe_promotion_code_id', 255).nullable()
     })
 

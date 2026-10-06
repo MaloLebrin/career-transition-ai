@@ -373,6 +373,75 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
     assert.deepEqual(entitlements.unlocked, [payment.id])
   })
 
+  test('code promo (#139) : payload allégé (sans total_details ni amount_total, discounts non tableau) → réglé au montant déduit, sans code', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const payment = await pendingPayment('cs_test_light')
+
+    const result = await service.handle(
+      JSON.stringify(
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+          id: 'cs_test_light',
+          client_reference_id: String(payment.id),
+          payment_status: 'paid',
+          payment_intent: 'pi_light',
+          amount_subtotal: payment.amountCents,
+          currency: payment.currency,
+          discounts: 'not-an-array',
+        })
+      ),
+      FAKE_STRIPE_SIGNATURE
+    )
+
+    assert.equal(result.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 4900)
+    assert.equal(payment.discountCents, 0)
+    assert.isNull(payment.promoCode)
+    assert.isNull(payment.stripePromotionCodeId)
+    assert.lengthOf(stripe.retrievedPromotionCodes, 0)
+  })
+
+  test('code promo (#139) : no_payment_required avec un total non nul ou sans remise → unmatched, rien n’est débloqué', async ({
+    assert,
+  }) => {
+    const { service, entitlements } = makeService()
+    const payment = await pendingPayment('cs_test_anomaly')
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      for (const override of [
+        { amount_total: 10, total_details: { amount_discount: 4890 } },
+        { amount_total: 0, total_details: { amount_discount: 0 } },
+      ]) {
+        const result = await service.handle(
+          JSON.stringify(
+            event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+              id: 'cs_test_anomaly',
+              client_reference_id: String(payment.id),
+              payment_status: 'no_payment_required',
+              payment_intent: null,
+              amount_subtotal: payment.amountCents,
+              currency: payment.currency,
+              ...override,
+            })
+          ),
+          FAKE_STRIPE_SIGNATURE
+        )
+        assert.equal(result.outcome, WEBHOOK_OUTCOMES.UNMATCHED)
+      }
+    } finally {
+      setErrorReporter(previous)
+    }
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.lengthOf(entitlements.unlocked, 0)
+    assert.lengthOf(reported, 2)
+  })
+
   test('code promo (#139) : webhook rejoué après la réconciliation → processed, sans écart signalé', async ({
     assert,
   }) => {

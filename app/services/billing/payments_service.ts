@@ -3,8 +3,10 @@ import Employee from '#models/employee'
 import { EntitlementsService } from '#services/entitlements_service'
 import { reportError } from '#services/error_tracking_service'
 import {
+  CHECKOUT_PAYMENT_STATUSES,
   DUPLICATE_PAYMENT_REVOKE_REASON,
   PAYMENT_STATUSES,
+  PROMO_CODE_MAX,
   STRIPE_REFUND_REVOKE_REASON,
 } from '#shared/constants/billing'
 import type { PaymentSettlement } from '#shared/types/billing/checkout'
@@ -48,7 +50,9 @@ export class PaymentsService {
    * (`amount_cents + discount_cents`) — invariant valable pour une ligne
    * `pending` comme pour une ligne déjà réglée (rejeu du webhook après la
    * réconciliation). Sans sous-total, `amount_total` sert de repli : un
-   * paiement remisé donne alors un écart, côté sûr.
+   * paiement remisé donne alors un écart, côté sûr. Une session
+   * `no_payment_required` n'est acceptée que si son total est 0 **et** que la
+   * remise couvre tout le prix : un total nul sans remise est une anomalie.
    */
   public sessionMatches(
     payment: CandidatePayment,
@@ -57,6 +61,8 @@ export class PaymentsService {
       amountTotal?: number | null
       amountSubtotal?: number | null
       currency?: string | null
+      paymentStatus?: string | null
+      discountCents?: number | null
     }
   ): boolean {
     const mismatches: string[] = []
@@ -71,6 +77,12 @@ export class PaymentsService {
       typeof stripe.amountSubtotal === 'number' ? stripe.amountSubtotal : stripe.amountTotal
     if (typeof announced === 'number' && announced !== payment.grossAmountCents) {
       mismatches.push('amount')
+    }
+    if (
+      stripe.paymentStatus === CHECKOUT_PAYMENT_STATUSES.NO_PAYMENT_REQUIRED &&
+      (stripe.amountTotal !== 0 || stripe.discountCents !== payment.grossAmountCents)
+    ) {
+      mismatches.push('free')
     }
     if (stripe.currency && stripe.currency.toLowerCase() !== payment.currency.toLowerCase()) {
       mismatches.push('currency')
@@ -266,19 +278,27 @@ interface SettlementColumns {
   stripePromotionCodeId: string | null
 }
 
-/** Colonnes de règlement écrites au passage `paid` ; sans montant transmis, la ligne garde son prix (#139). */
+/**
+ * Colonnes de règlement écrites au passage `paid` (#139). L'invariant
+ * `amount_cents + discount_cents = prix catalogue` est préservé quoi que Stripe
+ * ait transmis : sans `amount_total`, le montant encaissé est déduit du prix de
+ * la ligne et de la remise. Le libellé est borné à `PROMO_CODE_MAX` pour ne
+ * jamais faire échouer la mise à jour.
+ */
 function settlementColumns(
   payment: CandidatePayment,
   settlement: PaymentSettlement
 ): SettlementColumns {
+  const discountCents = Math.max(settlement.discountCents ?? 0, 0)
+  const amountCents =
+    typeof settlement.amountTotalCents === 'number'
+      ? settlement.amountTotalCents
+      : Math.max(payment.grossAmountCents - discountCents, 0)
   return {
     stripePaymentIntentId: settlement.paymentIntentId,
-    amountCents:
-      typeof settlement.amountTotalCents === 'number'
-        ? settlement.amountTotalCents
-        : payment.amountCents,
-    discountCents: settlement.discountCents ?? 0,
-    promoCode: settlement.promoCode ?? null,
+    amountCents,
+    discountCents,
+    promoCode: settlement.promoCode ? settlement.promoCode.slice(0, PROMO_CODE_MAX) : null,
     stripePromotionCodeId: settlement.promotionCodeId ?? null,
   }
 }

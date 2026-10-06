@@ -16,6 +16,20 @@ export function isCheckoutSettled(paymentStatus: unknown): boolean {
   )
 }
 
+/** Stripe renvoie tantôt un id, tantôt l'objet développé (`{ id }`) ; `null` sinon. */
+export function stripeIdOf(value: unknown): string | null {
+  if (typeof value === 'string' && value.length > 0) return value
+  if (value && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string') {
+    return (value as { id: string }).id
+  }
+  return null
+}
+
+/** Nombre fini, ou `null` (champ absent ou malformé d'un événement). */
+export function finiteOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
 export interface CheckoutAmounts {
   amountSubtotal?: number | null
   amountTotal?: number | null

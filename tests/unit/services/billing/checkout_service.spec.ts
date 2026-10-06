@@ -122,6 +122,44 @@ test.group('CheckoutService.start (#102)', (group) => {
     assert.lengthOf(stripe.created, 1)
   })
 
+  test('session déjà réglée par un code à 100 % (#139) : réglée à 0 € puis 409 ; session réglée incohérente : laissée telle quelle', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    const first = await withPayments(true, () => service.start(user))
+    stripe.promotionCodes.set('promo_free', 'OFFERT100')
+    stripe.pay(stripe.lastSessionId()!, {
+      discountCents: billingConfig.resultsPriceCents,
+      promotionCodeId: 'promo_free',
+    })
+
+    await withPayments(true, () =>
+      assert.rejects(() => service.start(user), EntitlementAlreadyGrantedError)
+    )
+    const payment = await CandidatePayment.findOrFail(first.paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 0)
+    assert.equal(payment.discountCents, billingConfig.resultsPriceCents)
+    assert.equal(payment.promoCode, 'OFFERT100')
+    assert.isNull(payment.stripePaymentIntentId)
+
+    // Autre particulier : session réglée chez Stripe mais à un autre prix catalogue → pas de règlement local.
+    const other = await createB2cCandidate({ emailVerified: true })
+    const otherStart = await withPayments(true, () => service.start(other.user))
+    stripe.pay(stripe.lastSessionId()!)
+    stripe.sessions.get(stripe.lastSessionId()!)!.amountSubtotal = 100
+    const previous = setErrorReporter({ capture: () => {} })
+    try {
+      const retry = await withPayments(true, () => service.start(other.user))
+      assert.notEqual(retry.paymentId, otherStart.paymentId)
+    } finally {
+      setErrorReporter(previous)
+    }
+    const stale = await CandidatePayment.findOrFail(otherStart.paymentId)
+    assert.equal(stale.status, PAYMENT_STATUSES.PENDING)
+  })
+
   test('session expirée : l’ancien pending est annulé et une nouvelle session créée', async ({
     assert,
   }) => {

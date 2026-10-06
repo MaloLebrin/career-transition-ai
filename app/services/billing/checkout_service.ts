@@ -132,13 +132,7 @@ export class CheckoutService {
     if (!isCheckoutSettled(session.paymentStatus)) {
       return { paymentId: payment.id, paid: false }
     }
-    const consistent = this.payments.sessionMatches(payment, {
-      sessionId: session.id,
-      amountTotal: session.amountTotal,
-      amountSubtotal: session.amountSubtotal,
-      currency: session.currency,
-    })
-    if (!consistent) return { paymentId: payment.id, paid: false }
+    if (!this.sessionMatches(payment, session)) return { paymentId: payment.id, paid: false }
 
     await this.payments.markPaid(payment, await this.settlementFor(session))
     await payment.refresh()
@@ -162,7 +156,7 @@ export class CheckoutService {
     for (const payment of pending) {
       const session = await this.gateway.retrieveCheckoutSession(payment.stripeCheckoutSessionId!)
       if (session && isCheckoutSettled(session.paymentStatus)) {
-        if (this.payments.sessionMatches(payment, { sessionId: session.id })) {
+        if (this.sessionMatches(payment, session)) {
           await this.payments.markPaid(payment, await this.settlementFor(session))
           throw new EntitlementAlreadyGrantedError()
         }
@@ -176,6 +170,18 @@ export class CheckoutService {
       await this.payments.markCanceled(payment)
     }
     return reusable
+  }
+
+  /** Recoupement session, prix catalogue, devise et cohérence d'un règlement à 0 € (#139). */
+  private sessionMatches(payment: CandidatePayment, session: RetrievedCheckoutSession): boolean {
+    return this.payments.sessionMatches(payment, {
+      sessionId: session.id,
+      amountTotal: session.amountTotal,
+      amountSubtotal: session.amountSubtotal,
+      currency: session.currency,
+      paymentStatus: session.paymentStatus,
+      discountCents: session.discountCents,
+    })
   }
 
   /** Ce que Stripe a réglé (montant, remise, code promo et son libellé relu au mieux, #139). */

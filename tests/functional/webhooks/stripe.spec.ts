@@ -154,7 +154,7 @@ test.group('Webhook Stripe (#104)', (group) => {
     await payment.refresh()
     assert.equal(payment.status, PAYMENT_STATUSES.PAID)
     assert.equal(payment.amountCents, 0)
-    assert.equal(payment.discountCents, 4900)
+    assert.equal(payment.discountCents, payment.grossAmountCents)
     assert.equal(payment.promoCode, 'OFFERT100')
     assert.isNull(payment.stripePaymentIntentId)
     assert.isTrue(await makeEntitlements().hasResultsAccess(employee.id))

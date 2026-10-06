@@ -4,7 +4,7 @@ import {
   PaymentGatewayNotConfiguredError,
 } from '#exceptions/billing_errors'
 import type { PaymentGateway } from '#services/billing/payment_gateway'
-import { checkoutDiscountCents } from '#shared/helpers/billing/checkout_session'
+import { checkoutDiscountCents, stripeIdOf } from '#shared/helpers/billing/checkout_session'
 import type {
   CheckoutSessionRef,
   CreateCheckoutSessionInput,
@@ -81,7 +81,7 @@ export class StripePaymentGateway implements PaymentGateway {
     return {
       id: session.id,
       paymentStatus: session.payment_status as RetrievedCheckoutSession['paymentStatus'],
-      paymentIntentId: idOf(session.payment_intent),
+      paymentIntentId: stripeIdOf(session.payment_intent),
       status: session.status as RetrievedCheckoutSession['status'],
       url: session.url ?? null,
       amountTotal,
@@ -92,7 +92,7 @@ export class StripePaymentGateway implements PaymentGateway {
         amountTotal,
         amountDiscount: session.total_details?.amount_discount ?? null,
       }),
-      promotionCodeId: idOf(session.discounts?.[0]?.promotion_code),
+      promotionCodeId: stripeIdOf(session.discounts?.[0]?.promotion_code),
     }
   }
 
@@ -136,13 +136,4 @@ export class StripePaymentGateway implements PaymentGateway {
   private webhooks(): Stripe['webhooks'] {
     return (this.client ?? new Stripe(stripeConfig.secretKey ?? 'sk_test_signature_only')).webhooks
   }
-}
-
-/** Stripe renvoie tantôt un id, tantôt l'objet développé (`{ id }`). */
-function idOf(value: unknown): string | null {
-  if (typeof value === 'string' && value.length > 0) return value
-  if (value && typeof value === 'object' && typeof (value as { id?: unknown }).id === 'string') {
-    return (value as { id: string }).id
-  }
-  return null
 }
