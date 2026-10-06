@@ -11,6 +11,7 @@ import { MEDIA_ENTITY_TYPES } from '#shared/constants/media'
 import { NOTE_VISIBILITY } from '#shared/constants/note'
 import type { CandidateExportOptions } from '#shared/types/candidate_data/export_options'
 import type {
+  CandidateExportChatMessage,
   CandidateExportNotification,
   CandidateExportSynthesis,
 } from '#shared/types/candidate_data/snapshot'
@@ -57,6 +58,7 @@ export async function loadCandidateForExport(employeeId: number): Promise<Employ
     .preload('syntheses')
     .preload('payments')
     .preload('expertRequests')
+    .preload('chatConversation', (q) => q.preload('messages', (m) => m.orderBy('id', 'asc')))
     .first()
 }
 
@@ -177,6 +179,14 @@ export function candidateDataSnapshot(
       createdAt: request.createdAt?.toISO() ?? null,
       handledAt: request.handledAt?.toISO() ?? null,
     })),
+    // Messages du chat avec l'équipe d'experts : supprimés avec la fiche (CASCADE).
+    chatMessages: (employee.chatConversation?.messages ?? []).map(
+      (message): CandidateExportChatMessage => ({
+        authorRole: message.authorRole,
+        body: message.body,
+        createdAt: message.createdAt?.toISO() ?? null,
+      })
+    ),
     documents: documents.map((document) => ({
       kind: document.kind,
       originalFilename: document.originalFilename,
@@ -316,7 +326,7 @@ function notificationsAbout(employeeId: number) {
  * - La fiche `employees` est supprimée ; les clés étrangères `ON DELETE
  *   CASCADE` emportent résultats d'exercices, expériences, formations,
  *   compétences, notes, étapes du plan, synthèses, exports PDF et demandes
- *   d'accompagnement par un expert (#103).
+ *   d'accompagnement par un expert (#103), conversation de chat et messages.
  * - Les paiements du forfait (#94) sont conservés : `candidate_payments`
  *   est en `ON DELETE SET NULL`, la ligne reste comme pièce comptable sans
  *   aucun identifiant (voir `CandidatePurgeSummary.paymentsAnonymized`).

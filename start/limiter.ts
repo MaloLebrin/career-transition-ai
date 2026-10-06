@@ -178,3 +178,18 @@ export const throttleExerciseSave = limiter.define(
       .limitExceeded(frenchMessage)
   }
 )
+
+/**
+ * Messages du chat candidat ↔ expert : 30/min par compte (clé userId, appliqué
+ * après `auth()`). Chaque envoi diffuse sur Transmit et peut notifier.
+ */
+export const throttleChatMessage = limiter.define(
+  'chat_message',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(30)
+      .every('1 minute')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)

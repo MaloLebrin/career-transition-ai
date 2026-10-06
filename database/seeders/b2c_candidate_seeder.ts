@@ -1,3 +1,5 @@
+import ChatConversation from '#models/chat_conversation'
+import ChatMessage from '#models/chat_message'
 import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
 import ExpertRequest from '#models/expert_request'
@@ -10,6 +12,7 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
 } from '#shared/constants/billing'
+import { CHAT_AUTHOR_ROLES } from '#shared/constants/chat'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXPERT_REQUEST_STATUSES } from '#shared/constants/expert_request'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -93,7 +96,37 @@ export default class B2cCandidateSeeder extends BaseSeeder {
       })
     }
 
-    void unpaid
+    // Chat : une conversation du particulier gratuit dans la file, une du particulier au forfait avec l'expert.
+    await this.conversation(unpaid, null, [
+      [CHAT_AUTHOR_ROLES.CANDIDATE, 'Bonjour, par où commencer pour préparer ma reconversion ?'],
+    ])
+    await this.conversation(paid, expert, [
+      [
+        CHAT_AUTHOR_ROLES.CANDIDATE,
+        'Bonjour, j’ai terminé mes exercices, pouvons-nous en parler ?',
+      ],
+      [CHAT_AUTHOR_ROLES.EXPERT, 'Bonjour ! Avec plaisir, proposez-moi un créneau cette semaine.'],
+    ])
+  }
+
+  private async conversation(
+    candidate: Employee,
+    expert: User | null,
+    messages: Array<[ChatMessage['authorRole'], string]>
+  ): Promise<void> {
+    const conversation = await ChatConversation.firstOrCreate(
+      { employeeId: candidate.id },
+      { employeeId: candidate.id, assignedExpertUserId: expert?.id ?? null }
+    )
+    const existing = await ChatMessage.query().where('conversationId', conversation.id).first()
+    if (existing || !candidate.userId) return
+
+    for (const [authorRole, body] of messages) {
+      const authorUserId = authorRole === CHAT_AUTHOR_ROLES.EXPERT ? expert!.id : candidate.userId
+      await ChatMessage.create({ conversationId: conversation.id, authorUserId, authorRole, body })
+    }
+    conversation.lastMessageAt = DateTime.now()
+    await conversation.save()
   }
 
   private async candidate(

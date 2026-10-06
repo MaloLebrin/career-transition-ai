@@ -27,3 +27,10 @@ export interface CandidateExportNotification {
   readAt: string | null
   createdAt: string | null
 }
+
+/** Message du chat candidat ↔ expert ; l'auteur expert n'est désigné que par son rôle. */
+export interface CandidateExportChatMessage {
+  authorRole: string
+  body: string
+  createdAt: string | null
+}

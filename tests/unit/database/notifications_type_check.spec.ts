@@ -1,11 +1,12 @@
 import { notificationTypeCheckStatements } from '#database/migrations/1791000000000_resync_notifications_type_check'
+import { ChatConversationFactory } from '#database/factories/chat_conversation_factory'
 import Notification from '#models/notification'
 import {
   NOTIFICATION_STATUSES,
   NOTIFICATION_TYPES,
   notificationTypeValues,
 } from '#shared/constants/notifications'
-import { createAdvisor } from '#tests/support/actors'
+import { createAdvisor, createB2cCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import db from '@adonisjs/lucid/services/db'
 import { test } from '@japa/runner'
@@ -76,6 +77,29 @@ test.group('notifications_type_check', (group) => {
         { client: trx }
       )
       assert.equal(created.type, NOTIFICATION_TYPES.STEP_UNLOCKED)
+    } finally {
+      await trx.rollback()
+    }
+  })
+})
+
+test.group('chat_messages_author_role_check', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('la contrainte rejette un rôle d’auteur inconnu', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate()
+    const conversation = await ChatConversationFactory.merge({ employeeId: employee.id }).create()
+    const trx = await db.transaction()
+
+    try {
+      await assert.rejects(() =>
+        trx.table('chat_messages').insert({
+          conversation_id: conversation.id,
+          author_user_id: user.id,
+          author_role: 'robot',
+          body: 'x',
+        })
+      )
     } finally {
       await trx.rollback()
     }

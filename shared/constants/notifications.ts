@@ -19,6 +19,8 @@ export const NOTIFICATION_TYPES = {
   EXPERT_ASSIGNED: 'expert_assigned',
   CANDIDATE_ASSIGNED: 'candidate_assigned',
   EXPERT_REQUEST_DECLINED: 'expert_request_declined',
+  // Chat candidat ↔ expert : nouveau message (une seule notification non lue par conversation)
+  CHAT_MESSAGE_RECEIVED: 'chat_message_received',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

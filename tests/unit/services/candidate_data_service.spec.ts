@@ -1,6 +1,8 @@
 import CandidateExport from '#commands/candidate_export'
 import CandidatePurge from '#commands/candidate_purge'
 import { CandidatePaymentFactory } from '#database/factories/candidate_payment_factory'
+import { ChatConversationFactory } from '#database/factories/chat_conversation_factory'
+import { ChatMessageFactory } from '#database/factories/chat_message_factory'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { EmployeeSynthesisFactory } from '#database/factories/employee_synthesis_factory'
 import { ExpertRequestFactory } from '#database/factories/expert_request_factory'
@@ -9,6 +11,8 @@ import { MediaFactory } from '#database/factories/media_factory'
 import { NoteFactory } from '#database/factories/note_factory'
 import { NotificationFactory } from '#database/factories/notification_factory'
 import { PdfExportFactory } from '#database/factories/pdf_export_factory'
+import ChatConversation from '#models/chat_conversation'
+import ChatMessage from '#models/chat_message'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import Experience from '#models/experience'
@@ -95,6 +99,26 @@ async function seedCandidate(): Promise<
   }).create()
 
   return { ...actor, pdfKey, documentKey, advisor }
+}
+
+/** Conversation de chat avec un message du candidat et la réponse d'un expert. */
+async function seedChat(employee: Employee, candidateUserId: number, expertUserId: number) {
+  const conversation = await ChatConversationFactory.merge({ employeeId: employee.id })
+    .apply('active')
+    .create()
+  await ChatMessageFactory.merge({
+    conversationId: conversation.id,
+    authorUserId: candidateUserId,
+    body: 'Bonjour, puis-je être accompagné ?',
+  }).create()
+  await ChatMessageFactory.merge({
+    conversationId: conversation.id,
+    authorUserId: expertUserId,
+    body: 'Bien sûr, parlons-en.',
+  })
+    .apply('fromExpert')
+    .create()
+  return conversation
 }
 
 test.group('candidate_data_service | purge', (group) => {
@@ -185,6 +209,21 @@ test.group('candidate_data_service | purge', (group) => {
     assert.equal(kept.amountCents, payment.amountCents)
     assert.notInclude(JSON.stringify(kept.serialize()), employee.email)
     assert.notInclude(JSON.stringify(kept.serialize()), employee.name)
+  })
+
+  test('chat : la conversation et ses messages partent avec la fiche', async ({ assert }) => {
+    const { employee, user, advisor } = await seedCandidate()
+    const other = await seedCandidate()
+    const conversation = await seedChat(employee, user.id, advisor.id)
+    const otherConversation = await seedChat(other.employee, other.user.id, other.advisor.id)
+
+    await purgeCandidate(employee.id)
+
+    assert.isNull(await ChatConversation.find(conversation.id))
+    assert.lengthOf(await ChatMessage.query().where('conversationId', conversation.id), 0)
+    assert.isNotNull(await ChatConversation.find(otherConversation.id))
+    assert.lengthOf(await ChatMessage.query().where('conversationId', otherConversation.id), 2)
+    assert.isNotNull(await User.find(advisor.id))
   })
 
   test("ne supprime jamais un compte qui n'a pas le rôle candidat", async ({ assert }) => {
@@ -392,6 +431,31 @@ test.group('candidate_data_service | export', (group) => {
     })
     assert.isNotNull(snapshot.expertRequests[0].createdAt)
     assert.isNotNull(snapshot.expertRequests[0].handledAt)
+  })
+
+  test('l’export restitue les messages du chat dans l’ordre, sans identité d’expert', async ({
+    assert,
+  }) => {
+    const { employee, user, advisor } = await seedCandidate()
+    await seedChat(employee, user.id, advisor.id)
+
+    const snapshot = candidateDataSnapshot((await loadCandidateForExport(employee.id))!)
+
+    assert.deepEqual(
+      snapshot.chatMessages.map((m) => [m.authorRole, m.body]),
+      [
+        ['candidate', 'Bonjour, puis-je être accompagné ?'],
+        ['expert', 'Bien sûr, parlons-en.'],
+      ]
+    )
+    assert.isNotNull(snapshot.chatMessages[0].createdAt)
+    assert.notInclude(JSON.stringify(snapshot.chatMessages), advisor.email)
+  })
+
+  test('l’export sans conversation de chat renvoie une liste vide', async ({ assert }) => {
+    const { employee } = await seedCandidate()
+    const snapshot = candidateDataSnapshot((await loadCandidateForExport(employee.id))!)
+    assert.deepEqual(snapshot.chatMessages, [])
   })
 
   test('l’archive contient la liste et le contenu des documents déposés', async ({ assert }) => {

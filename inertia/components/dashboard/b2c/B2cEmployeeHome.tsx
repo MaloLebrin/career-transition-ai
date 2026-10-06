@@ -1,4 +1,5 @@
 import { Sparkles, UserRound } from 'lucide-react'
+import { CHAT_PATHS } from '#shared/constants/chat'
 import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import type { ExerciseAccess } from '#shared/types/exercise/access'
@@ -74,6 +75,16 @@ export function B2cEmployeeHome({
             })}
           >
             Ma synthèse
+          </AppLink>
+          <AppLink
+            href={CHAT_PATHS.candidate}
+            className={buttonClassName({
+              variant: 'outline',
+              size: 'md',
+              className: 'border-on-ink-muted bg-transparent text-on-ink hover:bg-ink-elevated',
+            })}
+          >
+            Discuter avec un expert
           </AppLink>
         </div>
       </Card>
