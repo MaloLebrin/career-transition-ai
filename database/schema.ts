@@ -8,7 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class CandidatePaymentSchema extends BaseModel {
-  static $columns = ['amountCents', 'createdAt', 'currency', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
+  static $columns = ['amountCents', 'createdAt', 'currency', 'discountCents', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'promoCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'stripePromotionCodeId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
   $columns = CandidatePaymentSchema.$columns
   @column()
   declare amountCents: number
@@ -16,6 +16,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare createdAt: DateTime
   @column()
   declare currency: string
+  @column()
+  declare discountCents: number
   @column()
   declare employeeId: number | null
   @column()
@@ -28,6 +30,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare paidAt: DateTime | null
   @column()
   declare productCode: string
+  @column()
+  declare promoCode: string | null
   @column()
   declare provider: string
   @column.dateTime()
@@ -46,6 +50,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare stripeCheckoutSessionId: string | null
   @column()
   declare stripePaymentIntentId: string | null
+  @column()
+  declare stripePromotionCodeId: string | null
   @column.dateTime()
   declare unlockEffectsAt: DateTime | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })

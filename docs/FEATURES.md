@@ -395,6 +395,13 @@
   Checkout hébergé (one-shot, facture Stripe). Retour sur `/billing/success` avec
   réconciliation immédiate ; `/billing/cancel` ramène à l'offre.
 - Prérequis : particulier (`b2c`), e-mail vérifié, pas déjà payé, `STRIPE_ENABLED`.
+- Codes promo (#139) : créés dans le tableau de bord Stripe (coupons en % ou
+  montant fixe, 100 % = forfait offert, expiration, plafond d'utilisations) et
+  saisis sur la page Stripe (`allow_promotion_codes`). Le paiement local
+  enregistre le montant encaissé, la remise et le code ; un code à 100 % débloque
+  sans carte (`no_payment_required`). Back-office : code et remise affichés, CA du
+  mois sur les montants réellement perçus. Un seul forfait par compte reste garanti
+  par l'application (`docs/STRIPE.md` § Codes promo).
 
 ### 11.4 Webhook Stripe (#104)
 

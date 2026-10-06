@@ -1,5 +1,6 @@
 import StripeEvent from '#models/stripe_event'
 import { PaymentsService } from '#services/billing/payments_service'
+import { PromotionCodesService } from '#services/billing/promotion_codes_service'
 import { StripePaymentGateway } from '#services/billing/stripe_payment_gateway'
 import { reportError } from '#services/error_tracking_service'
 import {
@@ -7,7 +8,8 @@ import {
   WEBHOOK_OUTCOMES,
   type WebhookOutcome,
 } from '#shared/constants/billing'
-import type { PaymentGatewayWebhookEvent } from '#shared/types/billing/checkout'
+import { checkoutDiscountCents, isCheckoutSettled } from '#shared/helpers/billing/checkout_session'
+import type { PaymentGatewayWebhookEvent, PaymentSettlement } from '#shared/types/billing/checkout'
 import type { WebhookHandleResult } from '#shared/types/billing/webhooks'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
@@ -27,12 +29,17 @@ const UNIQUE_VIOLATION = '23505'
  *    la prochaine livraison de Stripe (retry) reprend le traitement.
  *
  * Aucune donnée personnelle n'est journalisée : ids Stripe et ids locaux seulement.
+ *
+ * Codes promo (#139) : la session porte `amount_subtotal` (prix catalogue,
+ * recoupé), `amount_total` (encaissé), `total_details.amount_discount` et l'id
+ * du code ; `payment_status = no_payment_required` (code à 100 %) vaut réglé.
  */
 @inject()
 export class StripeWebhooksService {
   constructor(
     private gateway: StripePaymentGateway,
-    private payments: PaymentsService
+    private payments: PaymentsService,
+    private promotionCodes: PromotionCodesService
   ) {}
 
   public async handle(rawBody: string | Buffer, signature: string): Promise<WebhookHandleResult> {
@@ -104,18 +111,17 @@ export class StripeWebhooksService {
         const payment = await this.findCheckoutPayment(object)
         if (!payment) return this.unmatched(event)
         // `completed` arrive aussi pour un paiement différé encore `unpaid` : on attend `async_payment_succeeded`.
-        if (object.payment_status !== 'paid') {
+        if (!isCheckoutSettled(object.payment_status)) {
           return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
         }
         const consistent = this.payments.sessionMatches(payment, {
           sessionId: stringOrNull(object.id),
-          amountTotal: typeof object.amount_total === 'number' ? object.amount_total : null,
+          amountTotal: numberOrNull(object.amount_total),
+          amountSubtotal: numberOrNull(object.amount_subtotal),
           currency: stringOrNull(object.currency),
         })
         if (!consistent) return this.unmatched(event)
-        await this.payments.markPaid(payment, {
-          paymentIntentId: stringOrNull(object.payment_intent),
-        })
+        await this.payments.markPaid(payment, await this.settlementFor(object))
         return { outcome: WEBHOOK_OUTCOMES.PROCESSED, paymentId: payment.id }
       }
       case STRIPE_WEBHOOK_EVENTS.ASYNC_PAYMENT_FAILED: {
@@ -143,6 +149,25 @@ export class StripeWebhooksService {
       }
       default:
         return { outcome: WEBHOOK_OUTCOMES.IGNORED, paymentId: null }
+    }
+  }
+
+  /** Ce que Stripe a réglé, lu sur l'objet session de l'événement (#139). */
+  private async settlementFor(session: Record<string, unknown>): Promise<PaymentSettlement> {
+    const totalDetails = session.total_details as Record<string, unknown> | null | undefined
+    const discounts = Array.isArray(session.discounts) ? session.discounts : []
+    const first = discounts[0] as Record<string, unknown> | undefined
+    const promotionCodeId = stringOrNull(first?.promotion_code)
+    return {
+      paymentIntentId: stringOrNull(session.payment_intent),
+      amountTotalCents: numberOrNull(session.amount_total),
+      discountCents: checkoutDiscountCents({
+        amountSubtotal: numberOrNull(session.amount_subtotal),
+        amountTotal: numberOrNull(session.amount_total),
+        amountDiscount: numberOrNull(totalDetails?.amount_discount),
+      }),
+      promotionCodeId,
+      promoCode: await this.promotionCodes.labelFor(promotionCodeId),
     }
   }
 
@@ -181,6 +206,10 @@ function isFullRefund(charge: Record<string, unknown>): boolean {
   return (
     typeof amount === 'number' && typeof refunded === 'number' && amount > 0 && refunded >= amount
   )
+}
+
+function numberOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
 }
 
 /** Stripe renvoie tantôt un id, tantôt l'objet développé (`{ id }`). */

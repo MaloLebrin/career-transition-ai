@@ -46,6 +46,22 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PAYMENT_STATUSES.REFUNDED]: 'Remboursé',
 }
 
+/**
+ * `payment_status` d'une session Stripe Checkout. `no_payment_required` : total
+ * ramené à 0 par un code promo à 100 % (#139) — la session est réglée sans
+ * PaymentIntent. Voir `isCheckoutSettled` (`#shared/helpers/billing/checkout_session`).
+ */
+export const CHECKOUT_PAYMENT_STATUSES = {
+  PAID: 'paid',
+  UNPAID: 'unpaid',
+  NO_PAYMENT_REQUIRED: 'no_payment_required',
+} as const
+
+export type CheckoutPaymentStatus =
+  (typeof CHECKOUT_PAYMENT_STATUSES)[keyof typeof CHECKOUT_PAYMENT_STATUSES]
+
+export const checkoutPaymentStatusValues = Object.values(CHECKOUT_PAYMENT_STATUSES)
+
 /** Devise unique du forfait (code ISO 4217 en minuscules, comme Stripe). */
 export const BILLING_CURRENCY = 'eur'
 

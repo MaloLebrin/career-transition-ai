@@ -38,8 +38,21 @@ export default class CandidatePayment extends BaseModel {
   @column()
   declare status: PaymentStatus
 
+  /** Montant réellement encaissé, en centimes (après remise d'un code promo, #139). */
   @column()
   declare amountCents: number
+
+  /** Remise appliquée par un code promo Stripe, en centimes ; 0 sans code (#139). */
+  @column()
+  declare discountCents: number
+
+  /** Libellé du code promo saisi chez Stripe (« BIENVENUE20 »), relu au mieux ; `null` sans code. */
+  @column()
+  declare promoCode: string | null
+
+  /** Id Stripe du code promotionnel (`promo_…`) ; `null` sans code. */
+  @column()
+  declare stripePromotionCodeId: string | null
 
   @column()
   declare currency: string
@@ -108,5 +121,14 @@ export default class CandidatePayment extends BaseModel {
   /** Ce paiement ouvre-t-il l'accès aux résultats aujourd'hui ? */
   get grantsAccess(): boolean {
     return this.status === PAYMENT_STATUSES.PAID && this.revokedAt === null
+  }
+
+  /**
+   * Prix catalogue avant remise : ce que Stripe annonce en `amount_subtotal`.
+   * Invariant du recoupement, valable avant (`pending`, remise 0) comme après
+   * règlement (montant encaissé + remise) (#139).
+   */
+  get grossAmountCents(): number {
+    return this.amountCents + (this.discountCents ?? 0)
   }
 }

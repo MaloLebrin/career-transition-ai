@@ -87,6 +87,8 @@ function toRow(payment: CandidatePayment): PaymentRow {
     provider: payment.provider,
     status: payment.status,
     amountCents: payment.amountCents,
+    discountCents: payment.discountCents,
+    promoCode: payment.promoCode,
     currency: payment.currency,
     paidAt: payment.paidAt?.toISO() ?? null,
     refundedAt: payment.refundedAt?.toISO() ?? null,

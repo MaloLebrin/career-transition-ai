@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   BILLING_ADMIN_PATHS,
   BILLING_CURRENCY,
+  CHECKOUT_PAYMENT_STATUSES,
   DEFAULT_RESULTS_PRICE_CENTS,
   PAYMENT_PRODUCTS,
   PAYMENT_PROVIDERS,
@@ -10,6 +11,7 @@ import {
   STRIPE_WEBHOOK_EVENTS,
   STRIPE_WEBHOOK_PATH,
   WEBHOOK_OUTCOMES,
+  checkoutPaymentStatusValues,
   paymentProductValues,
   paymentProviderValues,
   paymentStatusValues,
@@ -33,6 +35,14 @@ describe('shared/constants/billing (#94)', () => {
       'failed',
       'canceled',
       'refunded',
+    ])
+  })
+
+  test('statuts de session Checkout (#139) : enum cohérent et figé (valeurs Stripe)', () => {
+    expectConsistentEnum(CHECKOUT_PAYMENT_STATUSES, checkoutPaymentStatusValues, [
+      'paid',
+      'unpaid',
+      'no_payment_required',
     ])
   })
 

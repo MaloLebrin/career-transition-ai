@@ -496,6 +496,12 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
   - Flash de succès, tous les exercices débloqués, notification « Vos résultats sont débloqués », analyses IA des exercices déjà complétés lancées (worker `ai`).
   - `stripe listen` montre `checkout.session.completed` → 200 ; `stripe trigger checkout.session.completed` rejoué : 200 sans second effet.
   - E-mail non vérifié ou forfait déjà réglé : paiement refusé avec un message.
+- **Codes promo (#139)** — prérequis : en mode test Stripe, un coupon `-20 %` (durée « une fois ») avec le code promotionnel `BIENVENUE20`, un coupon `100 %` avec le code `OFFERT100`, et un code expiré ou épuisé (date passée ou plafond 1 déjà consommé).
+  1. Sur `/dashboard/candidat/offre`, vérifier la mention « Un code promo ? Saisissez-le à l'étape de paiement sécurisé. » (absente si `STRIPE_ENABLED=false`) et l'absence de champ de saisie.
+  2. Sur la page Stripe, « Ajouter un code promotionnel » → `BIENVENUE20` : total 39,20 €, payer. Retour : flash de succès, résultats débloqués ; `/dashboard/super-admin/payments` affiche `39,20 €` et « Code BIENVENUE20 · −9,80 € » ; le CA du mois (accueil super admin, page Particuliers) augmente de 39,20 €.
+  3. Nouveau particulier, code `OFFERT100` : Stripe termine **sans carte** ; retour avec flash de succès, résultats débloqués, paiement `0 €` « Gratuit · code OFFERT100 · −49 € », CA inchangé. Observer dans `stripe listen` `checkout.session.completed` avec `payment_status: no_payment_required` → 200. Noter si Stripe émet une facture à 0 € (wording de la page de succès à ajuster sinon).
+  4. Code expiré ou épuisé : refusé par Stripe sur sa page, le paiement plein tarif reste possible.
+  5. Export RGPD du particulier (`/dashboard/candidat/data/export`) : la pièce de paiement porte `discountCents`, `promoCode`, `stripePromotionCodeId`.
 
 ### 11.4. Remboursement et retrait d'accès (#104, #107)
 

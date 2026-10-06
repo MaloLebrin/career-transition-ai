@@ -1,3 +1,5 @@
+import type { CheckoutPaymentStatus } from '#shared/constants/billing'
+
 /**
  * Passerelle de paiement (#102) : ce que le domaine demande à Stripe, sans
  * dépendre de son SDK — la passerelle factice des tests implémente la même
@@ -25,19 +27,48 @@ export interface CheckoutSessionRef {
   url: string
 }
 
-export type CheckoutPaymentStatus = 'paid' | 'unpaid' | 'no_payment_required'
+export type { CheckoutPaymentStatus }
 
 export interface RetrievedCheckoutSession {
   id: string
   paymentStatus: CheckoutPaymentStatus
+  /** `null` quand aucun paiement n'a été nécessaire (code promo à 100 %, #139). */
   paymentIntentId: string | null
   status: 'open' | 'complete' | 'expired' | null
   /** Page de paiement, encore valable tant que la session est `open`. */
   url: string | null
-  /** Montant encaissé, en centimes (`amount_total`). */
+  /** Montant encaissé après remise, en centimes (`amount_total`). */
   amountTotal: number | null
+  /** Prix catalogue avant remise, en centimes (`amount_subtotal`). */
+  amountSubtotal: number | null
   /** Devise ISO 4217 en minuscules. */
   currency: string | null
+  /** Remise appliquée par un code promo (`total_details.amount_discount`), 0 sans code. */
+  discountCents: number
+  /** Id Stripe du code promotionnel utilisé (`discounts[].promotion_code`, `promo_…`), `null` sans code. */
+  promotionCodeId: string | null
+}
+
+/** Code promotionnel Stripe relu pour afficher son libellé (#139). */
+export interface RetrievedPromotionCode {
+  id: string
+  /** Libellé saisi par le candidat sur la page Stripe (« BIENVENUE20 »). */
+  code: string
+}
+
+/**
+ * Ce que Stripe a réellement réglé, écrit sur la ligne locale par
+ * `PaymentsService.markPaid` (#139). Les champs optionnels absents laissent la
+ * ligne telle quelle (prix catalogue, sans remise).
+ */
+export interface PaymentSettlement {
+  paymentIntentId: string | null
+  /** `amount_total` : montant encaissé après remise ; `null` ou absent = non transmis. */
+  amountTotalCents?: number | null
+  discountCents?: number
+  promotionCodeId?: string | null
+  /** Libellé du code, résolu au mieux (`PromotionCodesService.labelFor`). */
+  promoCode?: string | null
 }
 
 /** Événement webhook vérifié (#104), réduit à ce que le domaine lit. */

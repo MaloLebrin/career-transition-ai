@@ -11,7 +11,9 @@ import { CandidateProfileNotFoundError } from '#exceptions/candidate_data_errors
 import CandidatePayment from '#models/candidate_payment'
 import { CheckoutService } from '#services/billing/checkout_service'
 import { PaymentsService } from '#services/billing/payments_service'
+import { PromotionCodesService } from '#services/billing/promotion_codes_service'
 import { EntitlementsService } from '#services/entitlements_service'
+import { setErrorReporter } from '#services/error_tracking_service'
 import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
@@ -29,7 +31,12 @@ function makeService() {
   const entitlements = makeEntitlements()
   return {
     stripe,
-    service: new CheckoutService(stripe, entitlements, new PaymentsService(entitlements)),
+    service: new CheckoutService(
+      stripe,
+      entitlements,
+      new PaymentsService(entitlements),
+      new PromotionCodesService(stripe)
+    ),
     entitlements,
   }
 }
@@ -94,6 +101,25 @@ test.group('CheckoutService.start (#102)', (group) => {
     assert.deepEqual(second, first)
     assert.lengthOf(stripe.created, 1)
     assert.lengthOf(await CandidatePayment.query().where('employeeId', employee.id), 1)
+  })
+
+  test('session déjà réglée avec un code promo (#139) : règlement enregistré puis 409', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    const first = await withPayments(true, () => service.start(user))
+    stripe.promotionCodes.set('promo_test_20', 'BIENVENUE20')
+    stripe.pay(stripe.lastSessionId()!, { discountCents: 980, promotionCodeId: 'promo_test_20' })
+
+    await withPayments(true, () =>
+      assert.rejects(() => service.start(user), EntitlementAlreadyGrantedError)
+    )
+    const payment = await CandidatePayment.findOrFail(first.paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, billingConfig.resultsPriceCents - 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.lengthOf(stripe.created, 1)
   })
 
   test('session expirée : l’ancien pending est annulé et une nouvelle session créée', async ({
@@ -242,7 +268,7 @@ test.group('CheckoutService.reconcile (#102)', (group) => {
     assert.lengthOf(stripe.retrieved, 0)
   })
 
-  test('session payée mais montant ou devise différents : rien n’est débloqué', async ({
+  test('session payée mais prix catalogue (sous-total) différent : rien n’est débloqué', async ({
     assert,
   }) => {
     const { service, stripe, entitlements } = makeService()
@@ -250,10 +276,107 @@ test.group('CheckoutService.reconcile (#102)', (group) => {
     const { paymentId } = await withPayments(true, () => service.start(user))
     const sessionId = stripe.lastSessionId()!
     stripe.pay(sessionId)
-    stripe.sessions.get(sessionId)!.amountTotal = 100
+    const session = stripe.sessions.get(sessionId)!
+    session.amountSubtotal = 100
+    session.amountTotal = 100
 
     assert.deepEqual(await service.reconcile(user, sessionId), { paymentId, paid: false })
 
+    const payment = await CandidatePayment.findOrFail(paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
+    assert.isFalse(await entitlements.hasResultsAccess(employee.id))
+  })
+
+  test('code promo (#139) : session remisée → payé, montant encaissé, remise, code et libellé enregistrés', async ({
+    assert,
+  }) => {
+    const { service, stripe, entitlements } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const { paymentId } = await withPayments(true, () => service.start(user))
+    const sessionId = stripe.lastSessionId()!
+    stripe.promotionCodes.set('promo_test_20', 'BIENVENUE20')
+    stripe.pay(sessionId, { discountCents: 980, promotionCodeId: 'promo_test_20' })
+
+    const result = await service.reconcile(user, sessionId)
+
+    assert.deepEqual(result, { paymentId, paid: true })
+    const payment = await CandidatePayment.findOrFail(paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, billingConfig.resultsPriceCents - 980)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.equal(payment.stripePromotionCodeId, 'promo_test_20')
+    assert.equal(payment.grossAmountCents, billingConfig.resultsPriceCents)
+    assert.match(payment.stripePaymentIntentId ?? '', /^pi_test_fake_/)
+    assert.isTrue(await entitlements.hasResultsAccess(employee.id))
+    assert.deepEqual(stripe.retrievedPromotionCodes, ['promo_test_20'])
+  })
+
+  test('code promo à 100 % (#139) : no_payment_required → payé à 0 €, sans PaymentIntent', async ({
+    assert,
+  }) => {
+    const { service, stripe, entitlements } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const { paymentId } = await withPayments(true, () => service.start(user))
+    const sessionId = stripe.lastSessionId()!
+    stripe.promotionCodes.set('promo_free', 'OFFERT100')
+    stripe.pay(sessionId, {
+      discountCents: billingConfig.resultsPriceCents,
+      promotionCodeId: 'promo_free',
+    })
+
+    const result = await service.reconcile(user, sessionId)
+
+    assert.deepEqual(result, { paymentId, paid: true })
+    const payment = await CandidatePayment.findOrFail(paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 0)
+    assert.equal(payment.discountCents, billingConfig.resultsPriceCents)
+    assert.equal(payment.promoCode, 'OFFERT100')
+    assert.isNull(payment.stripePaymentIntentId)
+    assert.isTrue(payment.grantsAccess)
+    assert.isTrue(await entitlements.hasResultsAccess(employee.id))
+  })
+
+  test('code promo (#139) : libellé introuvable ou Stripe en panne → payé quand même, code null, id conservé', async ({
+    assert,
+  }) => {
+    const { service, stripe } = makeService()
+    const { user } = await createB2cCandidate({ emailVerified: true })
+    const { paymentId } = await withPayments(true, () => service.start(user))
+    const sessionId = stripe.lastSessionId()!
+    stripe.pay(sessionId, { discountCents: 980, promotionCodeId: 'promo_gone' })
+    stripe.failNextPromotionCodeRetrieve = true
+    const previous = setErrorReporter({ capture: () => {} })
+
+    try {
+      assert.deepEqual(await service.reconcile(user, sessionId), { paymentId, paid: true })
+    } finally {
+      setErrorReporter(previous)
+    }
+    const payment = await CandidatePayment.findOrFail(paymentId)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.isNull(payment.promoCode)
+    assert.equal(payment.stripePromotionCodeId, 'promo_gone')
+    assert.equal(payment.discountCents, 980)
+  })
+
+  test('code promo (#139) : sous-total différent du prix catalogue → rien n’est débloqué', async ({
+    assert,
+  }) => {
+    const { service, stripe, entitlements } = makeService()
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    const { paymentId } = await withPayments(true, () => service.start(user))
+    const sessionId = stripe.lastSessionId()!
+    stripe.pay(sessionId, { discountCents: 980, promotionCodeId: 'promo_test_20' })
+    stripe.sessions.get(sessionId)!.amountSubtotal = 4800
+    const previous = setErrorReporter({ capture: () => {} })
+
+    try {
+      assert.deepEqual(await service.reconcile(user, sessionId), { paymentId, paid: false })
+    } finally {
+      setErrorReporter(previous)
+    }
     const payment = await CandidatePayment.findOrFail(paymentId)
     assert.equal(payment.status, PAYMENT_STATUSES.PENDING)
     assert.isFalse(await entitlements.hasResultsAccess(employee.id))

@@ -6,6 +6,7 @@ import type CandidatePayment from '#models/candidate_payment'
 import type Employee from '#models/employee'
 import StripeEvent from '#models/stripe_event'
 import { PaymentsService } from '#services/billing/payments_service'
+import { PromotionCodesService } from '#services/billing/promotion_codes_service'
 import { StripeWebhooksService } from '#services/billing/stripe_webhooks_service'
 import { EntitlementsService } from '#services/entitlements_service'
 import { setErrorReporter, type ErrorContext } from '#services/error_tracking_service'
@@ -48,8 +49,9 @@ function event(
 function makeService() {
   const entitlements = new SpyEntitlements(testNotifications())
   const payments = new PaymentsService(entitlements)
-  const service = new StripeWebhooksService(new FakeStripeGateway(), payments)
-  return { entitlements, payments, service }
+  const stripe = new FakeStripeGateway()
+  const service = new StripeWebhooksService(stripe, payments, new PromotionCodesService(stripe))
+  return { entitlements, payments, service, stripe }
 }
 
 async function pendingPayment(sessionId = 'cs_test_webhook') {
@@ -295,6 +297,125 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
     assert.lengthOf(reported, 3)
   })
 
+  test('code promo (#139) : completed remisé → paid, montant encaissé, remise, code et libellé relus', async ({
+    assert,
+  }) => {
+    const { service, entitlements, stripe } = makeService()
+    const payment = await pendingPayment('cs_test_promo')
+    stripe.promotionCodes.set('promo_test_20', 'BIENVENUE20')
+
+    const result = await service.handle(
+      JSON.stringify(
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+          id: 'cs_test_promo',
+          client_reference_id: String(payment.id),
+          payment_status: 'paid',
+          payment_intent: 'pi_promo',
+          amount_subtotal: payment.amountCents,
+          amount_total: payment.amountCents - 980,
+          currency: payment.currency,
+          total_details: { amount_discount: 980, amount_shipping: 0, amount_tax: 0 },
+          discounts: [{ coupon: 'co_x', promotion_code: 'promo_test_20' }],
+        })
+      ),
+      FAKE_STRIPE_SIGNATURE
+    )
+
+    assert.equal(result.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 4900 - 980)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.equal(payment.stripePromotionCodeId, 'promo_test_20')
+    assert.deepEqual(entitlements.unlocked, [payment.id])
+    assert.deepEqual(stripe.retrievedPromotionCodes, ['promo_test_20'])
+  })
+
+  test('code promo à 100 % (#139) : completed en no_payment_required, total 0, sans intent → paid, droit ouvert', async ({
+    assert,
+  }) => {
+    const { service, entitlements, stripe } = makeService()
+    const payment = await pendingPayment('cs_test_free')
+    stripe.promotionCodes.set('promo_free', 'OFFERT100')
+
+    const result = await service.handle(
+      JSON.stringify(
+        event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+          id: 'cs_test_free',
+          client_reference_id: String(payment.id),
+          payment_status: 'no_payment_required',
+          payment_intent: null,
+          amount_subtotal: payment.amountCents,
+          amount_total: 0,
+          currency: payment.currency,
+          total_details: {
+            amount_discount: payment.amountCents,
+            amount_shipping: 0,
+            amount_tax: 0,
+          },
+          discounts: [
+            { coupon: 'co_free', promotion_code: { id: 'promo_free', code: 'OFFERT100' } },
+          ],
+        })
+      ),
+      FAKE_STRIPE_SIGNATURE
+    )
+
+    assert.equal(result.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 0)
+    assert.equal(payment.discountCents, 4900)
+    assert.equal(payment.promoCode, 'OFFERT100')
+    assert.isNull(payment.stripePaymentIntentId)
+    assert.isTrue(payment.grantsAccess)
+    assert.deepEqual(entitlements.unlocked, [payment.id])
+  })
+
+  test('code promo (#139) : webhook rejoué après la réconciliation → processed, sans écart signalé', async ({
+    assert,
+  }) => {
+    const { service, entitlements, payments } = makeService()
+    const payment = await pendingPayment('cs_test_replay')
+    // La page de succès a déjà réglé la ligne au montant remisé.
+    await payments.markPaid(payment, {
+      paymentIntentId: 'pi_replay',
+      amountTotalCents: 3920,
+      discountCents: 980,
+      promotionCodeId: 'promo_test_20',
+      promoCode: 'BIENVENUE20',
+    })
+    const reported: ErrorContext[] = []
+    const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
+
+    try {
+      const result = await service.handle(
+        JSON.stringify(
+          event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+            id: 'cs_test_replay',
+            client_reference_id: String(payment.id),
+            payment_status: 'paid',
+            payment_intent: 'pi_replay',
+            amount_subtotal: 4900,
+            amount_total: 3920,
+            currency: 'eur',
+            total_details: { amount_discount: 980 },
+            discounts: [{ promotion_code: 'promo_test_20' }],
+          })
+        ),
+        FAKE_STRIPE_SIGNATURE
+      )
+      assert.equal(result.outcome, WEBHOOK_OUTCOMES.PROCESSED)
+    } finally {
+      setErrorReporter(previous)
+    }
+    assert.lengthOf(reported, 0)
+    await payment.refresh()
+    assert.equal(payment.amountCents, 3920)
+    assert.lengthOf(entitlements.unlocked, 1)
+  })
+
   test('type non suivi → ignored ; paiement inconnu → unmatched ; les deux sont journalisés', async ({
     assert,
   }) => {
@@ -337,7 +458,8 @@ test.group('StripeWebhooksService.handle (#104)', (group) => {
       }
       return originalMarkPaid(payment, details)
     }
-    const service = new StripeWebhooksService(new FakeStripeGateway(), payments)
+    const stripe = new FakeStripeGateway()
+    const service = new StripeWebhooksService(stripe, payments, new PromotionCodesService(stripe))
     const reported: ErrorContext[] = []
     const previous = setErrorReporter({ capture: (_error, context) => reported.push(context) })
 

@@ -20,7 +20,12 @@ import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { createB2cCandidate } from '#tests/support/actors'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
-import { FAKE_STRIPE_SIGNATURE, restoreStripe, swapFakeStripe } from '#tests/support/fake_stripe'
+import {
+  FAKE_STRIPE_SIGNATURE,
+  type FakeStripeGateway,
+  restoreStripe,
+  swapFakeStripe,
+} from '#tests/support/fake_stripe'
 import { truncateDb } from '#tests/utils/db'
 import app from '@adonisjs/core/services/app'
 import type { ApiClient } from '@japa/api-client'
@@ -57,11 +62,12 @@ async function pendingPayment(employee: Employee, sessionId: string): Promise<Ca
 }
 
 let spy: SpyEntitlements
+let stripe: FakeStripeGateway
 
 test.group('Webhook Stripe (#104)', (group) => {
   group.each.setup(() => truncateDb())
   group.each.setup(() => {
-    swapFakeStripe()
+    stripe = swapFakeStripe()
     spy = new SpyEntitlements(testNotifications())
     app.container.swap(EntitlementsService, () => spy)
     return () => {
@@ -118,6 +124,42 @@ test.group('Webhook Stripe (#104)', (group) => {
     const [row] = await StripeEvent.all()
     assert.equal(row.type, STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED)
     assert.isTrue(row.isProcessed)
+  })
+
+  test('checkout.session.completed avec un code promo à 100 % (#139) : no_payment_required → forfait débloqué à 0 €, code relu', async ({
+    client,
+    assert,
+  }) => {
+    const { employee, user } = await createB2cCandidate({ emailVerified: true })
+    const payment = await pendingPayment(employee, 'cs_test_free')
+    const lockedResult = await ExerciseResultFactory.merge({ employeeId: employee.id }).create()
+    stripe.promotionCodes.set('promo_free', 'OFFERT100')
+
+    const response = await deliver(
+      client,
+      event(STRIPE_WEBHOOK_EVENTS.CHECKOUT_COMPLETED, {
+        id: 'cs_test_free',
+        client_reference_id: String(payment.id),
+        payment_status: 'no_payment_required',
+        payment_intent: null,
+        amount_subtotal: payment.amountCents,
+        amount_total: 0,
+        currency: payment.currency,
+        total_details: { amount_discount: payment.amountCents, amount_shipping: 0, amount_tax: 0 },
+        discounts: [{ coupon: 'co_free', promotion_code: 'promo_free' }],
+      })
+    )
+
+    response.assertStatus(200)
+    await payment.refresh()
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 0)
+    assert.equal(payment.discountCents, 4900)
+    assert.equal(payment.promoCode, 'OFFERT100')
+    assert.isNull(payment.stripePaymentIntentId)
+    assert.isTrue(await makeEntitlements().hasResultsAccess(employee.id))
+    assert.deepEqual(spy.dispatched, [lockedResult.id])
+    assert.lengthOf(await Notification.query().where('userId', user.id), 1)
   })
 
   test('rejeu du même événement : 200 sans second traitement', async ({ client, assert }) => {
