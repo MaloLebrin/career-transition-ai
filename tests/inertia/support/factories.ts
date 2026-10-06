@@ -1,5 +1,6 @@
 import type { EmployeeData } from '../../../inertia/types/employee'
 import type { Note } from '../../../inertia/types/note'
+import type { ChatConversationSummary, ChatMessageView } from '#shared/types/chat/views'
 
 /** Fabriques de données front partagées par les specs (valeurs réalistes, surchargeables). */
 
@@ -71,6 +72,33 @@ export function makeNote(overrides: Partial<Note> = {}): Note {
     createdAt: '2024-03-10T10:00:00.000Z',
     updatedAt: '2024-03-10T10:00:00.000Z',
     canEdit: true,
+    ...overrides,
+  }
+}
+
+export function makeChatMessage(overrides: Partial<ChatMessageView> = {}): ChatMessageView {
+  return {
+    id: 1,
+    authorRole: 'candidate',
+    body: 'Bonjour',
+    createdAt: '2026-10-05T10:00:00.000Z',
+    ...overrides,
+  }
+}
+
+export function makeChatSummary(
+  overrides: Partial<ChatConversationSummary> = {}
+): ChatConversationSummary {
+  return {
+    id: 1,
+    channel: 'chat/conversations/1',
+    employeeId: 7,
+    candidateLabel: 'Candidat #7',
+    accountType: 'b2c',
+    assignment: 'queue',
+    lastMessageAt: '2026-10-05T10:00:00.000Z',
+    lastMessagePreview: 'Bonjour',
+    unreadCount: 0,
     ...overrides,
   }
 }

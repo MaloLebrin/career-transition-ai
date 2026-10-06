@@ -141,4 +141,19 @@ describe('B2cEmployeeHome (#100)', () => {
       screen.queryByRole('link', { name: 'Demander un accompagnement' })
     ).not.toBeInTheDocument()
   })
+
+  test('propose de discuter avec un expert, payé ou non', () => {
+    render(
+      <B2cEmployeeHome
+        {...baseProps}
+        employee={makeEmployee()}
+        advisor={null}
+        exerciseAccess={unpaid}
+      />
+    )
+    expect(screen.getByRole('link', { name: 'Discuter avec un expert' })).toHaveAttribute(
+      'href',
+      '/dashboard/candidat/chat'
+    )
+  })
 })

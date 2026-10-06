@@ -1,3 +1,6 @@
+import { ChatService } from '#services/chat_service'
+import { CHAT_CHANNEL_PATTERN } from '#shared/constants/chat'
+import app from '@adonisjs/core/services/app'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { canSubscribeToOrganizationPdfExports } from '#utils/transmit_authorization'
 import transmit from '@adonisjs/transmit/services/main'
@@ -22,4 +25,10 @@ transmit.authorize<{ id: string }>('users/:id/notifications', (ctx, { id }) => {
   if (!user) return false
   if (user.role === USERS_ROLES.SUPER_ADMIN) return true
   return user.id === Number(id)
+})
+
+// Chat candidat ↔ expert : chat/conversations/:id (candidat propriétaire, expert responsable ou file, admin)
+transmit.authorize<{ id: string }>(CHAT_CHANNEL_PATTERN, async (ctx, { id }) => {
+  const chat = await app.container.make(ChatService)
+  return chat.canSubscribe(ctx.auth.user, Number(id))
 })

@@ -57,17 +57,18 @@ nouvel appel serveur à un fournisseur IA passe ses données par
 Source : `RETENTION_PERIODS` et `RETENTION_NOTICE` (`shared/constants/legal.ts`).
 Les durées publiées (3 ans, 1 an) sont des **durées maximales** de conservation.
 
-| Données                                           | Durée                                                                                           |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Dossier candidat (profil, exercices, notes, plan) | Accompagnement, puis 3 ans après sa fin                                                         |
-| Comptes utilisateurs des cabinets                 | Contrat, puis 3 ans                                                                             |
-| Compte particulier (libre-service) et son dossier | 3 ans après la dernière connexion, ou dès la demande d'effacement                               |
-| Données de paiement et factures (forfait)         | 10 ans (art. L123-22 Code de commerce) ; enregistrement anonymisé après effacement du compte    |
-| Demandes de contact (prospection B2B)             | 3 ans après le dernier contact                                                                  |
-| Demande d'accompagnement par un expert (B2C)      | Avec le dossier candidat : supprimée en cascade avec la fiche (`expert_requests`, #103)         |
-| Documents du candidat (table `media`, Cloudinary) | Jusqu'à leur suppression (candidat ou conseiller), celle du dossier ou une demande d'effacement |
-| Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                              |
-| Journaux techniques et de sécurité                | 1 an                                                                                            |
+| Données                                           | Durée                                                                                                                                                                     |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dossier candidat (profil, exercices, notes, plan) | Accompagnement, puis 3 ans après sa fin                                                                                                                                   |
+| Comptes utilisateurs des cabinets                 | Contrat, puis 3 ans                                                                                                                                                       |
+| Compte particulier (libre-service) et son dossier | 3 ans après la dernière connexion, ou dès la demande d'effacement                                                                                                         |
+| Données de paiement et factures (forfait)         | 10 ans (art. L123-22 Code de commerce) ; enregistrement anonymisé après effacement du compte                                                                              |
+| Demandes de contact (prospection B2B)             | 3 ans après le dernier contact                                                                                                                                            |
+| Demande d'accompagnement par un expert (B2C)      | Avec le dossier candidat : supprimée en cascade avec la fiche (`expert_requests`, #103)                                                                                   |
+| Messages du chat candidat ↔ expert                | Avec le dossier : 3 ans au maximum après la dernière connexion ou la fin de l'accompagnement ; supprimés en cascade avec la fiche (`chat_conversations`, `chat_messages`) |
+| Documents du candidat (table `media`, Cloudinary) | Jusqu'à leur suppression (candidat ou conseiller), celle du dossier ou une demande d'effacement                                                                           |
+| Exports PDF générés                               | 30 jours (purge nocturne automatique, `PurgeExpiredPdfExportsJob`)                                                                                                        |
+| Journaux techniques et de sécurité                | 1 an                                                                                                                                                                      |
 
 **Écart entre durée annoncée et pratique réelle.** Seuls les exports PDF sont
 purgés automatiquement (`PurgeExpiredPdfExportsJob`, `start/scheduler.ts`). Il
@@ -124,7 +125,8 @@ un candidat qui n'a plus accès à son compte.
    paiements du forfait (#94 : date, montant, statut, identifiants Stripe —
    jamais de numéro de carte, Stripe seul les détient), demandes
    d'accompagnement par un expert (#103 : message, disponibilités, statut,
-   motif de refus, dates), synthèses d'accompagnement (`syntheses` ; les notes internes de l'expert
+   motif de refus, dates), messages du chat avec l'équipe d'experts (`chatMessages` :
+   rôle de l'auteur, texte, date ; jamais le nom de l'expert), synthèses d'accompagnement (`syntheses` ; les notes internes de l'expert
    suivent la politique des notes privées ci-dessous), notifications reçues par
    le compte (`notifications`), liste des documents déposés ; les documents
    eux-mêmes sont dans `documents/<id>_<nom d'origine>`.
@@ -189,7 +191,8 @@ Suppression **définitive**, en une transaction :
 - la fiche `employees` et, par `ON DELETE CASCADE` : résultats d'exercices,
   expériences, formations, compétences, notes, étapes du plan / rendez-vous,
   synthèses, exports PDF, demandes d'accompagnement par un expert (#103 : le
-  message libre du candidat part avec sa fiche) ;
+  message libre du candidat part avec sa fiche), conversation de chat et ses messages
+  (`chat_conversations` / `chat_messages`, voir [CHAT.md](CHAT.md)) ;
 - le compte `users` lié s'il a le rôle candidat (`employees.user_id` est en
   `SET NULL`, donc non couvert par la cascade) et, en cascade, ses jetons
   d'onboarding, jetons de réinitialisation de mot de passe et notifications — un compte conseiller/admin n'est jamais

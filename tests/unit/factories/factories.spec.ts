@@ -1,3 +1,5 @@
+import { ChatConversationFactory } from '#database/factories/chat_conversation_factory'
+import { ChatMessageFactory } from '#database/factories/chat_message_factory'
 import { ContactRequestFactory } from '#database/factories/contact_request_factory'
 import { EmployeeSkillFactory } from '#database/factories/employee_skill_factory'
 import { OnboardingTokenFactory } from '#database/factories/onboarding_token_factory'
@@ -8,7 +10,15 @@ import ContactRequest, {
 } from '#models/contact_request'
 import EmployeeSkill from '#models/employee_skill'
 import OnboardingToken from '#models/onboarding_token'
-import { createAdvisor, createCandidate, createEmployeeFor } from '#tests/support/actors'
+import ChatConversation from '#models/chat_conversation'
+import ChatMessage from '#models/chat_message'
+import { CHAT_AUTHOR_ROLES } from '#shared/constants/chat'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createEmployeeFor,
+} from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
@@ -90,5 +100,30 @@ test.group('Factories — OnboardingToken', (group) => {
     assert.isFalse(expired.isValid())
     assert.isNotNull(used.usedAt)
     assert.isFalse(used.isValid())
+  })
+})
+
+test.group('Factories — Chat', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('crée une conversation et ses messages valides', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate()
+    const conversation = await ChatConversationFactory.apply('active')
+      .merge({ employeeId: employee.id })
+      .create()
+    const message = await ChatMessageFactory.merge({
+      conversationId: conversation.id,
+      authorUserId: user.id,
+    }).create()
+    const reply = await ChatMessageFactory.apply('fromExpert')
+      .merge({ conversationId: conversation.id, authorUserId: user.id })
+      .create()
+
+    const storedConversation = await ChatConversation.findOrFail(conversation.id)
+    const storedMessage = await ChatMessage.findOrFail(message.id)
+    const storedReply = await ChatMessage.findOrFail(reply.id)
+    assert.isNotNull(storedConversation.lastMessageAt)
+    assert.equal(storedMessage.authorRole, CHAT_AUTHOR_ROLES.CANDIDATE)
+    assert.equal(storedReply.authorRole, CHAT_AUTHOR_ROLES.EXPERT)
   })
 })

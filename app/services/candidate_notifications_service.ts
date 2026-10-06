@@ -1,4 +1,5 @@
 import type Employee from '#models/employee'
+import Notification from '#models/notification'
 import type ExerciseResult from '#models/exercise_result'
 import type ExpertRequest from '#models/expert_request'
 import type SupportPlanStep from '#models/support_plan_step'
@@ -6,8 +7,9 @@ import User from '#models/user'
 import { NotificationService } from '#services/notification_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { BILLING_PATHS } from '#shared/constants/billing'
+import { CHAT_PATHS } from '#shared/constants/chat'
 import { EXPERT_REQUEST_PATHS } from '#shared/constants/expert_request'
-import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
+import { NOTIFICATION_STATUSES, NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { formatDateTimeFR } from '#shared/helpers/date'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { inject } from '@adonisjs/core'
@@ -183,6 +185,44 @@ export class CandidateNotificationsService {
       title: 'Votre demande d’accompagnement n’a pas pu aboutir',
       body: `${reason} Vous pouvez déposer une nouvelle demande.`,
       meta: { employeeId: employee.id, href: EXPERT_REQUEST_PATHS.page },
+    })
+  }
+
+  /**
+   * Nouveau message du chat (candidat ↔ expert). Une seule notification non
+   * lue par destinataire et par conversation : tant qu'elle n'est pas lue, les
+   * messages suivants n'en créent pas (ni e-mail, ni bruit). Côté équipe, id du
+   * candidat seulement, jamais son nom.
+   */
+  async chatMessageReceived(input: {
+    recipientUserId: number
+    conversationId: number
+    employeeId: number
+    audience: 'candidate' | 'team'
+  }): Promise<void> {
+    const pending = await Notification.query()
+      .where('userId', input.recipientUserId)
+      .where('type', NOTIFICATION_TYPES.CHAT_MESSAGE_RECEIVED)
+      .where('status', NOTIFICATION_STATUSES.UNREAD)
+      .whereRaw("meta->>'conversationId' = ?", [String(input.conversationId)])
+      .first()
+    if (pending) return
+
+    const forTeam = input.audience === 'team'
+    await this.notifications.notify({
+      userId: input.recipientUserId,
+      type: NOTIFICATION_TYPES.CHAT_MESSAGE_RECEIVED,
+      title: forTeam
+        ? `Nouveau message — candidat #${input.employeeId}`
+        : 'Nouveau message de votre expert',
+      body: forTeam
+        ? 'Un candidat vous a écrit dans la messagerie.'
+        : 'Votre expert vous a répondu dans la messagerie.',
+      meta: {
+        conversationId: input.conversationId,
+        employeeId: input.employeeId,
+        href: forTeam ? CHAT_PATHS.expertShow(input.conversationId) : CHAT_PATHS.candidate,
+      },
     })
   }
 

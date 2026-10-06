@@ -77,6 +77,7 @@ Avant de passer `epic/b2c → main` en « ready for review » :
 - **Env** : `B2C_REGISTRATION_ENABLED`, `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`,
   `STRIPE_WEBHOOK_SECRET`, `B2C_RESULTS_PRICE_CENTS` — déclarées dans `start/env_schema.ts`,
   optionnelles, requises en production si `STRIPE_ENABLED`.
+- **Chat candidat ↔ expert** (`feat/chat-candidat-expert`, hors phases) : conversation avec l'équipe d'experts de la plateforme, payé ou non — `../CHAT.md`. Tables `chat_conversations`, `chat_messages`, notification `chat_message_received`.
 - **Tables** : `candidate_payments`, `stripe_events`, `expert_requests` ; colonnes
   `organizations.is_platform`, `employees.account_type`, `users.terms_accepted_at`,
   `users.terms_version`, `users.email_verified_at`.

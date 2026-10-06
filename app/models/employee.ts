@@ -1,3 +1,4 @@
+import ChatConversation from '#models/chat_conversation'
 import CandidatePayment from '#models/candidate_payment'
 import ExpertRequest from '#models/expert_request'
 import Education from '#models/education'
@@ -9,8 +10,8 @@ import SupportPlanStep from '#models/support_plan_step'
 import User from '#models/user'
 import type { AccountType } from '#shared/constants/b2c'
 import type { EmployeeStatus } from '#shared/constants/employee'
-import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany, hasOne, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 import EmployeeSynthesis from './employee_synthesis.js'
 import ExerciseResult from './exercise_result.js'
@@ -104,6 +105,9 @@ export default class Employee extends BaseModel {
 
   @hasMany(() => Note)
   declare notes: HasMany<typeof Note>
+
+  @hasOne(() => ChatConversation)
+  declare chatConversation: HasOne<typeof ChatConversation>
 
   @hasMany(() => EmployeeSynthesis)
   declare syntheses: HasMany<typeof EmployeeSynthesis>
