@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import PublicHeader from '../../../../inertia/components/layout/PublicHeader'
 import { CABINET_HEADER } from '../../../../inertia/config/marketing'
 import { resetInertiaMock, setPageProps } from '../../support/inertia_mock'
@@ -13,20 +13,64 @@ vi.mock('@inertiajs/react', async () => {
 describe('PublicHeader', () => {
   beforeEach(() => resetInertiaMock())
 
-  test('renders the individuals navigation with the current page marked', () => {
+  test('renders the mega-menu tabs, the current group flagged', () => {
     setPageProps({}, '/tarifs')
     renderWithUser(<PublicHeader />)
 
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Le parcours' })).toHaveAttribute('href', '/#parcours')
-    expect(screen.getByRole('link', { name: 'Tarif' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Cabinets' })).toHaveAttribute('href', '/cabinets')
-    expect(screen.getByRole('link', { name: 'Cabinets' })).not.toHaveAttribute('aria-current')
+    const tabs = ['Particuliers', 'Cabinets', 'Ressources'].map((name) =>
+      screen.getByRole('button', { name })
+    )
+    expect(tabs[0]).toHaveAttribute('data-current')
+    expect(tabs[1]).not.toHaveAttribute('data-current')
     expect(screen.getByRole('link', { name: 'Se connecter' })).toHaveAttribute(
       'href',
       '/auth/login'
     )
     expect(screen.getByRole('link', { name: 'Accueil' })).toHaveAttribute('href', '/')
+  })
+
+  test('opens a panel of rich entries, the current page marked', async () => {
+    setPageProps({}, '/tarifs')
+    const { user } = renderWithUser(<PublicHeader />)
+
+    const tab = screen.getByRole('button', { name: 'Particuliers' })
+    expect(tab).toHaveAttribute('aria-expanded', 'false')
+    await user.click(tab)
+
+    expect(tab).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('link', { name: /Le parcours/ })).toHaveAttribute('href', '/#parcours')
+    expect(screen.getByRole('link', { name: /Tarif/ })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByText('Deux exercices offerts, puis un forfait unique.')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(tab).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  test('the cabinet panel ends with the demo call to action', async () => {
+    const { user } = renderWithUser(<PublicHeader />)
+
+    await user.click(screen.getByRole('button', { name: 'Cabinets' }))
+    expect(screen.getByRole('link', { name: /Méthodologie/ })).toHaveAttribute(
+      'href',
+      '/methodologie'
+    )
+    expect(screen.getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
+      'href',
+      '/cabinets#demo'
+    )
+  })
+
+  test('solidifies once the page has scrolled', () => {
+    renderWithUser(<PublicHeader />)
+    const header = screen.getByRole('banner')
+    expect(header).toHaveAttribute('data-scrolled', 'false')
+
+    Object.defineProperty(window, 'scrollY', { value: 120, configurable: true })
+    fireEvent.scroll(window)
+    expect(header).toHaveAttribute('data-scrolled', 'true')
+    expect(header).toHaveClass('bg-canvas/90')
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
   })
 
   test('main action: registration when open, waiting list when closed', () => {
@@ -47,13 +91,13 @@ describe('PublicHeader', () => {
     )
   })
 
-  test('cabinet header: cabinet navigation and demo action', () => {
+  test('cabinet header: cabinet tab first and demo action', () => {
     setPageProps({ b2cRegistrationEnabled: true }, '/cabinets/tarifs')
     renderWithUser(<PublicHeader {...CABINET_HEADER} />)
 
-    expect(screen.getByRole('link', { name: 'Offre' })).toHaveAttribute('href', '/offre')
-    expect(screen.getByRole('link', { name: 'Tarifs' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Particuliers' })).toHaveAttribute('href', '/')
+    const tabs = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-expanded'))
+    expect(tabs[0]).toHaveTextContent('Cabinets')
+    expect(tabs[0]).toHaveAttribute('data-current')
     expect(screen.getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
       'href',
       '/cabinets#demo'
@@ -78,7 +122,7 @@ describe('PublicHeader', () => {
     renderWithUser(<PublicHeader minimal />)
 
     expect(screen.getByRole('link', { name: "Retour à l'accueil" })).toHaveAttribute('href', '/')
-    expect(screen.queryByRole('link', { name: 'Offre' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cabinets' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Ouvrir le menu' })).not.toBeInTheDocument()
   })
 

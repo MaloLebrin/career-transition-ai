@@ -11,6 +11,10 @@ import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
+import { PageHero } from './PageHero'
+import { RevealGroup } from '../ui/motion/RevealGroup'
+import { RevealItem } from '../ui/motion/RevealItem'
+import { TiltCard } from '../ui/motion/TiltCard'
 
 const SCIENTIFIC_FRAME = [
   {
@@ -97,24 +101,28 @@ const ETHICS = [
 export default function MethodologyPage() {
   return (
     <PublicLayout header={CABINET_HEADER}>
-      <MarketingSection tone="canvas">
-        <SectionHeading
-          level={1}
-          size="display-lg"
-          align="center"
-          eyebrow="Méthodologie"
-          title="Une méthode d’accompagnement scientifique, pilotée par l’humain."
-          description="Transition Carrière structure le bilan autour d’outils issus des sciences comportementales et de l’entretien, avec une IA utilisée comme copilote de synthèse (pas comme juge). L’objectif : réduire les biais, augmenter la qualité, et rendre le travail du conseiller plus fluide et traçable."
-        />
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
-            Poser une question
-          </a>
-          <AppLink href="/offre" className={buttonClassName({ variant: 'outline', size: 'lg' })}>
-            Découvrir l’offre
-          </AppLink>
-        </div>
-      </MarketingSection>
+      <PageHero
+        eyebrow="Méthodologie"
+        title="Une méthode d’accompagnement scientifique, pilotée par l’humain."
+        description="Transition Carrière structure le bilan autour d’outils issus des sciences comportementales et de l’entretien, avec une IA utilisée comme copilote de synthèse (pas comme juge). L’objectif : réduire les biais, augmenter la qualité, et rendre le travail du conseiller plus fluide et traçable."
+        actions={
+          <>
+            <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+              Poser une question
+            </a>
+            <AppLink
+              href="/offre"
+              className={buttonClassName({
+                variant: 'outline',
+                size: 'lg',
+                className: 'bg-surface/70',
+              })}
+            >
+              Découvrir l’offre
+            </AppLink>
+          </>
+        }
+      />
 
       <MarketingSection tone="surface">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
@@ -132,20 +140,22 @@ export default function MethodologyPage() {
               <h3 className="text-title-lg">Principes de restitution</h3>
               <p className="mt-1 text-sm text-muted">Clarté, nuance, action.</p>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <RevealGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {RESTITUTION_PRINCIPLES.map((principle) => (
-                <Card key={principle.title} padding="sm" className="space-y-3">
-                  <span
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint-sun text-ink"
-                    aria-hidden="true"
-                  >
-                    {principle.icon}
-                  </span>
-                  <p className="font-semibold text-ink">{principle.title}</p>
-                  <p className="text-sm text-muted">{principle.description}</p>
-                </Card>
+                <RevealItem key={principle.title}>
+                  <Card padding="sm" className="h-full space-y-3">
+                    <span
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-tint-sun text-ink"
+                      aria-hidden="true"
+                    >
+                      {principle.icon}
+                    </span>
+                    <p className="font-semibold text-ink">{principle.title}</p>
+                    <p className="text-sm text-muted">{principle.description}</p>
+                  </Card>
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
           </Card>
         </div>
       </MarketingSection>
@@ -156,15 +166,32 @@ export default function MethodologyPage() {
           title="Un accompagnement plus fluide, sans perdre la nuance."
           description="La plateforme n’automatise pas la relation. Elle standardise la mécanique (étapes, supports, restitutions) pour libérer du temps d’écoute et améliorer la qualité de sortie."
         />
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {STEPS.map((step) => (
-            <Card key={step.label} padding="md" className="space-y-3">
-              <Eyebrow>{step.label}</Eyebrow>
-              <h3 className="text-title-md">{step.title}</h3>
-              <p className="text-sm text-muted">{step.description}</p>
-            </Card>
+        <RevealGroup
+          className="relative mt-12 grid grid-cols-1 gap-6 md:grid-cols-3"
+          stagger={0.15}
+        >
+          <span
+            className="absolute top-10 right-[16%] left-[16%] hidden h-px bg-linear-to-r from-tint-apricot-bold via-tint-lavender-bold to-tint-lake-bold md:block"
+            aria-hidden="true"
+          />
+          {STEPS.map((step, index) => (
+            <RevealItem key={step.label} className="relative h-full">
+              <TiltCard className="h-full">
+                <Card padding="md" className="h-full space-y-3">
+                  <span
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-display text-sm font-bold text-on-ink"
+                    aria-hidden="true"
+                  >
+                    {index + 1}
+                  </span>
+                  <Eyebrow>{step.label}</Eyebrow>
+                  <h3 className="text-title-md">{step.title}</h3>
+                  <p className="text-sm text-muted">{step.description}</p>
+                </Card>
+              </TiltCard>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </MarketingSection>
 
       <MarketingSection tone="soft">

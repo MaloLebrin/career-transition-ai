@@ -97,9 +97,14 @@
   --color-brand-emerald: var(--color-success);
   --color-brand-amber: var(--color-warning);
 
-  /* ---- Ombres : les deux seules autorisées ---- */
+  /* ---- Ombres : `card` et `raised` partout ; `floating` réservée à la couche marketing
+     (mockups en perspective, panneaux du méga-menu — DESIGN.md §5 bis). ---- */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
   --shadow-raised: 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-floating: 0 32px 64px -16px rgb(27 33 64 / 0.28), 0 16px 32px -16px rgb(27 33 64 / 0.22);
+
+  /* ---- Perspective des mockups produit (`perspective-hero` + `rotate-x-*`/`rotate-y-*`) ---- */
+  --perspective-hero: 1600px;
 
   /* ---- Conteneurs ---- */
   --container-marketing: 75rem; /* max-w-marketing = 1200px */
@@ -149,6 +154,7 @@
   --animate-drift: drift 28s ease-in-out infinite alternate;
   --animate-float: float 7s ease-in-out infinite;
   --animate-glow: glow 6s ease-in-out infinite;
+  --animate-mesh-drift: mesh-drift 22s ease-in-out infinite alternate;
   --animate-fadeIn: var(--animate-fade-in);
   --animate-slideUp: var(--animate-slide-up);
 
@@ -194,6 +200,24 @@
     }
     50% {
       opacity: 0.9;
+    }
+  }
+  @keyframes mesh-drift {
+    from {
+      background-position:
+        0% 0%,
+        100% 0%,
+        50% 100%,
+        0% 100%,
+        100% 100%;
+    }
+    to {
+      background-position:
+        30% 20%,
+        70% 30%,
+        20% 60%,
+        40% 70%,
+        60% 80%;
     }
   }
   @keyframes shake {
@@ -341,4 +365,33 @@
       animation: none;
     }
   }
+}
+
+/*
+ * Couche marketing (DESIGN.md §5 bis) : réservée à `inertia/components/{marketing,landing,layout}`
+ * (garde `tests/unit/hygiene/design_tokens.spec.ts`). Le maillage n'emploie que les teintes
+ * `-bold` ; aucun texte ne s'y pose sans voile `canvas`.
+ */
+@utility bg-hero-mesh {
+  background-color: var(--color-canvas);
+  background-image:
+    radial-gradient(at 15% 25%, var(--color-tint-apricot-bold) 0, transparent 55%),
+    radial-gradient(at 85% 10%, var(--color-tint-blossom-bold) 0, transparent 50%),
+    radial-gradient(at 55% 80%, var(--color-tint-lavender-bold) 0, transparent 55%),
+    radial-gradient(at 5% 95%, var(--color-tint-sun-bold) 0, transparent 50%),
+    radial-gradient(at 95% 90%, var(--color-tint-lake-bold) 0, transparent 55%);
+  background-size: 180% 180%;
+}
+
+/* Grille fine de fond (sections produit), couleur hairline. */
+@utility bg-grid-hairline {
+  background-image:
+    linear-gradient(var(--color-hairline) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-hairline) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Bord inférieur en diagonale (bande du hero, transitions de section). */
+@utility clip-skew-b {
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%);
 }

@@ -27,6 +27,15 @@ describe('PublicFooter', () => {
       'href',
       '/methodologie'
     )
+    expect(screen.getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
+      'href',
+      '/cabinets#demo'
+    )
+    expect(screen.getByRole('link', { name: 'Qui sommes-nous' })).toHaveAttribute(
+      'href',
+      '/qui-sommes-nous'
+    )
+    expect(screen.getByRole('link', { name: 'Sécurité' })).toHaveAttribute('href', '/securite')
     expect(screen.getByRole('link', { name: 'Mentions légales' })).toHaveAttribute(
       'href',
       '/mentions-legales'

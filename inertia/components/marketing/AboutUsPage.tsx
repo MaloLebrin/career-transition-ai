@@ -8,7 +8,12 @@ import { SectionHeading } from '../ui/SectionHeading'
 import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
 import { FeatureCard } from './FeatureCard'
+import { LandscapeArt } from './LandscapeArt'
 import { MarketingSection } from './MarketingSection'
+import { PageHero } from './PageHero'
+import { RevealGroup } from '../ui/motion/RevealGroup'
+import { RevealItem } from '../ui/motion/RevealItem'
+import { TiltCard } from '../ui/motion/TiltCard'
 
 const APPROACH = [
   {
@@ -51,16 +56,19 @@ const COMMITMENTS = [
 export default function AboutUsPage() {
   return (
     <PublicLayout>
-      <MarketingSection tone="canvas">
-        <SectionHeading
-          level={1}
-          size="display-lg"
-          align="center"
-          eyebrow="Qui sommes-nous"
-          title="Aider chacun à faire le point sur sa carrière, à son rythme."
-          description={FOOTER_TAGLINE}
-        />
-      </MarketingSection>
+      <PageHero
+        eyebrow="Qui sommes-nous"
+        title="Aider chacun à faire le point sur sa carrière, à son rythme."
+        description={FOOTER_TAGLINE}
+        aside={
+          <div
+            className="aspect-[4/3] overflow-hidden rounded-2xl border border-hairline shadow-floating"
+            data-testid="about-landscape"
+          >
+            <LandscapeArt variant="hero" />
+          </div>
+        }
+      />
 
       <MarketingSection tone="surface">
         <SectionHeading
@@ -68,16 +76,21 @@ export default function AboutUsPage() {
           title="Les sciences comportementales, l’IA et l’humain."
           description="Une transition de carrière se prépare avec méthode. Nous combinons trois ingrédients pour que le bilan soit clair, nuancé et utile à la décision."
         />
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {APPROACH.map((item) => (
-            <FeatureCard
-              key={item.title}
-              icon={item.icon}
-              title={item.title}
-              description={item.description}
-            />
+        <RevealGroup className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3" stagger={0.12}>
+          {APPROACH.map((item, index) => (
+            <RevealItem key={item.title} className="h-full">
+              <TiltCard className="h-full">
+                <FeatureCard
+                  icon={item.icon}
+                  title={item.title}
+                  description={item.description}
+                  tint={(['lake', 'blossom', 'lavender'] as const)[index]}
+                  className="h-full"
+                />
+              </TiltCard>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </MarketingSection>
 
       <MarketingSection tone="soft">

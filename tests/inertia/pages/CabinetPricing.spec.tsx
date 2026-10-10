@@ -1,5 +1,5 @@
 import { beforeEach, describe, test, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import CabinetPricing from '../../../inertia/pages/CabinetPricing'
 import { resetInertiaMock } from '../support/inertia_mock'
 
@@ -27,7 +27,8 @@ describe('CabinetPricing page', () => {
   test('utilise l’en-tête cabinet et renvoie vers le forfait particuliers', () => {
     render(<CabinetPricing />)
 
-    expect(screen.getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
+    const header = screen.getByRole('banner')
+    expect(within(header).getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
       'href',
       '/cabinets#demo'
     )

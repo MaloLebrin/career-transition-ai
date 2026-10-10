@@ -7,7 +7,11 @@ import { buttonClassName } from '../ui/Button'
 import { SectionHeading } from '../ui/SectionHeading'
 import { CtaBand } from './CtaBand'
 import { MarketingDemoSection } from './MarketingDemoSection'
+import { FaqAccordion } from './FaqAccordion'
 import { MarketingSection } from './MarketingSection'
+import { PageHero } from './PageHero'
+import { PlanComparison } from './individuals/PlanComparison'
+import { TiltCard } from '../ui/motion/TiltCard'
 import { FREE_TITLE, LINK_CLASS } from './individuals/copy'
 import { ResultsPlanCard } from './individuals/ResultsPlanCard'
 
@@ -44,53 +48,60 @@ export default function PricingPage() {
 
   return (
     <PublicLayout>
-      <MarketingSection tone="canvas">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="space-y-8 lg:col-span-6">
-            <SectionHeading
-              level={1}
-              size="display-lg"
-              eyebrow="Tarif"
-              title="Un forfait unique, réglé une fois."
-              description="Vous commencez gratuitement avec deux exercices. Si la suite vous parle, un paiement unique débloque l’ensemble du parcours, sans abonnement."
-            />
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {registrationOpen ? (
-                <AppLink
-                  href={B2C_PUBLIC_PATHS.register}
-                  className={buttonClassName({ variant: 'primary', size: 'lg' })}
-                >
-                  Commencer gratuitement
-                </AppLink>
-              ) : (
-                <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
-                  Être prévenu de l’ouverture
-                </a>
-              )}
+      <PageHero
+        eyebrow="Tarif"
+        title="Un forfait unique, réglé une fois."
+        description="Vous commencez gratuitement avec deux exercices. Si la suite vous parle, un paiement unique débloque l’ensemble du parcours, sans abonnement."
+        actions={
+          registrationOpen ? (
+            <AppLink
+              href={B2C_PUBLIC_PATHS.register}
+              className={buttonClassName({ variant: 'primary', size: 'lg' })}
+            >
+              Commencer gratuitement
+            </AppLink>
+          ) : (
+            <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+              Être prévenu de l’ouverture
+            </a>
+          )
+        }
+        aside={
+          <TiltCard>
+            <div className="rounded-2xl bg-hero-mesh p-1 shadow-floating animate-mesh-drift">
+              <ResultsPlanCard />
             </div>
-            <p className="text-sm text-muted">
-              Vous êtes un cabinet ?{' '}
-              <AppLink href="/cabinets/tarifs" className={LINK_CLASS}>
-                Voir les tarifs cabinets
-              </AppLink>
-            </p>
+          </TiltCard>
+        }
+      >
+        <p className="text-sm text-muted">
+          Vous êtes un cabinet ?{' '}
+          <AppLink href="/cabinets/tarifs" className={LINK_CLASS}>
+            Voir les tarifs cabinets
+          </AppLink>
+        </p>
+      </PageHero>
+
+      <MarketingSection tone="surface">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-4">
+            <SectionHeading
+              eyebrow="Gratuit ou forfait"
+              title="Ce que débloque le forfait."
+              description="Les exercices offerts restent acquis. Le forfait ouvre le reste du parcours et votre synthèse."
+            />
           </div>
-          <div className="lg:col-span-6">
-            <ResultsPlanCard />
+          <div className="lg:col-span-8">
+            <PlanComparison />
           </div>
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="surface" size="narrow">
+      <MarketingSection tone="canvas" size="narrow">
         <SectionHeading title="Questions fréquentes" size="display-sm" />
-        <dl className="mt-8 divide-y divide-hairline">
-          {FAQ.map((item) => (
-            <div key={item.question} className="py-5 first:pt-0 last:pb-0">
-              <dt className="font-semibold text-ink">{item.question}</dt>
-              <dd className="mt-2 text-sm text-muted">{item.answer}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className="mt-8">
+          <FaqAccordion items={FAQ} />
+        </div>
       </MarketingSection>
 
       {!registrationOpen && (

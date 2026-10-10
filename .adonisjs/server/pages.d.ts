@@ -29,12 +29,9 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
     'dashboard/candidat/billing/Offer': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Offer.tsx'))['default']>
     'dashboard/candidat/billing/Success': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Success.tsx'))['default']>
-    'dashboard/candidat/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/chat/Index.tsx'))['default']>
     'dashboard/candidat/expert/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/expert/Index.tsx'))['default']>
     'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
     'dashboard/candidat/Synthesis': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/Synthesis.tsx'))['default']>
-    'dashboard/conseiller/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Index.tsx'))['default']>
-    'dashboard/conseiller/chat/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Show.tsx'))['default']>
     'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
     'dashboard/conseiller/employees/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/List.tsx'))['default']>
     'dashboard/conseiller/employees/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/StepDetail.tsx'))['default']>
@@ -88,5 +85,8 @@ declare module '@adonisjs/inertia/types' {
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
     'TermsOfSale': ExtractProps<(typeof import('../../inertia/pages/TermsOfSale.tsx'))['default']>
     'TermsOfService': ExtractProps<(typeof import('../../inertia/pages/TermsOfService.tsx'))['default']>
+    'dashboard/conseiller/chat/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Show.tsx'))['default']>
+    'dashboard/conseiller/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Index.tsx'))['default']>
+    'dashboard/candidat/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/chat/Index.tsx'))['default']>
   }
 }

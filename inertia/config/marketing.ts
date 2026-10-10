@@ -1,5 +1,18 @@
 import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
 import { PRIVACY_CONTACT_EMAIL } from '#shared/constants/legal'
+import {
+  Building2,
+  Compass,
+  FlaskConical,
+  Gift,
+  LayoutGrid,
+  Lock,
+  Receipt,
+  ShieldCheck,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
+import type { MarketingTint } from '~/components/marketing/tints'
 
 export interface NavItem {
   label: string
@@ -16,21 +29,111 @@ export interface FooterColumn {
   links: NavItem[]
 }
 
-/** Navigation principale des pages publiques (header, menu mobile) : le parcours particulier. */
-export const MARKETING_NAV: NavItem[] = [
-  { label: 'Le parcours', href: '/#parcours' },
-  { label: 'Tarif', href: '/tarifs' },
-  { label: 'Cabinets', href: '/cabinets' },
-  { label: 'Qui sommes-nous', href: '/qui-sommes-nous' },
-]
+/** Entrée riche du méga-menu : icône sur tuile teintée, titre, une ligne de description. */
+export interface MenuItem extends NavItem {
+  description: string
+  icon: LucideIcon
+  tint: MarketingTint
+}
 
-/** Navigation de l'espace cabinet (`/cabinets`, `/offre`, `/methodologie`, `/cabinets/tarifs`). */
-export const CABINET_NAV: NavItem[] = [
-  { label: 'Offre', href: '/offre' },
-  { label: 'Tarifs', href: '/cabinets/tarifs' },
-  { label: 'Méthodologie', href: '/methodologie' },
-  { label: 'Particuliers', href: '/' },
-]
+/** Panneau du méga-menu (header desktop), section du menu mobile, colonne du pied de page. */
+export interface MenuGroup {
+  label: string
+  items: MenuItem[]
+  /** Appel à l'action en pied de panneau. */
+  cta?: ActionItem
+}
+
+/** Action principale de l'espace cabinet. */
+export const DEMO_ACTION: ActionItem = { label: 'Demander une démo', href: '/cabinets#demo' }
+
+export const INDIVIDUALS_MENU: MenuGroup = {
+  label: 'Particuliers',
+  items: [
+    {
+      label: 'Le parcours',
+      href: '/#parcours',
+      description: 'Huit exercices pour faire le point, à votre rythme.',
+      icon: Compass,
+      tint: 'lake',
+    },
+    {
+      label: 'Tarif',
+      href: '/tarifs',
+      description: 'Deux exercices offerts, puis un forfait unique.',
+      icon: Gift,
+      tint: 'sun',
+    },
+  ],
+}
+
+export const CABINETS_MENU: MenuGroup = {
+  label: 'Cabinets',
+  items: [
+    {
+      label: 'Espace cabinet',
+      href: '/cabinets',
+      description: 'Structurer vos bilans de compétences.',
+      icon: Building2,
+      tint: 'lavender',
+    },
+    {
+      label: 'Offre',
+      href: '/offre',
+      description: 'Exercices, synthèse assistée par l’IA, livrables.',
+      icon: LayoutGrid,
+      tint: 'blossom',
+    },
+    {
+      label: 'Méthodologie',
+      href: '/methodologie',
+      description: 'Les fondements scientifiques des exercices.',
+      icon: FlaskConical,
+      tint: 'meadow',
+    },
+    {
+      label: 'Tarifs',
+      href: '/cabinets/tarifs',
+      description: 'Des formules selon la taille de votre équipe.',
+      icon: Receipt,
+      tint: 'apricot',
+    },
+  ],
+  cta: DEMO_ACTION,
+}
+
+export const RESOURCES_MENU: MenuGroup = {
+  label: 'Ressources',
+  items: [
+    {
+      label: 'Qui sommes-nous',
+      href: '/qui-sommes-nous',
+      description: 'Notre mission et nos engagements.',
+      icon: Users,
+      tint: 'sky',
+    },
+    {
+      label: 'Sécurité',
+      href: '/securite',
+      description: 'Hébergement européen, pseudonymisation avant l’IA.',
+      icon: ShieldCheck,
+      tint: 'lake',
+    },
+    {
+      label: 'Politique de confidentialité',
+      href: '/confidentialite',
+      description: 'Vos données, vos droits, nos sous-traitants.',
+      icon: Lock,
+      tint: 'lavender',
+    },
+  ],
+}
+
+/** Méga-menu des pages publiques (header, menu mobile) : le parcours particulier d'abord. */
+export const MARKETING_MENU: MenuGroup[] = [INDIVIDUALS_MENU, CABINETS_MENU, RESOURCES_MENU]
+
+/** Méga-menu de l'espace cabinet (`/cabinets`, `/offre`, `/methodologie`, `/cabinets/tarifs`). */
+export const CABINET_MENU: MenuGroup[] = [CABINETS_MENU, INDIVIDUALS_MENU, RESOURCES_MENU]
 
 /** Entrée de l'espace cabinet depuis le parcours particulier. */
 export const CABINETS_ACTION: ActionItem = { label: 'Vous êtes un cabinet ?', href: '/cabinets' }
@@ -51,27 +154,18 @@ export const WAITLIST_ACTION: ActionItem = {
   href: '/#contact',
 }
 
-/** Action principale de l'espace cabinet. */
-export const DEMO_ACTION: ActionItem = { label: 'Demander une démo', href: '/cabinets#demo' }
-
 /** En-tête des pages cabinet : navigation et action principale propres à ce public. */
-export const CABINET_HEADER = { nav: CABINET_NAV, primaryAction: DEMO_ACTION } as const
+export const CABINET_HEADER = { menu: CABINET_MENU, primaryAction: DEMO_ACTION } as const
 
+/** Colonnes du pied de page : les groupes du méga-menu, puis les documents légaux. */
 export const FOOTER_COLUMNS: FooterColumn[] = [
-  {
-    title: 'Particuliers',
-    links: [...MARKETING_NAV.filter((item) => item.href !== '/cabinets'), LOGIN_ACTION],
-  },
-  {
-    title: 'Cabinets',
-    links: [{ label: 'Espace cabinet', href: '/cabinets' }, ...CABINET_NAV.slice(0, 3)],
-  },
+  { title: INDIVIDUALS_MENU.label, links: [...INDIVIDUALS_MENU.items, LOGIN_ACTION] },
+  { title: CABINETS_MENU.label, links: [...CABINETS_MENU.items, DEMO_ACTION] },
+  { title: RESOURCES_MENU.label, links: RESOURCES_MENU.items },
   {
     title: 'Légal',
     links: [
-      { label: 'Sécurité', href: '/securite' },
       { label: 'Mentions légales', href: '/mentions-legales' },
-      { label: 'Politique de confidentialité', href: '/confidentialite' },
       { label: 'Conditions d’utilisation', href: '/cgu' },
       { label: 'Conditions de vente', href: '/cgv' },
     ],

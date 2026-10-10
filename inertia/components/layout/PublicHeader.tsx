@@ -1,24 +1,27 @@
 import { usePage } from '@inertiajs/react'
+import { PopoverGroup } from '@headlessui/react'
 import { Menu } from 'lucide-react'
 import React, { useCallback, useState } from 'react'
 import {
   HOME_ACTION,
   LOGIN_ACTION,
-  MARKETING_NAV,
+  MARKETING_MENU,
   REGISTER_ACTION,
   WAITLIST_ACTION,
   type ActionItem,
-  type NavItem,
+  type MenuGroup,
 } from '~/config/marketing'
+import { useScrolled } from '~/hooks/use_scrolled'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import { Container } from '~/components/ui/Container'
 import { Logo } from '~/components/ui/Logo'
+import { MegaMenu } from './MegaMenu'
 import { MobileMenu } from './MobileMenu'
 
 export interface PublicHeaderProps {
-  /** Liens de navigation (défaut : `MARKETING_NAV`). */
-  nav?: NavItem[]
+  /** Groupes du méga-menu (défaut : `MARKETING_MENU`). */
+  menu?: MenuGroup[]
   /**
    * Action principale ; `null` pour la masquer. Par défaut : « Commencer gratuitement »
    * quand l'inscription des particuliers est ouverte, « Être prévenu de l'ouverture » sinon.
@@ -30,17 +33,10 @@ export interface PublicHeaderProps {
   minimal?: boolean
 }
 
-function isCurrent(url: string, href: string): boolean {
-  const path = url.split(/[?#]/)[0]
-  if (href === '/') return path === '/'
-  return path === href || path.startsWith(`${href}/`)
-}
-
-const NAV_LINK_CLASS =
-  'text-sm font-medium text-ink-soft hover:text-ink transition-colors aria-[current=page]:text-accent'
+const NAV_LINK_CLASS = 'text-sm font-medium text-ink-soft hover:text-ink transition-colors'
 
 const PublicHeader: React.FC<PublicHeaderProps> = ({
-  nav = MARKETING_NAV,
+  menu = MARKETING_MENU,
   primaryAction,
   secondaryAction = LOGIN_ACTION,
   minimal = false,
@@ -54,9 +50,17 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
       : primaryAction
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const scrolled = useScrolled()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/90 backdrop-blur">
+    <header
+      data-scrolled={scrolled}
+      className={`sticky top-0 z-40 border-b transition-colors duration-300 ${
+        scrolled
+          ? 'border-hairline bg-canvas/90 backdrop-blur'
+          : 'border-transparent bg-transparent'
+      }`}
+    >
       <Container
         as="nav"
         aria-label="Navigation principale"
@@ -72,19 +76,11 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
           </AppLink>
         ) : (
           <>
-            <ul className="hidden items-center gap-8 lg:flex">
-              {nav.map((item) => (
-                <li key={item.href}>
-                  <AppLink
-                    href={item.href}
-                    className={NAV_LINK_CLASS}
-                    aria-current={isCurrent(url, item.href) ? 'page' : undefined}
-                  >
-                    {item.label}
-                  </AppLink>
-                </li>
+            <PopoverGroup className="hidden items-center gap-1 lg:flex">
+              {menu.map((group) => (
+                <MegaMenu key={group.label} group={group} url={url} />
               ))}
-            </ul>
+            </PopoverGroup>
 
             <div className="hidden items-center gap-3 lg:flex">
               {secondaryAction && (
@@ -117,7 +113,8 @@ const PublicHeader: React.FC<PublicHeaderProps> = ({
             <MobileMenu
               open={menuOpen}
               onClose={closeMenu}
-              items={nav}
+              groups={menu}
+              url={url}
               primaryAction={mainAction}
               secondaryAction={secondaryAction}
             />

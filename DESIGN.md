@@ -33,8 +33,8 @@ teintes de coucher de soleil de Duna.
   ciel. Elles classent (badges, catégories) et illustrent (`LandscapeArt`, graphiques) —
   elles n'actionnent jamais, et aucun texte ne se pose sur un `-bold`.
 - **Un seul bloc illustratif** : `LandscapeArt`, un paysage calme en formes plates (ciel
-  abricot, soleil, montagnes lavande, lac, prairie). Pas de photo, pas de flou, pas de
-  dégradé en dehors de son ciel.
+  abricot, soleil, montagnes lavande, lac, prairie). Pas de photo, pas de flou ; le seul
+  autre dégradé est le maillage de la couche marketing (§5 bis).
 - **Hiérarchie par la typographie** (Manrope pour les titres, Inter pour l'interface),
   jamais par des majuscules espacées ni des micro-tailles.
 - **Rayons modestes** : 8 px boutons et champs, 12 px cartes, 16 px mockups et bandes,
@@ -44,17 +44,17 @@ teintes de coucher de soleil de Duna.
 
 ### Règles absolues
 
-| Faire                                                              | Ne jamais faire                                                                    |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Rôles de couleur nommés (`text-muted`, `bg-surface-soft`)          | `slate-*`, `rose-*`, `violet-*`, `white/40`, `brand-*` (alias en cours de retrait) |
-| `bg-primary` (encre) pour agir, `text-accent` pour signaler        | `bg-accent` sur un bouton, `text-primary` sur un lien (il se fond dans l'encre)    |
-| `bg-sun text-ink` pour le bouton secondaire / sur ink              | Texte blanc sur soleil, bouton `primary` dans une surface `bg-ink`                 |
-| `tint-x` + `tint-x-ink` pour classer, `tint-x-bold` pour illustrer | Du texte sur un `tint-x-bold`, `text-accent` sur `bg-ink` (→ `accent-on-ink`)      |
-| Casse de phrase partout, `Eyebrow` 14 px/500 pour un sur-titre     | `uppercase tracking-widest`, `text-[9–11px]`                                       |
-| `font-semibold` (600) ou `font-bold` (700) pour l'emphase          | `font-black`                                                                       |
-| `shadow-card` ou `shadow-raised`                                   | Toute autre ombre, `blur-*` décoratif, glassmorphism                               |
-| `rounded-lg` / `rounded-xl` / `rounded-2xl` / `rounded-full`       | `rounded-[Npx]`, `rounded-3xl` et au-delà sur une carte                            |
-| `AppLink` pour la navigation interne                               | `<a href="/…">` (sauf exception documentée par `eslint-disable`)                   |
+| Faire                                                               | Ne jamais faire                                                                    |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Rôles de couleur nommés (`text-muted`, `bg-surface-soft`)           | `slate-*`, `rose-*`, `violet-*`, `white/40`, `brand-*` (alias en cours de retrait) |
+| `bg-primary` (encre) pour agir, `text-accent` pour signaler         | `bg-accent` sur un bouton, `text-primary` sur un lien (il se fond dans l'encre)    |
+| `bg-sun text-ink` pour le bouton secondaire / sur ink               | Texte blanc sur soleil, bouton `primary` dans une surface `bg-ink`                 |
+| `tint-x` + `tint-x-ink` pour classer, `tint-x-bold` pour illustrer  | Du texte sur un `tint-x-bold`, `text-accent` sur `bg-ink` (→ `accent-on-ink`)      |
+| Casse de phrase partout, `Eyebrow` 14 px/500 pour un sur-titre      | `uppercase tracking-widest`, `text-[9–11px]`                                       |
+| `font-semibold` (600) ou `font-bold` (700) pour l'emphase           | `font-black`                                                                       |
+| `shadow-card` ou `shadow-raised` (+ `shadow-floating` en marketing) | Toute autre ombre, `blur-*` décoratif, glassmorphism                               |
+| `rounded-lg` / `rounded-xl` / `rounded-2xl` / `rounded-full`        | `rounded-[Npx]`, `rounded-3xl` et au-delà sur une carte                            |
+| `AppLink` pour la navigation interne                                | `<a href="/…">` (sauf exception documentée par `eslint-disable`)                   |
 
 ---
 
@@ -169,32 +169,74 @@ nombre par dossier (cliquet) et interdit tout retour dans `ui/`, `layout/`, `mar
   page se termine par `CtaBand` puis le footer `ink`.
 - **Cartes** : padding 24 px (`md`) en marketing, 32 px (`lg`) dans le dashboard,
   16 px (`sm`) pour les listes denses. Gouttière 16 px entre cartes.
-- **En-tête public** : 64 px, collant, `canvas/90` + flou, hairline en bas.
+- **En-tête public** : 64 px, collant, transparent en haut de page puis `canvas/90` + flou
+  et hairline en bas dès le scroll (`useScrolled`).
 - **Dashboard** (phase 2) : conteneur `max-w-7xl` puis `--width-app-container` (1536 px).
 
 ---
 
 ## 5. Composants
 
-| Composant                                                                                                                                                                    | Fichier                           | Règles                                                                                                                                                                                                                                                                                                                                    |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Button`                                                                                                                                                                     | `ui/Button.tsx`                   | `primary` (encre), `secondary` (soleil, texte encre — aussi le bouton plein sur ink), `outline`, `ghost`, `danger` ; `cta` et `emphasis` dépréciés → `secondary`. Tailles 36/40/48 px, `rounded-lg`, 600. `buttonClassName()` pour un lien-bouton (`AppLink`). Jamais un `<Button>` dans un `<a>`, jamais `primary` dans une `Card dark`. |
-| `Card`                                                                                                                                                                       | `ui/Card.tsx`                     | `default` (surface + hairline + `shadow-card`), `flat`, `dark` (ink), `sun`, `accent`, `primary` ; `warm`/`amber` → `sun`, `sage` → `accent` dépréciés. `padding` none/sm/md/lg, `interactive` pour l'élévation au survol.                                                                                                                |
-| `Badge`                                                                                                                                                                      | `ui/Badge.tsx`                    | Tons sémantiques et teintes expressives (`sun`, `apricot`, `meadow`, `lake`, `lavender`, `blossom`, `sky`), 24 px, pilule, `text-caption`, option `dot`. Anciens noms Tailwind et anciennes teintes mappés (`pink` → `blossom`, `terracotta` → `apricot`…).                                                                               |
-| `Input`, `Textarea`                                                                                                                                                          | `ui/Input.tsx`, `ui/Textarea.tsx` | Label 14 px/500 `ink`, champ 36/40/44 px `hairline-strong`, focus `accent`, erreur `danger` sans fond rosé, messages 14 px. Classes partagées dans `ui/input/input_classes.ts`.                                                                                                                                                           |
-| `Logo`                                                                                                                                                                       | `ui/Logo.tsx`                     | Mark PNG + wordmark `APP_NAME` ; `tone="inverse"` sur ink.                                                                                                                                                                                                                                                                                |
-| `Container`, `Eyebrow`, `SectionHeading`                                                                                                                                     | `ui/`                             | Largeurs, sur-titre (`accent`, `muted`, `inverse` = `accent-on-ink` ; `primary` déprécié), en-tête de section (eyebrow + titre + description).                                                                                                                                                                                            |
-| `LandscapeArt`                                                                                                                                                               | `marketing/LandscapeArt.tsx`      | Le seul bloc illustratif : SVG inline, `aria-hidden`, couleurs en `var(--color-tint-*)`. `hero` (panorama en tête du hero d'accueil), `dusk` (bas de `CtaBand`), `horizon` (derrière la carte `AuthShell`, ≥ sm).                                                                                                                         |
-| `PublicLayout`, `PublicHeader`, `PublicFooter`, `MobileMenu`                                                                                                                 | `layout/`                         | Coquille publique ; nav et actions dans `inertia/config/marketing.ts`. `header={{ minimal: true }} footer={false}` pour l'auth.                                                                                                                                                                                                           |
-| `MarketingSection`, `FeatureCard`, `BulletList`, `CtaBand`, `ProductMockup`, `ExerciseCatalogue`, `PricingTierCard`, `MarketingDemoSection`, `LegalDocument`, `LegalSection` | `marketing/`                      | Blocs de page marketing. Un hero = `SectionHeading level={1}` + actions ; une page légale = `LegalDocument` sans CTA.                                                                                                                                                                                                                     |
-| `AuthShell`                                                                                                                                                                  | `auth/AuthShell.tsx`              | Carte centrée 448 px sur un horizon `LandscapeArt`, en-tête minimal, tuile d'icône soleil, `accent="warm"` = filet apricot pour les liens invalides.                                                                                                                                                                                      |
-| `ErrorPage`                                                                                                                                                                  | `errors/ErrorPage.tsx`            | 404/500 en français, sans `PublicLayout` ni props Inertia.                                                                                                                                                                                                                                                                                |
+| Composant                                                                                                                                                               | Fichier                           | Règles                                                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`                                                                                                                                                                | `ui/Button.tsx`                   | `primary` (encre), `secondary` (soleil, texte encre — aussi le bouton plein sur ink), `outline`, `ghost`, `danger` ; `cta` et `emphasis` dépréciés → `secondary`. Tailles 36/40/48 px, `rounded-lg`, 600. `buttonClassName()` pour un lien-bouton (`AppLink`). Jamais un `<Button>` dans un `<a>`, jamais `primary` dans une `Card dark`. |
+| `Card`                                                                                                                                                                  | `ui/Card.tsx`                     | `default` (surface + hairline + `shadow-card`), `flat`, `dark` (ink), `sun`, `accent`, `primary` ; `warm`/`amber` → `sun`, `sage` → `accent` dépréciés. `padding` none/sm/md/lg, `interactive` pour l'élévation au survol.                                                                                                                |
+| `Badge`                                                                                                                                                                 | `ui/Badge.tsx`                    | Tons sémantiques et teintes expressives (`sun`, `apricot`, `meadow`, `lake`, `lavender`, `blossom`, `sky`), 24 px, pilule, `text-caption`, option `dot`. Anciens noms Tailwind et anciennes teintes mappés (`pink` → `blossom`, `terracotta` → `apricot`…).                                                                               |
+| `Input`, `Textarea`                                                                                                                                                     | `ui/Input.tsx`, `ui/Textarea.tsx` | Label 14 px/500 `ink`, champ 36/40/44 px `hairline-strong`, focus `accent`, erreur `danger` sans fond rosé, messages 14 px. Classes partagées dans `ui/input/input_classes.ts`.                                                                                                                                                           |
+| `Logo`                                                                                                                                                                  | `ui/Logo.tsx`                     | Mark PNG + wordmark `APP_NAME` ; `tone="inverse"` sur ink.                                                                                                                                                                                                                                                                                |
+| `Container`, `Eyebrow`, `SectionHeading`                                                                                                                                | `ui/`                             | Largeurs, sur-titre (`accent`, `muted`, `inverse` = `accent-on-ink` ; `primary` déprécié), en-tête de section (eyebrow + titre + description).                                                                                                                                                                                            |
+| `LandscapeArt`                                                                                                                                                          | `marketing/LandscapeArt.tsx`      | Le seul bloc illustratif : SVG inline, `aria-hidden`, couleurs en `var(--color-tint-*)`. `hero` (panorama du héros « Qui sommes-nous »), `dusk` (bas de `CtaBand`), `horizon` (derrière la carte `AuthShell`, ≥ sm).                                                                                                                      |
+| `PublicLayout`, `PublicHeader`, `PublicFooter`, `MobileMenu`                                                                                                            | `layout/`                         | Coquille publique ; nav et actions dans `inertia/config/marketing.ts`. `header={{ minimal: true }} footer={false}` pour l'auth.                                                                                                                                                                                                           |
+| `MarketingSection`, `FeatureCard`, `BulletList`, `CtaBand`, `PageHero`, `ExerciseCatalogue`, `PricingTierCard`, `MarketingDemoSection`, `LegalDocument`, `LegalSection` | `marketing/`                      | Blocs de page marketing. Un hero = `SectionHeading level={1}` + actions ; une page légale = `LegalDocument` sans CTA.                                                                                                                                                                                                                     |
+| `AuthShell`                                                                                                                                                             | `auth/AuthShell.tsx`              | Carte centrée 448 px sur un horizon `LandscapeArt`, en-tête minimal, tuile d'icône soleil, `accent="warm"` = filet apricot pour les liens invalides.                                                                                                                                                                                      |
+| `ErrorPage`                                                                                                                                                             | `errors/ErrorPage.tsx`            | 404/500 en français, sans `PublicLayout` ni props Inertia.                                                                                                                                                                                                                                                                                |
 
 États : focus visible par anneau `accent` (couche base), sélection de texte `sun-soft`, désactivé à 50 %, chargement par
 spinner dans le bouton. Mouvement : `animate-fade-in`, `animate-slide-up`,
-`animate-shake` (erreurs de formulaire), respect de `prefers-reduced-motion`. Pages marketing : `Reveal`
-(`ui/Reveal.tsx`, apparition au scroll, cascade par `delay`) ; paysage du hero animé en douceur
-(`animate-drift` nuages, `animate-float` oiseaux, `animate-glow` halo du soleil) ; cartes qui se soulèvent au survol.
+`animate-shake` (erreurs de formulaire), respect de `prefers-reduced-motion`. Pages marketing : `RevealGroup` / `RevealItem`, `CountUp`, `Parallax`, `TiltCard`
+(`ui/motion/`, §5 bis) ; mockups vivants ; maillage du héros (`animate-mesh-drift`).
+
+---
+
+## 5 bis. Couche marketing
+
+Les pages publiques ont droit à quelques effets de plus, inspirés de stripe.com : un héros
+plus spectaculaire, des interfaces produit vivantes, un méga-menu. Ils sont **réservés** à
+`inertia/components/{marketing,landing,layout}` (garde `tests/unit/hygiene/design_tokens.spec.ts`)
+et ne changent rien au reste du contrat (ivoire, encre, soleil, accent, teintes, casse de phrase).
+
+| Token / utilitaire                             | Usage                                                                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bg-hero-mesh` + `animate-mesh-drift`          | Maillage des teintes `-bold` (abricot, fleur, lavande, soleil, lac) qui dérive lentement. Bande du héros, `CtaBand`. Jamais de texte posé dessus sans voile `bg-canvas/…`. |
+| `shadow-floating`                              | Troisième ombre : mockups en perspective, panneaux du méga-menu.                                                                                                           |
+| `perspective-hero` + `rotate-x-*`/`rotate-y-*` | Mockup produit incliné dans le héros.                                                                                                                                      |
+| `bg-grid-hairline`                             | Grille fine de fond (sections produit).                                                                                                                                    |
+| `clip-skew-b`                                  | Bord inférieur en diagonale (bande du héros, transitions de section).                                                                                                      |
+
+**Mouvement** (`motion` v11, `inertia/components/ui/motion/`) : `RevealGroup` + `RevealItem`
+(apparitions échelonnées au scroll, une fois), `CountUp` (chiffre clé qui compte jusqu'à sa
+valeur, rendue d'emblée), `Parallax` (décalage vertical léger), `TiltCard` (inclinaison au
+survol, souris seulement). Toutes passent en rendu statique sous `prefers-reduced-motion` ;
+en test (jsdom) le mouvement est réduit par défaut (`tests/inertia/setup.ts`).
+
+**Méga-menu** (`layout/MegaMenu.tsx`, config `MARKETING_MENU` / `CABINET_MENU` dans
+`inertia/config/marketing.ts`) : un onglet par public (Particuliers, Cabinets, Ressources),
+un panneau d'entrées riches (icône sur tuile `tint-x`, titre, une ligne), un appel à l'action
+en pied de panneau. Même contenu en sections dans `MobileMenu` et en colonnes dans le footer.
+L'en-tête est transparent en haut de page et se solidifie (`canvas/90` + flou) au scroll.
+
+**Blocs** (`marketing/`) : `HeroBackdrop` (maillage + grille + voile, `strong`/`soft`),
+`KeyFactsStrip` (chiffres clés), `FeatureTabs` (fonctionnalités en onglets avec mockup),
+`StepsTimeline` (étapes le long d'une ligne tracée au scroll), `PrivacyFlow` (parcours des
+données avant l'IA), `FaqAccordion` (`<details>` natif), `individuals/PlanComparison`
+(gratuit / forfait). L'offre mise en avant d'une grille tarifaire est cerclée du maillage. Mockups vivants dans `marketing/mockups/` (`MockupFrame`,
+`JourneyMockup`, `AiAnalysisMockup`, `SynthesisMockup`, `ExpertMockup`,
+`AdvisorDashboardMockup`) ; `PageHero` (héros des pages secondaires, maillage atténué), animés par
+`useMockupStep` (`inertia/hooks/`) et figés sur leur état final en mouvement réduit.
+
+**Contenu honnête** (§1) : les chiffres clés sont des faits produit (nombre d'exercices,
+prix réel, hébergement) ; un mockup vivant porte la mention « Aperçu illustratif » et
+n'utilise que les vrais noms d'exercices.
 
 ---
 

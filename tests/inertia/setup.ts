@@ -81,5 +81,21 @@ if (!('EventSource' in globalThis)) {
   globalThis.EventSource = EventSourceStub
 }
 
+// `matchMedia` absent de jsdom : les primitives `motion` (`useReducedMotion`) voient un
+// utilisateur en mouvement réduit, donc un rendu statique et déterministe (valeurs finales).
+// Une spec peut mocker `motion/react` pour couvrir le chemin animé.
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = ((query: string) => ({
+    matches: query.includes('prefers-reduced-motion'),
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
+}
+
 // Stub window.alert used in a few components so jsdom doesn't throw
 vi.stubGlobal('alert', vi.fn())

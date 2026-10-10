@@ -2,7 +2,9 @@ import { Check, X } from 'lucide-react'
 import React from 'react'
 import { BulletList } from '~/components/marketing/BulletList'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
-import { Reveal } from '~/components/ui/Reveal'
+import { AiAnalysisMockup } from '~/components/marketing/mockups/AiAnalysisMockup'
+import { RevealGroup } from '~/components/ui/motion/RevealGroup'
+import { RevealItem } from '~/components/ui/motion/RevealItem'
 import Card from '~/components/ui/Card'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 
@@ -48,32 +50,37 @@ export const AiSection: React.FC = () => (
         />
         <BulletList items={PRINCIPLES} />
       </div>
-      <Reveal delay={150} className="lg:col-span-6">
-        <Card padding="lg" className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          <div className="space-y-3">
-            <h3 className="text-title-sm">Ce que l’IA fait</h3>
-            <ul className="space-y-2.5">
-              {DOES.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-title-sm">Ce qu’elle ne fait pas</h3>
-            <ul className="space-y-2.5">
-              {DOES_NOT.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm text-ink-soft">
-                  <X className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Card>
-      </Reveal>
+      <RevealGroup className="space-y-6 lg:col-span-6" stagger={0.15}>
+        <RevealItem>
+          <AiAnalysisMockup reviewed />
+        </RevealItem>
+        <RevealItem>
+          <Card padding="lg" className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+            <div className="space-y-3">
+              <h3 className="text-title-sm">Ce que l’IA fait</h3>
+              <ul className="space-y-2.5">
+                {DOES.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-ink-soft">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-title-sm">Ce qu’elle ne fait pas</h3>
+              <ul className="space-y-2.5">
+                {DOES_NOT.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-ink-soft">
+                    <X className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+        </RevealItem>
+      </RevealGroup>
     </div>
   </MarketingSection>
 )
