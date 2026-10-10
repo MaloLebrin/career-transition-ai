@@ -45,7 +45,12 @@ export interface PaymentRow {
   candidate: { id: number; name: string; email: string } | null
   provider: PaymentProvider
   status: PaymentStatus
+  /** Montant encaissé après remise, en centimes (#139). */
   amountCents: number
+  /** Remise d'un code promo Stripe, en centimes ; 0 sans code (#139). */
+  discountCents: number
+  /** Libellé du code promo utilisé, `null` sans code ou si Stripe n'a pas pu le relire (#139). */
+  promoCode: string | null
   currency: string
   paidAt: string | null
   refundedAt: string | null

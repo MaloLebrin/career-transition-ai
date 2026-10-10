@@ -11,6 +11,7 @@ import {
   createB2cCandidate,
   createCandidate,
   createEmployeeFor,
+  createInHouseExpert,
   createOrganization,
   createPlatformOrganization,
   createSuperAdmin,
@@ -142,6 +143,7 @@ test.group('InertiaMiddleware.share', () => {
       role: 'advisor',
       accountType: null,
       emailVerified: false,
+      isPlatformTeam: false,
     })
     assert.deepEqual(
       props.employees.map((e: { name: string }) => e.name),
@@ -251,6 +253,25 @@ test.group('InertiaMiddleware.share', () => {
 
     assert.isFalse(unverifiedProps.user.emailVerified)
     assert.isTrue(verifiedProps.user.emailVerified)
+  })
+
+  test("user.isPlatformTeam : vrai pour l'équipe plateforme, faux pour un cabinet client", async ({
+    assert,
+  }) => {
+    const inHouse = await createInHouseExpert()
+    const clientAdvisor = await createAdvisor()
+    const candidate = await createB2cCandidate()
+    const superAdmin = await createSuperAdmin()
+
+    const flagFor = async (user: unknown) => {
+      const props = await share(makeShareCtx({ user }))
+      return Boolean(props.user.isPlatformTeam)
+    }
+
+    assert.isTrue(await flagFor(inHouse))
+    assert.isFalse(await flagFor(clientAdvisor))
+    assert.isFalse(await flagFor(candidate.user))
+    assert.isFalse(await flagFor(superAdmin))
   })
 
   test('particulier B2C payé : hasPaidAccess ; candidat B2B : toujours vrai', async ({

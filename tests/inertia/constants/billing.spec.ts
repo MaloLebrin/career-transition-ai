@@ -2,14 +2,17 @@ import { describe, expect, test } from 'vitest'
 import {
   BILLING_ADMIN_PATHS,
   BILLING_CURRENCY,
+  CHECKOUT_PAYMENT_STATUSES,
   DEFAULT_RESULTS_PRICE_CENTS,
   PAYMENT_PRODUCTS,
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
   PAYMENT_STATUS_LABELS,
+  PROMO_CODE_MAX,
   STRIPE_WEBHOOK_EVENTS,
   STRIPE_WEBHOOK_PATH,
   WEBHOOK_OUTCOMES,
+  checkoutPaymentStatusValues,
   paymentProductValues,
   paymentProviderValues,
   paymentStatusValues,
@@ -34,6 +37,19 @@ describe('shared/constants/billing (#94)', () => {
       'canceled',
       'refunded',
     ])
+  })
+
+  test('statuts de session Checkout (#139) : enum cohérent et figé (valeurs Stripe)', () => {
+    expectConsistentEnum(CHECKOUT_PAYMENT_STATUSES, checkoutPaymentStatusValues, [
+      'paid',
+      'unpaid',
+      'no_payment_required',
+    ])
+  })
+
+  test('libellé de code promo borné (#139)', () => {
+    expect(Number.isInteger(PROMO_CODE_MAX)).toBe(true)
+    expect(PROMO_CODE_MAX).toBeGreaterThan(0)
   })
 
   test('chaque statut a un libellé français non vide', () => {

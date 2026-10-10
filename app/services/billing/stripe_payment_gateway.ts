@@ -4,11 +4,13 @@ import {
   PaymentGatewayNotConfiguredError,
 } from '#exceptions/billing_errors'
 import type { PaymentGateway } from '#services/billing/payment_gateway'
+import { checkoutDiscountCents, stripeIdOf } from '#shared/helpers/billing/checkout_session'
 import type {
   CheckoutSessionRef,
   CreateCheckoutSessionInput,
   PaymentGatewayWebhookEvent,
   RetrievedCheckoutSession,
+  RetrievedPromotionCode,
 } from '#shared/types/billing/checkout'
 import Stripe from 'stripe'
 
@@ -16,7 +18,9 @@ import Stripe from 'stripe'
  * Stripe Checkout hébergé, `mode: payment`, one-shot (#102). Aucun Stripe.js
  * dans le bundle : le navigateur est redirigé vers l'URL de la session, puis
  * revient sur `success_url` ; la confirmation vient de la réconciliation
- * (`CheckoutService.reconcile`) et du webhook (#104).
+ * (`CheckoutService.reconcile`) et du webhook (#104). Les codes promo (#139)
+ * sont créés dans le tableau de bord Stripe et saisis sur la page hébergée
+ * (`allow_promotion_codes`) : l'application ne fait que relire la remise.
  *
  * Résolue via le conteneur (`@inject()`), pour que `swapFakeStripe()` la
  * remplace en test.
@@ -29,6 +33,8 @@ export class StripePaymentGateway implements PaymentGateway {
     return {
       mode: 'payment',
       locale: 'fr',
+      // Codes promo gérés dans Stripe (#139) : champ de saisie sur la page hébergée.
+      allow_promotion_codes: true,
       customer_email: input.customerEmail,
       client_reference_id: String(input.paymentId),
       metadata: { paymentId: String(input.paymentId), employeeId: String(input.employeeId) },
@@ -61,18 +67,39 @@ export class StripePaymentGateway implements PaymentGateway {
   async retrieveCheckoutSession(sessionId: string): Promise<RetrievedCheckoutSession | null> {
     try {
       const session = await this.stripe().checkout.sessions.retrieve(sessionId)
-      return {
-        id: session.id,
-        paymentStatus: session.payment_status as RetrievedCheckoutSession['paymentStatus'],
-        paymentIntentId:
-          typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : (session.payment_intent?.id ?? null),
-        status: session.status as RetrievedCheckoutSession['status'],
-        url: session.url ?? null,
-        amountTotal: session.amount_total ?? null,
-        currency: session.currency ?? null,
-      }
+      return StripePaymentGateway.sessionView(session)
+    } catch (error) {
+      if ((error as Stripe.errors.StripeError).code === 'resource_missing') return null
+      throw error
+    }
+  }
+
+  /** Lecture pure d'une session Stripe, réduite à ce que le domaine utilise (#102, #139). */
+  static sessionView(session: Stripe.Checkout.Session): RetrievedCheckoutSession {
+    const amountTotal = session.amount_total ?? null
+    const amountSubtotal = session.amount_subtotal ?? null
+    return {
+      id: session.id,
+      paymentStatus: session.payment_status as RetrievedCheckoutSession['paymentStatus'],
+      paymentIntentId: stripeIdOf(session.payment_intent),
+      status: session.status as RetrievedCheckoutSession['status'],
+      url: session.url ?? null,
+      amountTotal,
+      amountSubtotal,
+      currency: session.currency ?? null,
+      discountCents: checkoutDiscountCents({
+        amountSubtotal,
+        amountTotal,
+        amountDiscount: session.total_details?.amount_discount ?? null,
+      }),
+      promotionCodeId: stripeIdOf(session.discounts?.[0]?.promotion_code),
+    }
+  }
+
+  async retrievePromotionCode(promotionCodeId: string): Promise<RetrievedPromotionCode | null> {
+    try {
+      const promotion = await this.stripe().promotionCodes.retrieve(promotionCodeId)
+      return { id: promotion.id, code: promotion.code }
     } catch (error) {
       if ((error as Stripe.errors.StripeError).code === 'resource_missing') return null
       throw error

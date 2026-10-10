@@ -1,10 +1,14 @@
 import { InvalidStripeSignatureError } from '#exceptions/billing_errors'
 import { StripePaymentGateway } from '#services/billing/stripe_payment_gateway'
+import type { CheckoutPaymentStatus } from '#shared/constants/billing'
+import { CHECKOUT_PAYMENT_STATUSES } from '#shared/constants/billing'
+import { isCheckoutSettled } from '#shared/helpers/billing/checkout_session'
 import type {
   CheckoutSessionRef,
   CreateCheckoutSessionInput,
   PaymentGatewayWebhookEvent,
   RetrievedCheckoutSession,
+  RetrievedPromotionCode,
 } from '#shared/types/billing/checkout'
 import app from '@adonisjs/core/services/app'
 
@@ -23,8 +27,11 @@ export function fakeStripeEvent(
 /**
  * Remplace `StripePaymentGateway` par une passerelle en mémoire (pattern
  * `swapFakeCloudinary`). Aucun appel réseau : les sessions créées sont gardées
- * par id, `pay(sessionId)` simule le paiement côté Stripe, et chaque appel est
- * journalisé pour les assertions.
+ * par id, `pay(sessionId)` simule le paiement côté Stripe (avec une remise de
+ * code promo en option, #139 ; une remise égale au prix donne
+ * `no_payment_required` sans PaymentIntent), et chaque appel est journalisé
+ * pour les assertions. `promotionCodes` (id → libellé) alimente
+ * `retrievePromotionCode`.
  *
  * ```ts
  * let stripe: FakeStripeGateway
@@ -39,16 +46,23 @@ export class FakeStripeGateway extends StripePaymentGateway {
     string,
     {
       input: CreateCheckoutSessionInput
-      paymentStatus: 'paid' | 'unpaid'
+      paymentStatus: CheckoutPaymentStatus
       paymentIntentId: string | null
       status: 'open' | 'complete' | 'expired'
       /** Écarts simulés côté Stripe pour les tests de recoupement. */
       amountTotal: number
+      amountSubtotal: number
       currency: string
+      /** Code promo appliqué au paiement (#139). */
+      discountCents: number
+      promotionCodeId: string | null
     }
   >()
   readonly created: CreateCheckoutSessionInput[] = []
   readonly retrieved: string[] = []
+  /** Codes promotionnels connus côté Stripe : id `promo_…` → libellé (#139). */
+  readonly promotionCodes = new Map<string, string>()
+  readonly retrievedPromotionCodes: string[] = []
   private counter = 0
 
   async createCheckoutSession(input: CreateCheckoutSessionInput): Promise<CheckoutSessionRef> {
@@ -60,11 +74,14 @@ export class FakeStripeGateway extends StripePaymentGateway {
     const id = `cs_test_fake_${this.counter}`
     this.sessions.set(id, {
       input,
-      paymentStatus: 'unpaid',
+      paymentStatus: CHECKOUT_PAYMENT_STATUSES.UNPAID,
       paymentIntentId: null,
       status: 'open',
       amountTotal: input.amountCents,
+      amountSubtotal: input.amountCents,
       currency: input.currency,
+      discountCents: 0,
+      promotionCodeId: null,
     })
     this.created.push(input)
     return { id, url: `https://checkout.stripe.test/pay/${id}` }
@@ -78,11 +95,24 @@ export class FakeStripeGateway extends StripePaymentGateway {
       id: sessionId,
       paymentStatus: session.paymentStatus,
       paymentIntentId: session.paymentIntentId,
-      status: session.paymentStatus === 'paid' ? 'complete' : session.status,
+      status: isCheckoutSettled(session.paymentStatus) ? 'complete' : session.status,
       url: `https://checkout.stripe.test/pay/${sessionId}`,
       amountTotal: session.amountTotal,
+      amountSubtotal: session.amountSubtotal,
       currency: session.currency,
+      discountCents: session.discountCents,
+      promotionCodeId: session.promotionCodeId,
     }
+  }
+
+  async retrievePromotionCode(promotionCodeId: string): Promise<RetrievedPromotionCode | null> {
+    this.retrievedPromotionCodes.push(promotionCodeId)
+    if (this.failNextPromotionCodeRetrieve) {
+      this.failNextPromotionCodeRetrieve = false
+      throw new Error('FakeStripeGateway : panne simulée (promotion code)')
+    }
+    const code = this.promotionCodes.get(promotionCodeId)
+    return code ? { id: promotionCodeId, code } : null
   }
 
   constructWebhookEvent(rawBody: string | Buffer, signature: string): PaymentGatewayWebhookEvent {
@@ -90,11 +120,27 @@ export class FakeStripeGateway extends StripePaymentGateway {
     return JSON.parse(String(rawBody)) as PaymentGatewayWebhookEvent
   }
 
-  /** Simule le paiement de la session côté Stripe. */
-  pay(sessionId: string): void {
+  /**
+   * Simule le paiement de la session côté Stripe. Avec un code promo (#139),
+   * la remise est retirée du total ; une remise égale au prix donne une session
+   * `no_payment_required` sans PaymentIntent (code à 100 %).
+   */
+  pay(
+    sessionId: string,
+    promo: { discountCents?: number; promotionCodeId?: string | null } = {}
+  ): void {
     const session = this.sessions.get(sessionId)
     if (!session) throw new Error(`FakeStripeGateway : session inconnue ${sessionId}`)
-    session.paymentStatus = 'paid'
+    const discount = Math.min(promo.discountCents ?? 0, session.amountSubtotal)
+    session.discountCents = discount
+    session.promotionCodeId = promo.promotionCodeId ?? null
+    session.amountTotal = session.amountSubtotal - discount
+    if (session.amountTotal === 0 && discount > 0) {
+      session.paymentStatus = CHECKOUT_PAYMENT_STATUSES.NO_PAYMENT_REQUIRED
+      session.paymentIntentId = null
+      return
+    }
+    session.paymentStatus = CHECKOUT_PAYMENT_STATUSES.PAID
     session.paymentIntentId = `pi_test_fake_${sessionId.split('_').pop()}`
   }
 
@@ -107,6 +153,9 @@ export class FakeStripeGateway extends StripePaymentGateway {
 
   /** Les appels suivants à `createCheckoutSession` échouent (panne Stripe). */
   failNextCreate = false
+
+  /** Le prochain `retrievePromotionCode` échoue (panne Stripe au moment de relire le libellé). */
+  failNextPromotionCodeRetrieve = false
 
   lastSessionId(): string | null {
     const ids = [...this.sessions.keys()]

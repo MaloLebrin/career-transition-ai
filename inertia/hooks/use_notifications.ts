@@ -41,6 +41,7 @@ export function useNotifications() {
     return () => {
       if (unsubscribe) unsubscribe()
       subscription.delete().catch(() => {})
+      transmit.close()
     }
   }, [user?.id])
 

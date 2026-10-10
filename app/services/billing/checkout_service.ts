@@ -10,6 +10,7 @@ import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
 import type User from '#models/user'
 import { PaymentsService } from '#services/billing/payments_service'
+import { PromotionCodesService } from '#services/billing/promotion_codes_service'
 import { StripePaymentGateway } from '#services/billing/stripe_payment_gateway'
 import { EntitlementsService } from '#services/entitlements_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
@@ -21,10 +22,13 @@ import {
   RESULTS_PRODUCT_NAME,
 } from '#shared/constants/billing'
 import { TERMS_VERSION } from '#shared/constants/legal'
+import { isCheckoutSettled } from '#shared/helpers/billing/checkout_session'
 import type {
   CheckoutReconcileResult,
   CheckoutStartResult,
   OfferView,
+  PaymentSettlement,
+  RetrievedCheckoutSession,
 } from '#shared/types/billing/checkout'
 import { appUrl } from '#utils/app_url'
 import { inject } from '@adonisjs/core'
@@ -38,13 +42,18 @@ import { DateTime } from 'luxon'
  * `reconcile` : au retour sur la page de succès, relit la session chez Stripe
  * et débloque si elle est payée — le candidat n'attend pas le webhook (#104),
  * qui reste la source de vérité en cas de fermeture d'onglet.
+ *
+ * Codes promo (#139) : saisis sur la page Stripe, jamais ici. La session relue
+ * porte la remise (`amount_total` < `amount_subtotal`) et l'id du code ; un code
+ * à 100 % donne `no_payment_required`, réglé sans PaymentIntent.
  */
 @inject()
 export class CheckoutService {
   constructor(
     private gateway: StripePaymentGateway,
     private entitlements: EntitlementsService,
-    private payments: PaymentsService
+    private payments: PaymentsService,
+    private promotionCodes: PromotionCodesService
   ) {}
 
   public async offerFor(user: User): Promise<OfferView> {
@@ -120,17 +129,12 @@ export class CheckoutService {
 
     const session = await this.gateway.retrieveCheckoutSession(sessionId)
     if (!session) throw new CheckoutSessionNotFoundError()
-    if (session.paymentStatus !== 'paid') {
+    if (!isCheckoutSettled(session.paymentStatus)) {
       return { paymentId: payment.id, paid: false }
     }
-    const consistent = this.payments.sessionMatches(payment, {
-      sessionId: session.id,
-      amountTotal: session.amountTotal,
-      currency: session.currency,
-    })
-    if (!consistent) return { paymentId: payment.id, paid: false }
+    if (!this.sessionMatches(payment, session)) return { paymentId: payment.id, paid: false }
 
-    await this.payments.markPaid(payment, { paymentIntentId: session.paymentIntentId })
+    await this.payments.markPaid(payment, await this.settlementFor(session))
     await payment.refresh()
     return { paymentId: payment.id, paid: payment.grantsAccess }
   }
@@ -151,9 +155,9 @@ export class CheckoutService {
     let reusable: CheckoutStartResult | null = null
     for (const payment of pending) {
       const session = await this.gateway.retrieveCheckoutSession(payment.stripeCheckoutSessionId!)
-      if (session?.paymentStatus === 'paid') {
-        if (this.payments.sessionMatches(payment, { sessionId: session.id })) {
-          await this.payments.markPaid(payment, { paymentIntentId: session.paymentIntentId })
+      if (session && isCheckoutSettled(session.paymentStatus)) {
+        if (this.sessionMatches(payment, session)) {
+          await this.payments.markPaid(payment, await this.settlementFor(session))
           throw new EntitlementAlreadyGrantedError()
         }
         continue
@@ -166,6 +170,29 @@ export class CheckoutService {
       await this.payments.markCanceled(payment)
     }
     return reusable
+  }
+
+  /** Recoupement session, prix catalogue, devise et cohérence d'un règlement à 0 € (#139). */
+  private sessionMatches(payment: CandidatePayment, session: RetrievedCheckoutSession): boolean {
+    return this.payments.sessionMatches(payment, {
+      sessionId: session.id,
+      amountTotal: session.amountTotal,
+      amountSubtotal: session.amountSubtotal,
+      currency: session.currency,
+      paymentStatus: session.paymentStatus,
+      discountCents: session.discountCents,
+    })
+  }
+
+  /** Ce que Stripe a réglé (montant, remise, code promo et son libellé relu au mieux, #139). */
+  private async settlementFor(session: RetrievedCheckoutSession): Promise<PaymentSettlement> {
+    return {
+      paymentIntentId: session.paymentIntentId,
+      amountTotalCents: session.amountTotal,
+      discountCents: session.discountCents,
+      promotionCodeId: session.promotionCodeId,
+      promoCode: await this.promotionCodes.labelFor(session.promotionCodeId),
+    }
   }
 
   /** Fiche du particulier connecté ; les candidats B2B n'ont rien à acheter. */

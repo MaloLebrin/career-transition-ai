@@ -26,6 +26,11 @@ describe('CheckoutConsentForm (#102)', () => {
     )
     expect(screen.getByRole('button', { name: /Payer 49 €/ })).toBeEnabled()
     expect(screen.getByText(/Paiement sécurisé par Stripe/)).toBeInTheDocument()
+    // Codes promo (#139) : saisis sur la page Stripe, pas de champ ici.
+    expect(screen.getByText(/Un code promo \?/)).toHaveTextContent(
+      'Saisissez-le à l’étape de paiement sécurisé.'
+    )
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   })
 
   test('soumet les deux cases cochées sur la route de checkout', async () => {
@@ -51,6 +56,7 @@ describe('CheckoutConsentForm (#102)', () => {
     render(<CheckoutConsentForm paymentsEnabled={false} emailVerified priceLabel="49 €" />)
 
     expect(screen.getByRole('button', { name: /Bientôt disponible/ })).toBeDisabled()
+    expect(screen.queryByText(/Un code promo/)).not.toBeInTheDocument()
   })
 
   test('e-mail non vérifié : bouton inactif et rappel', () => {

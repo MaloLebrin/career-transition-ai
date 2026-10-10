@@ -12,13 +12,15 @@ vi.mock('../../../../inertia/hooks/use_employees', () => ({
   }),
 }))
 
+const pageProps = vi.hoisted(() => ({ value: { employees: [] } as Record<string, unknown> }))
+
 vi.mock('@inertiajs/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@inertiajs/react')>()
   return {
     ...actual,
     usePage: () => ({
       url: '/dashboard/conseiller/employees',
-      props: { employees: [] },
+      props: pageProps.value,
     }),
   }
 })
@@ -54,5 +56,20 @@ describe('AdvisorSidebar', () => {
 
     expect(screen.queryByRole('link', { name: /^Organisations$/ })).not.toBeInTheDocument()
     expect(screen.queryByText('Supervision')).not.toBeInTheDocument()
+  })
+
+  test('« Messages » n’apparaît que pour l’équipe plateforme', () => {
+    pageProps.value = { employees: [], user: { id: 1, role: 'advisor', isPlatformTeam: true } }
+    const { unmount } = render(<AdvisorSidebar />)
+    expect(screen.getByRole('link', { name: /^Messages$/ })).toHaveAttribute(
+      'href',
+      '/dashboard/conseiller/chat'
+    )
+    unmount()
+
+    pageProps.value = { employees: [], user: { id: 2, role: 'advisor', isPlatformTeam: false } }
+    render(<AdvisorSidebar />)
+    expect(screen.queryByRole('link', { name: /^Messages$/ })).not.toBeInTheDocument()
+    pageProps.value = { employees: [] }
   })
 })

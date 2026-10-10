@@ -1,5 +1,7 @@
 import { usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
+import { CHAT_PATHS } from '#shared/constants/chat'
+import { useAuth } from '../../hooks/use_auth'
 import { useEmployees } from '../../hooks/use_employees'
 import AppLink from '../ui/AppLink'
 import Input from '../ui/Input'
@@ -61,6 +63,7 @@ function AdvisorSidebarContent({
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const { url } = usePage()
+  const { user } = useAuth()
   const { filteredEmployees, loading: employeesLoading } = useEmployees(searchTerm)
 
   return (
@@ -74,6 +77,9 @@ function AdvisorSidebarContent({
           </div>
           <NavLink href="/dashboard/conseiller" icon="dashboard" label="Bureau" />
           <NavLink href="/dashboard/conseiller/employees" icon="users" label="Candidats" />
+          {user?.isPlatformTeam && (
+            <NavLink href={CHAT_PATHS.expert} icon="message" label="Messages" />
+          )}
           <NavLink href="/dashboard/conseiller/settings" icon="settings" label="Réglages" />
           <NavLink
             href="/dashboard/conseiller/pdf-exports"

@@ -157,4 +157,17 @@ describe('NotificationItem', () => {
     expect(screen.getByText('Votre accès aux résultats a été retiré')).toBeInTheDocument()
     expect(revoked.container.querySelector('svg.text-muted')).toBeInTheDocument()
   })
+
+  test('rend une notification de nouveau message du chat et l’ouvre', () => {
+    const onOpen = vi.fn()
+    const notification: NotificationItemType = {
+      ...baseNotification,
+      type: 'chat_message_received',
+      title: 'Nouveau message de votre expert',
+      meta: { href: '/dashboard/candidat/chat' },
+    }
+    render(<NotificationItem notification={notification} onMarkAsRead={vi.fn()} onOpen={onOpen} />)
+    fireEvent.click(screen.getByText('Nouveau message de votre expert'))
+    expect(onOpen).toHaveBeenCalledWith(notification)
+  })
 })

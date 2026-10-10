@@ -1,6 +1,8 @@
 import { makeEntitlements } from '#tests/support/entitlements'
 import AdminSeeder from '#database/seeders/admin_seeder'
 import B2cCandidateSeeder, { B2C_SEED_ACCOUNTS } from '#database/seeders/b2c_candidate_seeder'
+import ChatConversation from '#models/chat_conversation'
+import ChatMessage from '#models/chat_message'
 import Employee from '#models/employee'
 import ExpertRequest from '#models/expert_request'
 import User from '#models/user'
@@ -54,5 +56,13 @@ test.group('B2cCandidateSeeder (#94)', (group) => {
     assert.lengthOf(requests, 1)
     assert.equal(requests[0].status, EXPERT_REQUEST_STATUSES.PENDING)
     assert.lengthOf(await ExpertRequest.query().where('employeeId', unpaid.id), 0)
+
+    // Chat : une conversation dans la file (gratuit), une avec l'expert (forfait), sans doublon.
+    const unpaidChat = await ChatConversation.findByOrFail('employeeId', unpaid.id)
+    const paidChat = await ChatConversation.findByOrFail('employeeId', paid.id)
+    assert.isNull(unpaidChat.assignedExpertUserId)
+    assert.equal(paidChat.assignedExpertUserId, expert.id)
+    assert.lengthOf(await ChatMessage.query().where('conversationId', unpaidChat.id), 1)
+    assert.lengthOf(await ChatMessage.query().where('conversationId', paidChat.id), 2)
   })
 })

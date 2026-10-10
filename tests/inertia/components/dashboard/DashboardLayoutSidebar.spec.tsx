@@ -29,8 +29,13 @@ vi.mock('../../../../inertia/components/dashboard/AdvisorSidebar', () => ({
   },
 }))
 
+vi.mock('../../../../inertia/components/dashboard/CandidateSidebar', () => ({
+  CandidateSidebar: () => <nav aria-label="menu candidat" />,
+}))
+
 vi.mock('@adonisjs/transmit-client', () => ({
   Transmit: vi.fn().mockImplementation(() => ({
+    close: vi.fn(),
     subscription: vi.fn().mockReturnValue({
       create: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
@@ -66,6 +71,18 @@ describe('DashboardLayout — sidebar selon le rôle', () => {
 
     expect(screen.queryByRole('navigation', { name: 'sidebar' })).not.toBeInTheDocument()
     expect(screen.getByText('contenu')).toBeInTheDocument()
+  })
+
+  test('candidateSidebar affiche le menu candidat, jamais pour un conseiller', () => {
+    authState.role = 'employee'
+    const { unmount } = render(<DashboardLayout candidateSidebar>contenu</DashboardLayout>)
+    expect(screen.getByRole('navigation', { name: 'menu candidat' })).toBeInTheDocument()
+    expect(screen.getByText('contenu')).toBeInTheDocument()
+    unmount()
+
+    authState.role = 'advisor'
+    render(<DashboardLayout candidateSidebar>contenu</DashboardLayout>)
+    expect(screen.queryByRole('navigation', { name: 'menu candidat' })).not.toBeInTheDocument()
   })
 
   test('hideSidebar masque la sidebar, même pour le super admin', () => {

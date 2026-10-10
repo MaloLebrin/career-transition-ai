@@ -129,6 +129,14 @@ export type ScannedRoutes = {
     'candidat.billing.checkout': { paramsTuple?: []; params?: {} }
     'candidat.billing.success': { paramsTuple?: []; params?: {} }
     'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
+    'candidat.chat.show': { paramsTuple?: []; params?: {} }
+    'candidat.chat.store': { paramsTuple?: []; params?: {} }
+    'candidat.chat.read': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conseiller.chat.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conseiller.chat.claim': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conseiller.chat.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'contact_requests.store': { paramsTuple?: []; params?: {} }
@@ -198,6 +206,11 @@ export type ScannedRoutes = {
     'candidat.data.erasureRequest': { paramsTuple?: []; params?: {} }
     'candidat.emailVerification.resend': { paramsTuple?: []; params?: {} }
     'candidat.billing.checkout': { paramsTuple?: []; params?: {} }
+    'candidat.chat.store': { paramsTuple?: []; params?: {} }
+    'candidat.chat.read': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conseiller.chat.claim': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'conseiller.chat.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'contact_requests.store': { paramsTuple?: []; params?: {} }
   }
@@ -245,6 +258,9 @@ export type ScannedRoutes = {
     'candidat.billing.offer': { paramsTuple?: []; params?: {} }
     'candidat.billing.success': { paramsTuple?: []; params?: {} }
     'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
+    'candidat.chat.show': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'health_checks': { paramsTuple?: []; params?: {} }
     'robots': { paramsTuple?: []; params?: {} }
@@ -294,6 +310,9 @@ export type ScannedRoutes = {
     'candidat.billing.offer': { paramsTuple?: []; params?: {} }
     'candidat.billing.success': { paramsTuple?: []; params?: {} }
     'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
+    'candidat.chat.show': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'health_checks': { paramsTuple?: []; params?: {} }
     'robots': { paramsTuple?: []; params?: {} }

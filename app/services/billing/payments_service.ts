@@ -3,10 +3,13 @@ import Employee from '#models/employee'
 import { EntitlementsService } from '#services/entitlements_service'
 import { reportError } from '#services/error_tracking_service'
 import {
+  CHECKOUT_PAYMENT_STATUSES,
   DUPLICATE_PAYMENT_REVOKE_REASON,
   PAYMENT_STATUSES,
+  PROMO_CODE_MAX,
   STRIPE_REFUND_REVOKE_REASON,
 } from '#shared/constants/billing'
+import type { PaymentSettlement } from '#shared/types/billing/checkout'
 import { inject } from '@adonisjs/core'
 import { DateTime } from 'luxon'
 
@@ -41,10 +44,26 @@ export class PaymentsService {
    * Recoupe ce que Stripe annonce (session, montant, devise) avec la ligne
    * locale. Un champ absent n'est pas comparé (événements allégés). Un écart
    * est signalé (`reportError`, ids seulement) et le paiement ne doit pas être débloqué.
+   *
+   * Montant : le prix catalogue annoncé par Stripe (`amount_subtotal`, avant
+   * remise d'un code promo, #139) est comparé à `grossAmountCents`
+   * (`amount_cents + discount_cents`) — invariant valable pour une ligne
+   * `pending` comme pour une ligne déjà réglée (rejeu du webhook après la
+   * réconciliation). Sans sous-total, `amount_total` sert de repli : un
+   * paiement remisé donne alors un écart, côté sûr. Une session
+   * `no_payment_required` n'est acceptée que si son total est 0 **et** que la
+   * remise couvre tout le prix : un total nul sans remise est une anomalie.
    */
   public sessionMatches(
     payment: CandidatePayment,
-    stripe: { sessionId?: string | null; amountTotal?: number | null; currency?: string | null }
+    stripe: {
+      sessionId?: string | null
+      amountTotal?: number | null
+      amountSubtotal?: number | null
+      currency?: string | null
+      paymentStatus?: string | null
+      discountCents?: number | null
+    }
   ): boolean {
     const mismatches: string[] = []
     if (
@@ -54,8 +73,16 @@ export class PaymentsService {
     ) {
       mismatches.push('session')
     }
-    if (typeof stripe.amountTotal === 'number' && stripe.amountTotal !== payment.amountCents) {
+    const announced =
+      typeof stripe.amountSubtotal === 'number' ? stripe.amountSubtotal : stripe.amountTotal
+    if (typeof announced === 'number' && announced !== payment.grossAmountCents) {
       mismatches.push('amount')
+    }
+    if (
+      stripe.paymentStatus === CHECKOUT_PAYMENT_STATUSES.NO_PAYMENT_REQUIRED &&
+      (stripe.amountTotal !== 0 || stripe.discountCents !== payment.grossAmountCents)
+    ) {
+      mismatches.push('free')
     }
     if (stripe.currency && stripe.currency.toLowerCase() !== payment.currency.toLowerCase()) {
       mismatches.push('currency')
@@ -78,19 +105,24 @@ export class PaymentsService {
    * Doublon : si le candidat a déjà un droit actif, le paiement est encaissé
    * mais posé révoqué (`DUPLICATE_PAYMENT_REVOKE_REASON`) et signalé par
    * `reportError` ; aucun remboursement automatique (docs/STRIPE.md).
+   *
+   * Règlement (#139) : le montant réellement encaissé, la remise et le code
+   * promo sont écrits dans la même mise à jour `pending → paid` ; une ligne
+   * déjà réglée n'est pas réécrite.
    */
   public async markPaid(
     payment: CandidatePayment,
-    details: { paymentIntentId: string | null; paidAt?: DateTime }
+    details: PaymentSettlement & { paidAt?: DateTime }
   ): Promise<boolean> {
     const paidAt = (details.paidAt ?? DateTime.now()).toSQL()
+    const settlement = settlementColumns(payment, details)
     const pending = () =>
       CandidatePayment.query().where('id', payment.id).where('status', PAYMENT_STATUSES.PENDING)
 
     if (payment.employeeId) {
       const active = await this.entitlements.findActivePayment(payment.employeeId)
       if (active && active.id !== payment.id) {
-        return this.markDuplicate(payment, pending, details.paymentIntentId, paidAt)
+        return this.markDuplicate(payment, pending, settlement, paidAt)
       }
     }
 
@@ -99,12 +131,12 @@ export class PaymentsService {
       ;[affected] = (await pending().update({
         status: PAYMENT_STATUSES.PAID,
         paidAt,
-        stripePaymentIntentId: details.paymentIntentId,
+        ...settlement,
       })) as number[]
     } catch (error) {
       // Course perdue contre un autre paiement actif (index unique partiel).
       if ((error as { code?: string }).code === UNIQUE_VIOLATION) {
-        return this.markDuplicate(payment, pending, details.paymentIntentId, paidAt)
+        return this.markDuplicate(payment, pending, settlement, paidAt)
       }
       throw error
     }
@@ -201,14 +233,14 @@ export class PaymentsService {
   private async markDuplicate(
     payment: CandidatePayment,
     pending: () => ReturnType<typeof CandidatePayment.query>,
-    paymentIntentId: string | null,
+    settlement: SettlementColumns,
     paidAt: string | null
   ): Promise<boolean> {
     const now = DateTime.now().toSQL()
     const [affected] = await pending().update({
       status: PAYMENT_STATUSES.PAID,
       paidAt,
-      stripePaymentIntentId: paymentIntentId,
+      ...settlement,
       revokedAt: now,
       revokeReason: DUPLICATE_PAYMENT_REVOKE_REASON,
       unlockEffectsAt: now,
@@ -217,7 +249,7 @@ export class PaymentsService {
     if (Number(affected) > 0) {
       reportError(new Error('Paiement Stripe en double : un droit actif existe déjà'), {
         tags: { feature: 'stripe_payment', step: 'duplicate_paid' },
-        extra: { paymentId: payment.id, paymentIntentId },
+        extra: { paymentId: payment.id, paymentIntentId: settlement.stripePaymentIntentId },
       })
     }
     await payment.refresh()
@@ -235,5 +267,38 @@ export class PaymentsService {
     if (Number(affected) === 0) return false
     await payment.refresh()
     return true
+  }
+}
+
+interface SettlementColumns {
+  stripePaymentIntentId: string | null
+  amountCents: number
+  discountCents: number
+  promoCode: string | null
+  stripePromotionCodeId: string | null
+}
+
+/**
+ * Colonnes de règlement écrites au passage `paid` (#139). L'invariant
+ * `amount_cents + discount_cents = prix catalogue` est préservé quoi que Stripe
+ * ait transmis : sans `amount_total`, le montant encaissé est déduit du prix de
+ * la ligne et de la remise. Le libellé est borné à `PROMO_CODE_MAX` pour ne
+ * jamais faire échouer la mise à jour.
+ */
+function settlementColumns(
+  payment: CandidatePayment,
+  settlement: PaymentSettlement
+): SettlementColumns {
+  const discountCents = Math.max(settlement.discountCents ?? 0, 0)
+  const amountCents =
+    typeof settlement.amountTotalCents === 'number'
+      ? settlement.amountTotalCents
+      : Math.max(payment.grossAmountCents - discountCents, 0)
+  return {
+    stripePaymentIntentId: settlement.paymentIntentId,
+    amountCents,
+    discountCents,
+    promoCode: settlement.promoCode ? settlement.promoCode.slice(0, PROMO_CODE_MAX) : null,
+    stripePromotionCodeId: settlement.promotionCodeId ?? null,
   }
 }

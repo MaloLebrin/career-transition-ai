@@ -8,7 +8,7 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class CandidatePaymentSchema extends BaseModel {
-  static $columns = ['amountCents', 'createdAt', 'currency', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
+  static $columns = ['amountCents', 'createdAt', 'currency', 'discountCents', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'promoCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'stripePromotionCodeId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
   $columns = CandidatePaymentSchema.$columns
   @column()
   declare amountCents: number
@@ -16,6 +16,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare createdAt: DateTime
   @column()
   declare currency: string
+  @column()
+  declare discountCents: number
   @column()
   declare employeeId: number | null
   @column()
@@ -28,6 +30,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare paidAt: DateTime | null
   @column()
   declare productCode: string
+  @column()
+  declare promoCode: string | null
   @column()
   declare provider: string
   @column.dateTime()
@@ -46,6 +50,8 @@ export class CandidatePaymentSchema extends BaseModel {
   declare stripeCheckoutSessionId: string | null
   @column()
   declare stripePaymentIntentId: string | null
+  @column()
+  declare stripePromotionCodeId: string | null
   @column.dateTime()
   declare unlockEffectsAt: DateTime | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -54,6 +60,44 @@ export class CandidatePaymentSchema extends BaseModel {
   declare userId: number | null
   @column.dateTime()
   declare withdrawalWaivedAt: DateTime | null
+}
+
+export class ChatConversationSchema extends BaseModel {
+  static $columns = ['assignedExpertUserId', 'candidateLastReadAt', 'createdAt', 'employeeId', 'expertLastReadAt', 'id', 'lastMessageAt', 'updatedAt'] as const
+  $columns = ChatConversationSchema.$columns
+  @column()
+  declare assignedExpertUserId: number | null
+  @column.dateTime()
+  declare candidateLastReadAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: number
+  @column.dateTime()
+  declare expertLastReadAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column.dateTime()
+  declare lastMessageAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ChatMessageSchema extends BaseModel {
+  static $columns = ['authorRole', 'authorUserId', 'body', 'conversationId', 'createdAt', 'id'] as const
+  $columns = ChatMessageSchema.$columns
+  @column()
+  declare authorRole: string
+  @column()
+  declare authorUserId: number
+  @column()
+  declare body: string
+  @column()
+  declare conversationId: number
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: number
 }
 
 export class ContactRequestSchema extends BaseModel {
@@ -421,7 +465,7 @@ export class PasswordResetTokenSchema extends BaseModel {
 }
 
 export class PdfExportSchema extends BaseModel {
-  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
   $columns = PdfExportSchema.$columns
   @column()
   declare advisorUserId: number | null
@@ -449,6 +493,8 @@ export class PdfExportSchema extends BaseModel {
   declare startedAt: DateTime | null
   @column()
   declare status: string
+  @column()
+  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()

@@ -189,6 +189,73 @@ test.group('Candidat B2C — offre et checkout (#102)', (group) => {
     assert.isTrue(assertPage(assert, exercise, 'dashboard/employee/exercises/Home').accessGranted)
   })
 
+  test('GET success (#139) : session réglée avec un code promo → payé au montant remisé, code enregistré', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    await client
+      .post(BILLING_PATHS.checkout)
+      .loginAs(user)
+      .withInertia()
+      .form(CONSENTS)
+      .redirects(0)
+    const sessionId = stripe.lastSessionId()!
+    stripe.promotionCodes.set('promo_test_20', 'BIENVENUE20')
+    stripe.pay(sessionId, { discountCents: 980, promotionCodeId: 'promo_test_20' })
+
+    const response = await client
+      .get(`${BILLING_PATHS.success}?session_id=${sessionId}`)
+      .loginAs(user)
+      .withInertia()
+
+    assert.isTrue(assertPage(assert, response, SUCCESS_PAGE, ['paid']).paid)
+    const [payment] = await CandidatePayment.query().where('employeeId', employee.id)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, billingConfig.resultsPriceCents - 980)
+    assert.equal(payment.discountCents, 980)
+    assert.equal(payment.promoCode, 'BIENVENUE20')
+    assert.equal(payment.stripePromotionCodeId, 'promo_test_20')
+  })
+
+  test('GET success (#139) : code à 100 % (no_payment_required) → débloqué à 0 €, sans PaymentIntent', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate({ emailVerified: true })
+    await client
+      .post(BILLING_PATHS.checkout)
+      .loginAs(user)
+      .withInertia()
+      .form(CONSENTS)
+      .redirects(0)
+    const sessionId = stripe.lastSessionId()!
+    stripe.promotionCodes.set('promo_free', 'OFFERT100')
+    stripe.pay(sessionId, {
+      discountCents: billingConfig.resultsPriceCents,
+      promotionCodeId: 'promo_free',
+    })
+
+    const response = await client
+      .get(`${BILLING_PATHS.success}?session_id=${sessionId}`)
+      .loginAs(user)
+      .withInertia()
+
+    assert.isTrue(assertPage(assert, response, SUCCESS_PAGE, ['paid']).paid)
+    const [payment] = await CandidatePayment.query().where('employeeId', employee.id)
+    assert.equal(payment.status, PAYMENT_STATUSES.PAID)
+    assert.equal(payment.amountCents, 0)
+    assert.equal(payment.discountCents, billingConfig.resultsPriceCents)
+    assert.equal(payment.promoCode, 'OFFERT100')
+    assert.isNull(payment.stripePaymentIntentId)
+
+    const exercise = await client
+      .get(`/dashboard/candidat/exercises/${EXERCICE_RESULTS_TYPES.DISC}`)
+      .loginAs(user)
+      .withInertia()
+    assert.isTrue(assertPage(assert, exercise, 'dashboard/employee/exercises/Home').accessGranted)
+  })
+
   test('GET success : session impayée → page « en cours », rien n’est débloqué', async ({
     client,
     assert,

@@ -83,6 +83,9 @@ test.group('SuperAdminPaymentsService (#107)', (group) => {
     })
     assert.isTrue(all.items[1].grantsAccess)
     assert.isFalse(all.items[0].grantsAccess)
+    // Sans code promo (#139).
+    assert.equal(all.items[1].discountCents, 0)
+    assert.isNull(all.items[1].promoCode)
 
     const paidOnly = await service.list({ status: PAYMENT_STATUSES.PAID, page: 1 })
     assert.deepEqual(
@@ -94,6 +97,27 @@ test.group('SuperAdminPaymentsService (#107)', (group) => {
     assert.lengthOf(beyond.items, 0)
     assert.equal(beyond.total, 2)
     assert.isAtLeast(PAYMENTS_PAGE_SIZE, 10)
+  })
+
+  test('list (#139) : remise et libellé du code promo exposés au back-office', async ({
+    assert,
+  }) => {
+    const { service } = makeService()
+    const { employee } = await createB2cCandidate()
+    await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('discounted')
+      .create()
+
+    const { items } = await service.list({ status: null, page: 1 })
+
+    assert.lengthOf(items, 1)
+    assert.equal(items[0].amountCents, 3920)
+    assert.equal(items[0].discountCents, 980)
+    assert.equal(items[0].promoCode, 'BIENVENUE20')
+    assert.isTrue(items[0].grantsAccess)
   })
 
   test('grant : octroi manuel pour un particulier de la plateforme ; 404 B2B / inconnu ; 409 déjà payé', async ({

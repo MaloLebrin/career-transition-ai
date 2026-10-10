@@ -79,6 +79,13 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                       ? `Octroi manuel${payment.grantedBy ? ` · ${payment.grantedBy.name}` : ''}`
                       : 'Stripe'}
                   </div>
+                  {payment.discountCents > 0 && (
+                    <div className="text-muted">
+                      {payment.amountCents === 0 ? 'Gratuit · code ' : 'Code '}
+                      {payment.promoCode ?? '—'} · −
+                      {formatPrice(payment.discountCents, payment.currency)}
+                    </div>
+                  )}
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex flex-wrap gap-2">

@@ -21,6 +21,7 @@ Ce dossier contient la documentation “source of truth” du projet : **dev**, 
 - **[Jobs d’analyse IA (serveur)](AI_JOBS.md)** — `AnalyzeExerciseQualitativeJob`, queue `ai`, `AI_PROVIDER`.
 - **[Queues & scheduler](QUEUES.md)** — `@adonisjs/queue`, worker, scheduler, stratégie de test.
 - **[Stockage des fichiers](CLOUDINARY.md)** — Cloudinary (exports PDF, logo, documents candidat), accès privé, fake de test.
+- **[Chat candidat ↔ expert](CHAT.md)** — conversation, file et assignation des experts, Transmit mono-instance, RGPD, limites v1.
 - **[Paiement du forfait particuliers](STRIPE.md)** — Stripe Checkout hébergé, réconciliation, webhook, fake de test.
 
 ## Ops / Runbooks

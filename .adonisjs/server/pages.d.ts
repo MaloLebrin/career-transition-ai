@@ -85,5 +85,8 @@ declare module '@adonisjs/inertia/types' {
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
     'TermsOfSale': ExtractProps<(typeof import('../../inertia/pages/TermsOfSale.tsx'))['default']>
     'TermsOfService': ExtractProps<(typeof import('../../inertia/pages/TermsOfService.tsx'))['default']>
+    'dashboard/conseiller/chat/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Show.tsx'))['default']>
+    'dashboard/conseiller/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Index.tsx'))['default']>
+    'dashboard/candidat/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/chat/Index.tsx'))['default']>
   }
 }

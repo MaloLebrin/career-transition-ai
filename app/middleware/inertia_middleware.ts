@@ -4,7 +4,9 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware'
 import billingConfig from '#config/billing'
 import Employee from '#models/employee'
+import Organization from '#models/organization'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
+import { PLATFORM_TEAM_ROLES } from '#shared/constants/roles'
 import { EntitlementsService } from '#services/entitlements_service'
 import { NotificationService } from '#services/notification_service'
 import { receivesNotifications } from '#shared/helpers/roles'
@@ -30,6 +32,8 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
             accountType: candidate?.accountType ?? null,
             // Bandeau de vérification d'e-mail des particuliers (#98).
             emailVerified: Boolean(user.emailVerifiedAt),
+            // Messagerie expert (chat candidat ↔ expert) : réservée à l'équipe de la plateforme.
+            isPlatformTeam: await this.isPlatformTeamMember(user),
           }
     const entitlements = await app.container.make(EntitlementsService)
     const entitlement = candidate ? await entitlements.forEmployee(candidate) : null
@@ -91,6 +95,19 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
   private async candidateFor(user: { id: number; role: string }): Promise<Employee | null> {
     if (user.role !== USERS_ROLES.EMPLOYEE) return null
     return Employee.query().where('userId', user.id).first()
+  }
+
+  /** Rôle de l'équipe d'experts dans l'organisation plateforme (comme `ChatService.canSubscribe`). */
+  private async isPlatformTeamMember(user: {
+    role: string
+    organizationId: number
+  }): Promise<boolean> {
+    if (!(PLATFORM_TEAM_ROLES as readonly string[]).includes(user.role)) return false
+    const platform = await Organization.query()
+      .where('id', user.organizationId)
+      .where('isPlatform', true)
+      .first()
+    return platform !== null
   }
 
   async handle(ctx: HttpContext, next: NextFn) {

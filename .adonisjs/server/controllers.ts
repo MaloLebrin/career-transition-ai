@@ -37,4 +37,6 @@ export const controllers = {
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
+  Chat: () => import('#controllers/chat_controller'),
+  ExpertChat: () => import('#controllers/expert_chat_controller'),
 }
