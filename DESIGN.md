@@ -226,6 +226,13 @@ un panneau d'entrées riches (icône sur tuile `tint-x`, titre, une ligne), un a
 en pied de panneau. Même contenu en sections dans `MobileMenu` et en colonnes dans le footer.
 L'en-tête est transparent en haut de page et se solidifie (`canvas/90` + flou) au scroll.
 
+**Blocs** (`marketing/`) : `HeroBackdrop` (maillage + grille + voile, `strong`/`soft`),
+`KeyFactsStrip` (chiffres clés), `FeatureTabs` (fonctionnalités en onglets avec mockup),
+`StepsTimeline` (étapes le long d'une ligne tracée au scroll), `PrivacyFlow` (parcours des
+données avant l'IA). Mockups vivants dans `marketing/mockups/` (`MockupFrame`,
+`JourneyMockup`, `AiAnalysisMockup`, `SynthesisMockup`, `ExpertMockup`), animés par
+`useMockupStep` (`inertia/hooks/`) et figés sur leur état final en mouvement réduit.
+
 **Contenu honnête** (§1) : les chiffres clés sont des faits produit (nombre d'exercices,
 prix réel, hébergement) ; un mockup vivant porte la mention « Aperçu illustratif » et
 n'utilise que les vrais noms d'exercices.

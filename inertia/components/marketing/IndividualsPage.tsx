@@ -1,40 +1,73 @@
 import { usePage } from '@inertiajs/react'
-import { Gift, ShieldCheck, Sparkles, UserRound } from 'lucide-react'
+import { FileText, ListChecks, ShieldCheck, Sparkles, UserRound } from 'lucide-react'
 import React from 'react'
-import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
+import { B2C_FREE_EXERCISE_TYPES, B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
+import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { CABINETS_ACTION } from '~/config/marketing'
+import { useResultsPriceLabel } from '~/hooks/use_results_price_label'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
-import { Reveal } from '../ui/Reveal'
+import { RevealGroup } from '../ui/motion/RevealGroup'
+import { RevealItem } from '../ui/motion/RevealItem'
+import { TiltCard } from '../ui/motion/TiltCard'
 import { SectionHeading } from '../ui/SectionHeading'
-import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
 import { ExerciseCatalogue } from './ExerciseCatalogue'
 import { FeatureCard } from './FeatureCard'
+import { FeatureTabs, type FeatureTab } from './FeatureTabs'
+import { KeyFactsStrip } from './KeyFactsStrip'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
+import { PrivacyFlow } from './PrivacyFlow'
+import { StepsTimeline } from './StepsTimeline'
 import { FREE_TITLE, LINK_CLASS, TOTAL_WORD } from './individuals/copy'
 import { IndividualsHero } from './individuals/IndividualsHero'
 import { ResultsPlanCard } from './individuals/ResultsPlanCard'
+import { AiAnalysisMockup } from './mockups/AiAnalysisMockup'
+import { ExpertMockup } from './mockups/ExpertMockup'
+import { JourneyMockup } from './mockups/JourneyMockup'
+import { SynthesisMockup } from './mockups/SynthesisMockup'
 
-const FEATURES = [
+const FEATURE_TABS: FeatureTab[] = [
   {
-    icon: <Gift size={20} />,
-    title: FREE_TITLE,
+    label: 'Les exercices',
+    icon: ListChecks,
+    tint: 'lake',
+    title: `${TOTAL_WORD.charAt(0).toUpperCase()}${TOTAL_WORD.slice(1)} exercices, à votre rythme`,
+    description: `${FREE_TITLE} pour commencer, sans carte bancaire. Vous reprenez où vous vous êtes arrêté.`,
+    points: ['Sauvegarde automatique', 'Résultats immédiats'],
+    visual: <JourneyMockup />,
+  },
+  {
+    label: 'L’analyse IA',
+    icon: Sparkles,
+    tint: 'blossom',
+    title: 'Une lecture de vos réponses, exercice par exercice',
     description:
-      'Motivations et Valeurs, avec leurs résultats et leur analyse, sans carte bancaire ni engagement.',
+      'L’IA met en évidence les thèmes saillants de vos réponses. Votre nom et votre e-mail ne lui sont jamais transmis.',
+    points: ['Réponses pseudonymisées', 'Thèmes saillants'],
+    visual: <AiAnalysisMockup />,
   },
   {
-    icon: <Sparkles size={20} />,
-    title: 'Un forfait, une fois',
-    description: `Débloquez les ${TOTAL_WORD} exercices, les analyses IA et votre synthèse de parcours avec un paiement unique.`,
+    label: 'La synthèse',
+    icon: FileText,
+    tint: 'apricot',
+    title: 'Votre synthèse de parcours, prête à partager',
+    description:
+      'Tous vos résultats réunis en un document clair, à exporter en PDF pour préparer la suite.',
+    points: ['Export PDF', 'Vue d’ensemble'],
+    visual: <SynthesisMockup />,
   },
   {
-    icon: <UserRound size={20} />,
-    title: 'Un expert si vous le souhaitez',
+    label: 'Un expert',
+    icon: UserRound,
+    tint: 'lavender',
+    title: 'Un expert à vos côtés, si vous le souhaitez',
     description:
       'Une fois le forfait réglé, demandez à être accompagné par un expert qui suit votre parcours.',
+    points: ['Sur demande', 'Sans engagement'],
+    visual: <ExpertMockup />,
   },
 ]
 
@@ -79,85 +112,116 @@ const TRUST = [
 export default function IndividualsPage() {
   const { props } = usePage<{ b2cRegistrationEnabled?: boolean }>()
   const registrationOpen = Boolean(props.b2cRegistrationEnabled)
+  const priceLabel = useResultsPriceLabel()
 
   return (
     <PublicLayout>
       <IndividualsHero registrationOpen={registrationOpen} />
 
-      <MarketingSection tone="surface">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {FEATURES.map((feature, index) => (
-            <Reveal key={feature.title} delay={index * 100}>
-              <FeatureCard {...feature} className="transition-transform hover:-translate-y-1" />
-            </Reveal>
-          ))}
+      <KeyFactsStrip
+        facts={[
+          { value: EXERCISE_LIST.length, label: 'exercices issus des sciences comportementales' },
+          {
+            value: B2C_FREE_EXERCISE_TYPES.length,
+            label: 'exercices offerts, sans carte bancaire',
+          },
+          { value: priceLabel, label: 'le forfait, payé une seule fois' },
+          {
+            value: 100,
+            format: (n) => `${Math.round(n)} %`,
+            label: 'hébergé dans l’Union européenne',
+          },
+        ]}
+      />
+
+      <MarketingSection tone="canvas">
+        <div className="flex flex-col gap-12">
+          <SectionHeading
+            eyebrow="Ce que vous obtenez"
+            title="Tout pour y voir clair, au même endroit."
+            description="Des exercices pour vous connaître, une analyse pour prendre du recul, une synthèse pour décider. Et quelqu’un à qui parler si vous le souhaitez."
+          />
+          <FeatureTabs tabs={FEATURE_TABS} />
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="canvas" id="parcours" className="scroll-mt-16">
+      <MarketingSection tone="surface" id="parcours" className="scroll-mt-16">
         <div className="flex flex-col gap-10">
           <SectionHeading
             eyebrow="Le parcours"
             title={`${TOTAL_WORD.charAt(0).toUpperCase()}${TOTAL_WORD.slice(1)} exercices pour y voir clair.`}
             description="Du diagnostic des motivations à la cartographie des compétences, chaque exercice alimente votre synthèse de parcours."
           />
-          <Reveal>
-            <ExerciseCatalogue />
-          </Reveal>
+          <ExerciseCatalogue />
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="surface">
+      <MarketingSection tone="canvas">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="space-y-8">
+          <div className="space-y-10">
             <SectionHeading
               eyebrow="Comment ça marche"
               title="Trois étapes, aucune pression."
               description="Vous avancez quand vous voulez. Les exercices offerts restent acquis, que vous débloquiez la suite ou non."
             />
-            <BulletList items={STEPS} />
+            <StepsTimeline steps={STEPS} />
           </div>
-          <Reveal delay={150}>
-            <ResultsPlanCard />
-          </Reveal>
-        </div>
-      </MarketingSection>
-
-      <MarketingSection tone="canvas">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="space-y-4 lg:col-span-5">
-            <SectionHeading
-              eyebrow="Confiance"
-              title="Des données personnelles, traitées avec soin."
-              description="Un bilan de carrière touche à l’intime. Voici comment vos réponses sont protégées."
-            />
-            <AppLink href="/securite" className={LINK_CLASS}>
-              Lire la page sécurité
-            </AppLink>
-          </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-7">
-            {TRUST.map((item, index) => (
-              <Reveal key={item.title} delay={index * 100}>
-                <FeatureCard icon={<ShieldCheck size={20} />} {...item} />
-              </Reveal>
-            ))}
-          </div>
+          <RevealGroup className="lg:pt-24">
+            <RevealItem>
+              <TiltCard>
+                <ResultsPlanCard />
+              </TiltCard>
+            </RevealItem>
+          </RevealGroup>
         </div>
       </MarketingSection>
 
       <MarketingSection tone="soft">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <SectionHeading
-            title="Vous accompagnez des candidats ?"
-            description="Les cabinets de transition professionnelle ont leur propre espace : parcours d’exercices, synthèse assistée par l’IA et livrables clairs."
-            size="display-sm"
+        <div className="flex flex-col gap-12">
+          <div className="grid grid-cols-1 items-end gap-8 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-7">
+              <SectionHeading
+                eyebrow="Confiance"
+                title="Des données personnelles, traitées avec soin."
+                description="Un bilan de carrière touche à l’intime. Voici comment vos réponses sont protégées."
+              />
+              <AppLink href="/securite" className={LINK_CLASS}>
+                Lire la page sécurité
+              </AppLink>
+            </div>
+            <div className="lg:col-span-5">
+              <PrivacyFlow />
+            </div>
+          </div>
+          <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {TRUST.map((item) => (
+              <RevealItem key={item.title}>
+                <FeatureCard icon={<ShieldCheck size={20} />} {...item} />
+              </RevealItem>
+            ))}
+          </RevealGroup>
+        </div>
+      </MarketingSection>
+
+      <MarketingSection tone="canvas">
+        <div className="relative overflow-hidden rounded-2xl border border-hairline bg-surface p-8 shadow-card md:p-12">
+          <div
+            className="pointer-events-none absolute inset-0 bg-grid-hairline opacity-40 [mask-image:linear-gradient(to_left,black,transparent_60%)]"
+            aria-hidden="true"
           />
-          <AppLink
-            href={CABINETS_ACTION.href}
-            className={buttonClassName({ variant: 'outline', size: 'lg' })}
-          >
-            Découvrir l’espace cabinet
-          </AppLink>
+          <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <SectionHeading
+              title="Vous accompagnez des candidats ?"
+              description="Les cabinets de transition professionnelle ont leur propre espace : parcours d’exercices, synthèse assistée par l’IA et livrables clairs."
+              size="display-sm"
+            />
+            <AppLink
+              href={CABINETS_ACTION.href}
+              className={buttonClassName({ variant: 'outline', size: 'lg', className: 'shrink-0' })}
+            >
+              Découvrir l’espace cabinet
+            </AppLink>
+          </div>
         </div>
       </MarketingSection>
 

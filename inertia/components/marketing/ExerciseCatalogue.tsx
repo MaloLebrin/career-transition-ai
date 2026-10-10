@@ -1,29 +1,9 @@
-import { EXERCICE_RESULTS_TYPES, EXERCISE_LIST } from '#shared/constants/exercises'
-import {
-  Brain,
-  CircleDot,
-  Flame,
-  Gem,
-  Network,
-  PieChart,
-  Target,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react'
+import { EXERCISE_LIST } from '#shared/constants/exercises'
+import { Target } from 'lucide-react'
 import React from 'react'
 import { Reveal } from '~/components/ui/Reveal'
+import { EXERCISE_ICONS } from './exercise_icons'
 import { MARKETING_TINT_CYCLE, MARKETING_TINTS } from './tints'
-
-const EXERCISE_ICONS: Record<string, LucideIcon> = {
-  [EXERCICE_RESULTS_TYPES.MOTIVATION]: Flame,
-  [EXERCICE_RESULTS_TYPES.VALUES]: Gem,
-  [EXERCICE_RESULTS_TYPES.LIFE_CURVE]: TrendingUp,
-  [EXERCICE_RESULTS_TYPES.PERSONALITY]: Brain,
-  [EXERCICE_RESULTS_TYPES.TARGETING]: Target,
-  [EXERCICE_RESULTS_TYPES.DISC]: PieChart,
-  [EXERCICE_RESULTS_TYPES.SKILL_MAPPING]: Network,
-  [EXERCICE_RESULTS_TYPES.CIRCLE_OF_CONTROL]: CircleDot,
-}
 
 /** Les huit exercices réels de la plateforme, la preuve concrète du parcours. */
 export const ExerciseCatalogue: React.FC = () => (

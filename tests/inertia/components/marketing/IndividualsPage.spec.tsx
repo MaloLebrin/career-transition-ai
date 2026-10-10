@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import IndividualsPage from '../../../../inertia/components/marketing/IndividualsPage'
 import { resetInertiaMock, setPageProps } from '../../support/inertia_mock'
 
@@ -21,11 +22,15 @@ describe('IndividualsPage (accueil particuliers)', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: /Faites le point sur votre carrière/ })
     ).toBeInTheDocument()
-    expect(screen.getByTestId('hero-landscape')).toBeInTheDocument()
-    expect(screen.getAllByText('Gratuit')).toHaveLength(2)
-    expect(screen.getByText('49 €')).toBeInTheDocument()
-    expect(screen.getByText('Deux exercices offerts')).toBeInTheDocument()
-    expect(screen.getByText('Un expert si vous le souhaitez')).toBeInTheDocument()
+    expect(screen.getByTestId('hero-backdrop')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Analyse Motivations et Recherche de Valeurs offerts, sans carte bancaire/)
+    ).toBeInTheDocument()
+    const facts = screen.getByRole('region', { name: 'Chiffres clés' })
+    expect(facts).toHaveTextContent('8exercices issus des sciences comportementales')
+    expect(facts).toHaveTextContent('2exercices offerts, sans carte bancaire')
+    expect(facts).toHaveTextContent('49 €le forfait, payé une seule fois')
+    expect(screen.getByRole('group', { name: 'Forfait particuliers' })).toHaveTextContent('49 €')
 
     const ctas = screen.getAllByRole('link', { name: 'Commencer gratuitement' })
     expect(ctas.length).toBeGreaterThanOrEqual(2)
@@ -47,6 +52,35 @@ describe('IndividualsPage (accueil particuliers)', () => {
     expect(screen.getByRole('heading', { name: /exercices pour y voir clair/ })).toBeInTheDocument()
   })
 
+  test('présente les fonctionnalités en onglets, au clavier', async () => {
+    const user = userEvent.setup()
+    render(<IndividualsPage />)
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map((tab) => tab.textContent)).toEqual(
+      expect.arrayContaining([expect.stringContaining('Les exercices')])
+    )
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Sauvegarde automatique')
+
+    await user.click(tabs[1])
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
+    await user.keyboard('{ArrowDown}')
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Export PDF')
+  })
+
+  test('explique les étapes et le parcours des données', () => {
+    render(<IndividualsPage />)
+
+    expect(
+      screen.getByRole('heading', { name: 'Créez votre compte en deux minutes' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('list', { name: 'Parcours de vos données avant l’analyse' })
+    ).toHaveTextContent('Pseudonymisation')
+  })
+
   test('renvoie vers l’espace cabinet', () => {
     render(<IndividualsPage />)
 
@@ -65,7 +99,7 @@ describe('IndividualsPage (accueil particuliers)', () => {
     expect(waitlist.map((link) => link.getAttribute('href'))).toContain('#contact')
     expect(screen.getByText(/ouvre prochainement/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Envoyer le message' })).toBeInTheDocument()
-    expect(screen.getByText('49 €')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Forfait particuliers' })).toHaveTextContent('49 €')
   })
 
   test('relie les CGV et la confidentialité, aucun lien vide', () => {
