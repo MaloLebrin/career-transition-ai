@@ -17,6 +17,9 @@ describe('AboutUs page', () => {
     expect(screen.getByText('Notre approche')).toBeInTheDocument()
     expect(screen.getByText('Nos engagements')).toBeInTheDocument()
     expect(screen.getByText('Une IA copilote')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('about-landscape').querySelector('svg[data-variant="hero"]')
+    ).not.toBeNull()
   })
 
   test('renvoie vers la sécurité, la confidentialité et l’espace cabinet', () => {

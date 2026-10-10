@@ -228,7 +228,8 @@ L'en-tête est transparent en haut de page et se solidifie (`canvas/90` + flou) 
 **Blocs** (`marketing/`) : `HeroBackdrop` (maillage + grille + voile, `strong`/`soft`),
 `KeyFactsStrip` (chiffres clés), `FeatureTabs` (fonctionnalités en onglets avec mockup),
 `StepsTimeline` (étapes le long d'une ligne tracée au scroll), `PrivacyFlow` (parcours des
-données avant l'IA). Mockups vivants dans `marketing/mockups/` (`MockupFrame`,
+données avant l'IA), `FaqAccordion` (`<details>` natif), `individuals/PlanComparison`
+(gratuit / forfait). L'offre mise en avant d'une grille tarifaire est cerclée du maillage. Mockups vivants dans `marketing/mockups/` (`MockupFrame`,
 `JourneyMockup`, `AiAnalysisMockup`, `SynthesisMockup`, `ExpertMockup`,
 `AdvisorDashboardMockup`) ; `PageHero` (héros des pages secondaires, maillage atténué), animés par
 `useMockupStep` (`inertia/hooks/`) et figés sur leur état final en mouvement réduit.

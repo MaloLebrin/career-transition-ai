@@ -25,6 +25,8 @@ describe('Pricing page (forfait particuliers)', () => {
     expect(card).toHaveTextContent('59 €')
     expect(card).toHaveTextContent('TTC')
     expect(screen.getByText('Questions fréquentes')).toBeInTheDocument()
+    expect(screen.getByText('Le forfait est-il un abonnement ?').closest('details')).not.toBeNull()
+    expect(screen.getByRole('table', { name: /avec le forfait/ })).toBeInTheDocument()
     for (const cta of screen.getAllByRole('link', { name: 'Commencer gratuitement' })) {
       expect(cta).toHaveAttribute('href', '/inscription')
     }

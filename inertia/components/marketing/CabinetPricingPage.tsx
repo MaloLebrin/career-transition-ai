@@ -6,7 +6,12 @@ import { buttonClassName } from '../ui/Button'
 import { SectionHeading } from '../ui/SectionHeading'
 import { CtaBand } from './CtaBand'
 import { MarketingDemoSection } from './MarketingDemoSection'
+import { FaqAccordion } from './FaqAccordion'
 import { MarketingSection } from './MarketingSection'
+import { PageHero } from './PageHero'
+import { RevealGroup } from '../ui/motion/RevealGroup'
+import { RevealItem } from '../ui/motion/RevealItem'
+import { TiltCard } from '../ui/motion/TiltCard'
 import { PricingTierCard, type PricingTierCardProps } from './PricingTierCard'
 
 const TIERS: PricingTierCardProps[] = [
@@ -80,38 +85,47 @@ const FAQ = [
 export default function CabinetPricingPage() {
   return (
     <PublicLayout header={CABINET_HEADER}>
-      <MarketingSection tone="canvas">
-        <SectionHeading
-          level={1}
-          size="display-lg"
-          align="center"
-          eyebrow="Tarifs pour cabinets et organismes"
-          title="Des offres claires, adaptées à votre volume."
-          description="Prix indicatifs hors taxes pour les cabinets, facturation au choix (mensuelle ou annuelle). Le devis final intègre vos besoins en sièges conseiller, bilans actifs et options."
-        />
-        <p className="mt-4 text-center text-sm text-muted">
+      <PageHero
+        eyebrow="Tarifs pour cabinets et organismes"
+        title="Des offres claires, adaptées à votre volume."
+        description="Prix indicatifs hors taxes pour les cabinets, facturation au choix (mensuelle ou annuelle). Le devis final intègre vos besoins en sièges conseiller, bilans actifs et options."
+      >
+        <p className="text-sm text-muted">
           Montants indicatifs, devis personnalisé sous 48h ouvrées. Vous êtes un particulier ?{' '}
           <AppLink href="/tarifs" className="font-medium text-accent hover:underline">
             Voir le forfait
           </AppLink>
         </p>
-        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {TIERS.map((tier) => (
-            <PricingTierCard key={tier.name} {...tier} />
-          ))}
+      </PageHero>
+
+      <section className="relative -mt-8 pb-16 md:pb-24">
+        <div className="mx-auto w-full max-w-marketing px-6">
+          <RevealGroup
+            className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3"
+            stagger={0.12}
+          >
+            {TIERS.map((tier) => (
+              <RevealItem key={tier.name} className="h-full">
+                <TiltCard className="h-full">
+                  {tier.featured ? (
+                    <div className="h-full rounded-2xl bg-hero-mesh p-1 shadow-floating animate-mesh-drift">
+                      <PricingTierCard {...tier} />
+                    </div>
+                  ) : (
+                    <PricingTierCard {...tier} />
+                  )}
+                </TiltCard>
+              </RevealItem>
+            ))}
+          </RevealGroup>
         </div>
-      </MarketingSection>
+      </section>
 
       <MarketingSection tone="surface" size="narrow">
         <SectionHeading title="Questions fréquentes" size="display-sm" />
-        <dl className="mt-8 divide-y divide-hairline">
-          {FAQ.map((item) => (
-            <div key={item.question} className="py-5 first:pt-0 last:pb-0">
-              <dt className="font-semibold text-ink">{item.question}</dt>
-              <dd className="mt-2 text-sm text-muted">{item.answer}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className="mt-8">
+          <FaqAccordion items={FAQ} />
+        </div>
       </MarketingSection>
 
       <MarketingDemoSection

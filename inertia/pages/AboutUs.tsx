@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react'
+import { PageSeo } from '~/components/seo/PageSeo'
 import AboutUsPage from '../components/marketing/AboutUsPage'
 
 export default function AboutUs() {
   return (
     <>
-      <Head title="Qui sommes-nous" />
+      <PageSeo
+        title="Qui sommes-nous"
+        description="Transition Carrière aide chacun à faire le point sur sa carrière : des exercices issus des sciences comportementales, une IA copilote et un expert si vous le souhaitez."
+      />
       <AboutUsPage />
     </>
   )
