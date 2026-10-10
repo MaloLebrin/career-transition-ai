@@ -12,6 +12,8 @@ import { glob, readFile } from 'node:fs/promises'
  * 2. `inertia/css/app.css` ne redéfinit pas les tokens retirés et aucun `--color-x` ne
  *    porte le nom d'un `--text-x` (les deux génèrent la classe `text-x`).
  * 3. Sur une surface ink, le teal passe par `accent-on-ink`, jamais `text-accent`.
+ * 4. La couche marketing (`bg-hero-mesh`, `shadow-floating`, DESIGN.md §5 bis) ne sort pas
+ *    des dossiers marketing.
  */
 const LEGACY_CLASS =
   /\b(?:bg|text|border|ring|from|to|via|fill|stroke|shadow|placeholder|divide|outline|hover:bg|hover:text|hover:border|focus:ring|focus:border|group-hover:text|data-focus:bg|data-selected:bg|focus-within:border|focus-within:ring|disabled:bg)-(?:brand-[a-z]+|slate-\d+|rose-\d+|violet-\d+|white\/\d+)\b/g
@@ -48,6 +50,13 @@ const INK_SURFACES = [
   'inertia/components/marketing/CtaBand.tsx',
   'inertia/components/marketing/PricingTierCard.tsx',
   'inertia/components/layout/PublicFooter.tsx',
+]
+
+const MARKETING_LAYER_CLASS = /\b(?:bg-hero-mesh|shadow-floating|animate-mesh-drift)\b/
+const MARKETING_LAYER_DIRS = [
+  'inertia/components/marketing/',
+  'inertia/components/landing/',
+  'inertia/components/layout/',
 ]
 
 async function legacyCounts(): Promise<Record<string, number>> {
@@ -115,5 +124,16 @@ test.group('Hygiène | design tokens', () => {
       }
     }
     assert.deepEqual(offenders, [], 'Sur `bg-ink`, le teal passe par `text-accent-on-ink`')
+  })
+
+  test('la couche marketing reste dans les dossiers marketing', async ({ assert }) => {
+    const offenders: string[] = []
+    for await (const file of glob('**/*.tsx', { cwd: app.makePath('inertia') })) {
+      const path = `inertia/${file}`
+      if (MARKETING_LAYER_DIRS.some((dir) => path.startsWith(dir))) continue
+      const source = await readFile(app.makePath(path), 'utf8')
+      if (MARKETING_LAYER_CLASS.test(source)) offenders.push(path)
+    }
+    assert.deepEqual(offenders, [], 'Dégradé maillé et ombre flottante : pages marketing seulement')
   })
 })

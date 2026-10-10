@@ -18,8 +18,14 @@ describe('Cabinets page', () => {
       screen.getByRole('heading', { level: 1, name: /Structurez vos bilans de compétences/ })
     ).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
-    expect(within(nav).getByRole('link', { name: 'Offre' })).toHaveAttribute('href', '/offre')
-    expect(within(nav).getByRole('link', { name: 'Particuliers' })).toHaveAttribute('href', '/')
+    const tabs = within(nav)
+      .getAllByRole('button', { expanded: false })
+      .filter((tab) => tab.hasAttribute('data-headlessui-state'))
+    expect(tabs.map((tab) => tab.textContent)).toEqual(['Cabinets', 'Particuliers', 'Ressources'])
+    expect(within(nav).getByRole('link', { name: 'Demander une démo' })).toHaveAttribute(
+      'href',
+      '/cabinets#demo'
+    )
   })
 
   test('propose la création d’un compte cabinet quand l’inscription est ouverte', () => {

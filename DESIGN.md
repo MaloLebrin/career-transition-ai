@@ -33,8 +33,8 @@ teintes de coucher de soleil de Duna.
   ciel. Elles classent (badges, catégories) et illustrent (`LandscapeArt`, graphiques) —
   elles n'actionnent jamais, et aucun texte ne se pose sur un `-bold`.
 - **Un seul bloc illustratif** : `LandscapeArt`, un paysage calme en formes plates (ciel
-  abricot, soleil, montagnes lavande, lac, prairie). Pas de photo, pas de flou, pas de
-  dégradé en dehors de son ciel.
+  abricot, soleil, montagnes lavande, lac, prairie). Pas de photo, pas de flou ; le seul
+  autre dégradé est le maillage de la couche marketing (§5 bis).
 - **Hiérarchie par la typographie** (Manrope pour les titres, Inter pour l'interface),
   jamais par des majuscules espacées ni des micro-tailles.
 - **Rayons modestes** : 8 px boutons et champs, 12 px cartes, 16 px mockups et bandes,
@@ -44,17 +44,17 @@ teintes de coucher de soleil de Duna.
 
 ### Règles absolues
 
-| Faire                                                              | Ne jamais faire                                                                    |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Rôles de couleur nommés (`text-muted`, `bg-surface-soft`)          | `slate-*`, `rose-*`, `violet-*`, `white/40`, `brand-*` (alias en cours de retrait) |
-| `bg-primary` (encre) pour agir, `text-accent` pour signaler        | `bg-accent` sur un bouton, `text-primary` sur un lien (il se fond dans l'encre)    |
-| `bg-sun text-ink` pour le bouton secondaire / sur ink              | Texte blanc sur soleil, bouton `primary` dans une surface `bg-ink`                 |
-| `tint-x` + `tint-x-ink` pour classer, `tint-x-bold` pour illustrer | Du texte sur un `tint-x-bold`, `text-accent` sur `bg-ink` (→ `accent-on-ink`)      |
-| Casse de phrase partout, `Eyebrow` 14 px/500 pour un sur-titre     | `uppercase tracking-widest`, `text-[9–11px]`                                       |
-| `font-semibold` (600) ou `font-bold` (700) pour l'emphase          | `font-black`                                                                       |
-| `shadow-card` ou `shadow-raised`                                   | Toute autre ombre, `blur-*` décoratif, glassmorphism                               |
-| `rounded-lg` / `rounded-xl` / `rounded-2xl` / `rounded-full`       | `rounded-[Npx]`, `rounded-3xl` et au-delà sur une carte                            |
-| `AppLink` pour la navigation interne                               | `<a href="/…">` (sauf exception documentée par `eslint-disable`)                   |
+| Faire                                                               | Ne jamais faire                                                                    |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Rôles de couleur nommés (`text-muted`, `bg-surface-soft`)           | `slate-*`, `rose-*`, `violet-*`, `white/40`, `brand-*` (alias en cours de retrait) |
+| `bg-primary` (encre) pour agir, `text-accent` pour signaler         | `bg-accent` sur un bouton, `text-primary` sur un lien (il se fond dans l'encre)    |
+| `bg-sun text-ink` pour le bouton secondaire / sur ink               | Texte blanc sur soleil, bouton `primary` dans une surface `bg-ink`                 |
+| `tint-x` + `tint-x-ink` pour classer, `tint-x-bold` pour illustrer  | Du texte sur un `tint-x-bold`, `text-accent` sur `bg-ink` (→ `accent-on-ink`)      |
+| Casse de phrase partout, `Eyebrow` 14 px/500 pour un sur-titre      | `uppercase tracking-widest`, `text-[9–11px]`                                       |
+| `font-semibold` (600) ou `font-bold` (700) pour l'emphase           | `font-black`                                                                       |
+| `shadow-card` ou `shadow-raised` (+ `shadow-floating` en marketing) | Toute autre ombre, `blur-*` décoratif, glassmorphism                               |
+| `rounded-lg` / `rounded-xl` / `rounded-2xl` / `rounded-full`        | `rounded-[Npx]`, `rounded-3xl` et au-delà sur une carte                            |
+| `AppLink` pour la navigation interne                                | `<a href="/…">` (sauf exception documentée par `eslint-disable`)                   |
 
 ---
 
@@ -169,7 +169,8 @@ nombre par dossier (cliquet) et interdit tout retour dans `ui/`, `layout/`, `mar
   page se termine par `CtaBand` puis le footer `ink`.
 - **Cartes** : padding 24 px (`md`) en marketing, 32 px (`lg`) dans le dashboard,
   16 px (`sm`) pour les listes denses. Gouttière 16 px entre cartes.
-- **En-tête public** : 64 px, collant, `canvas/90` + flou, hairline en bas.
+- **En-tête public** : 64 px, collant, transparent en haut de page puis `canvas/90` + flou
+  et hairline en bas dès le scroll (`useScrolled`).
 - **Dashboard** (phase 2) : conteneur `max-w-7xl` puis `--width-app-container` (1536 px).
 
 ---
@@ -195,6 +196,39 @@ spinner dans le bouton. Mouvement : `animate-fade-in`, `animate-slide-up`,
 `animate-shake` (erreurs de formulaire), respect de `prefers-reduced-motion`. Pages marketing : `Reveal`
 (`ui/Reveal.tsx`, apparition au scroll, cascade par `delay`) ; paysage du hero animé en douceur
 (`animate-drift` nuages, `animate-float` oiseaux, `animate-glow` halo du soleil) ; cartes qui se soulèvent au survol.
+
+---
+
+## 5 bis. Couche marketing
+
+Les pages publiques ont droit à quelques effets de plus, inspirés de stripe.com : un héros
+plus spectaculaire, des interfaces produit vivantes, un méga-menu. Ils sont **réservés** à
+`inertia/components/{marketing,landing,layout}` (garde `tests/unit/hygiene/design_tokens.spec.ts`)
+et ne changent rien au reste du contrat (ivoire, encre, soleil, accent, teintes, casse de phrase).
+
+| Token / utilitaire                             | Usage                                                                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bg-hero-mesh` + `animate-mesh-drift`          | Maillage des teintes `-bold` (abricot, fleur, lavande, soleil, lac) qui dérive lentement. Bande du héros, `CtaBand`. Jamais de texte posé dessus sans voile `bg-canvas/…`. |
+| `shadow-floating`                              | Troisième ombre : mockups en perspective, panneaux du méga-menu.                                                                                                           |
+| `perspective-hero` + `rotate-x-*`/`rotate-y-*` | Mockup produit incliné dans le héros.                                                                                                                                      |
+| `bg-grid-hairline`                             | Grille fine de fond (sections produit).                                                                                                                                    |
+| `clip-skew-b`                                  | Bord inférieur en diagonale (bande du héros, transitions de section).                                                                                                      |
+
+**Mouvement** (`motion` v11, `inertia/components/ui/motion/`) : `RevealGroup` + `RevealItem`
+(apparitions échelonnées au scroll, une fois), `CountUp` (chiffre clé qui compte jusqu'à sa
+valeur, rendue d'emblée), `Parallax` (décalage vertical léger), `TiltCard` (inclinaison au
+survol, souris seulement). Toutes passent en rendu statique sous `prefers-reduced-motion` ;
+en test (jsdom) le mouvement est réduit par défaut (`tests/inertia/setup.ts`).
+
+**Méga-menu** (`layout/MegaMenu.tsx`, config `MARKETING_MENU` / `CABINET_MENU` dans
+`inertia/config/marketing.ts`) : un onglet par public (Particuliers, Cabinets, Ressources),
+un panneau d'entrées riches (icône sur tuile `tint-x`, titre, une ligne), un appel à l'action
+en pied de panneau. Même contenu en sections dans `MobileMenu` et en colonnes dans le footer.
+L'en-tête est transparent en haut de page et se solidifie (`canvas/90` + flou) au scroll.
+
+**Contenu honnête** (§1) : les chiffres clés sont des faits produit (nombre d'exercices,
+prix réel, hébergement) ; un mockup vivant porte la mention « Aperçu illustratif » et
+n'utilise que les vrais noms d'exercices.
 
 ---
 

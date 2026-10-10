@@ -9,10 +9,10 @@ const FOOTER_LINK_CLASS = 'text-sm text-on-ink-soft hover:text-on-ink transition
 /** Pied de page public : la seule surface sombre, qui ferme chaque page. */
 const PublicFooter: React.FC = () => {
   return (
-    <footer className="bg-ink py-16 text-on-ink-soft">
+    <footer className="bg-ink pt-20 pb-12 text-on-ink-soft">
       <Container>
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
-          <div className="space-y-5 md:col-span-3">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-12">
+          <div className="col-span-2 space-y-5 md:col-span-4">
             <Logo size="md" tone="inverse" />
             <p className="max-w-sm text-sm leading-relaxed text-on-ink-soft">{FOOTER_TAGLINE}</p>
           </div>
@@ -31,25 +31,19 @@ const PublicFooter: React.FC = () => {
               </ul>
             </div>
           ))}
-
-          <div className="space-y-4 md:col-span-3">
-            <h2 className="text-sm font-semibold text-on-ink">Contact</h2>
-            <p className="text-sm text-on-ink-soft">
-              Une question, l&apos;exercice de vos droits, une démo pour votre cabinet :
-              <br />
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="break-all font-medium text-on-ink underline-offset-4 hover:underline"
-              >
-                {CONTACT_EMAIL}
-              </a>
-            </p>
-          </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-on-ink/10 pt-6 text-sm text-on-ink-muted md:flex-row md:items-center md:justify-between">
+        <div className="mt-16 flex flex-col gap-3 border-t border-on-ink/10 pt-6 text-sm text-on-ink-muted md:flex-row md:items-center md:justify-between">
           <p>{COPYRIGHT}</p>
-          <p>Hébergement et traitements dans l&apos;Union européenne.</p>
+          <p className="flex flex-wrap gap-x-4 gap-y-1">
+            <span>Hébergement et traitements dans l&apos;Union européenne.</span>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="break-all font-medium text-on-ink underline-offset-4 hover:underline"
+            >
+              {CONTACT_EMAIL}
+            </a>
+          </p>
         </div>
       </Container>
     </footer>

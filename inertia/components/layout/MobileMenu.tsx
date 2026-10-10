@@ -2,24 +2,28 @@ import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { router } from '@inertiajs/react'
 import { X } from 'lucide-react'
 import React, { useEffect } from 'react'
-import type { ActionItem, NavItem } from '~/config/marketing'
+import type { ActionItem, MenuGroup } from '~/config/marketing'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import { Logo } from '~/components/ui/Logo'
+import { MenuEntry, isCurrentPath } from './MegaMenu'
 
 export interface MobileMenuProps {
   open: boolean
   onClose: () => void
-  items: NavItem[]
+  groups: MenuGroup[]
+  /** URL courante, pour marquer la page active. */
+  url?: string
   primaryAction?: ActionItem | null
   secondaryAction?: ActionItem | null
 }
 
-/** Panneau de navigation (< lg), fermé à la navigation et à Échap. */
+/** Panneau de navigation (< lg) : les groupes du méga-menu, fermé à la navigation et à Échap. */
 export const MobileMenu: React.FC<MobileMenuProps> = ({
   open,
   onClose,
-  items,
+  groups,
+  url = '',
   primaryAction,
   secondaryAction,
 }) => {
@@ -44,18 +48,25 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           </button>
         </div>
         <nav aria-label="Navigation mobile" className="flex-1 overflow-y-auto px-6 py-6">
-          <ul className="space-y-1">
-            {items.map((item) => (
-              <li key={item.href}>
-                <AppLink
-                  href={item.href}
-                  className="block rounded-lg px-3 py-3 text-base font-medium text-ink hover:bg-surface-soft"
+          <div className="space-y-6">
+            {groups.map((group) => (
+              <section key={group.label} aria-labelledby={`mobile-menu-${group.label}`}>
+                <h2
+                  id={`mobile-menu-${group.label}`}
+                  className="px-3 pb-1 text-sm font-semibold text-muted"
                 >
-                  {item.label}
-                </AppLink>
-              </li>
+                  {group.label}
+                </h2>
+                <ul className="space-y-0.5">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <MenuEntry item={item} current={isCurrentPath(url, item.href)} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         </nav>
         {(primaryAction || secondaryAction) && (
           <div className="space-y-3 border-t border-hairline px-6 py-6">
