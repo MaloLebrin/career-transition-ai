@@ -3,7 +3,9 @@ import React from 'react'
 import { FeatureCard } from '~/components/marketing/FeatureCard'
 import { MarketingSection } from '~/components/marketing/MarketingSection'
 import AppLink from '~/components/ui/AppLink'
-import { Reveal } from '~/components/ui/Reveal'
+import { RevealGroup } from '~/components/ui/motion/RevealGroup'
+import { RevealItem } from '~/components/ui/motion/RevealItem'
+import { TiltCard } from '~/components/ui/motion/TiltCard'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 
 const FEATURES = [
@@ -48,13 +50,15 @@ export const MethodSection: React.FC = () => (
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </AppLink>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {FEATURES.map((feature, index) => (
-          <Reveal key={feature.title} delay={index * 120} className="h-full">
-            <FeatureCard {...feature} />
-          </Reveal>
+      <RevealGroup className="grid grid-cols-1 gap-4 md:grid-cols-3" stagger={0.12}>
+        {FEATURES.map((feature) => (
+          <RevealItem key={feature.title} className="h-full">
+            <TiltCard className="h-full">
+              <FeatureCard {...feature} className="h-full" />
+            </TiltCard>
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     </div>
   </MarketingSection>
 )

@@ -11,6 +11,11 @@ import { CtaBand } from './CtaBand'
 import { FeatureCard } from './FeatureCard'
 import { MarketingDemoSection } from './MarketingDemoSection'
 import { MarketingSection } from './MarketingSection'
+import { PageHero } from './PageHero'
+import { RevealGroup } from '../ui/motion/RevealGroup'
+import { RevealItem } from '../ui/motion/RevealItem'
+import { TiltCard } from '../ui/motion/TiltCard'
+import { AdvisorDashboardMockup } from './mockups/AdvisorDashboardMockup'
 
 const DELIVERABLES = [
   { title: 'Profil & objectifs', value: 'Clairs, traçables, partagés' },
@@ -86,56 +91,78 @@ const LINK_CLASS = 'text-sm font-medium text-accent hover:underline'
 export default function OfferPage() {
   return (
     <PublicLayout header={CABINET_HEADER}>
-      <MarketingSection tone="canvas">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="space-y-8 lg:col-span-7">
-            <SectionHeading
-              level={1}
-              size="display-lg"
-              eyebrow="Offre pour les cabinets"
-              title="Un portail expert pour structurer vos bilans, sans perdre la nuance."
-              description="Standardisez votre méthode, améliorez la qualité des livrables et gagnez du temps sur la synthèse. L’IA vous assiste comme copilote, le conseiller reste le décideur."
-            />
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
-                Demander une démo
-              </a>
-              <AppLink
-                href="/methodologie"
-                className={buttonClassName({ variant: 'outline', size: 'lg' })}
-              >
-                Voir la méthodologie
-              </AppLink>
-            </div>
-          </div>
-
-          <Card padding="md" className="lg:col-span-5">
-            <p className="text-eyebrow text-accent">Livrables structurés</p>
-            <p className="mt-1 text-title-md text-ink">Synthèse + plan d’action</p>
-            <dl className="mt-6 divide-y divide-hairline">
-              {DELIVERABLES.map((row) => (
-                <div
-                  key={row.title}
-                  className="flex items-start justify-between gap-6 py-3 text-sm first:pt-0 last:pb-0"
-                >
-                  <dt className="text-muted">{row.title}</dt>
-                  <dd className="text-right font-medium text-ink">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </Card>
-        </div>
-      </MarketingSection>
+      <PageHero
+        eyebrow="Offre pour les cabinets"
+        title="Un portail expert pour structurer vos bilans, sans perdre la nuance."
+        description="Standardisez votre méthode, améliorez la qualité des livrables et gagnez du temps sur la synthèse. L’IA vous assiste comme copilote, le conseiller reste le décideur."
+        actions={
+          <>
+            <a href="#demo" className={buttonClassName({ variant: 'primary', size: 'lg' })}>
+              Demander une démo
+            </a>
+            <AppLink
+              href="/methodologie"
+              className={buttonClassName({
+                variant: 'outline',
+                size: 'lg',
+                className: 'bg-surface/70',
+              })}
+            >
+              Voir la méthodologie
+            </AppLink>
+          </>
+        }
+        aside={
+          <TiltCard>
+            <Card padding="md" className="shadow-floating">
+              <p className="text-eyebrow text-accent">Livrables structurés</p>
+              <p className="mt-1 text-title-md text-ink">Synthèse + plan d’action</p>
+              <dl className="mt-6 divide-y divide-hairline">
+                {DELIVERABLES.map((row) => (
+                  <div
+                    key={row.title}
+                    className="flex items-start justify-between gap-6 py-3 text-sm first:pt-0 last:pb-0"
+                  >
+                    <dt className="text-muted">{row.title}</dt>
+                    <dd className="text-right font-medium text-ink">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          </TiltCard>
+        }
+      />
 
       <MarketingSection tone="surface">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <RevealGroup className="grid grid-cols-1 gap-6 md:grid-cols-3" stagger={0.12}>
           {FEATURES.map((feature) => (
-            <FeatureCard key={feature.title} {...feature} />
+            <RevealItem key={feature.title} className="h-full">
+              <FeatureCard {...feature} className="h-full" />
+            </RevealItem>
           ))}
+        </RevealGroup>
+      </MarketingSection>
+
+      <MarketingSection tone="canvas" className="overflow-hidden">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-5">
+            <SectionHeading
+              eyebrow="Le portail"
+              title="Toute l’équipe, tous les parcours, au même endroit."
+              description="Les candidats avancent dans leurs exercices entre les séances. Le conseiller retrouve leur progression et la synthèse assistée à relire, sans ressaisie."
+            />
+          </div>
+          <div className="relative lg:col-span-7">
+            <div
+              className="pointer-events-none absolute -inset-8 -z-10 bg-grid-hairline opacity-50 [mask-image:radial-gradient(closest-side,black,transparent)]"
+              aria-hidden="true"
+            />
+            <AdvisorDashboardMockup />
+          </div>
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="canvas">
+      <MarketingSection tone="soft">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-8">
             <SectionHeading
@@ -146,7 +173,7 @@ export default function OfferPage() {
             <BulletList items={BENEFITS} />
           </div>
 
-          <Card variant="flat" padding="lg" className="space-y-8">
+          <Card padding="lg" className="space-y-8">
             <h3 className="text-title-lg">L’IA comme copilote, pas comme verdict.</h3>
             <BulletList items={AI_PRINCIPLES} />
             <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-hairline pt-6">

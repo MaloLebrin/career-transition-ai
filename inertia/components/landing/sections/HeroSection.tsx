@@ -1,11 +1,12 @@
 import { usePage } from '@inertiajs/react'
 import { Brain, Lock, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react'
 import React from 'react'
-import { LandscapeArt } from '~/components/marketing/LandscapeArt'
-import { MarketingSection } from '~/components/marketing/MarketingSection'
-import { ProductMockup } from '~/components/marketing/ProductMockup'
+import { HeroBackdrop } from '~/components/marketing/HeroBackdrop'
+import { AdvisorDashboardMockup } from '~/components/marketing/mockups/AdvisorDashboardMockup'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
+import { Container } from '~/components/ui/Container'
+import { Parallax } from '~/components/ui/motion/Parallax'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 import { INDIVIDUALS_ACTION, LOGIN_ACTION } from '~/config/marketing'
 
@@ -26,7 +27,7 @@ interface FloatingChipProps {
 /** Puce flottante autour de l'aperçu produit : desktop seulement, décorative. */
 const FloatingChip: React.FC<FloatingChipProps> = ({ icon: Icon, label, className, delay }) => (
   <span
-    className={`pointer-events-none absolute hidden animate-float items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-raised lg:inline-flex ${className}`}
+    className={`pointer-events-none absolute hidden animate-float items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-floating lg:inline-flex ${className}`}
     style={{ animationDelay: `${delay}s` }}
     aria-hidden="true"
   >
@@ -39,22 +40,17 @@ const FloatingChip: React.FC<FloatingChipProps> = ({ icon: Icon, label, classNam
 const enter = (delayMs: number): React.CSSProperties => ({ animationDelay: `${delayMs}ms` })
 
 /**
- * Hero de la page d'accueil : un paysage apaisant en pleine largeur, puis la promesse, deux
- * actions, les points de preuve et l'aperçu du produit.
+ * Héros de l'espace cabinet : maillage animé sous l'en-tête transparent, promesse, deux
+ * actions, points de preuve et le tableau de bord conseiller qui vit, incliné.
  */
 export const HeroSection: React.FC = () => {
   const { props } = usePage<{ registrationEnabled?: boolean }>()
 
   return (
-    <>
-      <div
-        className="h-52 w-full overflow-hidden border-b border-hairline sm:h-64 lg:h-80 xl:h-96"
-        data-testid="hero-landscape"
-      >
-        <LandscapeArt variant="hero" />
-      </div>
-      <MarketingSection tone="canvas" className="pt-12 md:pt-16">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
+    <section className="relative isolate -mt-16 overflow-hidden pt-16">
+      <HeroBackdrop />
+      <Container className="pt-12 pb-20 md:pt-20 md:pb-28">
+        <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-10">
           <div className="space-y-8 lg:col-span-7">
             <div className="animate-slide-up">
               <SectionHeading
@@ -118,25 +114,30 @@ export const HeroSection: React.FC = () => {
               ))}
             </ul>
           </div>
-          <div className="relative animate-slide-up lg:col-span-5" style={enter(200)}>
-            <div className="animate-float [animation-duration:9s]">
-              <ProductMockup />
-            </div>
+          <div
+            className="relative animate-slide-up perspective-hero lg:col-span-5"
+            style={enter(200)}
+          >
+            <Parallax offset={24}>
+              <div className="transform-3d lg:-rotate-y-12 lg:rotate-x-6">
+                <AdvisorDashboardMockup />
+              </div>
+            </Parallax>
             <FloatingChip
               icon={Sparkles}
               label="Synthèse prête à relire"
-              className="-left-4 top-10 bg-tint-lavender text-tint-lavender-ink"
+              className="-left-6 top-16 border border-hairline bg-surface text-tint-lavender-ink"
               delay={0}
             />
             <FloatingChip
               icon={ShieldCheck}
               label="Données pseudonymisées"
-              className="-right-3 bottom-8 bg-tint-meadow text-tint-meadow-ink"
+              className="-right-4 -bottom-4 border border-hairline bg-surface text-tint-meadow-ink"
               delay={-3}
             />
           </div>
         </div>
-      </MarketingSection>
-    </>
+      </Container>
+    </section>
   )
 }

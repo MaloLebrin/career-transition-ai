@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import CabinetLandingPage from '../../../inertia/components/landing/CabinetLandingPage'
 import { resetInertiaMock } from '../support/inertia_mock'
@@ -24,13 +25,20 @@ describe('CabinetLandingPage', () => {
       'href',
       '/methodologie'
     )
-    expect(screen.getByRole('img', { name: /Aperçu du tableau de bord/ })).toBeInTheDocument()
-    const landscape = screen.getByTestId('hero-landscape')
-    expect(landscape).toHaveClass('w-full', 'overflow-hidden')
-    expect(landscape.querySelector('svg[data-variant="hero"]')).toHaveAttribute(
-      'aria-hidden',
-      'true'
-    )
+    expect(screen.getByTestId('hero-backdrop')).toBeInTheDocument()
+    expect(screen.getAllByRole('figure')[0]).toHaveTextContent('Tableau de bord conseiller')
+  })
+
+  test('states verifiable key facts and the advisor features in tabs', async () => {
+    const user = userEvent.setup()
+    render(<CabinetLandingPage />)
+
+    const facts = screen.getByRole('region', { name: 'Chiffres clés' })
+    expect(facts).toHaveTextContent('8exercices prêts à l’emploi')
+    expect(facts).toHaveTextContent('0nom ou e-mail de candidat transmis à l’IA')
+
+    await user.click(screen.getByRole('tab', { name: /Synthèse assistée/ }))
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Le conseiller valide')
   })
 
   test('shows the real exercise catalogue, the method and the AI sections', () => {

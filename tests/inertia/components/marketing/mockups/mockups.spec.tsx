@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
+import { AdvisorDashboardMockup } from '../../../../../inertia/components/marketing/mockups/AdvisorDashboardMockup'
 import { AiAnalysisMockup } from '../../../../../inertia/components/marketing/mockups/AiAnalysisMockup'
 import { ExpertMockup } from '../../../../../inertia/components/marketing/mockups/ExpertMockup'
 import { JourneyMockup } from '../../../../../inertia/components/marketing/mockups/JourneyMockup'
@@ -44,5 +45,12 @@ describe('live mockups (reduced motion: final state)', () => {
     )
     expect(screen.getByText('synthese-parcours.pdf')).toBeInTheDocument()
     expect(screen.getByText(/premier échange/)).toBeInTheDocument()
+  })
+
+  test('AdvisorDashboardMockup: candidates by initials only, a finished synthesis to review', () => {
+    render(<AdvisorDashboardMockup />)
+    expect(screen.getByText('A. M.')).toBeInTheDocument()
+    expect(screen.getByText(`8 / ${EXERCISE_LIST.length}`)).toBeInTheDocument()
+    expect(screen.getByText('Synthèse de A. M. prête à relire')).toBeInTheDocument()
   })
 })
