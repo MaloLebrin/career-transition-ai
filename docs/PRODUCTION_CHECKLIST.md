@@ -36,7 +36,7 @@ Checklist des points à traiter avant ou pour la mise en production.
 
 ## Données & performance
 
-- [ ] **Pagination** — Activer ou renforcer la pagination sur les listes (candidats, organisations, utilisateurs super admin) si le volume augmente.
+- [x] **Pagination** — Listes des candidats, organisations, utilisateurs et exports PDF paginées (25 par page) avec recherche côté serveur (#75). Les notifications ne sont pas listées en entier : la cloche en charge 20 au plus.
 - [x] **Sauvegardes** — Scénario 2 : `deploy/backup.sh` + crontab sur la VM ; scénario 1 : `pg_dump` manuel de la base Neon. Procédures dans [DEPLOYMENT.md](DEPLOYMENT.md) §1.5 et §2.6.
 - [ ] **Migrations** — Tester les migrations sur une copie de la prod avant déploiement.
 

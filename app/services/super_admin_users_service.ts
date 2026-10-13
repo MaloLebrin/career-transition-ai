@@ -9,7 +9,11 @@ import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import type { SuperAdminCreatableRole } from '#shared/constants/roles'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import type { Paginated } from '#shared/types/pagination'
+import type { UserListItem, UserListParams } from '#shared/types/super_admin/lists'
+import { containsPattern, paginationMeta } from '#utils/pagination'
 import { inject } from '@adonisjs/core'
 import { randomBytes } from 'node:crypto'
 
@@ -30,6 +34,49 @@ export class SuperAdminUsersService {
     private onboardingMailService: OnboardingMailService,
     private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService()
   ) {}
+
+  /**
+   * Une page des utilisateurs des organisations clientes (hors organisation plateforme).
+   * Recherche par nom, e-mail ou nom du cabinet ; filtre de rôle côté base.
+   */
+  public async list(
+    platformOrganizationId: number,
+    params: UserListParams
+  ): Promise<Paginated<UserListItem>> {
+    const query = User.query()
+      .where('organizationId', '!=', platformOrganizationId)
+      .preload('organization', (q) => q.select('id', 'name'))
+      .if(params.role !== null, (q) => q.where('role', params.role!))
+      .orderBy([
+        { column: 'name', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ])
+    if (params.search) {
+      const pattern = containsPattern(params.search)
+      query.where((builder) => {
+        builder
+          .whereILike('name', pattern)
+          .orWhereILike('email', pattern)
+          .orWhereHas('organization', (org) => org.whereILike('name', pattern))
+      })
+    }
+
+    const paginator = await query.paginate(params.page, LIST_PAGE_SIZE)
+    return {
+      items: paginator.all().map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        organization: user.organization
+          ? { id: user.organization.id, name: user.organization.name }
+          : null,
+        createdAt: user.createdAt?.toISO() ?? null,
+        onboardingCompleted: user.onboardingCompletedAt !== null,
+      })),
+      pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
+    }
+  }
 
   /**
    * Indique si le compte utilisateur est activé (`users.onboarding_completed_at` renseigné).

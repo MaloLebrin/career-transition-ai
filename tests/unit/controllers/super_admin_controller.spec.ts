@@ -50,8 +50,8 @@ test.group('SuperAdminController.organizations', (group) => {
     })
 
     const controller = new SuperAdminController(
-      {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService,
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
       new PlatformOrganizationService()
     )
     const ctx = makeCtx()
@@ -72,6 +72,39 @@ test.group('SuperAdminController.organizations', (group) => {
     const ids = items.map((o) => o.id)
     assert.isFalse(ids.includes(platformOrg.id))
     assert.isTrue(ids.includes(clientOrg.id))
+    assert.equal(rendered.props.pagination.page, 1)
+    assert.deepEqual(rendered.props.filters, { search: '', minEmployees: '' })
+  })
+
+  test('relaie recherche, seuil et page de la query string', async ({ assert }) => {
+    const platformOrg = await Organization.create({
+      name: 'Platform Org Q',
+      slug: `platform-q-${Date.now()}`,
+      isPlatform: true,
+    })
+    await Organization.create({ name: 'Zeta Cabinet', slug: `zeta-${Date.now()}` })
+    await Organization.create({ name: 'Autre', slug: `autre-${Date.now()}` })
+
+    const controller = new SuperAdminController(
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
+      new PlatformOrganizationService()
+    )
+    const ctx = makeCtx({
+      request: { qs: () => ({ search: ' zeta ', minEmployees: '0', page: 'x' }) },
+    })
+    ctx.auth = { user: { id: 1, organizationId: platformOrg.id, role: 'super_admin' as const } }
+
+    // @ts-expect-error minimal context
+    await controller.organizations(ctx)
+
+    const props = ctx.inertia.rendered.props
+    assert.deepEqual(
+      props.organizations.map((o: { name: string }) => o.name),
+      ['Zeta Cabinet']
+    )
+    assert.deepEqual(props.filters, { search: 'zeta', minEmployees: '' })
+    assert.equal(props.pagination.page, 1)
   })
 })
 
@@ -105,8 +138,8 @@ test.group('SuperAdminController.users', (group) => {
     })
 
     const controller = new SuperAdminController(
-      {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService,
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
       new PlatformOrganizationService()
     )
     const ctx = makeCtx()
@@ -134,6 +167,8 @@ test.group('SuperAdminController.users', (group) => {
     assert.isFalse(items.some((u) => u.organization?.id === platformOrg.id))
     assert.isTrue(orgs.some((o) => o.id === clientOrg.id))
     assert.isFalse(orgs.some((o) => o.id === platformOrg.id))
+    assert.equal(rendered.props.pagination.total, items.length)
+    assert.deepEqual(rendered.props.filters, { search: '', role: 'all' })
   })
 })
 

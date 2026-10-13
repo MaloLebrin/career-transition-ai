@@ -137,6 +137,8 @@ Ordre standard : `auth()` → middleware de rôle.
 
 Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding`, `throttleForgotPassword`, `throttlePasswordReset`, `throttleChangePassword`, `throttleDataExport`, `throttleEmailVerification`, `throttleExerciseSave` (60/min par compte sur les sauvegardes d'exercice candidat), `throttleCheckout` (10/h par compte, `POST /dashboard/candidat/offre/checkout`) (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
 
+Listes paginées (#75) : `LIST_PAGE_SIZE` (`#shared/constants/pagination`), paramètres `?page=&search=` + filtres lus par `parseListParams` (`#shared/helpers/pagination`) et les parseurs par domaine (`shared/helpers/employee/list_params.ts`, `shared/helpers/super_admin/list_params.ts`), `paginate()` dans le service avec `whereAnyColumnContains` / `paginationMeta` (`#utils/pagination`, recherche `ILIKE` échappée), props Inertia `<liste>` + `pagination` + `filters`. Côté React : hook `useServerList` (`~/hooks/use_server_list`, recherche différée, `router.get` partiel) et `Pagination`. Jamais de filtre en mémoire sur une liste qui grossit.
+
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 
 IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.

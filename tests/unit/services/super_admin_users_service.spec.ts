@@ -11,6 +11,7 @@ import {
   SuperAdminRoleLockedError,
   SuperAdminUserNotFoundError,
 } from '#exceptions/super_admin_user_errors'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import {
   createAdvisor,
@@ -287,5 +288,85 @@ test.group('SuperAdminUsersService.createUserWithInvite — équipe interne (#10
     await assert.rejects(() => service.createUserWithInvite(input), DomainException)
     const user = await service.createUserWithInvite({ ...input, allowPlatformOrganization: true })
     assert.equal(user.organizationId, platform.id)
+  })
+})
+
+test.group('SuperAdminUsersService.list (#75)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new SuperAdminUsersService({} as any)
+  const params = { page: 1, search: '', role: null }
+
+  test('exclut les comptes de la plateforme et expose le cabinet', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+    const superAdmin = await createSuperAdmin()
+    const org = await createOrganization()
+    const advisor = await createAdvisor(org)
+
+    const { items } = await service.list(platform.id, params)
+
+    const ids = items.map((u) => u.id)
+    assert.include(ids, advisor.id)
+    assert.notInclude(ids, superAdmin.id)
+    const item = items.find((u) => u.id === advisor.id)!
+    assert.deepEqual(item.organization, { id: org.id, name: org.name })
+    assert.equal(item.onboardingCompleted, advisor.onboardingCompletedAt !== null)
+  })
+
+  test('recherche par nom, e-mail ou nom du cabinet, et filtre de rôle', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+    const org = await Organization.create({ name: 'Cabinet Horizon', slug: 'horizon' })
+    const other = await Organization.create({ name: 'Autre', slug: 'autre' })
+    const alice = await User.create({
+      organizationId: org.id,
+      email: 'alice@a.test',
+      name: 'Alice',
+      password: 'secret-password',
+      role: USERS_ROLES.ADVISOR,
+    })
+    const bob = await User.create({
+      organizationId: other.id,
+      email: 'bob@b.test',
+      name: 'Bob',
+      password: 'secret-password',
+      role: USERS_ROLES.ADMIN,
+    })
+
+    const ids = async (extra: object) => {
+      const page = await service.list(platform.id, { ...params, ...extra })
+      return page.items.map((u) => u.id)
+    }
+
+    assert.deepEqual(await ids({ search: 'ALI' }), [alice.id])
+    assert.deepEqual(await ids({ search: 'b.test' }), [bob.id])
+    assert.deepEqual(await ids({ search: 'horizon' }), [alice.id])
+    assert.include(await ids({ role: USERS_ROLES.ADMIN }), bob.id)
+    assert.notInclude(await ids({ role: USERS_ROLES.ADMIN }), alice.id)
+    assert.deepEqual(await ids({ search: 'ali', role: USERS_ROLES.ADMIN }), [])
+    assert.deepEqual(await ids({ search: '%' }), [])
+  })
+
+  test('pagine à LIST_PAGE_SIZE par page', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+    const org = await createOrganization()
+    const baseline = await service.list(platform.id, params)
+    const before = baseline.pagination.total
+    for (let i = 0; i < LIST_PAGE_SIZE + 1; i++) {
+      await User.create({
+        organizationId: org.id,
+        email: `user-${i}@list.test`,
+        name: `User ${String(i).padStart(3, '0')}`,
+        password: 'secret-password',
+        role: USERS_ROLES.ADVISOR,
+      })
+    }
+
+    const first = await service.list(platform.id, params)
+    const second = await service.list(platform.id, { ...params, page: 2 })
+
+    const total = before + LIST_PAGE_SIZE + 1
+    assert.lengthOf(first.items, LIST_PAGE_SIZE)
+    assert.lengthOf(second.items, Math.min(LIST_PAGE_SIZE, total - LIST_PAGE_SIZE))
+    assert.equal(second.pagination.total, total)
   })
 })

@@ -102,6 +102,8 @@ test.group('PdfExportsController.index', (group) => {
     const exports = rendered.props.exports as { id: number }[]
     assert.lengthOf(exports, 1)
     assert.equal(exports[0].id, exportA.id)
+    assert.equal(rendered.props.pagination.total, 1)
+    assert.deepEqual(rendered.props.filters, { status: 'all' })
   })
 
   test('super admin sees exports from all organizations', async ({ assert }) => {
@@ -177,6 +179,7 @@ test.group('PdfExportsController.index', (group) => {
     const exports = ctx.inertia.rendered.props.exports as { id: number; status: string }[]
     assert.isTrue(exports.every((e) => e.status === PDF_EXPORT_STATUSES.COMPLETED))
     assert.isTrue(exports.some((e) => e.id === exportCompleted.id))
+    assert.deepEqual(ctx.inertia.rendered.props.filters, { status: 'completed' })
   })
 
   test("une valeur de statut invalide n'applique aucun filtre", async ({ assert }) => {
@@ -213,6 +216,7 @@ test.group('PdfExportsController.index', (group) => {
     // Les deux exports doivent être retournés (pas de filtre appliqué)
     const exports = ctx.inertia.rendered.props.exports as { id: number }[]
     assert.isAtLeast(exports.length, 2)
+    assert.deepEqual(ctx.inertia.rendered.props.filters, { status: 'all' })
   })
 
   test('retourne sans render si utilisateur non authentifié', async ({ assert }) => {

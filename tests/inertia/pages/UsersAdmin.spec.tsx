@@ -79,6 +79,11 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   }
 })
 
+const PAGE = {
+  pagination: { page: 1, pageSize: 25, total: 1, lastPage: 1 },
+  filters: { search: '', role: 'all' as const },
+}
+
 const defaultOrgs = [{ id: 10, name: 'Cabinet Alpha', slug: 'cabinet-alpha' }]
 
 describe('UsersAdmin page', () => {
@@ -99,7 +104,7 @@ describe('UsersAdmin page', () => {
       },
     ]
 
-    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
+    render(<UsersAdmin users={users} organizations={defaultOrgs} {...PAGE} />)
 
     expect(screen.getByText(/Utilisateurs de la plateforme/i)).toBeInTheDocument()
     expect(screen.getByText('Alice')).toBeInTheDocument()
@@ -121,10 +126,7 @@ describe('UsersAdmin page', () => {
       },
     ]
 
-    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
-
-    const filterSelect = screen.getByDisplayValue('Tous les rôles')
-    fireEvent.change(filterSelect, { target: { value: 'employee' } })
+    render(<UsersAdmin users={users} organizations={defaultOrgs} {...PAGE} />)
 
     const row = screen.getByText('Bob').closest('tr') as HTMLElement
     const roleSelect = within(row).getByRole('combobox', { name: /Changer le rôle de Bob/i })
@@ -158,7 +160,7 @@ describe('UsersAdmin page', () => {
       },
     ]
 
-    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
+    render(<UsersAdmin users={users} organizations={defaultOrgs} {...PAGE} />)
 
     const row = screen.getByText('Carol').closest('tr') as HTMLElement
     const roleSelect = within(row).getByRole('combobox', { name: /Changer le rôle de Carol/i })
@@ -185,7 +187,7 @@ describe('UsersAdmin page', () => {
       },
     ]
 
-    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
+    render(<UsersAdmin users={users} organizations={defaultOrgs} {...PAGE} />)
 
     expect(screen.getByText('En attente')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Renvoyer l.invitation/i }))
@@ -198,7 +200,7 @@ describe('UsersAdmin page', () => {
   })
 
   test('opens create user modal from header button', () => {
-    render(<UsersAdmin users={[]} organizations={defaultOrgs} />)
+    render(<UsersAdmin users={[]} organizations={defaultOrgs} {...PAGE} />)
 
     fireEvent.click(screen.getByRole('button', { name: /Créer un utilisateur/i }))
 
@@ -228,7 +230,7 @@ describe('UsersAdmin page', () => {
       },
     ]
 
-    render(<UsersAdmin users={users} organizations={defaultOrgs} />)
+    render(<UsersAdmin users={users} organizations={defaultOrgs} {...PAGE} />)
 
     const danRow = screen.getByText('Dan').closest('tr') as HTMLElement
     const roleSelect = within(danRow).getByRole('combobox', { name: /Changer le rôle de Dan/i })
