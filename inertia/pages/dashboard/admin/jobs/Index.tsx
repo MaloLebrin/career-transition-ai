@@ -1,9 +1,12 @@
 import { Transmit } from '@adonisjs/transmit-client'
-import { Head } from '@inertiajs/react'
+import { Head, router } from '@inertiajs/react'
 import { useEffect, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import Badge, { BadgeVariant } from '~/components/ui/Badge'
+import { Pagination } from '~/components/ui/Pagination'
 import { useAuth } from '~/hooks/use_auth'
+import { listQuery } from '#shared/helpers/pagination'
+import type { PaginationMeta } from '#shared/types/pagination'
 
 import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
 
@@ -56,7 +59,10 @@ function downloadUrlForExport(id: number, status: PdfExportStatus): string | nul
   return `/dashboard/pdf-exports/${id}/download`
 }
 
-function mergeFromBroadcast(data: PdfExportBroadcastPayload, existing?: PdfExportListItem): PdfExportListItem {
+function mergeFromBroadcast(
+  data: PdfExportBroadcastPayload,
+  existing?: PdfExportListItem
+): PdfExportListItem {
   const status = data.status
   return {
     id: data.id,
@@ -77,11 +83,31 @@ function mergeFromBroadcast(data: PdfExportBroadcastPayload, existing?: PdfExpor
 
 interface PdfExportsListProps {
   exports?: PdfExportListItem[]
+  pagination?: PaginationMeta
+  filters?: { status: string }
 }
 
-export default function PdfExportsList({ exports: initialExports = [] }: PdfExportsListProps) {
+const NO_EXPORTS: PdfExportListItem[] = []
+const EMPTY_PAGINATION: PaginationMeta = { page: 1, pageSize: 25, total: 0, lastPage: 1 }
+
+export default function PdfExportsList({
+  exports: initialExports = NO_EXPORTS,
+  pagination = EMPTY_PAGINATION,
+  filters = { status: 'all' },
+}: PdfExportsListProps) {
   const { user } = useAuth()
   const [exports, setExports] = useState<PdfExportListItem[]>(initialExports)
+
+  // Changement de page ou de filtre : la liste du serveur remplace celle de l'état local.
+  useEffect(() => {
+    setExports(initialExports)
+  }, [initialExports])
+
+  const goToPage = (page: number) =>
+    router.get(window.location.pathname, listQuery({ status: filters.status, page }), {
+      preserveScroll: true,
+      only: ['exports', 'pagination', 'filters'],
+    })
 
   useEffect(() => {
     if (!user || typeof window === 'undefined') return
@@ -105,7 +131,8 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
             if (exists) {
               return prev.map((e) => (e.id === merged.id ? merged : e))
             }
-            return [merged, ...prev]
+            // Un nouvel export n'apparaît en tête qu'en première page, sans filtre de statut.
+            return pagination.page === 1 && filters.status === 'all' ? [merged, ...prev] : prev
           })
         })
       })
@@ -117,7 +144,7 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
       }
       subscription.delete().catch(() => {})
     }
-  }, [user])
+  }, [user, pagination.page, filters.status])
 
   const title = 'Exports PDF'
 
@@ -174,54 +201,54 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
                 {exports.map((row) => (
-                    <tr key={row.id} className="hover:bg-brand-ivory/60 transition-colors">
-                      <td className="px-6 py-4 text-xs font-mono text-brand-navy/70">{row.id}</td>
-                      <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        {row.employeeName ?? `#${row.employeeId}`}
-                      </td>
-                      <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
-                        #{row.userId}
-                      </td>
-                      <td className="px-4 py-4">
-                        <Badge variant={STATUS_VARIANTS[row.status]}>
-                          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                            {STATUS_LABELS[row.status]}
-                          </span>
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {new Date(row.createdAt).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}
-                      </td>
-                      <td className="px-4 py-4 text-xs text-brand-navy/70">
-                        {row.finishedAt ? new Date(row.finishedAt).toLocaleString() : '—'}
-                      </td>
-                      <td className="px-6 py-4 text-xs text-brand-navy/60 max-w-xs">
-                        {row.errorMessage ? (
-                          <span className="line-clamp-2" title={row.errorMessage}>
-                            {row.errorMessage}
-                          </span>
-                        ) : (
-                          <span className="text-brand-navy/30">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-xs text-brand-navy/60">
-                        {row.downloadUrl ? (
-                          <a
-                            href={row.downloadUrl}
-                            className="text-brand-sage font-bold hover:underline"
-                            title={row.fileName ?? 'Télécharger'}
-                          >
-                            Télécharger
-                          </a>
-                        ) : (
-                          <span className="text-brand-navy/30">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  <tr key={row.id} className="hover:bg-brand-ivory/60 transition-colors">
+                    <td className="px-6 py-4 text-xs font-mono text-brand-navy/70">{row.id}</td>
+                    <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
+                      {row.employeeName ?? `#${row.employeeId}`}
+                    </td>
+                    <td className="px-4 py-4 text-xs font-medium text-brand-navy/80">
+                      #{row.userId}
+                    </td>
+                    <td className="px-4 py-4">
+                      <Badge variant={STATUS_VARIANTS[row.status]}>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                          {STATUS_LABELS[row.status]}
+                        </span>
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-4 text-xs text-brand-navy/70">
+                      {new Date(row.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-4 text-xs text-brand-navy/70">
+                      {row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}
+                    </td>
+                    <td className="px-4 py-4 text-xs text-brand-navy/70">
+                      {row.finishedAt ? new Date(row.finishedAt).toLocaleString() : '—'}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-brand-navy/60 max-w-xs">
+                      {row.errorMessage ? (
+                        <span className="line-clamp-2" title={row.errorMessage}>
+                          {row.errorMessage}
+                        </span>
+                      ) : (
+                        <span className="text-brand-navy/30">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-brand-navy/60">
+                      {row.downloadUrl ? (
+                        <a
+                          href={row.downloadUrl}
+                          className="text-brand-sage font-bold hover:underline"
+                          title={row.fileName ?? 'Télécharger'}
+                        >
+                          Télécharger
+                        </a>
+                      ) : (
+                        <span className="text-brand-navy/30">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
                 {exports.length === 0 && (
                   <tr>
                     <td
@@ -235,9 +262,13 @@ export default function PdfExportsList({ exports: initialExports = [] }: PdfExpo
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={pagination.page}
+            lastPage={pagination.lastPage}
+            onPageChange={goToPage}
+          />
         </div>
       </DashboardLayout>
     </>
   )
 }
-

@@ -5,6 +5,8 @@ import {
 } from '#shared/constants/roles'
 import { ROLE_LABELS, isSuperAdmin } from '#shared/helpers/roles'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
+import type { PaginationMeta } from '#shared/types/pagination'
+import type { UserListItem } from '#shared/types/super_admin/lists'
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -12,18 +14,12 @@ import { CreateUserModal } from '~/components/modals/CreateUserModal'
 import Button from '~/components/ui/Button'
 import ConfirmModal from '~/components/ui/ConfirmModal'
 import Input from '~/components/ui/Input'
+import { Pagination } from '~/components/ui/Pagination'
 import SelectField, { type SelectFieldOption } from '~/components/ui/SelectField'
 import { useAuth } from '~/hooks/use_auth'
+import { useServerList } from '~/hooks/use_server_list'
 
-interface UserItem {
-  id: number
-  name: string
-  email: string
-  role: UserRole
-  organization: { id: number; name: string } | null
-  createdAt: string | null
-  onboardingCompleted: boolean
-}
+type UserItem = UserListItem
 
 interface OrganizationOption {
   id: number
@@ -34,7 +30,12 @@ interface OrganizationOption {
 interface UsersAdminProps {
   users: UserItem[]
   organizations: OrganizationOption[]
+  pagination: PaginationMeta
+  filters: { search: string; role: UserRole | 'all' }
 }
+
+const LIST_PATH = '/dashboard/super-admin/users'
+const LIST_ONLY = ['users']
 
 type PendingRoleChange = {
   userId: number
@@ -43,11 +44,14 @@ type PendingRoleChange = {
   newRole: UserRole
 }
 
-export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
+export default function UsersAdmin({ users, organizations, pagination, filters }: UsersAdminProps) {
   const { user } = useAuth()
   const role = user?.role || 'employee'
-  const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
+  const { values, setSearch, setFilter, goToPage } = useServerList(
+    LIST_PATH,
+    { search: filters.search, role: filters.role },
+    LIST_ONLY
+  )
   const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null)
   const [roleSubmitting, setRoleSubmitting] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
@@ -115,22 +119,6 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
       })),
     []
   )
-
-  const filteredUsers = useMemo(() => {
-    const term = search.trim().toLowerCase()
-
-    return users.filter((u) => {
-      const matchesSearch =
-        !term ||
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term) ||
-        (u.organization?.name.toLowerCase().includes(term) ?? false)
-
-      const matchesRole = roleFilter === 'all' || u.role === roleFilter
-
-      return matchesSearch && matchesRole
-    })
-  }, [users, search, roleFilter])
 
   const openConfirmChangeRole = (u: UserItem, newRole: UserRole) => {
     setPendingRoleChange({
@@ -221,15 +209,15 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
                 Créer un utilisateur
               </Button>
               <Input
-                value={search}
+                value={values.search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Rechercher par nom, email, cabinet…"
               />
               <SelectField<UserRole | 'all'>
                 aria-label="Filtrer par rôle"
                 options={roleFilterOptions}
-                value={roleFilter}
-                onChange={(v) => setRoleFilter(v)}
+                value={values.role as UserRole | 'all'}
+                onChange={(v) => setFilter('role', v)}
                 showSelectedOptionDescription
                 className="shrink-0 w-full sm:min-w-[200px] sm:max-w-[280px]"
               />
@@ -261,7 +249,7 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-navy/5">
-                {filteredUsers.map((u) => (
+                {users.map((u) => (
                   <tr key={u.id} className="hover:bg-brand-ivory/60 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
@@ -324,7 +312,7 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
                     </td>
                   </tr>
                 ))}
-                {filteredUsers.length === 0 && (
+                {users.length === 0 && (
                   <tr>
                     <td
                       className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
@@ -337,6 +325,11 @@ export default function UsersAdmin({ users, organizations }: UsersAdminProps) {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={pagination.page}
+            lastPage={pagination.lastPage}
+            onPageChange={goToPage}
+          />
 
           <ConfirmModal
             isOpen={pendingRoleChange !== null}

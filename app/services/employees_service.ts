@@ -5,6 +5,11 @@ import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
+import type { EmployeeListParams } from '#shared/types/employee/list'
+import type { Paginated } from '#shared/types/pagination'
+import { paginationMeta, whereAnyColumnContains } from '#utils/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
@@ -22,6 +27,33 @@ function randomPassword(): string {
 @inject()
 export class EmployeesService {
   constructor(private onboardingMailService: OnboardingMailService) {}
+
+  /**
+   * Une page des candidats visibles par un membre d'équipe (`teamEmployeeScope`) ; un
+   * conseiller ne voit que les siens. Recherche (nom, e-mail) et statut côté base ; seul le
+   * plan d'accompagnement est préchargé : la liste n'affiche que la progression.
+   */
+  public async listForTeam(
+    user: User,
+    params: EmployeeListParams
+  ): Promise<Paginated<EmployeeDto>> {
+    const query = Employee.query()
+      .where(teamEmployeeScope(user))
+      .if(user.role === USERS_ROLES.ADVISOR, (q) => q.where('advisorId', user.id))
+      .if(params.status !== null, (q) => q.where('status', params.status!))
+      .preload('supportPlanSteps')
+      .orderBy([
+        { column: 'name', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ])
+    whereAnyColumnContains(query, ['name', 'email'], params.search)
+
+    const paginator = await query.paginate(params.page, LIST_PAGE_SIZE)
+    return {
+      items: paginator.all().map(mapEmployee),
+      pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
+    }
+  }
 
   /**
    * (Re)sends the onboarding link for an existing employee.

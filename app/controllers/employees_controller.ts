@@ -20,6 +20,7 @@ import { buildDossierArchive, dossierZipFilename } from '#services/dossier_expor
 import type { CandidateDataRights } from '#shared/types/candidate_data/requests'
 import { EmployeesService } from '#services/employees_service'
 import { ExerciseAccessService } from '#services/exercise_access_service'
+import { parseEmployeeListParams } from '#shared/helpers/employee/list_params'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import { createEmployeeValidator } from '#validators/employee/employee_create_validator'
 import { updateEmployeeValidator } from '#validators/employee/employee_update_validator'
@@ -124,21 +125,14 @@ export default class EmployeesController {
       return ctx.response.unauthorized()
     }
 
-    const advisorId = user.role === USERS_ROLES.ADVISOR ? user.id : null
+    const params = parseEmployeeListParams(ctx.request.qs())
+    const { items, pagination } = await this.employeesService.listForTeam(user, params)
 
-    const query = Employee.query()
-      .where(teamEmployeeScope(user))
-      .if(advisorId !== null, (q) => q.where('advisorId', advisorId!))
-      .preload('skills', (q) => q.pivotColumns(['level']))
-      .preload('experiences')
-      .preload('educations')
-      .preload('exerciseResults')
-      .preload('supportPlanSteps', (q) => q.preload('exercises'))
-
-    const employees = await query
-    const data = employees.map(mapEmployee)
-
-    return (ctx.inertia as any).render('dashboard/conseiller/employees/List', { employees: data })
+    return (ctx.inertia as any).render('dashboard/conseiller/employees/List', {
+      employees: items,
+      pagination,
+      filters: { search: params.search, status: params.status ?? 'all' },
+    })
   }
 
   /**

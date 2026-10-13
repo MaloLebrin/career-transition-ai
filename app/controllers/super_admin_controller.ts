@@ -6,7 +6,10 @@ import { PlatformOrganizationService } from '#services/platform_organization_ser
 import { SuperAdminB2cService } from '#services/super_admin_b2c_service'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
+import {
+  parseOrganizationListParams,
+  parseUserListParams,
+} from '#shared/helpers/super_admin/list_params'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
 import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
 import { updateUserRoleValidator } from '#validators/super_admin/update_user_role_validator'
@@ -38,31 +41,18 @@ export default class SuperAdminController {
    * Inertia page: list client organizations with basic aggregates.
    * Excludes the platform organization (`organizations.is_platform`, #92).
    */
-  public async organizations({ inertia }: HttpContext) {
+  public async organizations({ inertia, request }: HttpContext) {
     const platformOrganizationId = await this.platformOrganizationService.getId()
-    const organizations = await Organization.query()
-      .where('id', '!=', platformOrganizationId)
-      .preload('users', (query) => query.orderBy('id', 'asc'))
-      .preload('employees')
-
-    logger.info('Super admin organizations', { organizations: JSON.stringify(organizations) })
-
-    const items = organizations.map((org) => ({
-      id: org.id,
-      name: org.name,
-      slug: org.slug,
-      // Propriétaire = premier admin de l'organisation (à défaut, premier compte créé — cas
-      // de l'inscription en libre-service, dont le créateur est conseiller) : cible des
-      // actions impersonation / reset mot de passe.
-      ownerId:
-        (org.users.find((user) => user.role === USERS_ROLES.ADMIN) ?? org.users[0])?.id ?? null,
-      usersCount: org.users.length,
-      employeesCount: org.employees.length,
-      createdAt: org.createdAt?.toISO() ?? null,
-    }))
+    const params = parseOrganizationListParams(request.qs())
+    const { items, pagination } = await this.superAdminOrganizationsService.list(
+      platformOrganizationId,
+      params
+    )
 
     return inertia.render('dashboard/admin/organizations/Index', {
       organizations: items,
+      pagination,
+      filters: { search: params.search, minEmployees: params.minEmployees ?? '' },
     })
   }
 
@@ -227,28 +217,18 @@ export default class SuperAdminController {
    * Inertia page: list users with global filters and role overview.
    * Excludes users of the platform organization (`organizations.is_platform`, #92).
    */
-  public async users({ inertia }: HttpContext) {
+  public async users({ inertia, request }: HttpContext) {
     const platformOrganizationId = await this.platformOrganizationService.getId()
+    const params = parseUserListParams(request.qs())
 
-    const [users, organizationRows] = await Promise.all([
-      User.query().where('organizationId', '!=', platformOrganizationId).preload('organization'),
+    const [{ items, pagination }, organizationRows] = await Promise.all([
+      this.superAdminUsersService.list(platformOrganizationId, params),
+      // Options du sélecteur de la modale de création : toutes les organisations clientes.
       Organization.query()
         .where('id', '!=', platformOrganizationId)
         .orderBy('name', 'asc')
         .select('id', 'name', 'slug'),
     ])
-
-    const items = users.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      organization: user.organization
-        ? { id: user.organization.id, name: user.organization.name }
-        : null,
-      createdAt: user.createdAt?.toISO() ?? null,
-      onboardingCompleted: user.onboardingCompletedAt !== null,
-    }))
 
     const organizations = organizationRows.map((o) => ({
       id: o.id,
@@ -259,6 +239,8 @@ export default class SuperAdminController {
     return inertia.render('dashboard/admin/users/Index', {
       users: items,
       organizations,
+      pagination,
+      filters: { search: params.search, role: params.role ?? 'all' },
     })
   }
 
