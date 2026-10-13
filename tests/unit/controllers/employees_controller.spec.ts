@@ -268,16 +268,19 @@ test.group('EmployeesController.resendOnboardingLink', (group) => {
     const response = makeResponse()
     const session = makeSession()
 
-    // @ts-expect-error minimal context
-    await controller.resendOnboardingLink({
-      params: { id: String(employee.id) },
-      auth: { user: advisor },
-      request: { protocol: () => 'http', hostname: () => 'localhost' },
-      response: response as any,
-      session: session as any,
-    } as any)
-
-    assert.deepEqual(session.flashes, [['error', 'Ce candidat a déjà terminé son onboarding.']])
+    // L'erreur est une `EmployeeAlreadyOnboardedError` : `handler.ts` la rend en flash + redirect back.
+    await assert.rejects(
+      () =>
+        controller.resendOnboardingLink({
+          params: { id: String(employee.id) },
+          auth: { user: advisor },
+          request: { protocol: () => 'http', hostname: () => 'localhost' },
+          response: response as any,
+          session: session as any,
+        } as any),
+      'Ce candidat a déjà terminé son onboarding.'
+    )
+    assert.deepEqual(session.flashes, [])
   })
 })
 

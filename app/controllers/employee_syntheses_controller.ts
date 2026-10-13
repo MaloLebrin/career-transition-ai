@@ -221,6 +221,36 @@ export default class EmployeeSynthesesController {
   }
 
   /**
+   * Retry a failed PDF export.
+   * POST /dashboard/conseiller/employees/:id/synthesis/pdf/:exportId/retry
+   */
+  public async retryPdfAdvisor({ auth, params, response, session }: HttpContext) {
+    await this.synthesisService.retryFailedPdfExport(
+      auth.user!,
+      Number(params.id),
+      Number(params.exportId)
+    )
+
+    session.flash('success', 'Génération PDF relancée.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Delete a failed PDF export.
+   * DELETE /dashboard/conseiller/employees/:id/synthesis/pdf/:exportId
+   */
+  public async destroyPdfAdvisor({ auth, params, response, session }: HttpContext) {
+    await this.synthesisService.deleteFailedPdfExport(
+      auth.user!,
+      Number(params.id),
+      Number(params.exportId)
+    )
+
+    session.flash('success', 'Export PDF supprimé.')
+    return response.redirect().back()
+  }
+
+  /**
    * Async PDF generation for candidate.
    * POST /dashboard/candidat/synthesis/pdf
    *

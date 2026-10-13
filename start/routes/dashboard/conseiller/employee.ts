@@ -22,11 +22,19 @@ router
         router.get('/profile', [EmployeesController, 'showProfileDashboard'])
         router.get('/dossier', [EmployeesController, 'downloadDossier'])
         router.post('/onboarding/resend', [EmployeesController, 'resendOnboardingLink'])
+        router.post('/archive', [EmployeesController, 'archive'])
+        router.post('/restore', [EmployeesController, 'restore'])
         router.get('/synthesis', [EmployeeSynthesesController, 'showAdvisor'])
         router.put('/synthesis', [EmployeeSynthesesController, 'updateAdvisor'])
         router.post('/synthesis/share', [EmployeeSynthesesController, 'share'])
         router.post('/synthesis/unshare', [EmployeeSynthesesController, 'unshare'])
         router.post('/synthesis/pdf', [EmployeeSynthesesController, 'generateShareablePdfAdvisor'])
+        router
+          .post('/synthesis/pdf/:exportId/retry', [EmployeeSynthesesController, 'retryPdfAdvisor'])
+          .where('exportId', router.matchers.number())
+        router
+          .delete('/synthesis/pdf/:exportId', [EmployeeSynthesesController, 'destroyPdfAdvisor'])
+          .where('exportId', router.matchers.number())
 
         /**
          * Step Detail (Feuille de Route)
@@ -72,6 +80,7 @@ router
               ExerciseResultsController,
               'showExerciseResultConseiller',
             ])
+            router.delete('/results/:type', [ExerciseResultsController, 'resetConseiller'])
             router.get('/:type', [ExerciseResultsController, 'showDashboard'])
 
             // Exercise submissions (Motivation)

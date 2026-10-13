@@ -1,6 +1,7 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
+import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
 import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
@@ -31,6 +32,25 @@ function randomPassword(): string {
 @inject()
 export class EmployeesService {
   constructor(private onboardingMailService: OnboardingMailService) {}
+
+  /** Fiche d'un candidat dans le périmètre de l'équipe, sinon 404. */
+  public async findForTeam(user: User, id: number): Promise<Employee> {
+    const employee = await Employee.query().where('id', id).where(teamEmployeeScope(user)).first()
+    if (!employee) throw new EmployeeNotFoundError()
+    return employee
+  }
+
+  /** Archive la fiche (statut `archived`) : réversible, aucune donnée supprimée. */
+  public async archive(employee: Employee): Promise<void> {
+    employee.status = EMPLOYEES_STATUS.ARCHIVED
+    await employee.save()
+  }
+
+  /** Sort la fiche des archives : `onboarding` tant que le compte n'est pas activé, sinon `active`. */
+  public async restore(employee: Employee): Promise<void> {
+    employee.status = employee.onboarded ? EMPLOYEES_STATUS.ACTIVE : EMPLOYEES_STATUS.ONBOARDING
+    await employee.save()
+  }
 
   /**
    * Une page des candidats visibles par un membre d'équipe (`teamEmployeeScope`) ; un
@@ -67,7 +87,7 @@ export class EmployeesService {
    */
   public async resendOnboardingLink(employee: Employee): Promise<void> {
     if (employee.onboarded) {
-      throw new Error('Ce candidat a déjà terminé son onboarding.')
+      throw new EmployeeAlreadyOnboardedError()
     }
 
     let user: User | null = null

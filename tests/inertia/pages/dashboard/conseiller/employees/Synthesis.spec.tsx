@@ -9,7 +9,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
   return {
     ...actual,
     Head: () => null,
-    router: { post: vi.fn(), put: vi.fn() },
+    router: { post: vi.fn(), put: vi.fn(), delete: vi.fn() },
   }
 })
 
@@ -204,5 +204,53 @@ describe('EmployeeSynthesisPage — informations de base', () => {
     )
 
     expect(screen.getByTestId('layout')).toHaveAttribute('data-selected-employee-id', '10')
+  })
+})
+
+describe('EmployeeSynthesisPage — export PDF en échec (#72)', () => {
+  const failedJob = { id: 77, status: 'failed', downloadUrl: null }
+
+  function renderFailed() {
+    render(
+      <EmployeeSynthesisPage
+        employeeId="10"
+        employee={baseEmployee}
+        synthesis={makeSynthesis('shared')}
+        latestCompletedByType={{}}
+        latestPdfJob={failedJob}
+      />
+    )
+  }
+
+  test('propose de relancer ou supprimer l’export en échec', async () => {
+    const { router } = await import('@inertiajs/react')
+    renderFailed()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Relancer le PDF' }))
+    expect(router.post).toHaveBeenCalledWith(
+      '/dashboard/conseiller/employees/10/synthesis/pdf/77/retry',
+      {},
+      { preserveScroll: true }
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer l’export en échec' }))
+    expect(router.delete).toHaveBeenCalledWith(
+      '/dashboard/conseiller/employees/10/synthesis/pdf/77',
+      { preserveScroll: true }
+    )
+  })
+
+  test('aucune action d’échec quand le dernier export est terminé ou absent', () => {
+    render(
+      <EmployeeSynthesisPage
+        employeeId="10"
+        employee={baseEmployee}
+        synthesis={makeSynthesis('shared')}
+        latestCompletedByType={{}}
+        latestPdfJob={{ id: 5, status: 'completed', downloadUrl: '/x' }}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: 'Relancer le PDF' })).not.toBeInTheDocument()
   })
 })

@@ -44,19 +44,40 @@ export default class EmployeesController {
     const user = auth.user
     if (!user) return response.unauthorized()
 
-    const employee = await Employee.query()
-      .where('id', Number(params.id))
-      .where(teamEmployeeScope(user))
-      .firstOrFail()
-
-    try {
-      await this.employeesService.resendOnboardingLink(employee)
-    } catch (err: any) {
-      session.flash('error', err?.message ?? "Impossible de renvoyer le lien d'onboarding.")
-      return response.redirect().back()
-    }
+    const employee = await this.employeesService.findForTeam(user, Number(params.id))
+    await this.employeesService.resendOnboardingLink(employee)
 
     session.flash('success', 'Lien d’onboarding renvoyé.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Inertia form: archive an employee (reversible, nothing is deleted).
+   * POST /dashboard/conseiller/employees/:id/archive
+   */
+  public async archive({ params, auth, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const employee = await this.employeesService.findForTeam(user, Number(params.id))
+    await this.employeesService.archive(employee)
+
+    session.flash('success', 'Candidat archivé.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Inertia form: bring an archived employee back.
+   * POST /dashboard/conseiller/employees/:id/restore
+   */
+  public async restore({ params, auth, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    const employee = await this.employeesService.findForTeam(user, Number(params.id))
+    await this.employeesService.restore(employee)
+
+    session.flash('success', 'Candidat restauré.')
     return response.redirect().back()
   }
 

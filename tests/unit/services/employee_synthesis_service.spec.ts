@@ -8,7 +8,13 @@ import { PdfExportFactory } from '#database/factories/pdf_export_factory'
 import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { EntitlementsService } from '#services/entitlements_service'
 import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
-import { createAdvisor, createB2cCandidate, createCandidate } from '#tests/support/actors'
+import { PdfExportNotFailedError, PdfExportNotFoundError } from '#exceptions/pdf_export_errors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createEmployeeFor,
+} from '#tests/support/actors'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
@@ -167,5 +173,83 @@ test.group('EmployeeSynthesisService — visibilité candidat et exports (#101)'
     assert.equal(stored.userId, user.id)
     assert.equal(stored.advisorUserId, advisor.id)
     assert.equal(stored.status, PDF_EXPORT_STATUSES.COMPLETED)
+  })
+})
+
+test.group('EmployeeSynthesisService — exports en échec (#72)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
+  })
+
+  const service = new EmployeeSynthesisService()
+
+  async function failedExport() {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    await EmployeeSynthesisFactory.merge({
+      organizationId: advisor.organizationId,
+      employeeId: employee.id,
+      shareStatus: EMPLOYEE_SYNTHESIS_SHARE_STATUSES.SHARED,
+    }).create()
+    const pdf = await PdfExportFactory.merge({
+      userId: advisor.id,
+      organizationId: advisor.organizationId,
+      employeeId: employee.id,
+      status: PDF_EXPORT_STATUSES.FAILED,
+      errorMessage: 'Boom',
+      filePath: null,
+    }).create()
+    return { advisor, employee, pdf }
+  }
+
+  test('retryFailedPdfExport : relance la même ligne (job sync en test) sans erreur', async ({
+    assert,
+  }) => {
+    const { advisor, employee, pdf } = await failedExport()
+
+    await service.retryFailedPdfExport(advisor, employee.id, pdf.id)
+
+    await pdf.refresh()
+    assert.equal(pdf.status, PDF_EXPORT_STATUSES.COMPLETED)
+    assert.isNull(pdf.errorMessage)
+  })
+
+  test('deleteFailedPdfExport : supprime la ligne', async ({ assert }) => {
+    const { advisor, employee, pdf } = await failedExport()
+
+    await service.deleteFailedPdfExport(advisor, employee.id, pdf.id)
+
+    assert.isNull(await PdfExport.find(pdf.id))
+  })
+
+  test('refuse un export qui n’est pas en échec, inconnu ou d’un autre candidat', async ({
+    assert,
+  }) => {
+    const { advisor, employee, pdf } = await failedExport()
+    await pdf.merge({ status: PDF_EXPORT_STATUSES.COMPLETED }).save()
+    const other = await createEmployeeFor(advisor)
+
+    await assert.rejects(
+      () => service.retryFailedPdfExport(advisor, employee.id, pdf.id),
+      PdfExportNotFailedError
+    )
+    await assert.rejects(
+      () => service.deleteFailedPdfExport(advisor, employee.id, pdf.id),
+      PdfExportNotFailedError
+    )
+    await assert.rejects(
+      () => service.deleteFailedPdfExport(advisor, employee.id, 999999),
+      PdfExportNotFoundError
+    )
+    await assert.rejects(
+      () => service.deleteFailedPdfExport(advisor, other.id, pdf.id),
+      PdfExportNotFoundError
+    )
+    await assert.rejects(
+      () => service.retryFailedPdfExport(advisor, 999999, pdf.id),
+      PdfExportNotFoundError
+    )
   })
 })

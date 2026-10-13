@@ -271,3 +271,33 @@ describe('Fiche accompagné (conseiller)', () => {
     await waitFor(() => expect(alert).toHaveBeenCalledWith('Erreur PDF.'))
   })
 })
+
+describe('Fiche candidat — actions du conseiller (#72)', () => {
+  beforeEach(() => resetInertiaMock())
+
+  test('candidat non onboardé : invitation à renvoyer', async () => {
+    const { user } = renderWithUser(
+      <DashboardEmployeeDetail
+        employeeId="5"
+        employee={makeEmployee({ onboarded: false, status: 'onboarding' })}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Renvoyer l’invitation' }))
+
+    expect(routerSpies.post).toHaveBeenCalledWith(
+      '/dashboard/conseiller/employees/5/onboarding/resend',
+      {},
+      { preserveScroll: true }
+    )
+  })
+
+  test('candidat archivé : bouton Restaurer à la place d’Archiver', () => {
+    renderWithUser(
+      <DashboardEmployeeDetail employeeId="5" employee={makeEmployee({ status: 'archived' })} />
+    )
+
+    expect(screen.getByRole('button', { name: 'Restaurer' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Archiver' })).not.toBeInTheDocument()
+  })
+})

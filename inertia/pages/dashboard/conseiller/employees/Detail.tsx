@@ -2,6 +2,7 @@ import { formatDateTimeFR } from '#shared/helpers/date'
 import { Head, router } from '@inertiajs/react'
 import { useCallback, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { EmployeeAdvisorActions } from '~/components/dashboard/employee/EmployeeAdvisorActions'
 import NotesSection from '~/components/dashboard/NotesSection'
 import { StepEditorModal } from '~/components/modals/StepEditorModal'
 import AppLink from '~/components/ui/AppLink'
@@ -142,6 +143,11 @@ export default function DashboardEmployeeDetail({
                   Synthèse
                 </Button>
               </AppLink>
+              <EmployeeAdvisorActions
+                employeeId={employeeId}
+                status={selectedEmployee.status}
+                onboarded={selectedEmployee.onboarded}
+              />
               <a
                 // eslint-disable-next-line no-restricted-syntax -- téléchargement du dossier (binaire), pas une page Inertia
                 href={`/dashboard/conseiller/employees/${employeeId}/dossier`}

@@ -5,6 +5,8 @@ import {
   createAdmin,
   createAdvisor,
   createB2cCandidate,
+  createCandidate,
+  createEmployeeFor,
   createInHouseExpert,
   createOrganization,
   createPlatformOrganization,
@@ -15,6 +17,7 @@ import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
+import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
 import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { MAX_LICENSES_CANDIDATES } from '#shared/constants/organisation'
@@ -336,5 +339,59 @@ test.group('EmployeesService — licences candidat (#71)', (group) => {
 
     await service.assertCandidateSeatAvailable(platform.id)
     assert.isTrue(true)
+  })
+})
+
+test.group('EmployeesService — actions du conseiller (#72)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+
+  test('findForTeam : candidat de l’équipe, sinon 404', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const mine = await createEmployeeFor(advisor)
+    const { employee: foreign } = await createCandidate({
+      organization: await createOrganization(),
+    })
+
+    const found = await service.findForTeam(advisor, mine.id)
+    assert.equal(found.id, mine.id)
+    await assert.rejects(() => service.findForTeam(advisor, foreign.id), EmployeeNotFoundError)
+    await assert.rejects(() => service.findForTeam(advisor, 999999), EmployeeNotFoundError)
+  })
+
+  test('archive / restore : statut archivé, puis actif ou onboarding selon l’activation', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const active = await createEmployeeFor(advisor)
+    await active.merge({ onboarded: true }).save()
+    const pending = await createEmployeeFor(advisor)
+    await pending.merge({ onboarded: false }).save()
+
+    await service.archive(active)
+    await service.archive(pending)
+    await active.refresh()
+    assert.equal(active.status, EMPLOYEES_STATUS.ARCHIVED)
+
+    await service.restore(active)
+    await service.restore(pending)
+    await active.refresh()
+    await pending.refresh()
+    assert.equal(active.status, EMPLOYEES_STATUS.ACTIVE)
+    assert.equal(pending.status, EMPLOYEES_STATUS.ONBOARDING)
+  })
+
+  test('resendOnboardingLink : refuse un candidat déjà onboardé (erreur de domaine 409)', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    await employee.merge({ onboarded: true }).save()
+
+    await assert.rejects(
+      () => service.resendOnboardingLink(employee),
+      EmployeeAlreadyOnboardedError
+    )
   })
 })
