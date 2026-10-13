@@ -17,6 +17,7 @@ export const SITEMAP_PATHS = [
   '/cabinets/tarifs',
   '/offre',
   '/methodologie',
+  '/contact',
   '/securite',
   '/confidentialite',
   '/mentions-legales',

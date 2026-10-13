@@ -28,6 +28,8 @@ export interface FakeCtxOptions {
   authenticateError?: Error
   /** Verbe HTTP renvoyé par `ctx.request.method()`. */
   method?: string
+  /** En-têtes de la requête (clés en minuscules), lus par `request.header()`. */
+  headers?: Record<string, string>
 }
 
 export interface FakeRedirect {
@@ -56,6 +58,12 @@ export interface FakeCtx {
   logouts: { count: number }
   /** Messages passés à `session.flash(key, value)`, dans l'ordre. */
   flashed: Array<{ key: string; value: unknown }>
+  /** Statuts posés par `response.status()`. */
+  statuses: number[]
+  /** Corps passés à `response.status(...).send()`. */
+  sent: unknown[]
+  /** Appels à `inertia.render(component, props)`. */
+  rendered: Array<{ component: string; props: unknown }>
 }
 
 export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
@@ -68,10 +76,20 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
   const authChecks = { count: 0 }
   const logouts = { count: 0 }
   const flashed: Array<{ key: string; value: unknown }> = []
+  const statuses: number[] = []
+  const sent: unknown[] = []
+  const rendered: Array<{ component: string; props: unknown }> = []
 
   const ctx = {
     request: {
       method: () => options.method ?? 'GET',
+      header: (name: string) => options.headers?.[name.toLowerCase()],
+    },
+    inertia: {
+      render: (component: string, props: unknown) => {
+        rendered.push({ component, props })
+        return `inertia:${component}`
+      },
     },
     session: {
       flash: (key: string, value: unknown) => {
@@ -105,6 +123,14 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
         redirects.push(target)
         redirectCalls.push({ target, forwardQs })
       },
+      status: (code: number) => {
+        statuses.push(code)
+        return {
+          send: (body: unknown) => {
+            sent.push(body)
+          },
+        }
+      },
       forbidden: (body?: unknown) => {
         forbidden.push(body)
       },
@@ -125,6 +151,9 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
     authChecks,
     logouts,
     flashed,
+    statuses,
+    sent,
+    rendered,
   }
 }
 
