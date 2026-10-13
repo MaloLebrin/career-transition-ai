@@ -24,3 +24,10 @@ export class PdfExportNotReadyError extends DomainException {
     super(message, { status: 409, code: 'E_PDF_EXPORT_NOT_READY' })
   }
 }
+
+/** Relance ou suppression demandée sur un export qui n'est pas en échec → 409. */
+export class PdfExportNotFailedError extends DomainException {
+  constructor(message: string = 'Seul un export PDF en échec peut être relancé ou supprimé.') {
+    super(message, { status: 409, code: 'E_PDF_EXPORT_NOT_FAILED' })
+  }
+}

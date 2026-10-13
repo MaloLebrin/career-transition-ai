@@ -1,12 +1,16 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
+import { EmployeeNotFoundError } from '#exceptions/employee_errors'
+import { ExerciseResultNotFoundError } from '#exceptions/exercise_result_errors'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
 import SupportPlanStep from '#models/support_plan_step'
+import type User from '#models/user'
 import { ExerciseAccessService } from '#services/exercise_access_service'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { NotificationService } from '#services/notification_service'
-import { exerciceResultStatusValues } from '#shared/constants/exercises'
+import { exerciceResultStatusValues, exerciceResultTypesValues } from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import type { CandidateExerciseState, ExerciseInitialDraft } from '#shared/types/exercise/access'
@@ -56,6 +60,28 @@ export class ExerciseResultsService {
    * `ExerciseAccessService` (#100) ; ce service ne décide que de l'analyse IA.
    */
   constructor(private access: ExerciseAccessService) {}
+
+  /**
+   * Réinitialise un exercice : supprime les résultats et brouillons du type
+   * donné pour ce candidat (les notes liées partent en cascade), qui peut alors
+   * le refaire. Les étapes du plan ne sont pas modifiées.
+   */
+  public async resetForEmployee(user: User, employeeId: number, type: string): Promise<void> {
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where(teamEmployeeScope(user))
+      .first()
+    if (!employee) throw new EmployeeNotFoundError()
+    const normalized = type.toLowerCase()
+    if (!(exerciceResultTypesValues as readonly string[]).includes(normalized)) {
+      throw new ExerciseResultNotFoundError()
+    }
+    const deleted = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', normalized)
+      .delete()
+    if (!deleted[0]) throw new ExerciseResultNotFoundError()
+  }
 
   /** Dernier brouillon d'un candidat pour un type d'exercice, ou `null`. */
   public async findLatestDraft(

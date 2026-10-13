@@ -1,4 +1,5 @@
 import GenerateEmployeeSynthesisPdf from '#jobs/generate_employee_synthesis_pdf'
+import { PdfExportNotFailedError, PdfExportNotFoundError } from '#exceptions/pdf_export_errors'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
@@ -100,6 +101,54 @@ export class EmployeeSynthesisService {
     })
     await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
     return pdfExport
+  }
+
+  /** Export en échec d'un candidat de l'organisation, sinon 404 (autre statut → 409). */
+  private async findFailedExport(
+    user: User,
+    employeeId: number,
+    exportId: number
+  ): Promise<PdfExport> {
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where(teamEmployeeScope(user))
+      .first()
+    if (!employee) throw new PdfExportNotFoundError()
+    const pdfExport = await PdfExport.query()
+      .where('id', exportId)
+      .where('employeeId', employee.id)
+      .where('organizationId', employee.organizationId)
+      .first()
+    if (!pdfExport) throw new PdfExportNotFoundError()
+    if (pdfExport.status !== PDF_EXPORT_STATUSES.FAILED) throw new PdfExportNotFailedError()
+    return pdfExport
+  }
+
+  /** Relance un export en échec : même ligne, remise en attente puis nouvelle génération. */
+  public async retryFailedPdfExport(
+    user: User,
+    employeeId: number,
+    exportId: number
+  ): Promise<void> {
+    const pdfExport = await this.findFailedExport(user, employeeId, exportId)
+    pdfExport.merge({
+      status: PDF_EXPORT_STATUSES.PENDING,
+      errorMessage: null,
+      startedAt: null,
+      finishedAt: null,
+    })
+    await pdfExport.save()
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+  }
+
+  /** Supprime un export en échec (aucun fichier n'a été stocké). */
+  public async deleteFailedPdfExport(
+    user: User,
+    employeeId: number,
+    exportId: number
+  ): Promise<void> {
+    const pdfExport = await this.findFailedExport(user, employeeId, exportId)
+    await pdfExport.delete()
   }
 
   public async getOrCreateRow(input: {

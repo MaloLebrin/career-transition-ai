@@ -237,6 +237,20 @@ export default class ExerciseResultsController {
   }
 
   /**
+   * Inertia form: reset an exercise (deletes the results of that type).
+   * DELETE /dashboard/conseiller/employees/:id/exercises/results/:type
+   */
+  public async resetConseiller({ auth, params, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    await this.service.resetForEmployee(user, Number(params.id), String(params.type))
+
+    session.flash('success', 'Exercice réinitialisé.')
+    return response.redirect(`/dashboard/conseiller/employees/${params.id}/exercises`)
+  }
+
+  /**
    * Conseiller: Inertia page showing one exercise result (read-only) for an employee.
    */
   public async showExerciseResultConseiller({

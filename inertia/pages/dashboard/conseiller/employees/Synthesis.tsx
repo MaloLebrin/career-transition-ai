@@ -1,3 +1,4 @@
+import { PDF_EXPORT_STATUSES } from '#shared/constants/pdf_export'
 import { Head, router } from '@inertiajs/react'
 import { useCallback, useMemo, useState } from 'react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
@@ -85,6 +86,16 @@ export default function EmployeeSynthesisPage({
     )
   }, [employeeId, isShared])
 
+  const handleFailedPdf = useCallback(
+    (action: 'retry' | 'delete') => {
+      if (!livePdfJob) return
+      const url = `/dashboard/conseiller/employees/${employeeId}/synthesis/pdf/${livePdfJob.id}`
+      if (action === 'retry') router.post(`${url}/retry`, {}, { preserveScroll: true })
+      else router.delete(url, { preserveScroll: true })
+    },
+    [employeeId, livePdfJob]
+  )
+
   const handleGeneratePdf = useCallback(() => {
     if (!isShared) return
     setGeneratingPdf(true)
@@ -124,6 +135,16 @@ export default function EmployeeSynthesisPage({
             >
               {isShared ? 'Désactiver le partage' : 'Partager au talent'}
             </Button>
+            {livePdfJob?.status === PDF_EXPORT_STATUSES.FAILED && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => handleFailedPdf('retry')}>
+                  Relancer le PDF
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleFailedPdf('delete')}>
+                  Supprimer l’export en échec
+                </Button>
+              </>
+            )}
             {livePdfJob?.downloadUrl ? (
               <a
                 href={livePdfJob.downloadUrl}

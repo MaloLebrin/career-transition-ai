@@ -11,7 +11,14 @@ import {
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
 import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
-import { createB2cCandidate, createCandidate } from '#tests/support/actors'
+import { EmployeeNotFoundError } from '#exceptions/employee_errors'
+import { ExerciseResultNotFoundError } from '#exceptions/exercise_result_errors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createOrganization,
+} from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
@@ -674,5 +681,71 @@ test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5
     })
     await row.refresh()
     assert.equal(row.qualitativeAnalysis, 'Première analyse')
+  })
+})
+
+test.group('ExerciseResultsService.resetForEmployee (#72)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new ExerciseResultsService({} as any)
+
+  test('supprime brouillons et résultats du type, garde les autres exercices', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({
+      organization: await advisor.related('organization').query().firstOrFail(),
+      advisor,
+    })
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+    }).createMany(2)
+    const disc = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.DISC,
+    }).create()
+
+    await service.resetForEmployee(advisor, employee.id, 'VALUES')
+
+    const left = await ExerciseResult.query().where('employeeId', employee.id)
+    assert.deepEqual(
+      left.map((r) => r.id),
+      [disc.id]
+    )
+  })
+
+  test('rien à réinitialiser ou type inconnu → ExerciseResultNotFoundError', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({
+      organization: await advisor.related('organization').query().firstOrFail(),
+      advisor,
+    })
+
+    await assert.rejects(
+      () => service.resetForEmployee(advisor, employee.id, 'values'),
+      ExerciseResultNotFoundError
+    )
+    await assert.rejects(
+      () => service.resetForEmployee(advisor, employee.id, 'xyz'),
+      ExerciseResultNotFoundError
+    )
+  })
+
+  test('candidat hors périmètre → EmployeeNotFoundError, résultats conservés', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({ organization: await createOrganization() })
+    await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+    }).create()
+
+    await assert.rejects(
+      () => service.resetForEmployee(advisor, employee.id, 'values'),
+      EmployeeNotFoundError
+    )
+    assert.lengthOf(await ExerciseResult.query().where('employeeId', employee.id), 1)
   })
 })

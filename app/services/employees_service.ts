@@ -1,10 +1,13 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
+import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
 import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
@@ -23,6 +26,25 @@ function randomPassword(): string {
 export class EmployeesService {
   constructor(private onboardingMailService: OnboardingMailService) {}
 
+  /** Fiche d'un candidat dans le périmètre de l'équipe, sinon 404. */
+  public async findForTeam(user: User, id: number): Promise<Employee> {
+    const employee = await Employee.query().where('id', id).where(teamEmployeeScope(user)).first()
+    if (!employee) throw new EmployeeNotFoundError()
+    return employee
+  }
+
+  /** Archive la fiche (statut `archived`) : réversible, aucune donnée supprimée. */
+  public async archive(employee: Employee): Promise<void> {
+    employee.status = EMPLOYEES_STATUS.ARCHIVED
+    await employee.save()
+  }
+
+  /** Sort la fiche des archives : `onboarding` tant que le compte n'est pas activé, sinon `active`. */
+  public async restore(employee: Employee): Promise<void> {
+    employee.status = employee.onboarded ? EMPLOYEES_STATUS.ACTIVE : EMPLOYEES_STATUS.ONBOARDING
+    await employee.save()
+  }
+
   /**
    * (Re)sends the onboarding link for an existing employee.
    * - Ensures there is a linked User (creates one if missing)
@@ -31,7 +53,7 @@ export class EmployeesService {
    */
   public async resendOnboardingLink(employee: Employee): Promise<void> {
     if (employee.onboarded) {
-      throw new Error('Ce candidat a déjà terminé son onboarding.')
+      throw new EmployeeAlreadyOnboardedError()
     }
 
     let user: User | null = null

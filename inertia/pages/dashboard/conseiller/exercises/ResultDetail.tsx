@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { ResetExerciseButton } from '~/components/dashboard/exercises/ResetExerciseButton'
 import NotesSection from '~/components/dashboard/NotesSection'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
 import AppLink from '~/components/ui/AppLink'
@@ -57,10 +58,15 @@ export default function ExerciseResultDetail({
         ) : (
           <div className="space-y-8">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">
-                {exerciseTitle}
-              </h1>
+              <h1 className="text-3xl font-bold text-brand-navy tracking-tight">{exerciseTitle}</h1>
               <p className="text-brand-navy/60 mt-1">Résultat de {employeeName}</p>
+              <div className="mt-4">
+                <ResetExerciseButton
+                  employeeId={employeeId}
+                  type={result.type}
+                  exerciseTitle={exerciseTitle}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">

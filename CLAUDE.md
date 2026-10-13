@@ -137,6 +137,8 @@ Ordre standard : `auth()` → middleware de rôle.
 
 Rate limiting des endpoints publics : `throttleLogin`, `throttleRegister`, `throttleContactRequests`, `throttleOnboarding`, `throttleForgotPassword`, `throttlePasswordReset`, `throttleChangePassword`, `throttleDataExport`, `throttleEmailVerification`, `throttleExerciseSave` (60/min par compte sur les sauvegardes d'exercice candidat), `throttleCheckout` (10/h par compte, `POST /dashboard/candidat/offre/checkout`) (`start/limiter.ts`, `.use(throttleX)`). Clé IP via `clientIp()` (`#utils/client_ip`), jamais `request.ip()` (falsifiable avec `trustProxy`). Compteurs remis à zéro avant chaque test functional (`tests/bootstrap.ts`).
 
+Actions du conseiller sur une fiche (#72) : `EmployeesService.findForTeam/archive/restore/resendOnboardingLink` (archivage = statut `archived`, réversible), `ExerciseResultsService.resetForEmployee` (supprime les résultats d'un type), `EmployeeSynthesisService.retryFailedPdfExport/deleteFailedPdfExport` (exports `failed` seulement) ; erreurs `employee_errors.ts`, `exercise_result_errors.ts`, `pdf_export_errors.ts` ; composants `EmployeeAdvisorActions`, `ResetExerciseButton`.
+
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 
 IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.

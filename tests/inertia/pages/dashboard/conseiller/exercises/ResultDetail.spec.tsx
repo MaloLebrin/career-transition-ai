@@ -121,4 +121,28 @@ describe('Détail d’un résultat d’exercice (conseiller)', () => {
     )
     expect(screen.getByText('—')).toBeInTheDocument()
   })
+
+  test('propose de réinitialiser l’exercice du type affiché, absent sans résultat', async () => {
+    const { rerender } = render(
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={result as never}
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Réinitialiser l’exercice' })).toBeInTheDocument()
+
+    rerender(
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={null}
+      />
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Réinitialiser l’exercice' })
+    ).not.toBeInTheDocument()
+  })
 })
