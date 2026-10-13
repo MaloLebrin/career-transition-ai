@@ -109,6 +109,8 @@ test.group('AuthService', (group) => {
     assert.equal(dto.id, user.id)
     assert.equal(dto.organizationId, user.organizationId)
     assert.isNotNull(user.onboardingCompletedAt)
+    assert.equal(user.role, USERS_ROLES.ADMIN, 'le propriétaire du cabinet en est l’administrateur')
+    assert.equal(dto.role, USERS_ROLES.ADMIN)
   })
 
   test('register rejects duplicate email', async ({ assert }) => {

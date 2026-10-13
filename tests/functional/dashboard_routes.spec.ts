@@ -4,6 +4,7 @@ import User from '#models/user'
 import { createAdmin, createAdvisor } from '#tests/support/actors'
 import { truncateDb } from '#tests/utils/db'
 import { test } from '@japa/runner'
+import { fakeMail, restoreMail } from './conseiller/helpers.js'
 
 /**
  * Mutations du dashboard conseiller (candidats, organisation, invitations) :
@@ -17,6 +18,11 @@ test.group('Dashboard routes (functional)', (group) => {
   // Pas de transaction globale ici : les handlers HTTP passent par d'autres
   // connexions du pool Postgres et ne la verraient pas (cf. tests/bootstrap.ts).
   group.each.setup(() => truncateDb())
+  // Les invitations passent par le mail : jamais d'appel réseau (Resend) en test.
+  group.each.setup(() => {
+    fakeMail()
+    return () => restoreMail()
+  })
 
   test('POST /dashboard/conseiller/employees returns 401 when unauthenticated', async ({
     assert,
@@ -96,7 +102,7 @@ test.group('Dashboard routes (functional)', (group) => {
     const response = await client
       .post('/dashboard/conseiller/settings/organization/advisors')
       .header('Accept', 'application/json')
-      .json({ name: 'New Advisor', email: 'advisor@example.com', role: 'consultant' })
+      .json({ name: 'New Advisor', email: 'advisor@example.com', role: 'advisor' })
       .redirects(0)
 
     response.assertStatus(401)
@@ -114,7 +120,7 @@ test.group('Dashboard routes (functional)', (group) => {
       .post('/dashboard/conseiller/settings/organization/advisors')
       .loginAs(admin)
       .header('Accept', 'application/json')
-      .json({ name: 'Invited Advisor', email: invitedEmail, role: 'consultant' })
+      .json({ name: 'Invited Advisor', email: invitedEmail, role: 'advisor' })
       .redirects(0)
 
     response.assertStatus(302)

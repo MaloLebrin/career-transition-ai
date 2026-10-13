@@ -95,6 +95,10 @@ export type ScannedRoutes = {
     'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
+    'organization_team.update_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'organization_team.disable': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'organization_team.enable': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'organization_team.reassign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organization_logos.store': { paramsTuple?: []; params?: {} }
     'organization_logos.destroy': { paramsTuple?: []; params?: {} }
     'dashboard.index': { paramsTuple?: []; params?: {} }
@@ -201,6 +205,9 @@ export type ScannedRoutes = {
     'dashboard.exercises.circle_of_control.draft': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'dashboard.exercises.circle_of_control.result': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store_advisor_from_dashboard': { paramsTuple?: []; params?: {} }
+    'organization_team.disable': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'organization_team.enable': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'organization_team.reassign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organization_logos.store': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
@@ -352,6 +359,7 @@ export type ScannedRoutes = {
     'employee_syntheses.update_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'organizations.update_from_dashboard': { paramsTuple?: []; params?: {} }
+    'organization_team.update_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'passwords.update': { paramsTuple?: []; params?: {} }
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }

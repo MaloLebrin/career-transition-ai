@@ -28,7 +28,8 @@ export class OrganizationsService {
   public async listAdvisors(organizationId: number): Promise<AdvisorDto[]> {
     const users = await User.query()
       .where('organizationId', organizationId)
-      .whereIn('role', [USERS_ROLES.ADVISOR, USERS_ROLES.ADMIN])
+      .whereIn('role', [USERS_ROLES.ADMIN, USERS_ROLES.ADVISOR, USERS_ROLES.EXPERT])
+      .orderBy('id', 'asc')
     return users.map(userToAdvisorDto)
   }
 }

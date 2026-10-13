@@ -6,6 +6,8 @@ import {
   createAdvisor,
   createB2cCandidate,
   createInHouseExpert,
+  createOrganization,
+  createPlatformOrganization,
 } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { EmployeesService } from '#services/employees_service'
@@ -13,6 +15,9 @@ import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
+import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { MAX_LICENSES_CANDIDATES } from '#shared/constants/organisation'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 
 test.group('EmployeesService', (group) => {
@@ -295,5 +300,41 @@ test.group('EmployeesService.listForTeam (#75)', (group) => {
     const { items } = await service.listForTeam(admin, { ...params, page: 9 })
 
     assert.lengthOf(items, 0)
+  })
+})
+
+test.group('EmployeesService — licences candidat (#71)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+
+  test('refuse la création au-delà de MAX_LICENSES_CANDIDATES, fiches archivées exclues', async ({
+    assert,
+  }) => {
+    const org = await createOrganization()
+    await EmployeeFactory.merge({ organizationId: org.id }).createMany(MAX_LICENSES_CANDIDATES)
+    const input = {
+      organizationId: org.id,
+      advisorId: null,
+      name: 'Trop',
+      email: 'trop@example.com',
+      currentRole: 'Dev',
+    }
+
+    await assert.rejects(() => service.create(input), CandidateLicenseLimitReachedError)
+    assert.isNull(await Employee.findBy('email', 'trop@example.com'))
+
+    const one = await Employee.query().where('organizationId', org.id).firstOrFail()
+    await one.merge({ status: EMPLOYEES_STATUS.ARCHIVED }).save()
+    const dto = await service.create(input)
+    assert.equal(dto.email, 'trop@example.com')
+  })
+
+  test('l’organisation plateforme n’est pas limitée', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+    await EmployeeFactory.merge({ organizationId: platform.id }).createMany(MAX_LICENSES_CANDIDATES)
+
+    await service.assertCandidateSeatAvailable(platform.id)
+    assert.isTrue(true)
   })
 })

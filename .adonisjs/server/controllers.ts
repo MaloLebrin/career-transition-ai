@@ -27,6 +27,7 @@ export const controllers = {
   Notifications: () => import('#controllers/notifications_controller'),
   Onboarding: () => import('#controllers/onboarding_controller'),
   OrganizationLogos: () => import('#controllers/organization_logos_controller'),
+  OrganizationTeam: () => import('#controllers/organization_team_controller'),
   Organizations: () => import('#controllers/organizations_controller'),
   Passwords: () => import('#controllers/passwords_controller'),
   PdfExportDownloads: () => import('#controllers/pdf_export_downloads_controller'),

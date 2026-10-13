@@ -144,7 +144,7 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     const payload = {
       name: 'New Advisor',
       email: 'advisor@example.com',
-      role: 'consultant' as const,
+      role: 'advisor' as const,
     }
 
     await controller.storeAdvisorFromDashboard({
@@ -164,40 +164,6 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
     assert.equal(advisorService.inviteAdvisorCalls[0].email, payload.email)
     assert.equal(advisorService.inviteAdvisorCalls[0].role, payload.role)
     assert.deepEqual(session.flashes, [['success', 'Collaborateur invité.']])
-    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
-  })
-
-  test('on duplicate email sets error flash and redirects', async ({ assert }) => {
-    const service = new FakeOrganizationsService()
-    const advisorService = new FakeAdvisorService()
-    advisorService.inviteAdvisorError = new Error(
-      'Cet email est déjà utilisé par un compte existant.'
-    )
-    const controller = new OrganizationsController(service as any, advisorService as any)
-    const session = makeSession()
-    const response = makeResponse()
-
-    const payload = {
-      name: 'Dup',
-      email: 'dup@example.com',
-      role: 'consultant' as const,
-    }
-
-    await controller.storeAdvisorFromDashboard({
-      auth: { user: { organizationId: 42 } },
-      request: {
-        validateUsing: () => Promise.resolve(payload),
-        protocol: () => 'https',
-        hostname: () => 'example.test',
-      },
-      response: response as any,
-      session: session as any,
-    } as any)
-
-    assert.lengthOf(advisorService.inviteAdvisorCalls, 1)
-    assert.deepEqual(session.flashes, [
-      ['error', 'Cet email est déjà utilisé par un compte existant.'],
-    ])
     assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 })

@@ -11,7 +11,7 @@ vi.mock('@inertiajs/react', () => ({
     data: {
       name: '',
       email: '',
-      role: 'consultant',
+      role: 'advisor',
     },
     setData: mockSetData,
     post: mockPost,

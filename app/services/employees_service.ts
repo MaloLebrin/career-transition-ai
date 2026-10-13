@@ -1,11 +1,15 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
+import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
 import Employee from '#models/employee'
+import Organization from '#models/organization'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { MAX_LICENSES_CANDIDATES } from '#shared/constants/organisation'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import type { EmployeeListParams } from '#shared/types/employee/list'
 import type { Paginated } from '#shared/types/pagination'
@@ -102,11 +106,30 @@ export class EmployeesService {
     await this.onboardingMailService.sendSetPasswordLink({ user, token })
   }
 
+  /**
+   * Plafond `MAX_LICENSES_CANDIDATES` de fiches par cabinet (#71), fiches
+   * archivées exclues. L'organisation plateforme (particuliers B2C) n'est pas limitée.
+   */
+  public async assertCandidateSeatAvailable(organizationId: number): Promise<void> {
+    const organization = await Organization.find(organizationId)
+    if (organization?.isPlatform) return
+    const row = await Employee.query()
+      .where('organizationId', organizationId)
+      .whereNot('status', EMPLOYEES_STATUS.ARCHIVED)
+      .count('* as total')
+      .first()
+    if (Number(row?.$extras.total ?? 0) >= MAX_LICENSES_CANDIDATES) {
+      throw new CandidateLicenseLimitReachedError(MAX_LICENSES_CANDIDATES)
+    }
+  }
+
   public async create(
     input: CreateEmployeeInput,
     options?: CreateEmployeeOptions
   ): Promise<EmployeeDto> {
     const sendInvite = options?.sendInvite ?? false
+
+    await this.assertCandidateSeatAvailable(input.organizationId)
 
     let existingUser: User | null = null
     if (sendInvite) {

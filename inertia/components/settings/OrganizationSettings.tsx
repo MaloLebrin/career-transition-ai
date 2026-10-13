@@ -7,7 +7,10 @@ import { UsageCompletionCard } from '~/components/dashboard/settings/usage/Usage
 import { PasswordForm } from '~/components/profile/PasswordForm'
 import { ProfileForm } from '~/components/profile/ProfileForm'
 import { UserSession } from '~/types/auth'
-import { MAX_LICENSES_ADVISORS } from '../../../shared/constants/organisation'
+import {
+  LICENSED_ADVISOR_ROLES,
+  MAX_LICENSES_ADVISORS,
+} from '../../../shared/constants/organisation'
 import { isOrganizationAdmin, isSuperAdmin } from '../../../shared/helpers/roles'
 import { useAuth } from '../../hooks/use_auth'
 import { Organization } from '../../types'
@@ -38,10 +41,12 @@ const OrganizationSettings: React.FC<Props> = ({
 
   // Aligné sur `middleware.admin()` des routes de mutation du cabinet.
   const canManage = isOrganizationAdmin(user?.role) || isSuperAdmin(user?.role)
-  const canInvite = useMemo(
-    () => canManage && team.length < MAX_LICENSES_ADVISORS,
-    [canManage, team.length]
+  // Indicatif : la limite de licences est vérifiée côté serveur (#71).
+  const usedSeats = useMemo(
+    () => team.filter((m) => LICENSED_ADVISOR_ROLES.includes(m.role) && !m.disabledAt).length,
+    [team]
   )
+  const canInvite = canManage && usedSeats < MAX_LICENSES_ADVISORS
 
   if (!org) {
     return (
@@ -107,13 +112,14 @@ const OrganizationSettings: React.FC<Props> = ({
             setIsInviteModalOpen={setIsInviteModalOpen}
             user={user as UserSession}
             canInvite={canInvite}
+            canManage={canManage}
           />
         </div>
 
         {/* Branding & Side Info */}
         <div className="lg:col-span-5 space-y-8">
           <VisualIdentity organization={org} readOnly={!canManage} />
-          <UsageCompletionCard numberOfLicenses={team.length} />
+          <UsageCompletionCard numberOfLicenses={usedSeats} />
         </div>
       </div>
 
