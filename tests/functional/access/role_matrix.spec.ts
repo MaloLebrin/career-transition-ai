@@ -131,10 +131,20 @@ for (const area of AREAS) {
     })
 
     for (const role of area.denied) {
-      test(`rôle ${role} : 403`, async ({ client }) => {
+      test(`rôle ${role} : 403 rendu en page errors/forbidden (Inertia)`, async ({ client }) => {
         const user = await actor(role)
 
         const response = await client.get(area.url).loginAs(user).withInertia().redirects(0)
+
+        response.assertStatus(403)
+        response.assertInertiaComponent('errors/forbidden')
+        response.assertInertiaPropsContains({ message: area.forbiddenMessage })
+      })
+
+      test(`rôle ${role} : 403 en JSON pour un client non Inertia`, async ({ client }) => {
+        const user = await actor(role)
+
+        const response = await client.get(area.url).loginAs(user).redirects(0)
 
         response.assertStatus(403)
         response.assertBodyContains({ message: area.forbiddenMessage })

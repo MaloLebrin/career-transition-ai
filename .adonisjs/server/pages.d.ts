@@ -29,9 +29,12 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
     'dashboard/candidat/billing/Offer': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Offer.tsx'))['default']>
     'dashboard/candidat/billing/Success': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Success.tsx'))['default']>
+    'dashboard/candidat/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/chat/Index.tsx'))['default']>
     'dashboard/candidat/expert/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/expert/Index.tsx'))['default']>
     'dashboard/candidat/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/StepDetail.tsx'))['default']>
     'dashboard/candidat/Synthesis': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/Synthesis.tsx'))['default']>
+    'dashboard/conseiller/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Index.tsx'))['default']>
+    'dashboard/conseiller/chat/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Show.tsx'))['default']>
     'dashboard/conseiller/employees/Detail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/Detail.tsx'))['default']>
     'dashboard/conseiller/employees/List': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/List.tsx'))['default']>
     'dashboard/conseiller/employees/StepDetail': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/employees/StepDetail.tsx'))['default']>
@@ -69,8 +72,10 @@ declare module '@adonisjs/inertia/types' {
     'dashboard/shared/exercises/SkillMapping': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/SkillMapping.tsx'))['default']>
     'dashboard/shared/exercises/Targeting': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Targeting.tsx'))['default']>
     'dashboard/shared/exercises/Values': ExtractProps<(typeof import('../../inertia/pages/dashboard/shared/exercises/Values.tsx'))['default']>
+    'errors/forbidden': ExtractProps<(typeof import('../../inertia/pages/errors/forbidden.tsx'))['default']>
     'errors/not_found': ExtractProps<(typeof import('../../inertia/pages/errors/not_found.tsx'))['default']>
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
+    'errors/too_many_requests': ExtractProps<(typeof import('../../inertia/pages/errors/too_many_requests.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
     'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
     'Login': ExtractProps<(typeof import('../../inertia/pages/Login.tsx'))['default']>
@@ -85,8 +90,5 @@ declare module '@adonisjs/inertia/types' {
     'Security': ExtractProps<(typeof import('../../inertia/pages/Security.tsx'))['default']>
     'TermsOfSale': ExtractProps<(typeof import('../../inertia/pages/TermsOfSale.tsx'))['default']>
     'TermsOfService': ExtractProps<(typeof import('../../inertia/pages/TermsOfService.tsx'))['default']>
-    'dashboard/conseiller/chat/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Show.tsx'))['default']>
-    'dashboard/conseiller/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/conseiller/chat/Index.tsx'))['default']>
-    'dashboard/candidat/chat/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/chat/Index.tsx'))['default']>
   }
 }

@@ -1,3 +1,4 @@
+import { denyAccess } from '#utils/forbidden_response'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
@@ -10,7 +11,7 @@ export default class CandidateMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     const user = ctx.auth.user
     if (!user || user.role !== USERS_ROLES.EMPLOYEE) {
-      return ctx.response.forbidden({ message: 'Accès réservé aux candidats.' })
+      return denyAccess(ctx, 'Accès réservé aux candidats.')
     }
     return next()
   }

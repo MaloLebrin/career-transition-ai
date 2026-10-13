@@ -1,3 +1,4 @@
+import { denyAccess } from '#utils/forbidden_response'
 import { isConseillerDashboardRole } from '#shared/helpers/roles'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
@@ -10,7 +11,7 @@ export default class AdvisorOrAdminMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     const user = ctx.auth.user
     if (!user || !isConseillerDashboardRole(user.role)) {
-      return ctx.response.forbidden({ message: 'Accès réservé aux conseillers.' })
+      return denyAccess(ctx, 'Accès réservé aux conseillers.')
     }
     return next()
   }
