@@ -1,3 +1,4 @@
+import db from '@adonisjs/lucid/services/db'
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
@@ -9,8 +10,11 @@ import DomainException from '#exceptions/domain_exception'
 import { DateTime } from 'luxon'
 import {
   SuperAdminRoleLockedError,
+  SuperAdminUserHasDataError,
+  SuperAdminUserLockedError,
   SuperAdminUserNotFoundError,
 } from '#exceptions/super_admin_user_errors'
+import { EmployeeFactory } from '#database/factories/employee_factory'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import {
@@ -351,15 +355,19 @@ test.group('SuperAdminUsersService.list (#75)', (group) => {
     const org = await createOrganization()
     const baseline = await service.list(platform.id, params)
     const before = baseline.pagination.total
-    for (let i = 0; i < LIST_PAGE_SIZE + 1; i++) {
-      await User.create({
-        organizationId: org.id,
+    // Insertion directe : 26 `User.create` hacheraient 26 mots de passe (scrypt) et ralentiraient la suite.
+    const now = new Date()
+    await db.table('users').multiInsert(
+      Array.from({ length: LIST_PAGE_SIZE + 1 }, (_, i) => ({
+        organization_id: org.id,
         email: `user-${i}@list.test`,
         name: `User ${String(i).padStart(3, '0')}`,
-        password: 'secret-password',
+        password: 'not-a-real-hash',
         role: USERS_ROLES.ADVISOR,
-      })
-    }
+        created_at: now,
+        updated_at: now,
+      }))
+    )
 
     const first = await service.list(platform.id, params)
     const second = await service.list(platform.id, { ...params, page: 2 })
@@ -368,5 +376,118 @@ test.group('SuperAdminUsersService.list (#75)', (group) => {
     assert.lengthOf(first.items, LIST_PAGE_SIZE)
     assert.lengthOf(second.items, Math.min(LIST_PAGE_SIZE, total - LIST_PAGE_SIZE))
     assert.equal(second.pagination.total, total)
+  })
+})
+
+test.group('SuperAdminUsersService.update / setDisabled / destroy (#73)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new SuperAdminUsersService({} as any)
+
+  async function setup() {
+    await createPlatformOrganization()
+    const actor = await createSuperAdmin()
+    const org = await createOrganization()
+    const target = await createAdvisor(org)
+    return { actor, org, target }
+  }
+
+  test('update : change nom et e-mail, et invalide la vérification de l’adresse', async ({
+    assert,
+  }) => {
+    const { target } = await setup()
+    target.emailVerifiedAt = DateTime.now()
+    await target.save()
+
+    await service.update(target.id, { name: ' Nouveau nom ', email: 'nouveau@mail.test' })
+    await target.refresh()
+
+    assert.equal(target.name, 'Nouveau nom')
+    assert.equal(target.email, 'nouveau@mail.test')
+    assert.isNull(target.emailVerifiedAt)
+  })
+
+  test('update : même e-mail (casse près) garde la vérification ; e-mail pris → erreur', async ({
+    assert,
+  }) => {
+    const { target, org } = await setup()
+    const other = await createAdvisor(org)
+    target.emailVerifiedAt = DateTime.now()
+    await target.save()
+
+    await service.update(target.id, { name: 'X', email: target.email.toUpperCase() })
+    await target.refresh()
+    assert.isNotNull(target.emailVerifiedAt)
+
+    await assert.rejects(
+      () => service.update(target.id, { name: 'X', email: other.email.toUpperCase() }),
+      EmailAlreadyUsedException
+    )
+  })
+
+  test('update : compte de la plateforme ou inconnu → 404', async ({ assert }) => {
+    const { actor } = await setup()
+
+    await assert.rejects(
+      () => service.update(actor.id, { name: 'X', email: 'x@mail.test' }),
+      SuperAdminUserNotFoundError
+    )
+    await assert.rejects(
+      () => service.update(999999, { name: 'X', email: 'x@mail.test' }),
+      SuperAdminUserNotFoundError
+    )
+  })
+
+  test('setDisabled : désactive puis réactive ; soi-même et super admin verrouillés', async ({
+    assert,
+  }) => {
+    const { actor, org, target } = await setup()
+
+    await service.setDisabled(actor, target.id, true)
+    await target.refresh()
+    assert.isNotNull(target.disabledAt)
+
+    await service.setDisabled(actor, target.id, false)
+    await target.refresh()
+    assert.isNull(target.disabledAt)
+
+    await assert.rejects(
+      () => service.setDisabled(target, target.id, true),
+      SuperAdminUserLockedError
+    )
+    const otherSuper = await createSuperAdmin(org)
+    await assert.rejects(
+      () => service.setDisabled(actor, otherSuper.id, true),
+      SuperAdminUserLockedError
+    )
+  })
+
+  test('destroy : supprime un compte sans données, avec ses jetons', async ({ assert }) => {
+    const { actor, target } = await setup()
+    await OnboardingToken.createForUser(target.id)
+
+    await service.destroy(actor, target.id)
+
+    assert.isNull(await User.find(target.id))
+    const tokens = await OnboardingToken.query().where('userId', target.id)
+    assert.lengthOf(tokens, 0)
+  })
+
+  test('destroy : refuse un compte relié à des données (conseiller d’un candidat, notes)', async ({
+    assert,
+  }) => {
+    const { actor, org, target } = await setup()
+    await EmployeeFactory.merge({ organizationId: org.id, advisorId: target.id }).create()
+
+    await assert.rejects(() => service.destroy(actor, target.id), SuperAdminUserHasDataError)
+    assert.isNotNull(await User.find(target.id))
+  })
+
+  test('destroy : refuse soi-même et un super admin', async ({ assert }) => {
+    const { actor, org } = await setup()
+    const otherSuper = await createSuperAdmin(org)
+
+    await assert.rejects(() => service.destroy(actor, actor.id), SuperAdminUserNotFoundError)
+    await assert.rejects(() => service.destroy(actor, otherSuper.id), SuperAdminUserLockedError)
   })
 })

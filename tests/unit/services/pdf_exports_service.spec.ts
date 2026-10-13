@@ -78,9 +78,16 @@ test.group('PdfExportsService.listForUser', (group) => {
   test('pagine, les plus récents d’abord, et expose la méta', async ({ assert }) => {
     const admin = await createAdmin()
     const employee = await EmployeeFactory.merge({ organizationId: admin.organizationId }).create()
+    // Un seul demandeur : `exportOf` en crée un (mot de passe haché) par export.
+    const requester = await UserFactory.merge({ organizationId: employee.organizationId }).create()
     const created: number[] = []
     for (let i = 0; i < LIST_PAGE_SIZE + 3; i++) {
-      const row = await exportOf(employee)
+      const row = await PdfExportFactory.merge({
+        userId: requester.id,
+        organizationId: employee.organizationId,
+        employeeId: employee.id,
+        status: PDF_EXPORT_STATUSES.COMPLETED,
+      }).create()
       created.push(row.id)
     }
 

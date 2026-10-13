@@ -32,4 +32,34 @@ export interface UserListItem {
   organization: { id: number; name: string } | null
   createdAt: string | null
   onboardingCompleted: boolean
+  /** Compte désactivé (connexion refusée) ; `null` = actif. */
+  disabledAt: string | null
+}
+
+/** Détail d'une organisation cliente pour le super admin. */
+export interface OrganizationDetail {
+  id: number
+  name: string
+  slug: string
+  createdAt: string | null
+  usersCount: number
+  employeesCount: number
+  members: Array<{
+    id: number
+    name: string
+    email: string
+    role: UserRole
+    onboardingCompleted: boolean
+    disabledAt: string | null
+  }>
+}
+
+export interface OrganizationUpdateInput {
+  name: string
+  slug?: string
+}
+
+export interface UserUpdateInput {
+  name: string
+  email: string
 }

@@ -27,6 +27,7 @@ test.group('Super admin — accueil', (group) => {
     assert.deepEqual(props.stats, {
       organizations: 3,
       users: 3,
+      pendingContactRequests: 0,
       b2c: {
         candidates: 0,
         paid: 0,

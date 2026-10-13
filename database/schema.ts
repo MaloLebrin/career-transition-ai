@@ -465,7 +465,7 @@ export class PasswordResetTokenSchema extends BaseModel {
 }
 
 export class PdfExportSchema extends BaseModel {
-  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'type', 'updatedAt', 'userId'] as const
+  static $columns = ['advisorUserId', 'createdAt', 'employeeId', 'errorMessage', 'fileName', 'filePath', 'finishedAt', 'id', 'mimeType', 'organizationId', 'size', 'startedAt', 'status', 'updatedAt', 'userId'] as const
   $columns = PdfExportSchema.$columns
   @column()
   declare advisorUserId: number | null
@@ -493,8 +493,6 @@ export class PdfExportSchema extends BaseModel {
   declare startedAt: DateTime | null
   @column()
   declare status: string
-  @column()
-  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
@@ -654,12 +652,14 @@ export class SupportPlanStepSchema extends BaseModel {
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'deletedAt', 'email', 'emailVerifiedAt', 'id', 'name', 'onboardingCompletedAt', 'organizationId', 'password', 'role', 'termsAcceptedAt', 'termsVersion', 'updatedAt'] as const
+  static $columns = ['createdAt', 'deletedAt', 'disabledAt', 'email', 'emailVerifiedAt', 'id', 'name', 'onboardingCompletedAt', 'organizationId', 'password', 'role', 'termsAcceptedAt', 'termsVersion', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column.dateTime()
   declare deletedAt: DateTime | null
+  @column.dateTime()
+  declare disabledAt: DateTime | null
   @column()
   declare email: string
   @column.dateTime()

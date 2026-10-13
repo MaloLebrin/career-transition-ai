@@ -1,5 +1,7 @@
+import { OrganizationNotFoundError } from '#exceptions/organization_errors'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
+import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import Organization from '#models/organization'
 import User from '#models/user'
@@ -7,7 +9,12 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { Paginated } from '#shared/types/pagination'
-import type { OrganizationListItem, OrganizationListParams } from '#shared/types/super_admin/lists'
+import type {
+  OrganizationDetail,
+  OrganizationListItem,
+  OrganizationListParams,
+  OrganizationUpdateInput,
+} from '#shared/types/super_admin/lists'
 import { containsPattern, paginationMeta } from '#utils/pagination'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
@@ -75,6 +82,65 @@ export class SuperAdminOrganizationsService {
       })),
       pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
     }
+  }
+
+  /**
+   * Fiche d'une organisation cliente avec ses membres. L'organisation plateforme et un
+   * identifiant inconnu donnent la même 404.
+   */
+  public async show(platformOrganizationId: number, id: number): Promise<OrganizationDetail> {
+    const organization = await this.findClient(platformOrganizationId, id)
+    const [members, employeesCount] = await Promise.all([
+      User.query().where('organizationId', organization.id).orderBy('id', 'asc'),
+      Employee.query().where('organizationId', organization.id).count('* as total'),
+    ])
+
+    return {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      createdAt: organization.createdAt?.toISO() ?? null,
+      usersCount: members.length,
+      employeesCount: Number(employeesCount[0].$extras.total || 0),
+      members: members.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        onboardingCompleted: user.onboardingCompletedAt !== null,
+        disabledAt: user.disabledAt?.toISO() ?? null,
+      })),
+    }
+  }
+
+  /** Renomme une organisation cliente (nom unique, slug facultatif). */
+  public async update(
+    platformOrganizationId: number,
+    id: number,
+    input: OrganizationUpdateInput
+  ): Promise<Organization> {
+    const organization = await this.findClient(platformOrganizationId, id)
+    const name = input.name.trim()
+
+    const sameName = await Organization.query()
+      .whereRaw('LOWER(name) = ?', [name.toLowerCase()])
+      .whereNot('id', organization.id)
+      .first()
+    if (sameName) throw new OrganizationNameAlreadyUsedException()
+
+    organization.name = name
+    if (input.slug?.trim()) organization.slug = input.slug.trim()
+    await organization.save()
+    return organization
+  }
+
+  private async findClient(platformOrganizationId: number, id: number): Promise<Organization> {
+    const organization = await Organization.query()
+      .where('id', id)
+      .where('id', '!=', platformOrganizationId)
+      .first()
+    if (!organization) throw new OrganizationNotFoundError()
+    return organization
   }
 
   /** Propriétaire de chaque organisation : premier admin, à défaut premier compte créé. */

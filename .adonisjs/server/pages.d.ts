@@ -19,13 +19,16 @@ declare module '@adonisjs/inertia/types' {
     'Cabinets': ExtractProps<(typeof import('../../inertia/pages/Cabinets.tsx'))['default']>
     'Contact': ExtractProps<(typeof import('../../inertia/pages/Contact.tsx'))['default']>
     'dashboard/admin/b2c/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/b2c/Index.tsx'))['default']>
+    'dashboard/admin/contact_requests/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/contact_requests/Index.tsx'))['default']>
     'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
     'dashboard/admin/exercises/Usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/exercises/Usage.tsx'))['default']>
     'dashboard/admin/expert_requests/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/expert_requests/Index.tsx'))['default']>
     'dashboard/admin/home/Home': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/home/Home.tsx'))['default']>
     'dashboard/admin/jobs/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/jobs/Index.tsx'))['default']>
     'dashboard/admin/organizations/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/organizations/Index.tsx'))['default']>
+    'dashboard/admin/organizations/Show': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/organizations/Show.tsx'))['default']>
     'dashboard/admin/payments/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/payments/Index.tsx'))['default']>
+    'dashboard/admin/skills/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/skills/Index.tsx'))['default']>
     'dashboard/admin/team/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/team/Index.tsx'))['default']>
     'dashboard/admin/users/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/users/Index.tsx'))['default']>
     'dashboard/candidat/billing/Offer': ExtractProps<(typeof import('../../inertia/pages/dashboard/candidat/billing/Offer.tsx'))['default']>

@@ -33,7 +33,7 @@ const BASELINE: Record<string, number> = {
   'inertia/components/profile': 60,
   'inertia/components/settings': 11,
   'inertia/components/ui': 0,
-  'inertia/pages': 369,
+  'inertia/pages': 366,
 }
 
 const REMOVED_TOKENS = [

@@ -11,6 +11,8 @@ import {
   parseUserListParams,
 } from '#shared/helpers/super_admin/list_params'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
+import { superAdminUpdateOrganizationValidator } from '#validators/super_admin/update_organization_validator'
+import { superAdminUpdateUserValidator } from '#validators/super_admin/update_user_validator'
 import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
 import { updateUserRoleValidator } from '#validators/super_admin/update_user_role_validator'
 import { inject } from '@adonisjs/core'
@@ -291,6 +293,66 @@ export default class SuperAdminController {
     )
 
     session.flash('success', `Rôle mis à jour pour ${user.name}.`)
+    return response.redirect('/dashboard/super-admin/users')
+  }
+
+  /** GET /dashboard/super-admin/organizations/:id : fiche d'une organisation cliente. */
+  public async showOrganization({ params, inertia }: HttpContext) {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
+    const organization = await this.superAdminOrganizationsService.show(
+      platformOrganizationId,
+      Number(params.id)
+    )
+    return inertia.render('dashboard/admin/organizations/Show', { organization })
+  }
+
+  /** PUT /dashboard/super-admin/organizations/:id : renomme l'organisation. */
+  public async updateOrganization({ params, request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(superAdminUpdateOrganizationValidator)
+    const id = Number(params.id)
+    await this.superAdminOrganizationsService.update(
+      await this.platformOrganizationService.getId(),
+      id,
+      payload
+    )
+    session.flash('success', 'Organisation mise à jour.')
+    return response.redirect().back()
+  }
+
+  /** PUT /dashboard/super-admin/users/:id : nom et e-mail d'un utilisateur. */
+  public async updateUser({ params, request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(superAdminUpdateUserValidator)
+    await this.superAdminUsersService.update(Number(params.id), payload)
+    session.flash('success', 'Utilisateur mis à jour.')
+    return response.redirect().back()
+  }
+
+  /** POST /dashboard/super-admin/users/:id/disable : désactive le compte (connexion refusée). */
+  public async disableUser({ params, response, session, auth }: HttpContext) {
+    const user = await this.superAdminUsersService.setDisabled(
+      auth.getUserOrFail(),
+      Number(params.id),
+      true
+    )
+    session.flash('success', `Compte de ${user.name} désactivé.`)
+    return response.redirect().back()
+  }
+
+  /** POST /dashboard/super-admin/users/:id/enable : réactive le compte. */
+  public async enableUser({ params, response, session, auth }: HttpContext) {
+    const user = await this.superAdminUsersService.setDisabled(
+      auth.getUserOrFail(),
+      Number(params.id),
+      false
+    )
+    session.flash('success', `Compte de ${user.name} réactivé.`)
+    return response.redirect().back()
+  }
+
+  /** DELETE /dashboard/super-admin/users/:id : supprime le compte (refusé s'il porte des données). */
+  public async destroyUser({ params, response, session, auth }: HttpContext) {
+    await this.superAdminUsersService.destroy(auth.getUserOrFail(), Number(params.id))
+    session.flash('success', 'Utilisateur supprimé.')
     return response.redirect('/dashboard/super-admin/users')
   }
 

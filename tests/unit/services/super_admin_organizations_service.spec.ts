@@ -227,3 +227,58 @@ test.group('SuperAdminOrganizationsService.list (#75)', (group) => {
     assert.lengthOf(second.items, Math.min(LIST_PAGE_SIZE, total - LIST_PAGE_SIZE))
   })
 })
+
+test.group('SuperAdminOrganizationsService.show / update (#73)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new SuperAdminOrganizationsService({} as any)
+
+  test('show : renvoie les membres et les compteurs', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+    const org = await createOrganization()
+    const admin = await createAdmin(org)
+    await createAdvisor(org)
+    await EmployeeFactory.merge({ organizationId: org.id }).createMany(2)
+
+    const detail = await service.show(platform.id, org.id)
+
+    assert.equal(detail.name, org.name)
+    assert.equal(detail.usersCount, 2)
+    assert.equal(detail.employeesCount, 2)
+    assert.equal(detail.members[0].id, admin.id)
+    assert.isNull(detail.members[0].disabledAt)
+  })
+
+  test('show et update : organisation plateforme ou inconnue → 404', async ({ assert }) => {
+    const platform = await createPlatformOrganization()
+
+    await assert.rejects(() => service.show(platform.id, platform.id), 'Organisation introuvable.')
+    await assert.rejects(() => service.show(platform.id, 999999), 'Organisation introuvable.')
+    await assert.rejects(
+      () => service.update(platform.id, platform.id, { name: 'Autre' }),
+      'Organisation introuvable.'
+    )
+  })
+
+  test('update : renomme, garde le nom si inchangé, refuse un nom déjà pris', async ({
+    assert,
+  }) => {
+    const platform = await createPlatformOrganization()
+    const org = await Organization.create({ name: 'Ancien nom', slug: 'ancien' })
+    await Organization.create({ name: 'Cabinet Pris', slug: 'pris' })
+
+    await service.update(platform.id, org.id, { name: 'Ancien nom', slug: 'nouveau-slug' })
+    await org.refresh()
+    assert.equal(org.name, 'Ancien nom')
+    assert.equal(org.slug, 'nouveau-slug')
+
+    await service.update(platform.id, org.id, { name: '  Nouveau nom  ' })
+    await org.refresh()
+    assert.equal(org.name, 'Nouveau nom')
+
+    await assert.rejects(
+      () => service.update(platform.id, org.id, { name: 'cabinet pris' }),
+      OrganizationNameAlreadyUsedException
+    )
+  })
+})

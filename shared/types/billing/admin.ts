@@ -36,6 +36,8 @@ export interface B2cStats {
 export interface SuperAdminHomeStats {
   organizations: number
   users: number
+  /** Demandes de contact / démo à traiter (`status = pending`). */
+  pendingContactRequests: number
   b2c: B2cStats
 }
 

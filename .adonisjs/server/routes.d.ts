@@ -8,11 +8,23 @@ export type ScannedRoutes = {
     'super_admin.home': { paramsTuple?: []; params?: {} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
+    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.update_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin.store_user': { paramsTuple?: []; params?: {} }
+    'super_admin.update_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.destroy_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.disable_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.enable_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.update_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.store': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
@@ -148,8 +160,12 @@ export type ScannedRoutes = {
     'webhooks.stripe': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.store_user': { paramsTuple?: []; params?: {} }
+    'super_admin.disable_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.enable_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_contact_requests.update_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_skills.store': { paramsTuple?: []; params?: {} }
     'super_admin.expert_requests.assign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.expert_requests.decline': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.team.invite': { paramsTuple?: []; params?: {} }
@@ -217,7 +233,10 @@ export type ScannedRoutes = {
   GET: {
     'super_admin.home': { paramsTuple?: []; params?: {} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
@@ -269,7 +288,10 @@ export type ScannedRoutes = {
   HEAD: {
     'super_admin.home': { paramsTuple?: []; params?: {} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
     'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
@@ -318,17 +340,10 @@ export type ScannedRoutes = {
     'robots': { paramsTuple?: []; params?: {} }
     'sitemap': { paramsTuple?: []; params?: {} }
   }
-  DELETE: {
-    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'educations.delete': { paramsTuple?: []; params?: {} }
-    'experiences.delete': { paramsTuple?: []; params?: {} }
-    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
-    'conseiller.employees.documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
-    'organization_logos.destroy': { paramsTuple?: []; params?: {} }
-    'candidat.documents.destroy': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
-  }
   PUT: {
+    'super_admin.update_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.update_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'educations.update': { paramsTuple?: []; params?: {} }
     'experiences.update': { paramsTuple?: []; params?: {} }
     'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
@@ -340,6 +355,18 @@ export type ScannedRoutes = {
     'passwords.update': { paramsTuple?: []; params?: {} }
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
+  }
+  DELETE: {
+    'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.destroy_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'educations.delete': { paramsTuple?: []; params?: {} }
+    'experiences.delete': { paramsTuple?: []; params?: {} }
+    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'conseiller.employees.documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
+    'organization_logos.destroy': { paramsTuple?: []; params?: {} }
+    'candidat.documents.destroy': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
   }
   PATCH: {
     'notifications.mark_as_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

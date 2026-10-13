@@ -1,4 +1,5 @@
 import CandidatePayment from '#models/candidate_payment'
+import ContactRequest from '#models/contact_request'
 import Employee from '#models/employee'
 import ExpertRequest from '#models/expert_request'
 import Organization from '#models/organization'
@@ -11,6 +12,7 @@ import {
   PAYMENT_PROVIDERS,
   PAYMENT_STATUSES,
 } from '#shared/constants/billing'
+import { CONTACT_REQUEST_STATUSES } from '#shared/constants/contact_request'
 import { EXPERT_REQUEST_STATUSES } from '#shared/constants/expert_request'
 import type {
   B2cCandidateRow,
@@ -139,7 +141,16 @@ export class SuperAdminB2cService {
     return {
       organizations: Number(organizations.$extras.total || 0),
       users: Number(users.$extras.total || 0),
+      pendingContactRequests: await this.countPendingContactRequests(),
       b2c: await this.stats(),
     }
+  }
+
+  /** Demandes de contact / démo à traiter (carte de l'accueil, remplace l'ancien « Instances » en dur). */
+  private async countPendingContactRequests(): Promise<number> {
+    const [row] = await ContactRequest.query()
+      .where('status', CONTACT_REQUEST_STATUSES.PENDING)
+      .count('* as total')
+    return Number(row.$extras.total || 0)
   }
 }

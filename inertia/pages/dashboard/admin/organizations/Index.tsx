@@ -7,6 +7,8 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { CreateOrganizationModal } from '~/components/modals/CreateOrganizationModal'
 import Button from '~/components/ui/Button'
 import Input from '~/components/ui/Input'
+import AppLink from '~/components/ui/AppLink'
+import { SUPER_ADMIN_PATHS } from '#shared/constants/super_admin'
 import { Pagination } from '~/components/ui/Pagination'
 import { useAuth } from '~/hooks/use_auth'
 import { useServerList } from '~/hooks/use_server_list'
@@ -133,7 +135,12 @@ export default function OrganizationsAdmin({
                     <td className="px-6 py-4 text-xs font-mono text-brand-navy/60">#{org.id}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-brand-navy">{org.name}</span>
+                        <AppLink
+                          href={SUPER_ADMIN_PATHS.organization(org.id)}
+                          className="text-sm font-bold text-brand-navy underline-offset-4 hover:underline"
+                        >
+                          {org.name}
+                        </AppLink>
                         <span className="text-[10px] font-bold text-brand-navy/30 uppercase tracking-widest">
                           {org.slug}
                         </span>

@@ -1,5 +1,6 @@
 import type { UserSessionDto } from '#dtos/auth_dto'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import { AccountDisabledError } from '#exceptions/auth_errors'
 import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import Employee from '#models/employee'
@@ -56,6 +57,10 @@ export class AuthService {
     const isValid = await hash.verify(user.password, password)
     if (!isValid) {
       throw new InvalidCredentialsException()
+    }
+    // Après la vérification du mot de passe : ne révèle pas l'état d'un compte à qui ne le connaît pas.
+    if (user.disabledAt) {
+      throw new AccountDisabledError()
     }
     return user
   }

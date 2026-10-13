@@ -42,6 +42,12 @@ function SuperAdminSidebarContent() {
           <NavLink href="/dashboard/super-admin/b2c" icon="users" label="Particuliers" />
           <NavLink href="/dashboard/super-admin/payments" icon="target" label="Paiements" />
           <NavLink
+            href="/dashboard/super-admin/contact-requests"
+            icon="message"
+            label="Demandes de contact"
+          />
+          <NavLink href="/dashboard/super-admin/skills" icon="target" label="Compétences" />
+          <NavLink
             href="/dashboard/super-admin/exercises-usage"
             icon="target"
             label="Usage exercices"
