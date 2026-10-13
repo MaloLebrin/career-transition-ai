@@ -33,7 +33,7 @@ Détails (isolation, shards de CI, couverture) dans [docs/TESTING.md](docs/TESTI
 
 ### P0 (indispensable)
 
-- [x] **Contact / Demande de démo** (`/contact`) — formulaire simple + CTA “Demander une démo”
+- [x] **Contact** (`/contact`) — formulaire (`ContactDemoForm`, variante `contact`) + e-mail ; la **demande de démo** cabinet reste sur `/cabinets#demo`
 - [x] **Mentions légales** (`/mentions-legales`)
 - [x] **Politique de confidentialité (RGPD)** (`/confidentialite`)
 - [x] **Sécurité & confidentialité** (`/securite`) — accès, rôles, hébergement, traitement des données (version marketing + liens vers pages légales)
@@ -43,11 +43,11 @@ Détails (isolation, shards de CI, couverture) dans [docs/TESTING.md](docs/TESTI
 - [x] **Offre / Pour les cabinets** (`/offre`) — bénéfices, pour qui, différenciation, livrables
 - [x] **Tarifs** (`/tarifs`) — ou “sur devis” + packaging (essentiel pour qualifier les leads)
 - [x] **Particuliers** (`/particuliers`) — offre B2C : deux exercices offerts, forfait unique TTC, accompagnement expert (épic #90, #99) ; bloc « Particuliers » sur `/tarifs`
-- [ ] **FAQ** (`/faq`) — objections: rôle de l’IA, méthodo, RGPD, usages cabinet
-- [ ] **Cas clients / Témoignages** (`/cas-clients`) — preuves sociales et résultats
+- [ ] **FAQ** (`/faq`) — objections: rôle de l’IA, méthodo, RGPD, usages cabinet — _hors périmètre pour l’instant (décision #76), à rouvrir dans une issue dédiée_
+- [ ] **Cas clients / Témoignages** (`/cas-clients`) — preuves sociales et résultats — _hors périmètre pour l’instant (décision #76), à rouvrir dans une issue dédiée_
 
 ### P2 (SEO / contenu)
 
-- [ ] **Ressources / Blog** (`/ressources`) — articles courts orientés SEO (bilan, transition, sciences comportementales)
-- [ ] **Support / Centre d’aide** (`/support`) — docs d’usage, guides, contact support
+- [ ] **Ressources / Blog** (`/ressources`) — articles courts orientés SEO (bilan, transition, sciences comportementales) — _hors périmètre pour l’instant (décision #76), à rouvrir dans une issue dédiée_
+- [ ] **Support / Centre d’aide** (`/support`) — docs d’usage, guides, contact support — _hors périmètre pour l’instant (décision #76), à rouvrir dans une issue dédiée_
 - [x] **CGU / CGV** (`/cgu`, `/cgv`) — rédigées pour le forfait particuliers (#95), textes marqués « à valider par un conseil juridique », identité du vendeur à compléter dans `shared/constants/legal.ts`
