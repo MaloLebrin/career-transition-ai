@@ -3,7 +3,7 @@ import { buttonClassName } from '../ui/Button'
 import { Logo } from '../ui/Logo'
 
 export interface ErrorPageProps {
-  code: 404 | 500
+  code: 403 | 404 | 429 | 500
   title: string
   message: string
   /** Actions complémentaires (ex. recharger la page). */

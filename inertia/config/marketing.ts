@@ -7,6 +7,7 @@ import {
   Gift,
   LayoutGrid,
   Lock,
+  MessageCircle,
   Receipt,
   ShieldCheck,
   Users,
@@ -111,6 +112,13 @@ export const RESOURCES_MENU: MenuGroup = {
       description: 'Notre mission et nos engagements.',
       icon: Users,
       tint: 'sky',
+    },
+    {
+      label: 'Contact',
+      href: '/contact',
+      description: 'Une question ? Nous répondons sous 48 h ouvrées.',
+      icon: MessageCircle,
+      tint: 'blossom',
     },
     {
       label: 'Sécurité',

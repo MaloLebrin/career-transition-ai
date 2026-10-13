@@ -18,6 +18,7 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/confidentialite', 'PrivacyPolicy'],
   ['/securite', 'Security'],
   ['/qui-sommes-nous', 'AboutUs'],
+  ['/contact', 'Contact'],
   ['/auth/login', 'Login'],
   ['/auth/register', 'Register'],
   ['/inscription', 'RegisterCandidate'],
