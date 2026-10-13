@@ -2,6 +2,7 @@ import React from 'react'
 import Button from '~/components/ui/Button'
 import { SectionHeading } from '~/components/ui/SectionHeading'
 import { ColorsShowcase } from './sections/ColorsShowcase'
+import { CompanionShowcase } from './sections/CompanionShowcase'
 import { ComponentsShowcase } from './sections/ComponentsShowcase'
 import { IllustrationShowcase } from './sections/IllustrationShowcase'
 import { TypographyShowcase } from './sections/TypographyShowcase'
@@ -29,6 +30,7 @@ const DesignSystem: React.FC<DesignSystemProps> = ({ onBack }) => (
     <TypographyShowcase />
     <ComponentsShowcase />
     <IllustrationShowcase />
+    <CompanionShowcase />
   </div>
 )
 

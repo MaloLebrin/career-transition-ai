@@ -15,6 +15,7 @@ describe('DesignSystem (vitrine)', () => {
       'Champs',
       'Cartes',
       'Illustration',
+      'Compagnon',
     ]) {
       expect(screen.getByRole('heading', { level: 2, name: title })).toBeInTheDocument()
     }
@@ -36,6 +37,7 @@ describe('DesignSystem (vitrine)', () => {
     expect(screen.getByRole('button', { name: 'secondary' })).toHaveClass('bg-sun')
     expect(screen.queryByRole('button', { name: 'cta' })).not.toBeInTheDocument()
     expect(container.querySelectorAll('svg[data-variant]')).toHaveLength(3)
+    expect(container.querySelectorAll('svg[data-pose]')).toHaveLength(10)
   })
 
   test('calls onBack', () => {

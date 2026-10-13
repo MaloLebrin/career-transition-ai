@@ -23,6 +23,7 @@ describe('ChatThread', () => {
     expect(items[0]).toHaveAttribute('data-mine', 'true')
     expect(items[1]).toHaveAttribute('data-mine', 'false')
     expect(screen.getByText('Bonjour !')).toBeInTheDocument()
+    expect(document.querySelector('svg[data-pose]')).toBeNull()
   })
 
   test('état vide', () => {
@@ -36,6 +37,7 @@ describe('ChatThread', () => {
       />
     )
     expect(screen.getByText(/Aucun message/)).toBeInTheDocument()
+    expect(document.querySelector('svg[data-pose="rest"]')).not.toBeNull()
   })
 
   test('« charger plus » n’apparaît que s’il reste des messages et déclenche le callback', async () => {

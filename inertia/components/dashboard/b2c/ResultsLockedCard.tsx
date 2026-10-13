@@ -4,6 +4,7 @@ import { formatPrice } from '#shared/helpers/billing/format_price'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
+import { Companion } from '~/components/ui/Companion'
 import { Eyebrow } from '~/components/ui/Eyebrow'
 import { useBilling } from '~/hooks/use_billing'
 
@@ -46,9 +47,12 @@ export function ResultsLockedCard({
       role="region"
       aria-label={title}
     >
-      <Eyebrow tone="muted" icon={<Lock className="h-4 w-4" />}>
-        Forfait
-      </Eyebrow>
+      <div className="flex items-center justify-between gap-3">
+        <Eyebrow tone="muted" icon={<Lock className="h-4 w-4" />}>
+          Forfait
+        </Eyebrow>
+        {!compact && <Companion pose="guard" size="sm" />}
+      </div>
       <div className="space-y-2">
         <h2 className={`${compact ? 'text-title-md' : 'text-title-lg'} text-ink`}>{title}</h2>
         <p className="text-sm text-ink-soft">{description}</p>

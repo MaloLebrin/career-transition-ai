@@ -48,6 +48,10 @@ describe('B2cEmployeeHome (#100)', () => {
 
     expect(screen.getByRole('heading', { name: 'Bonjour Camille' })).toBeInTheDocument()
     expect(screen.getByText('UX designer')).toBeInTheDocument()
+    const companions = document.querySelectorAll('svg[data-pose]')
+    expect(companions).toHaveLength(1)
+    expect(companions[0]).toHaveAttribute('data-pose', 'wave')
+    expect(companions[0]).toHaveAttribute('data-tone', 'inverse')
     expect(screen.getByText(/Commencez par les 2 exercices offerts/)).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Progression des exercices' })).toHaveAttribute(
       'aria-valuenow',

@@ -285,6 +285,37 @@ describe('CandidateSynthesisPage — verrouillage forfait (#101)', () => {
   })
 })
 
+describe('CandidateSynthesisPage — commentaires de l’expert', () => {
+  test('sans commentaire partagé, le compagnon au repos accompagne le message', () => {
+    const { unmount } = render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={{ ...sharedSynthesis, expertCommentsShared: null }}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(screen.getByText('Aucun commentaire partagé pour le moment.')).toBeInTheDocument()
+    expect(document.querySelector('svg[data-pose="rest"]')).not.toBeNull()
+    unmount()
+
+    render(
+      <Synthesis
+        shared={true}
+        employeeId="1"
+        employee={sharedEmployee}
+        synthesis={sharedSynthesis}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+    expect(screen.getByText('Vous faites du bon travail.')).toBeInTheDocument()
+    expect(document.querySelector('svg[data-pose]')).toBeNull()
+  })
+})
+
 describe('CandidateSynthesisPage — accompagnement par un expert (#103)', () => {
   test('un particulier voit le lien vers la demande d’accompagnement, pas un candidat B2B', () => {
     authState.user = { id: 5, role: 'employee', name: 'Jean Dupont', accountType: 'b2c' }

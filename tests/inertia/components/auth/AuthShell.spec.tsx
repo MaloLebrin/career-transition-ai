@@ -43,6 +43,29 @@ describe('AuthShell', () => {
     expect(landscape?.parentElement).toHaveClass('absolute', 'bottom-0', 'pointer-events-none')
   })
 
+  test('le compagnon salue au-dessus de la carte, réfléchit ou s’efface selon la prop', () => {
+    const { container, rerender } = render(
+      <AuthShell title="Connexion">
+        <p>Contenu</p>
+      </AuthShell>
+    )
+    expect(container.querySelector('svg[data-pose="wave"]')).toHaveAttribute('data-size', 'md')
+
+    rerender(
+      <AuthShell title="Lien expiré" companion="think">
+        <p>Contenu</p>
+      </AuthShell>
+    )
+    expect(container.querySelector('svg[data-pose="think"]')).not.toBeNull()
+
+    rerender(
+      <AuthShell title="Connexion" companion={false}>
+        <p>Contenu</p>
+      </AuthShell>
+    )
+    expect(container.querySelector('svg[data-pose]')).toBeNull()
+  })
+
   test('ton warning + filet apricot pour les liens invalides', () => {
     render(
       <AuthShell

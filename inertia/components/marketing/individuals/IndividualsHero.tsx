@@ -1,8 +1,9 @@
-import { Check, Sparkles } from 'lucide-react'
+import { Check } from 'lucide-react'
 import React from 'react'
 import { B2C_PUBLIC_PATHS } from '#shared/constants/b2c'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
+import { Companion } from '~/components/ui/Companion'
 import { Container } from '~/components/ui/Container'
 import { Parallax } from '~/components/ui/motion/Parallax'
 import { SectionHeading } from '~/components/ui/SectionHeading'
@@ -20,8 +21,8 @@ const enter = (delayMs: number): React.CSSProperties => ({ animationDelay: `${de
 
 /**
  * Héros de l'accueil : maillage animé sous l'en-tête transparent, promesse, CTA
- * d'inscription (ou d'attente quand elle est fermée) et le parcours qui se complète
- * dans un mockup incliné.
+ * d'inscription (ou d'attente quand elle est fermée), le parcours qui se complète
+ * dans un mockup incliné et le compagnon qui salue à côté.
  */
 export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOpen }) => (
   <section className="relative isolate -mt-16 overflow-hidden pt-16">
@@ -87,17 +88,14 @@ export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOp
         <Parallax offset={24}>
           <div className="relative mx-auto max-w-md transform-3d lg:-rotate-y-12 lg:rotate-x-6">
             <JourneyMockup />
-            <span
-              className="absolute -bottom-5 -left-8 hidden animate-float items-center gap-2 rounded-xl border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink shadow-floating lg:inline-flex"
-              aria-hidden="true"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-tint-blossom text-tint-blossom-ink">
-                <Sparkles className="h-4 w-4" />
-              </span>
-              Analyse IA prête
-            </span>
           </div>
         </Parallax>
+        <Companion
+          pose="wave"
+          size="lg"
+          animated
+          className="absolute -right-2 -bottom-12 hidden lg:block"
+        />
       </div>
     </Container>
   </section>

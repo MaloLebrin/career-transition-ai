@@ -15,7 +15,8 @@ const VIEW_BOX: Record<LandscapeArtVariant, string> = {
 }
 
 /**
- * Le seul bloc illustratif du design system (DESIGN.md §1) : un paysage calme — ciel abricot,
+ * Le paysage, premier des deux blocs illustratifs du design system (DESIGN.md §1, avec
+ * `ui/Companion`) : un paysage calme — ciel abricot,
  * soleil, montagnes lavande, lac teal, prairie — dessiné en formes plates avec les teintes
  * expressives (`tint-*`, `tint-*-bold`). Aucune couleur en dur : tout passe par les variables
  * du thème. Purement décoratif, masqué aux lecteurs d'écran. La variante `hero` s'anime
