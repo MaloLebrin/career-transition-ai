@@ -1,8 +1,10 @@
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import { AdvisorDto } from '#dtos/organization_dto'
 import OnboardingToken from '#models/onboarding_token'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { TeamMembersService } from '#services/team_members_service'
 import { userToAdvisorDto } from '#shared/helpers/advisor/mappers'
 import type { InviteAdvisorInput } from '#shared/types/advisor/invite_advisor'
 import { inject } from '@adonisjs/core'
@@ -10,7 +12,10 @@ import { randomBytes } from 'node:crypto'
 
 @inject()
 export class AdvisorService {
-  constructor(private onboardingMailService: OnboardingMailService) {}
+  constructor(
+    private onboardingMailService: OnboardingMailService,
+    private team: TeamMembersService = new TeamMembersService()
+  ) {}
 
   public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
     const existing = await User.query()
@@ -19,17 +24,18 @@ export class AdvisorService {
       .first()
 
     if (existing) {
-      throw new Error('Cet email est déjà utilisé par un compte existant.')
+      throw new EmailAlreadyUsedException('Cet email est déjà utilisé par un compte existant.')
     }
 
-    const backendRole = input.role === 'admin' ? 'admin' : 'advisor'
+    await this.team.assertAdvisorSeatAvailable(input.organizationId)
+
     const tempPassword = randomBytes(32).toString('hex')
     const user = await User.create({
       organizationId: input.organizationId,
       email: input.email,
       name: input.name,
       password: tempPassword,
-      role: backendRole,
+      role: input.role,
     })
 
     const token = await OnboardingToken.createForUser(user.id)

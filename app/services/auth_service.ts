@@ -66,7 +66,7 @@ export class AuthService {
   }
 
   /**
-   * Registers a new advisor (and creates its organization).
+   * Registers a new organization and its owner, who becomes its administrator.
    * Throws if email or organization name is already used.
    */
   public async register(input: RegisterInput): Promise<UserSessionDto> {
@@ -92,7 +92,7 @@ export class AuthService {
           email: input.email,
           name: input.name,
           password: input.password,
-          role: USERS_ROLES.ADVISOR,
+          role: USERS_ROLES.ADMIN,
           onboardingCompletedAt: DateTime.now(),
         },
         { client: trx }

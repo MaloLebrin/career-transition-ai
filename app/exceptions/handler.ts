@@ -86,6 +86,11 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_SKILL_NOT_FOUND',
     'E_SKILL_ALREADY_EXISTS',
     'E_SKILL_IN_USE',
+    'E_TEAM_MEMBER_NOT_FOUND',
+    'E_TEAM_MEMBER_LOCKED',
+    'E_TEAM_REASSIGN_TARGET_INVALID',
+    'E_ADVISOR_LICENSE_LIMIT',
+    'E_CANDIDATE_LICENSE_LIMIT',
   ]
 
   /**

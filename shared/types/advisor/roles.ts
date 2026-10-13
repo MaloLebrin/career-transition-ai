@@ -15,4 +15,6 @@ export interface Advisor {
   email: string
   name: string
   role: UserRole
+  /** ISO, `null`/absent tant que le compte est actif. */
+  disabledAt?: string | null
 }

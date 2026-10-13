@@ -141,6 +141,8 @@ Listes paginées (#75) : `LIST_PAGE_SIZE` (`#shared/constants/pagination`), para
 
 Back-office super admin (#73) : `SUPER_ADMIN_PATHS` (`#shared/constants/super_admin`) ; organisations (fiche, renommage — `SuperAdminOrganizationsService.show/update`), comptes (`SuperAdminUsersService.update/setDisabled/destroy`, `users.disabled_at` : connexion refusée par `AuthService.verifyCredentials` puis session coupée par `AuthMiddleware`, suppression refusée dès qu'une autre table référence le compte), boîte `ContactRequestsService.list/updateStatus`, catalogue global `SuperAdminSkillsService` (compétences sans organisation). Erreurs : `organization_errors.ts`, `super_admin_user_errors.ts`, `auth_errors.ts`, `contact_request_errors.ts`, `skill_errors.ts`.
 
+Équipe du cabinet (#71) : `ORGANIZATION_TEAM_ROLES` (`admin`, `advisor` ; `expert` = plateforme), `#services/team_members_service` (`changeRole`, `setDisabled`, `reassignCandidates`, licences `assertAdvisorSeatAvailable` / `MAX_LICENSES_ADVISORS`), `EmployeesService.assertCandidateSeatAvailable` (`MAX_LICENSES_CANDIDATES`), `OrganizationTeamController`, chemins `ORGANIZATION_MEMBER_PATHS`, erreurs `team_errors.ts`. Les limites de licences se vérifient dans les services, jamais seulement dans le front.
+
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
 
 IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.

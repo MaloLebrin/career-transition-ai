@@ -1,13 +1,16 @@
-import { TeamMember } from "~/components/dashboard/settings/team/TeamMember";
-import Button from "~/components/ui/Button";
-import Card from "~/components/ui/Card";
-import { UserSession } from "~/types/auth";
+import { TeamMember } from '~/components/dashboard/settings/team/TeamMember'
+import Button from '~/components/ui/Button'
+import Card from '~/components/ui/Card'
+import type { Advisor } from '#shared/types/advisor/roles'
+import { UserSession } from '~/types/auth'
 
 interface TeamProps {
-  team: UserSession[];
-  setIsInviteModalOpen: (isOpen: boolean) => void;
-  user: UserSession;
-  canInvite?: boolean;
+  team: Advisor[]
+  setIsInviteModalOpen: (isOpen: boolean) => void
+  user: UserSession
+  canInvite?: boolean
+  /** Administrateur : actions sur les membres (#71). */
+  canManage?: boolean
 }
 
 export const TeamCard = ({
@@ -15,6 +18,7 @@ export const TeamCard = ({
   setIsInviteModalOpen,
   user,
   canInvite = true,
+  canManage = false,
 }: TeamProps) => {
   return (
     <Card className="p-10 space-y-6">
@@ -37,10 +41,10 @@ export const TeamCard = ({
           team.map((member) => (
             <TeamMember
               key={member.id}
-              name={member.name}
-              role={member.role}
-              email={member.email}
+              member={member}
               isMe={user?.id === member.id}
+              canManage={canManage}
+              colleagues={team.filter((m) => !m.disabledAt)}
             />
           ))
         ) : (
@@ -50,5 +54,5 @@ export const TeamCard = ({
         )}
       </div>
     </Card>
-  );
-};
+  )
+}

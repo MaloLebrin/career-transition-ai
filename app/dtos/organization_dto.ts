@@ -1,4 +1,4 @@
-export type AdvisorRoleDto = 'admin' | 'expert' | 'consultant'
+import type { UserRole } from '#shared/types/advisor/roles'
 
 export type OrganizationDto = {
   id: number
@@ -13,5 +13,7 @@ export type AdvisorDto = {
   organizationId: number
   email: string
   name: string
-  role: AdvisorRoleDto
+  role: UserRole
+  /** ISO, `null` tant que le compte est actif. */
+  disabledAt: string | null
 }

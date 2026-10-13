@@ -96,7 +96,7 @@ test.group('Dashboard routes (functional)', (group) => {
     const response = await client
       .post('/dashboard/conseiller/settings/organization/advisors')
       .header('Accept', 'application/json')
-      .json({ name: 'New Advisor', email: 'advisor@example.com', role: 'consultant' })
+      .json({ name: 'New Advisor', email: 'advisor@example.com', role: 'advisor' })
       .redirects(0)
 
     response.assertStatus(401)
@@ -114,7 +114,7 @@ test.group('Dashboard routes (functional)', (group) => {
       .post('/dashboard/conseiller/settings/organization/advisors')
       .loginAs(admin)
       .header('Accept', 'application/json')
-      .json({ name: 'Invited Advisor', email: invitedEmail, role: 'consultant' })
+      .json({ name: 'Invited Advisor', email: invitedEmail, role: 'advisor' })
       .redirects(0)
 
     response.assertStatus(302)
