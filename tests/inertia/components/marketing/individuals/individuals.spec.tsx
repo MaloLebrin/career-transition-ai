@@ -19,8 +19,12 @@ describe('individuals marketing blocks', () => {
     expect(countWord(12)).toBe('12')
   })
 
-  test('IndividualsHero : inscription ouverte, le compagnon salue à côté du mockup', () => {
+  test('IndividualsHero : inscription ouverte, paysage en fond, le compagnon salue à côté du mockup', () => {
     const { container } = render(<IndividualsHero registrationOpen />)
+
+    const backdrop = screen.getByTestId('hero-backdrop')
+    expect(backdrop).toHaveAttribute('data-scene', 'landscape')
+    expect(backdrop.querySelector('svg[data-variant="hero"]')).not.toBeNull()
 
     expect(screen.getByRole('link', { name: 'Commencer gratuitement' })).toHaveAttribute(
       'href',

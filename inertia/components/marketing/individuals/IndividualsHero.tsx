@@ -20,13 +20,13 @@ interface IndividualsHeroProps {
 const enter = (delayMs: number): React.CSSProperties => ({ animationDelay: `${delayMs}ms` })
 
 /**
- * Héros de l'accueil : maillage animé sous l'en-tête transparent, promesse, CTA
- * d'inscription (ou d'attente quand elle est fermée), le parcours qui se complète
- * dans un mockup incliné et le compagnon qui salue à côté.
+ * Héros de l'accueil : le paysage du design system en pleine largeur sous l'en-tête
+ * transparent, promesse, CTA d'inscription (ou d'attente quand elle est fermée), le parcours
+ * qui se complète dans un mockup incliné et le compagnon qui salue, posé sur la prairie.
  */
 export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOpen }) => (
   <section className="relative isolate -mt-16 overflow-hidden pt-16">
-    <HeroBackdrop />
+    <HeroBackdrop scene="landscape" />
     <Container className="grid grid-cols-1 items-center gap-14 pt-12 pb-20 md:pt-20 md:pb-28 lg:grid-cols-12 lg:gap-10">
       <div className="space-y-8 lg:col-span-6">
         <div className="animate-slide-up">

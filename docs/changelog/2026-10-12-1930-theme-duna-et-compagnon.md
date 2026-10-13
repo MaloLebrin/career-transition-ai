@@ -21,6 +21,10 @@ circulaires, dôme à lentilles et antennes), dessiné en formes plates avec les
   liens invalides), carte « réservé au forfait » (non compacte), page de succès du paiement
   (`cheer` / `think`), états vides du chat et des commentaires de l'expert. Section « 08 —
   Compagnon » dans la vitrine du design system.
+- **Paysage en fond du héros.** `HeroBackdrop` gagne une scène `landscape` : le panorama
+  `LandscapeArt` (variante `hero`, animée) remplit le héros de l'accueil particuliers en pleine
+  largeur sous le voile `canvas` côté texte, à la place du maillage ; le compagnon se tient sur la
+  prairie. Les héros cabinets et secondaires gardent le maillage.
 - **Tests.** `tests/inertia/components/ui/Companion.spec.tsx` (aucune couleur en dur, tons,
   accessoires, ids uniques, animation), `CompanionShowcase.spec.tsx`, et une assertion par
   écran intégré. Hygiène design tokens inchangée (cliquets intacts).
