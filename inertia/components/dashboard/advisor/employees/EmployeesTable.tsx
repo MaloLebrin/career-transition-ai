@@ -5,10 +5,11 @@ import type { Employee } from '~/types/employee'
 
 interface EmployeesTableProps {
   employees: Employee[]
-  allEmployeesCount: number
+  /** Une recherche ou un filtre est actif : l'absence de résultat vient de lui, pas d'une liste vide. */
+  hasFilters?: boolean
 }
 
-export function EmployeesTable({ employees, allEmployeesCount }: EmployeesTableProps) {
+export function EmployeesTable({ employees, hasFilters = false }: EmployeesTableProps) {
   return (
     <div className="bg-white rounded-3xl border border-brand-navy/5 overflow-hidden shadow-sm">
       <table className="min-w-full divide-y divide-brand-navy/5 text-sm">
@@ -94,9 +95,9 @@ export function EmployeesTable({ employees, allEmployeesCount }: EmployeesTableP
                 className="px-6 py-10 text-center text-xs font-medium text-brand-navy/40"
                 colSpan={6}
               >
-                {allEmployeesCount === 0
-                  ? 'Aucun candidat pour le moment. Créez votre premier candidat !'
-                  : 'Aucun candidat ne correspond à vos critères de recherche.'}
+                {hasFilters
+                  ? 'Aucun candidat ne correspond à vos critères de recherche.'
+                  : 'Aucun candidat pour le moment. Créez votre premier candidat !'}
               </td>
             </tr>
           )}

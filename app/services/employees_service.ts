@@ -2,12 +2,19 @@ import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
+import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
 import Employee from '#models/employee'
+import Organization from '#models/organization'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
+import { MAX_LICENSES_CANDIDATES } from '#shared/constants/organisation'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
+import type { EmployeeListParams } from '#shared/types/employee/list'
+import type { Paginated } from '#shared/types/pagination'
+import { paginationMeta, whereAnyColumnContains } from '#utils/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateEmployeeInput, UpdateEmployeeInput } from '#shared/types/employee/inputs'
 import { inject } from '@adonisjs/core'
@@ -43,6 +50,33 @@ export class EmployeesService {
   public async restore(employee: Employee): Promise<void> {
     employee.status = employee.onboarded ? EMPLOYEES_STATUS.ACTIVE : EMPLOYEES_STATUS.ONBOARDING
     await employee.save()
+  }
+
+  /**
+   * Une page des candidats visibles par un membre d'équipe (`teamEmployeeScope`) ; un
+   * conseiller ne voit que les siens. Recherche (nom, e-mail) et statut côté base ; seul le
+   * plan d'accompagnement est préchargé : la liste n'affiche que la progression.
+   */
+  public async listForTeam(
+    user: User,
+    params: EmployeeListParams
+  ): Promise<Paginated<EmployeeDto>> {
+    const query = Employee.query()
+      .where(teamEmployeeScope(user))
+      .if(user.role === USERS_ROLES.ADVISOR, (q) => q.where('advisorId', user.id))
+      .if(params.status !== null, (q) => q.where('status', params.status!))
+      .preload('supportPlanSteps')
+      .orderBy([
+        { column: 'name', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ])
+    whereAnyColumnContains(query, ['name', 'email'], params.search)
+
+    const paginator = await query.paginate(params.page, LIST_PAGE_SIZE)
+    return {
+      items: paginator.all().map(mapEmployee),
+      pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
+    }
   }
 
   /**
@@ -92,11 +126,30 @@ export class EmployeesService {
     await this.onboardingMailService.sendSetPasswordLink({ user, token })
   }
 
+  /**
+   * Plafond `MAX_LICENSES_CANDIDATES` de fiches par cabinet (#71), fiches
+   * archivées exclues. L'organisation plateforme (particuliers B2C) n'est pas limitée.
+   */
+  public async assertCandidateSeatAvailable(organizationId: number): Promise<void> {
+    const organization = await Organization.find(organizationId)
+    if (organization?.isPlatform) return
+    const row = await Employee.query()
+      .where('organizationId', organizationId)
+      .whereNot('status', EMPLOYEES_STATUS.ARCHIVED)
+      .count('* as total')
+      .first()
+    if (Number(row?.$extras.total ?? 0) >= MAX_LICENSES_CANDIDATES) {
+      throw new CandidateLicenseLimitReachedError(MAX_LICENSES_CANDIDATES)
+    }
+  }
+
   public async create(
     input: CreateEmployeeInput,
     options?: CreateEmployeeOptions
   ): Promise<EmployeeDto> {
     const sendInvite = options?.sendInvite ?? false
+
+    await this.assertCandidateSeatAvailable(input.organizationId)
 
     let existingUser: User | null = null
     if (sendInvite) {

@@ -21,3 +21,21 @@ export class SuperAdminRoleLockedError extends DomainException {
     super(message, { status: 422, code: 'E_SUPER_ADMIN_ROLE_LOCKED' })
   }
 }
+
+/** Son propre compte ou celui d’un super admin : ni désactivation ni suppression → 422. */
+export class SuperAdminUserLockedError extends DomainException {
+  constructor(
+    message: string = 'Ce compte ne peut être ni désactivé ni supprimé depuis cet écran.'
+  ) {
+    super(message, { status: 422, code: 'E_SUPER_ADMIN_USER_LOCKED' })
+  }
+}
+
+/** Compte relié à des données (candidats, notes, synthèses…) : le désactiver plutôt → 422. */
+export class SuperAdminUserHasDataError extends DomainException {
+  constructor(
+    message: string = 'Ce compte est relié à des données : désactivez-le plutôt que de le supprimer.'
+  ) {
+    super(message, { status: 422, code: 'E_SUPER_ADMIN_USER_HAS_DATA' })
+  }
+}

@@ -12,6 +12,7 @@ import {
   createInHouseExpert,
   createSuperAdmin,
 } from '#tests/support/actors'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
@@ -31,8 +32,8 @@ async function exportOf(
 }
 
 async function ids(user: User, status?: string) {
-  const rows = await service.listForUser(user, { status })
-  return rows.map((row) => row.id)
+  const { items } = await service.listForUser(user, { status })
+  return items.map((row) => row.id)
 }
 
 test.group('PdfExportsService.listForUser', (group) => {
@@ -72,5 +73,35 @@ test.group('PdfExportsService.listForUser', (group) => {
     assert.sameMembers(await ids(superAdmin), [a.id, b.id])
     assert.deepEqual(await ids(superAdmin, PDF_EXPORT_STATUSES.FAILED), [a.id])
     assert.sameMembers(await ids(superAdmin, 'bogus'), [a.id, b.id])
+  })
+
+  test('pagine, les plus récents d’abord, et expose la méta', async ({ assert }) => {
+    const admin = await createAdmin()
+    const employee = await EmployeeFactory.merge({ organizationId: admin.organizationId }).create()
+    // Un seul demandeur : `exportOf` en crée un (mot de passe haché) par export.
+    const requester = await UserFactory.merge({ organizationId: employee.organizationId }).create()
+    const created: number[] = []
+    for (let i = 0; i < LIST_PAGE_SIZE + 3; i++) {
+      const row = await PdfExportFactory.merge({
+        userId: requester.id,
+        organizationId: employee.organizationId,
+        employeeId: employee.id,
+        status: PDF_EXPORT_STATUSES.COMPLETED,
+      }).create()
+      created.push(row.id)
+    }
+
+    const first = await service.listForUser(admin)
+    const second = await service.listForUser(admin, { page: 2 })
+
+    assert.lengthOf(first.items, LIST_PAGE_SIZE)
+    assert.lengthOf(second.items, 3)
+    assert.equal(first.items[0].id, created[created.length - 1])
+    assert.deepEqual(first.pagination, {
+      page: 1,
+      pageSize: LIST_PAGE_SIZE,
+      total: LIST_PAGE_SIZE + 3,
+      lastPage: 2,
+    })
   })
 })

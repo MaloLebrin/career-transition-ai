@@ -50,8 +50,8 @@ test.group('SuperAdminController.organizations', (group) => {
     })
 
     const controller = new SuperAdminController(
-      {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService,
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
       new PlatformOrganizationService()
     )
     const ctx = makeCtx()
@@ -72,6 +72,39 @@ test.group('SuperAdminController.organizations', (group) => {
     const ids = items.map((o) => o.id)
     assert.isFalse(ids.includes(platformOrg.id))
     assert.isTrue(ids.includes(clientOrg.id))
+    assert.equal(rendered.props.pagination.page, 1)
+    assert.deepEqual(rendered.props.filters, { search: '', minEmployees: '' })
+  })
+
+  test('relaie recherche, seuil et page de la query string', async ({ assert }) => {
+    const platformOrg = await Organization.create({
+      name: 'Platform Org Q',
+      slug: `platform-q-${Date.now()}`,
+      isPlatform: true,
+    })
+    await Organization.create({ name: 'Zeta Cabinet', slug: `zeta-${Date.now()}` })
+    await Organization.create({ name: 'Autre', slug: `autre-${Date.now()}` })
+
+    const controller = new SuperAdminController(
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
+      new PlatformOrganizationService()
+    )
+    const ctx = makeCtx({
+      request: { qs: () => ({ search: ' zeta ', minEmployees: '0', page: 'x' }) },
+    })
+    ctx.auth = { user: { id: 1, organizationId: platformOrg.id, role: 'super_admin' as const } }
+
+    // @ts-expect-error minimal context
+    await controller.organizations(ctx)
+
+    const props = ctx.inertia.rendered.props
+    assert.deepEqual(
+      props.organizations.map((o: { name: string }) => o.name),
+      ['Zeta Cabinet']
+    )
+    assert.deepEqual(props.filters, { search: 'zeta', minEmployees: '' })
+    assert.equal(props.pagination.page, 1)
   })
 })
 
@@ -105,8 +138,8 @@ test.group('SuperAdminController.users', (group) => {
     })
 
     const controller = new SuperAdminController(
-      {} as SuperAdminOrganizationsService,
-      {} as SuperAdminUsersService,
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
       new PlatformOrganizationService()
     )
     const ctx = makeCtx()
@@ -134,6 +167,8 @@ test.group('SuperAdminController.users', (group) => {
     assert.isFalse(items.some((u) => u.organization?.id === platformOrg.id))
     assert.isTrue(orgs.some((o) => o.id === clientOrg.id))
     assert.isFalse(orgs.some((o) => o.id === platformOrg.id))
+    assert.equal(rendered.props.pagination.total, items.length)
+    assert.deepEqual(rendered.props.filters, { search: '', role: 'all' })
   })
 })
 
@@ -297,5 +332,102 @@ test.group('SuperAdminController.exerciseUsageExport', (group) => {
     assert.include(csv, 'organization_id,organization_name,type,count')
     assert.include(csv, 'Org CSV')
     assert.include(csv, 'motivation')
+  })
+})
+
+test.group('SuperAdminController — fiche organisation et comptes (#73)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  function build() {
+    return new SuperAdminController(
+      new SuperAdminOrganizationsService({} as any),
+      new SuperAdminUsersService({} as any),
+      new PlatformOrganizationService()
+    )
+  }
+
+  test('showOrganization rend la fiche et updateOrganization renomme', async ({ assert }) => {
+    const platform = await Organization.create({
+      name: 'Platform Show',
+      slug: `platform-show-${Date.now()}`,
+      isPlatform: true,
+    })
+    const client = await Organization.create({ name: 'Avant fiche', slug: `avant-${Date.now()}` })
+
+    const showCtx = makeCtx()
+    showCtx.params = { id: String(client.id) }
+    // @ts-expect-error minimal context
+    await build().showOrganization(showCtx)
+    assert.equal(showCtx.inertia.rendered.name, 'dashboard/admin/organizations/Show')
+    assert.equal(showCtx.inertia.rendered.props.organization.name, 'Avant fiche')
+
+    const updateCtx = makeCtx()
+    updateCtx.params = { id: String(client.id) }
+    updateCtx.request = { validateUsing: async () => ({ name: 'Après fiche' }), qs: () => ({}) }
+    updateCtx.response = { redirect: () => ({ back: () => 'back' }) }
+    // @ts-expect-error minimal context
+    await build().updateOrganization(updateCtx)
+    await client.refresh()
+    assert.equal(client.name, 'Après fiche')
+    assert.equal(updateCtx.flashes.success, 'Organisation mise à jour.')
+    assert.isTrue(platform.isPlatform)
+  })
+
+  test('updateUser, disableUser, enableUser et destroyUser délèguent au service', async ({
+    assert,
+  }) => {
+    const platform = await Organization.create({
+      name: 'Platform Users',
+      slug: `platform-users2-${Date.now()}`,
+      isPlatform: true,
+    })
+    const org = await Organization.create({ name: 'Cabinet comptes', slug: `cc-${Date.now()}` })
+    const actor = await User.create({
+      organizationId: platform.id,
+      email: `actor-${Date.now()}@test.example`,
+      name: 'Actor',
+      password: 'temp-password-hash',
+      role: 'super_admin',
+    })
+    const target = await User.create({
+      organizationId: org.id,
+      email: `target-${Date.now()}@test.example`,
+      name: 'Target',
+      password: 'temp-password-hash',
+      role: 'advisor',
+    })
+    const ctxFor = (body: Record<string, unknown> = {}) => {
+      const ctx = makeCtx()
+      ctx.params = { id: String(target.id) }
+      ctx.auth = { getUserOrFail: () => actor }
+      ctx.request = { validateUsing: async () => body, qs: () => ({}) }
+      ctx.response = { redirect: () => ({ back: () => 'back' }) }
+      return ctx
+    }
+
+    const update = ctxFor({ name: 'Renommé', email: target.email })
+    // @ts-expect-error minimal context
+    await build().updateUser(update)
+    await target.refresh()
+    assert.equal(target.name, 'Renommé')
+
+    const disable = ctxFor()
+    // @ts-expect-error minimal context
+    await build().disableUser(disable)
+    await target.refresh()
+    assert.isNotNull(target.disabledAt)
+    assert.equal(disable.flashes.success, 'Compte de Renommé désactivé.')
+
+    const enable = ctxFor()
+    // @ts-expect-error minimal context
+    await build().enableUser(enable)
+    await target.refresh()
+    assert.isNull(target.disabledAt)
+
+    const destroy = ctxFor()
+    destroy.response = { redirect: () => 'redirected' }
+    // @ts-expect-error minimal context
+    await build().destroyUser(destroy)
+    assert.isNull(await User.find(target.id))
   })
 })

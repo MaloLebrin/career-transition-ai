@@ -1,6 +1,7 @@
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import { AccountDisabledError } from '#exceptions/auth_errors'
 import { PlatformOrganizationMissingError } from '#exceptions/platform_errors'
 import { AuthService } from '#services/auth_service'
 import type { EmailVerificationService } from '#services/email_verification_service'
@@ -57,6 +58,28 @@ test.group('AuthService', (group) => {
     assert.equal(result.name, 'Valid User')
   })
 
+  test('verifyCredentials refuse un compte désactivé, seulement après le bon mot de passe (#73)', async ({
+    assert,
+  }) => {
+    const email = `disabled-${Date.now()}@example.com`
+    const service = new AuthService()
+    await service.register({
+      email,
+      password: 'secret123',
+      name: 'Disabled User',
+      role: USERS_ROLES.ADVISOR,
+      organizationName: `Org disabled ${Date.now()}`,
+    })
+    await User.query().where('email', email).update({ disabledAt: new Date() })
+
+    await assert.rejects(() => service.verifyCredentials(email, 'secret123'), AccountDisabledError)
+    // Un mauvais mot de passe ne révèle rien de l'état du compte.
+    await assert.rejects(
+      () => service.verifyCredentials(email, 'mauvais'),
+      'Identifiants invalides'
+    )
+  })
+
   test('verifyCredentials throws for invalid credentials', async ({ assert }) => {
     const service = new AuthService()
 
@@ -86,6 +109,8 @@ test.group('AuthService', (group) => {
     assert.equal(dto.id, user.id)
     assert.equal(dto.organizationId, user.organizationId)
     assert.isNotNull(user.onboardingCompletedAt)
+    assert.equal(user.role, USERS_ROLES.ADMIN, 'le propriétaire du cabinet en est l’administrateur')
+    assert.equal(dto.role, USERS_ROLES.ADMIN)
   })
 
   test('register rejects duplicate email', async ({ assert }) => {

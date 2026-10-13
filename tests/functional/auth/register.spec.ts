@@ -68,7 +68,7 @@ test.group('Auth — inscription (functional)', (group) => {
     response.assertHeader('location', '/dashboard')
 
     const user = await User.findByOrFail('email', 'nouveau.conseiller@example.com')
-    assert.equal(user.role, USERS_ROLES.ADVISOR)
+    assert.equal(user.role, USERS_ROLES.ADMIN)
     assert.equal(user.name, 'Nouveau Conseiller')
     assert.isNotNull(user.onboardingCompletedAt)
     assert.isTrue(await hash.verify(user.password, 'secret123'), 'mot de passe hashé une fois')
@@ -79,7 +79,7 @@ test.group('Auth — inscription (functional)', (group) => {
     assert.equal(response.session(SESSION_KEY), user.id)
   })
 
-  test('POST /auth/register refuse tout rôle autre que advisor (pas d’élévation de privilèges)', async ({
+  test('POST /auth/register refuse tout rôle fourni par le client (pas d’élévation de privilèges)', async ({
     assert,
     client,
   }) => {

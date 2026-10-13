@@ -1,13 +1,27 @@
+import { OrganizationNotFoundError } from '#exceptions/organization_errors'
 import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
+import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
+import type { Paginated } from '#shared/types/pagination'
+import type {
+  OrganizationDetail,
+  OrganizationListItem,
+  OrganizationListParams,
+  OrganizationUpdateInput,
+} from '#shared/types/super_admin/lists'
+import { containsPattern, paginationMeta } from '#utils/pagination'
 import { inject } from '@adonisjs/core'
 import db from '@adonisjs/lucid/services/db'
 import crypto from 'node:crypto'
+
+/** Plus grand identifiant PostgreSQL `integer` : au-delà, une recherche par id ferait échouer la requête. */
+const MAX_INT = 2147483647
 
 type CreateOrganizationWithOwnerInput = {
   organizationName: string
@@ -19,6 +33,134 @@ type CreateOrganizationWithOwnerInput = {
 @inject()
 export class SuperAdminOrganizationsService {
   constructor(private onboardingMailService: OnboardingMailService) {}
+
+  /**
+   * Une page des organisations clientes (hors organisation plateforme). Recherche par nom,
+   * slug ou identifiant ; `minEmployees` filtre sur le nombre de candidats. Les compteurs sont
+   * calculés en base (`withCount`) : aucune organisation n'est chargée avec tous ses membres.
+   */
+  public async list(
+    platformOrganizationId: number,
+    params: OrganizationListParams
+  ): Promise<Paginated<OrganizationListItem>> {
+    const query = Organization.query()
+      .where('id', '!=', platformOrganizationId)
+      .withCount('users', (q) => q.as('usersCount'))
+      .withCount('employees', (q) => q.as('employeesCount'))
+      .orderBy([
+        { column: 'name', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ])
+      .if(params.minEmployees !== null, (q) =>
+        q.whereRaw(
+          '(SELECT COUNT(*) FROM employees WHERE employees.organization_id = organizations.id) >= ?',
+          [params.minEmployees!]
+        )
+      )
+    if (params.search) {
+      const pattern = containsPattern(params.search)
+      const numericId = /^\d+$/.test(params.search) ? Number(params.search) : null
+      query.where((builder) => {
+        builder.whereILike('name', pattern).orWhereILike('slug', pattern)
+        if (numericId !== null && numericId <= MAX_INT) builder.orWhere('id', numericId)
+      })
+    }
+
+    const paginator = await query.paginate(params.page, LIST_PAGE_SIZE)
+    const organizations = paginator.all()
+    const owners = await this.ownersOf(organizations.map((org) => org.id))
+
+    return {
+      items: organizations.map((org) => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        ownerId: owners.get(org.id) ?? null,
+        usersCount: Number(org.$extras.usersCount),
+        employeesCount: Number(org.$extras.employeesCount),
+        createdAt: org.createdAt?.toISO() ?? null,
+      })),
+      pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
+    }
+  }
+
+  /**
+   * Fiche d'une organisation cliente avec ses membres. L'organisation plateforme et un
+   * identifiant inconnu donnent la même 404.
+   */
+  public async show(platformOrganizationId: number, id: number): Promise<OrganizationDetail> {
+    const organization = await this.findClient(platformOrganizationId, id)
+    const [members, employeesCount] = await Promise.all([
+      User.query().where('organizationId', organization.id).orderBy('id', 'asc'),
+      Employee.query().where('organizationId', organization.id).count('* as total'),
+    ])
+
+    return {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      createdAt: organization.createdAt?.toISO() ?? null,
+      usersCount: members.length,
+      employeesCount: Number(employeesCount[0].$extras.total || 0),
+      members: members.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        onboardingCompleted: user.onboardingCompletedAt !== null,
+        disabledAt: user.disabledAt?.toISO() ?? null,
+      })),
+    }
+  }
+
+  /** Renomme une organisation cliente (nom unique, slug facultatif). */
+  public async update(
+    platformOrganizationId: number,
+    id: number,
+    input: OrganizationUpdateInput
+  ): Promise<Organization> {
+    const organization = await this.findClient(platformOrganizationId, id)
+    const name = input.name.trim()
+
+    const sameName = await Organization.query()
+      .whereRaw('LOWER(name) = ?', [name.toLowerCase()])
+      .whereNot('id', organization.id)
+      .first()
+    if (sameName) throw new OrganizationNameAlreadyUsedException()
+
+    organization.name = name
+    if (input.slug?.trim()) organization.slug = input.slug.trim()
+    await organization.save()
+    return organization
+  }
+
+  private async findClient(platformOrganizationId: number, id: number): Promise<Organization> {
+    const organization = await Organization.query()
+      .where('id', id)
+      .where('id', '!=', platformOrganizationId)
+      .first()
+    if (!organization) throw new OrganizationNotFoundError()
+    return organization
+  }
+
+  /** Propriétaire de chaque organisation : premier admin, à défaut premier compte créé. */
+  private async ownersOf(organizationIds: number[]): Promise<Map<number, number>> {
+    const owners = new Map<number, number>()
+    if (organizationIds.length === 0) return owners
+    const users = await User.query()
+      .whereIn('organizationId', organizationIds)
+      .select('id', 'organizationId', 'role')
+      .orderBy('id', 'asc')
+    const firstAdmin = new Map<number, number>()
+    for (const user of users) {
+      if (!owners.has(user.organizationId)) owners.set(user.organizationId, user.id)
+      if (user.role === USERS_ROLES.ADMIN && !firstAdmin.has(user.organizationId)) {
+        firstAdmin.set(user.organizationId, user.id)
+      }
+    }
+    for (const [organizationId, adminId] of firstAdmin) owners.set(organizationId, adminId)
+    return owners
+  }
 
   public async createOrganizationWithOwner(input: CreateOrganizationWithOwnerInput): Promise<{
     organization: Organization

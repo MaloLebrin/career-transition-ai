@@ -49,6 +49,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime()
   declare emailVerifiedAt: DateTime | null
 
+  /** Compte désactivé par le super admin (#73) : connexion refusée, sessions coupées. */
+  @column.dateTime()
+  declare disabledAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -54,6 +54,8 @@ export interface FakeCtx {
   authenticateCalls: Array<{ guards: unknown; options: unknown }>
   /** Compteur d'appels à `auth.check()` — objet mutable, pas un nombre figé. */
   authChecks: { count: number }
+  /** Compteur d'appels à `auth.use(garde).logout()`. */
+  logouts: { count: number }
   /** Messages passés à `session.flash(key, value)`, dans l'ordre. */
   flashed: Array<{ key: string; value: unknown }>
   /** Statuts posés par `response.status()`. */
@@ -72,6 +74,7 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
   const checkedGuards: Array<string | undefined> = []
   const authenticateCalls: Array<{ guards: unknown; options: unknown }> = []
   const authChecks = { count: 0 }
+  const logouts = { count: 0 }
   const flashed: Array<{ key: string; value: unknown }> = []
   const statuses: number[] = []
   const sent: unknown[] = []
@@ -103,7 +106,12 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
       },
       use: (guard?: string) => {
         checkedGuards.push(guard)
-        return { check: async () => options.authenticated ?? false }
+        return {
+          check: async () => options.authenticated ?? false,
+          logout: async () => {
+            logouts.count++
+          },
+        }
       },
       authenticateUsing: async (guards: unknown, authOptions: unknown) => {
         authenticateCalls.push({ guards, options: authOptions })
@@ -141,6 +149,7 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
     checkedGuards,
     authenticateCalls,
     authChecks,
+    logouts,
     flashed,
     statuses,
     sent,

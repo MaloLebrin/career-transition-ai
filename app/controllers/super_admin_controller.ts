@@ -6,8 +6,13 @@ import { PlatformOrganizationService } from '#services/platform_organization_ser
 import { SuperAdminB2cService } from '#services/super_admin_b2c_service'
 import { SuperAdminOrganizationsService } from '#services/super_admin_organizations_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
-import { USERS_ROLES } from '#shared/types/advisor/roles'
+import {
+  parseOrganizationListParams,
+  parseUserListParams,
+} from '#shared/helpers/super_admin/list_params'
 import { createOrganizationValidator } from '#validators/organization/organization_create_validator'
+import { superAdminUpdateOrganizationValidator } from '#validators/super_admin/update_organization_validator'
+import { superAdminUpdateUserValidator } from '#validators/super_admin/update_user_validator'
 import { createPlatformUserValidator } from '#validators/super_admin/create_platform_user_validator'
 import { updateUserRoleValidator } from '#validators/super_admin/update_user_role_validator'
 import { inject } from '@adonisjs/core'
@@ -38,31 +43,18 @@ export default class SuperAdminController {
    * Inertia page: list client organizations with basic aggregates.
    * Excludes the platform organization (`organizations.is_platform`, #92).
    */
-  public async organizations({ inertia }: HttpContext) {
+  public async organizations({ inertia, request }: HttpContext) {
     const platformOrganizationId = await this.platformOrganizationService.getId()
-    const organizations = await Organization.query()
-      .where('id', '!=', platformOrganizationId)
-      .preload('users', (query) => query.orderBy('id', 'asc'))
-      .preload('employees')
-
-    logger.info('Super admin organizations', { organizations: JSON.stringify(organizations) })
-
-    const items = organizations.map((org) => ({
-      id: org.id,
-      name: org.name,
-      slug: org.slug,
-      // Propriétaire = premier admin de l'organisation (à défaut, premier compte créé — cas
-      // de l'inscription en libre-service, dont le créateur est conseiller) : cible des
-      // actions impersonation / reset mot de passe.
-      ownerId:
-        (org.users.find((user) => user.role === USERS_ROLES.ADMIN) ?? org.users[0])?.id ?? null,
-      usersCount: org.users.length,
-      employeesCount: org.employees.length,
-      createdAt: org.createdAt?.toISO() ?? null,
-    }))
+    const params = parseOrganizationListParams(request.qs())
+    const { items, pagination } = await this.superAdminOrganizationsService.list(
+      platformOrganizationId,
+      params
+    )
 
     return inertia.render('dashboard/admin/organizations/Index', {
       organizations: items,
+      pagination,
+      filters: { search: params.search, minEmployees: params.minEmployees ?? '' },
     })
   }
 
@@ -227,28 +219,18 @@ export default class SuperAdminController {
    * Inertia page: list users with global filters and role overview.
    * Excludes users of the platform organization (`organizations.is_platform`, #92).
    */
-  public async users({ inertia }: HttpContext) {
+  public async users({ inertia, request }: HttpContext) {
     const platformOrganizationId = await this.platformOrganizationService.getId()
+    const params = parseUserListParams(request.qs())
 
-    const [users, organizationRows] = await Promise.all([
-      User.query().where('organizationId', '!=', platformOrganizationId).preload('organization'),
+    const [{ items, pagination }, organizationRows] = await Promise.all([
+      this.superAdminUsersService.list(platformOrganizationId, params),
+      // Options du sélecteur de la modale de création : toutes les organisations clientes.
       Organization.query()
         .where('id', '!=', platformOrganizationId)
         .orderBy('name', 'asc')
         .select('id', 'name', 'slug'),
     ])
-
-    const items = users.map((user) => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      organization: user.organization
-        ? { id: user.organization.id, name: user.organization.name }
-        : null,
-      createdAt: user.createdAt?.toISO() ?? null,
-      onboardingCompleted: user.onboardingCompletedAt !== null,
-    }))
 
     const organizations = organizationRows.map((o) => ({
       id: o.id,
@@ -259,6 +241,8 @@ export default class SuperAdminController {
     return inertia.render('dashboard/admin/users/Index', {
       users: items,
       organizations,
+      pagination,
+      filters: { search: params.search, role: params.role ?? 'all' },
     })
   }
 
@@ -309,6 +293,66 @@ export default class SuperAdminController {
     )
 
     session.flash('success', `Rôle mis à jour pour ${user.name}.`)
+    return response.redirect('/dashboard/super-admin/users')
+  }
+
+  /** GET /dashboard/super-admin/organizations/:id : fiche d'une organisation cliente. */
+  public async showOrganization({ params, inertia }: HttpContext) {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
+    const organization = await this.superAdminOrganizationsService.show(
+      platformOrganizationId,
+      Number(params.id)
+    )
+    return inertia.render('dashboard/admin/organizations/Show', { organization })
+  }
+
+  /** PUT /dashboard/super-admin/organizations/:id : renomme l'organisation. */
+  public async updateOrganization({ params, request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(superAdminUpdateOrganizationValidator)
+    const id = Number(params.id)
+    await this.superAdminOrganizationsService.update(
+      await this.platformOrganizationService.getId(),
+      id,
+      payload
+    )
+    session.flash('success', 'Organisation mise à jour.')
+    return response.redirect().back()
+  }
+
+  /** PUT /dashboard/super-admin/users/:id : nom et e-mail d'un utilisateur. */
+  public async updateUser({ params, request, response, session }: HttpContext) {
+    const payload = await request.validateUsing(superAdminUpdateUserValidator)
+    await this.superAdminUsersService.update(Number(params.id), payload)
+    session.flash('success', 'Utilisateur mis à jour.')
+    return response.redirect().back()
+  }
+
+  /** POST /dashboard/super-admin/users/:id/disable : désactive le compte (connexion refusée). */
+  public async disableUser({ params, response, session, auth }: HttpContext) {
+    const user = await this.superAdminUsersService.setDisabled(
+      auth.getUserOrFail(),
+      Number(params.id),
+      true
+    )
+    session.flash('success', `Compte de ${user.name} désactivé.`)
+    return response.redirect().back()
+  }
+
+  /** POST /dashboard/super-admin/users/:id/enable : réactive le compte. */
+  public async enableUser({ params, response, session, auth }: HttpContext) {
+    const user = await this.superAdminUsersService.setDisabled(
+      auth.getUserOrFail(),
+      Number(params.id),
+      false
+    )
+    session.flash('success', `Compte de ${user.name} réactivé.`)
+    return response.redirect().back()
+  }
+
+  /** DELETE /dashboard/super-admin/users/:id : supprime le compte (refusé s'il porte des données). */
+  public async destroyUser({ params, response, session, auth }: HttpContext) {
+    await this.superAdminUsersService.destroy(auth.getUserOrFail(), Number(params.id))
+    session.flash('success', 'Utilisateur supprimé.')
     return response.redirect('/dashboard/super-admin/users')
   }
 

@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import Organization from '#models/organization'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
@@ -48,7 +49,7 @@ test.group('Conseiller — paramètres : page', (group) => {
       [admin.id, advisor.id]
     )
     assert.equal(members.find((m) => m.id === admin.id)!.role, 'admin')
-    assert.equal(members.find((m) => m.id === advisor.id)!.role, 'expert')
+    assert.equal(members.find((m) => m.id === advisor.id)!.role, 'advisor')
   })
 
   test('un candidat est refusé (403)', async ({ client }) => {
@@ -163,22 +164,62 @@ test.group('Conseiller — paramètres : invitation de collaborateurs', (group) 
     assert.equal(OnboardingToken.hash(mails.onboardingSecret()), token.token)
   })
 
-  test('les rôles expert et consultant deviennent des conseillers', async ({ client, assert }) => {
+  test('invite un conseiller avec le rôle advisor', async ({ client, assert }) => {
     const admin = await createAdmin()
 
-    for (const [email, role] of [
-      ['expert@example.com', 'expert'],
-      ['consultant@example.com', 'consultant'],
-    ]) {
-      await client
+    await client
+      .post(`${SETTINGS}/organization/advisors`)
+      .json({ name: 'Conseil', email: 'conseil@example.com', role: 'advisor' })
+      .loginAs(admin)
+      .withInertia()
+      .redirects(0)
+
+    const invited = await User.findByOrFail('email', 'conseil@example.com')
+    assert.equal(invited.role, USERS_ROLES.ADVISOR)
+  })
+
+  test('rejette les rôles consultant et expert (hors du cabinet)', async ({ client, assert }) => {
+    const admin = await createAdmin()
+
+    for (const role of ['consultant', 'expert']) {
+      const response = await client
         .post(`${SETTINGS}/organization/advisors`)
-        .json({ name: role, email, role })
+        .header('Accept', 'application/json')
+        .json({ name: role, email: `${role}@example.com`, role })
         .loginAs(admin)
-        .withInertia()
         .redirects(0)
-      const invited = await User.findByOrFail('email', email)
-      assert.equal(invited.role, USERS_ROLES.ADVISOR, role)
+      response.assertStatus(422)
+      assert.isNull(await User.findBy('email', `${role}@example.com`))
     }
+  })
+
+  test('licences : 409 au-delà de MAX_LICENSES_ADVISORS, un membre désactivé libère une place', async ({
+    client,
+    assert,
+  }) => {
+    const admin = await createAdmin()
+    const org = await Organization.findOrFail(admin.organizationId)
+    const second = await createAdvisor(org)
+
+    const full = await client
+      .post(`${SETTINGS}/organization/advisors`)
+      .header('Accept', 'application/json')
+      .json({ name: 'Trop', email: 'trop@example.com', role: 'advisor' })
+      .loginAs(admin)
+      .redirects(0)
+    full.assertStatus(409)
+    assert.isNull(await User.findBy('email', 'trop@example.com'))
+    assert.deepEqual(mails.sent, [])
+
+    await second.merge({ disabledAt: DateTime.now() }).save()
+    const freed = await client
+      .post(`${SETTINGS}/organization/advisors`)
+      .json({ name: 'Ok', email: 'ok@example.com', role: 'advisor' })
+      .loginAs(admin)
+      .withInertia()
+      .redirects(0)
+    freed.assertStatus(302)
+    assert.isNotNull(await User.findBy('email', 'ok@example.com'))
   })
 
   test('refuse un email déjà présent dans le cabinet (flash error)', async ({ client, assert }) => {
@@ -188,7 +229,8 @@ test.group('Conseiller — paramètres : invitation de collaborateurs', (group) 
 
     const response = await client
       .post(`${SETTINGS}/organization/advisors`)
-      .json({ name: 'Doublon', email: 'DEJA@example.com', role: 'expert' })
+      .header('referer', SETTINGS)
+      .json({ name: 'Doublon', email: 'DEJA@example.com', role: 'advisor' })
       .loginAs(admin)
       .withInertia()
       .redirects(0)

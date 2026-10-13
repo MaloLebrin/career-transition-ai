@@ -64,6 +64,7 @@ test.group('OrganizationsService', (group) => {
     const found = list.find((a) => a.id === user.id)
     assert.isDefined(found)
     assert.equal(found!.email, 'advisor@test.com')
-    assert.equal(found!.role, 'expert')
+    assert.equal(found!.role, 'advisor')
+    assert.isNull(found!.disabledAt)
   })
 })

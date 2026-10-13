@@ -1,3 +1,6 @@
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
+import { AdvisorLicenseLimitReachedError } from '#exceptions/team_errors'
+import { MAX_LICENSES_ADVISORS } from '#shared/constants/organisation'
 import OnboardingToken from '#models/onboarding_token'
 import type Organization from '#models/organization'
 import User from '#models/user'
@@ -32,7 +35,7 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
       organizationId: org.id,
       name: 'Claire Martin',
       email: 'claire@example.com',
-      role: 'expert',
+      role: 'advisor',
     })
 
     assert.deepEqual(dto, {
@@ -40,7 +43,8 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
       organizationId: org.id,
       email: 'claire@example.com',
       name: 'Claire Martin',
-      role: 'expert',
+      role: 'advisor',
+      disabledAt: null,
     })
 
     const user = await User.findOrFail(dto.id)
@@ -74,7 +78,7 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     assert.equal(reloaded.role, USERS_ROLES.ADMIN)
   })
 
-  test('tout autre rôle front (consultant) retombe sur « advisor »', async ({ assert }) => {
+  test('le rôle « advisor » donne un compte conseiller', async ({ assert }) => {
     const { service } = makeService()
     const org = await createOrganization()
 
@@ -82,12 +86,33 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
       organizationId: org.id,
       name: 'Conseil',
       email: 'conseil@example.com',
-      role: 'consultant',
+      role: 'advisor',
     })
 
-    assert.equal(dto.role, 'expert')
+    assert.equal(dto.role, 'advisor')
     const reloaded = await User.findOrFail(dto.id)
     assert.equal(reloaded.role, USERS_ROLES.ADVISOR)
+  })
+
+  test('licences : refuse au-delà de MAX_LICENSES_ADVISORS, sans mail ni compte', async ({
+    assert,
+  }) => {
+    const { service, invites } = makeService()
+    const org = await createOrganization()
+    for (let i = 0; i < MAX_LICENSES_ADVISORS; i++) await createAdvisor(org)
+
+    await assert.rejects(
+      () =>
+        service.inviteAdvisor({
+          organizationId: org.id,
+          name: 'Trop',
+          email: 'trop@example.com',
+          role: 'advisor',
+        }),
+      AdvisorLicenseLimitReachedError
+    )
+    assert.lengthOf(invites, 0)
+    assert.isNull(await User.findBy('email', 'trop@example.com'))
   })
 
   test('le mot de passe temporaire est aléatoire et haché', async ({ assert }) => {
@@ -98,13 +123,13 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
       organizationId: org.id,
       name: 'A',
       email: 'a@example.com',
-      role: 'expert',
+      role: 'advisor',
     })
     const b = await service.inviteAdvisor({
       organizationId: org.id,
       name: 'B',
       email: 'b@example.com',
-      role: 'expert',
+      role: 'advisor',
     })
 
     const userA = await User.findOrFail(a.id)
@@ -124,11 +149,11 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
         organizationId: existing.organizationId,
         name: 'Doublon',
         email: existing.email.toUpperCase(),
-        role: 'expert',
+        role: 'advisor',
       })
       .catch((e) => e)
 
-    assert.instanceOf(error, Error)
+    assert.instanceOf(error, EmailAlreadyUsedException)
     assert.equal(error.message, 'Cet email est déjà utilisé par un compte existant.')
     assert.lengthOf(invites, 0)
     const count = await User.query()
@@ -147,7 +172,7 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
       organizationId: otherOrg.id,
       name: 'Homonyme',
       email: existing.email,
-      role: 'expert',
+      role: 'advisor',
     })
 
     assert.equal(dto.organizationId, otherOrg.id)

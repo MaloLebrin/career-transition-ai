@@ -12,6 +12,11 @@ vi.mock('../../../inertia/components/dashboard/DashboardLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+const PAGE = {
+  pagination: { page: 1, pageSize: 25, total: 1, lastPage: 1 },
+  filters: { search: '', minEmployees: '' as const },
+}
+
 const { postMock } = vi.hoisted(() => ({
   postMock: vi.fn(),
 }))
@@ -102,7 +107,7 @@ describe('OrganizationsAdmin page', () => {
       },
     ]
 
-    render(<OrganizationsAdmin organizations={organizations} />)
+    render(<OrganizationsAdmin organizations={organizations} {...PAGE} />)
 
     expect(screen.getByText(/Organisations clientes/i)).toBeInTheDocument()
     expect(screen.getByText('Cabinet Alpha')).toBeInTheDocument()
@@ -112,7 +117,7 @@ describe('OrganizationsAdmin page', () => {
   })
 
   test('does not show create organization dialog until open button is clicked', () => {
-    render(<OrganizationsAdmin organizations={[]} />)
+    render(<OrganizationsAdmin organizations={[]} {...PAGE} />)
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByText('Nouvelle organisation')).not.toBeInTheDocument()
@@ -136,7 +141,7 @@ describe('OrganizationsAdmin page', () => {
   }
 
   test('posts impersonation for the organization owner user, not the organization id', () => {
-    render(<OrganizationsAdmin organizations={[orgWithOwner]} />)
+    render(<OrganizationsAdmin organizations={[orgWithOwner]} {...PAGE} />)
 
     fireEvent.click(screen.getByRole('button', { name: /Impersonation/i }))
 
@@ -149,7 +154,7 @@ describe('OrganizationsAdmin page', () => {
   })
 
   test('posts a password reset link request for the organization owner user, not the organization id', () => {
-    render(<OrganizationsAdmin organizations={[orgWithOwner]} />)
+    render(<OrganizationsAdmin organizations={[orgWithOwner]} {...PAGE} />)
 
     fireEvent.click(screen.getByRole('button', { name: /Envoyer un lien de réinitialisation/i }))
 
@@ -162,7 +167,7 @@ describe('OrganizationsAdmin page', () => {
   })
 
   test('disables owner actions when the organization has no owner', () => {
-    render(<OrganizationsAdmin organizations={[{ ...orgWithOwner, ownerId: null }]} />)
+    render(<OrganizationsAdmin organizations={[{ ...orgWithOwner, ownerId: null }]} {...PAGE} />)
 
     const impersonate = screen.getByRole('button', { name: /Impersonation/i })
     const reset = screen.getByRole('button', { name: /Envoyer un lien de réinitialisation/i })
@@ -175,7 +180,7 @@ describe('OrganizationsAdmin page', () => {
   })
 
   test('submits create organization form with owner fields via modal', () => {
-    render(<OrganizationsAdmin organizations={[]} />)
+    render(<OrganizationsAdmin organizations={[]} {...PAGE} />)
 
     fireEvent.click(screen.getByRole('button', { name: /Créer une organisation/i }))
 
