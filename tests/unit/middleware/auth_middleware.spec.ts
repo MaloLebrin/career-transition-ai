@@ -40,4 +40,31 @@ test.group('AuthMiddleware', () => {
 
     assert.equal(calls.count, 0)
   })
+
+  test('coupe la session d’un compte désactivé (#73) et renvoie vers la connexion', async ({
+    assert,
+  }) => {
+    const { ctx, logouts, flashed, redirects } = makeCtx({
+      user: { id: 5, disabledAt: new Date() },
+    })
+    const { next, calls } = makeNext()
+
+    await new AuthMiddleware().handle(ctx, next)
+
+    assert.equal(calls.count, 0)
+    assert.equal(logouts.count, 1)
+    assert.deepEqual(redirects, ['/auth/login'])
+    assert.equal(flashed[0].key, 'error')
+    assert.include(String(flashed[0].value), 'désactivé')
+  })
+
+  test('laisse passer un compte actif', async ({ assert }) => {
+    const { ctx, logouts } = makeCtx({ user: { id: 5, disabledAt: null } })
+    const { next, calls } = makeNext()
+
+    await new AuthMiddleware().handle(ctx, next)
+
+    assert.equal(calls.count, 1)
+    assert.equal(logouts.count, 0)
+  })
 })

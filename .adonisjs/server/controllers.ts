@@ -33,10 +33,11 @@ export const controllers = {
   PdfExports: () => import('#controllers/pdf_exports_controller'),
   Robots: () => import('#controllers/robots_controller'),
   Sitemap: () => import('#controllers/sitemap_controller'),
-  Skills: () => import('#controllers/skills_controller'),
   StripeWebhooks: () => import('#controllers/stripe_webhooks_controller'),
   SuperAdminBilling: () => import('#controllers/super_admin_billing_controller'),
+  SuperAdminContactRequests: () => import('#controllers/super_admin_contact_requests_controller'),
   SuperAdmin: () => import('#controllers/super_admin_controller'),
   SuperAdminExpertRequests: () => import('#controllers/super_admin_expert_requests_controller'),
+  SuperAdminSkills: () => import('#controllers/super_admin_skills_controller'),
   SupportPlanSteps: () => import('#controllers/support_plan_steps_controller'),
 }

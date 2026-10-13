@@ -29,7 +29,11 @@ export default function SuperAdminHome({ stats }: SuperAdminHomeProps) {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <StatCard label="Organisations actives" value={stats.organizations} color="navy" />
                 <StatCard label="Utilisateurs" value={stats.users} color="sage" />
-                <StatCard label="Instances" value={1} color="terracotta" />
+                <StatCard
+                  label="Demandes de contact à traiter"
+                  value={stats.pendingContactRequests}
+                  color="terracotta"
+                />
               </div>
               <section className="space-y-4" aria-labelledby="b2c-stats-title">
                 <h2 id="b2c-stats-title" className="text-title-md text-ink">

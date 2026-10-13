@@ -1,19 +1,18 @@
+import {
+  CONTACT_REQUEST_STATUSES,
+  CONTACT_REQUEST_TYPES,
+  type ContactRequestStatus,
+  type ContactRequestType,
+} from '#shared/constants/contact_request'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
-export const CONTACT_REQUEST_TYPES = {
-  CONTACT: 'contact',
-  DEMO: 'demo',
-} as const
-export type ContactRequestType = (typeof CONTACT_REQUEST_TYPES)[keyof typeof CONTACT_REQUEST_TYPES]
-
-export const CONTACT_REQUEST_STATUSES = {
-  PENDING: 'pending',
-  TREATED: 'treated',
-  ARCHIVED: 'archived',
-} as const
-export type ContactRequestStatus =
-  (typeof CONTACT_REQUEST_STATUSES)[keyof typeof CONTACT_REQUEST_STATUSES]
+export {
+  CONTACT_REQUEST_STATUSES,
+  CONTACT_REQUEST_TYPES,
+  type ContactRequestStatus,
+  type ContactRequestType,
+}
 
 export default class ContactRequest extends BaseModel {
   @column({ isPrimary: true })

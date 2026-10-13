@@ -1,4 +1,4 @@
-import type { ContactRequestType } from '#models/contact_request'
+import type { ContactRequestType } from '#shared/constants/contact_request'
 
 /** Données d'une demande de contact / démo (payload de `createContactRequestValidator`). */
 export interface CreateContactRequestInput {

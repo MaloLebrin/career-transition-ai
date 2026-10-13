@@ -23,6 +23,7 @@ describe('SuperAdminHome page', () => {
         stats={{
           organizations: 3,
           users: 10,
+          pendingContactRequests: 4,
           b2c: {
             candidates: 7,
             paid: 2,
@@ -46,6 +47,7 @@ describe('SuperAdminHome page', () => {
         stats={{
           organizations: 3,
           users: 10,
+          pendingContactRequests: 4,
           b2c: {
             candidates: 7,
             paid: 2,
@@ -68,5 +70,28 @@ describe('SuperAdminHome page', () => {
     expect(
       screen.getByRole('article', { name: '1 Demandes d’accompagnement en attente' })
     ).toBeInTheDocument()
+  })
+
+  test('affiche les demandes de contact à traiter, sans « Instances » codé en dur (#73)', () => {
+    render(
+      <SuperAdminHome
+        stats={{
+          organizations: 3,
+          users: 10,
+          pendingContactRequests: 4,
+          b2c: {
+            candidates: 7,
+            paid: 2,
+            monthRevenueCents: 9800,
+            currency: 'eur',
+            pendingExpertRequests: 1,
+          },
+        }}
+      />
+    )
+
+    expect(screen.getByText('Demandes de contact à traiter')).toBeInTheDocument()
+    expect(screen.getByText('4')).toBeInTheDocument()
+    expect(screen.queryByText('Instances')).not.toBeInTheDocument()
   })
 })
