@@ -23,12 +23,12 @@ const VARIANTS: { variant: LandscapeArtVariant; label: string; usage: string; fr
   },
 ]
 
-/** Le seul bloc illustratif : un paysage calme dessiné avec les teintes expressives. */
+/** Le paysage, premier des deux blocs illustratifs (le compagnon est en §08). */
 export const IllustrationShowcase: React.FC = () => (
   <ShowcaseSection
     eyebrow="07"
     title="Illustration"
-    description="Un paysage apaisant, en formes plates et teintes expressives, jamais de photo ni de flou."
+    description="Un paysage apaisant, en formes plates et teintes expressives, jamais de photo ni de flou. Le compagnon (§08) partage ses couleurs."
   >
     <ul className="space-y-6">
       {VARIANTS.map(({ variant, label, usage, frame }) => (

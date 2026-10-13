@@ -13,7 +13,7 @@ const GROUPS: { title: string; tokens: ColorToken[] }[] = [
   {
     title: 'Surfaces',
     tokens: [
-      { name: 'canvas', usage: 'Fond de page, ivoire' },
+      { name: 'canvas', usage: 'Fond de page, blanc chaud' },
       { name: 'surface', usage: 'Cartes, champs' },
       { name: 'surface-soft', usage: 'Bandes alternées' },
       { name: 'surface-strong', usage: 'Fonds désactivés' },

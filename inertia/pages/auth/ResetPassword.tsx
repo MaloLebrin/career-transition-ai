@@ -87,6 +87,7 @@ function InvalidLink({ expired }: { expired: boolean }) {
       icon={<TriangleAlert size={24} />}
       iconTone="warning"
       accent="warm"
+      companion="think"
     >
       <div className="text-center">
         <AppLink

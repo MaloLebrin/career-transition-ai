@@ -2,6 +2,7 @@ import type { ChatAuthorRole } from '#shared/constants/chat'
 import type { ChatMessageView } from '#shared/types/chat/views'
 import { useEffect, useRef } from 'react'
 import Button from '~/components/ui/Button'
+import { Companion } from '~/components/ui/Companion'
 import { ChatMessageBubble } from './ChatMessageBubble'
 
 interface ChatThreadProps {
@@ -48,9 +49,10 @@ export function ChatThread({
         </div>
       )}
       {messages.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted">
-          Aucun message pour le moment. Écrivez le premier.
-        </p>
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <Companion pose="rest" size="sm" />
+          <p className="text-sm text-muted">Aucun message pour le moment. Écrivez le premier.</p>
+        </div>
       ) : (
         <ul className="space-y-3">
           {messages.map((message) => (

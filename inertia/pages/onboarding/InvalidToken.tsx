@@ -22,6 +22,7 @@ export default function InvalidToken({ expired }: InvalidTokenProps) {
         icon={<TriangleAlert size={24} />}
         iconTone="warning"
         accent="warm"
+        companion="think"
       >
         <div className="text-center">
           <AppLink href="/auth/login" className={buttonClassName({ variant: 'outline' })}>

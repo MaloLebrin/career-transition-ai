@@ -8,6 +8,7 @@ import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
+import { Companion } from '~/components/ui/Companion'
 import { Eyebrow } from '~/components/ui/Eyebrow'
 import type { EmployeeData } from '~/types/employee'
 
@@ -41,52 +42,61 @@ export function B2cEmployeeHome({
 
   return (
     <div className="w-full space-y-6 animate-fade-in">
-      <Card variant="dark" className="space-y-6">
-        <div className="space-y-3">
-          <Eyebrow tone="inverse" icon={<Sparkles className="h-4 w-4" />}>
-            Votre parcours
-          </Eyebrow>
-          <h1 className="font-display text-display-sm text-on-ink">Bonjour {firstName}</h1>
-          <p className="max-w-xl text-base text-on-ink-soft">
-            {employee.targetRole ? (
-              <>
-                Vous préparez votre transition vers{' '}
-                <span className="font-semibold text-on-ink">{employee.targetRole}</span>.{' '}
-              </>
-            ) : null}
-            {exerciseAccess.hasPaidAccess
-              ? 'Tous les exercices et vos résultats sont débloqués.'
-              : `Commencez par les ${freeCount} exercices offerts : vos résultats sont visibles immédiatement.`}
-          </p>
+      <Card variant="dark" className="flex items-start justify-between gap-6">
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <Eyebrow tone="inverse" icon={<Sparkles className="h-4 w-4" />}>
+              Votre parcours
+            </Eyebrow>
+            <h1 className="font-display text-display-sm text-on-ink">Bonjour {firstName}</h1>
+            <p className="max-w-xl text-base text-on-ink-soft">
+              {employee.targetRole ? (
+                <>
+                  Vous préparez votre transition vers{' '}
+                  <span className="font-semibold text-on-ink">{employee.targetRole}</span>.{' '}
+                </>
+              ) : null}
+              {exerciseAccess.hasPaidAccess
+                ? 'Tous les exercices et vos résultats sont débloqués.'
+                : `Commencez par les ${freeCount} exercices offerts : vos résultats sont visibles immédiatement.`}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <AppLink
+              href="/dashboard/candidat/profile"
+              className={buttonClassName({ variant: 'secondary', size: 'md' })}
+            >
+              Mon profil
+            </AppLink>
+            <AppLink
+              href="/dashboard/candidat/synthesis"
+              className={buttonClassName({
+                variant: 'outline',
+                size: 'md',
+                className: 'border-on-ink-muted bg-transparent text-on-ink hover:bg-ink-elevated',
+              })}
+            >
+              Ma synthèse
+            </AppLink>
+            <AppLink
+              href={CHAT_PATHS.candidate}
+              className={buttonClassName({
+                variant: 'outline',
+                size: 'md',
+                className: 'border-on-ink-muted bg-transparent text-on-ink hover:bg-ink-elevated',
+              })}
+            >
+              Discuter avec un expert
+            </AppLink>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <AppLink
-            href="/dashboard/candidat/profile"
-            className={buttonClassName({ variant: 'secondary', size: 'md' })}
-          >
-            Mon profil
-          </AppLink>
-          <AppLink
-            href="/dashboard/candidat/synthesis"
-            className={buttonClassName({
-              variant: 'outline',
-              size: 'md',
-              className: 'border-on-ink-muted bg-transparent text-on-ink hover:bg-ink-elevated',
-            })}
-          >
-            Ma synthèse
-          </AppLink>
-          <AppLink
-            href={CHAT_PATHS.candidate}
-            className={buttonClassName({
-              variant: 'outline',
-              size: 'md',
-              className: 'border-on-ink-muted bg-transparent text-on-ink hover:bg-ink-elevated',
-            })}
-          >
-            Discuter avec un expert
-          </AppLink>
-        </div>
+        <Companion
+          pose="wave"
+          tone="inverse"
+          size="md"
+          animated
+          className="hidden shrink-0 md:block"
+        />
       </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

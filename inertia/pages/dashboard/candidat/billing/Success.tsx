@@ -6,6 +6,7 @@ import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import AppLink from '~/components/ui/AppLink'
 import { buttonClassName } from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
+import { Companion } from '~/components/ui/Companion'
 import { Eyebrow } from '~/components/ui/Eyebrow'
 
 interface SuccessPageProps {
@@ -36,6 +37,7 @@ export default function CheckoutSuccessPage({ paid }: SuccessPageProps) {
       <div className="mx-auto w-full max-w-2xl animate-fade-in">
         {paid ? (
           <Card variant="accent" className="space-y-4" role="status">
+            <Companion pose="cheer" size="lg" animated />
             <Eyebrow icon={<CheckCircle2 className="h-4 w-4" />}>Paiement confirmé</Eyebrow>
             <h1 className="font-display text-display-sm text-ink">
               Merci, vos résultats sont débloqués
@@ -61,6 +63,7 @@ export default function CheckoutSuccessPage({ paid }: SuccessPageProps) {
           </Card>
         ) : (
           <Card variant="sun" className="space-y-4" role="status">
+            <Companion pose="think" size="lg" />
             <Eyebrow tone="muted" icon={<Clock className="h-4 w-4" />}>
               Paiement en cours
             </Eyebrow>

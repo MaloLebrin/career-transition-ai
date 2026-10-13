@@ -26,6 +26,7 @@ describe('Checkout success page (#102)', () => {
     render(<CheckoutSuccessPage paid />)
 
     expect(screen.getByRole('status')).toHaveTextContent('Merci, vos résultats sont débloqués')
+    expect(document.querySelector('svg[data-pose="cheer"]')).not.toBeNull()
     expect(screen.getByRole('link', { name: 'Reprendre mon parcours' })).toHaveAttribute(
       'href',
       '/dashboard/candidat'
@@ -39,6 +40,7 @@ describe('Checkout success page (#102)', () => {
     render(<CheckoutSuccessPage paid={false} />)
 
     expect(screen.getByRole('status')).toHaveTextContent(/en cours de confirmation/)
+    expect(document.querySelector('svg[data-pose="think"]')).not.toBeNull()
     expect(screen.getByRole('link', { name: 'Revoir l’offre' })).toHaveAttribute(
       'href',
       '/dashboard/candidat/offre'

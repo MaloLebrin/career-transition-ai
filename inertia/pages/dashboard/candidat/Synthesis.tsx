@@ -5,6 +5,7 @@ import { Head, router } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
 import { ResultsLockedCard } from '~/components/dashboard/b2c/ResultsLockedCard'
 import Card from '~/components/ui/Card'
+import { Companion } from '~/components/ui/Companion'
 import Button from '~/components/ui/Button'
 import { useAuth } from '~/hooks/use_auth'
 import { useLivePdfExport, type LivePdfExport } from '~/hooks/use_live_pdf_export'
@@ -142,9 +143,16 @@ function SharedSynthesis({
           <div className="text-sm font-bold text-brand-sage uppercase tracking-widest mb-3">
             Commentaires de votre expert
           </div>
-          <div className="text-sm text-brand-navy whitespace-pre-wrap">
-            {synthesis.expertCommentsShared || 'Aucun commentaire partagé pour le moment.'}
-          </div>
+          {synthesis.expertCommentsShared ? (
+            <div className="text-sm text-brand-navy whitespace-pre-wrap">
+              {synthesis.expertCommentsShared}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 text-sm text-ink-soft">
+              <Companion pose="rest" size="sm" />
+              <p>Aucun commentaire partagé pour le moment.</p>
+            </div>
+          )}
           {isB2c && (
             <p className="mt-4 text-sm text-ink-soft">
               Envie d’aller plus loin ?{' '}

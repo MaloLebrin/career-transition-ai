@@ -39,6 +39,7 @@ describe('ResultsLockedCard (#101)', () => {
     }
     expect(screen.getByText(/49,90/)).toBeInTheDocument()
     expect(screen.getByText(/TTC, paiement unique/)).toBeInTheDocument()
+    expect(document.querySelector('svg[data-pose="guard"]')).toHaveAttribute('data-size', 'sm')
     expect(screen.getByRole('link', { name: 'Débloquer mes résultats' })).toHaveAttribute(
       'href',
       '/dashboard/candidat/offre'
@@ -56,9 +57,10 @@ describe('ResultsLockedCard (#101)', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
-  test('variante compacte : sans la liste des bénéfices ; sans prop billing, pas de prix', () => {
+  test('variante compacte : sans bénéfices ni compagnon ; sans prop billing, pas de prix', () => {
     billingState.value = null
     render(<ResultsLockedCard compact description="Courte description." />)
+    expect(document.querySelector('svg[data-pose]')).toBeNull()
 
     expect(screen.getByText('Courte description.')).toBeInTheDocument()
     expect(screen.queryByText(RESULTS_BENEFITS[0])).not.toBeInTheDocument()

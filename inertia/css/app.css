@@ -4,9 +4,10 @@
 /*
  * Design system « Transition Carrière » — contrat lisible dans DESIGN.md (racine).
  *
- * Direction « Duna × Ditto » : canvas ivoire, encre bleu nuit, un bouton d'action en encre,
- * un bouton soleil (jaune, texte encre) pour le CTA secondaire, le teal du logo comme accent
- * de signal (liens, focus, sur-titres) et une famille de teintes expressives à trois niveaux
+ * Direction « Duna » : canvas blanc chaud et sections pierre, encre noire chaude, un bouton
+ * d'action en encre, un bouton soleil (or, texte encre) pour le CTA secondaire, le teal du logo
+ * (ramené vers le lac ardoise) comme accent de signal (liens, focus, sur-titres) et une famille
+ * de teintes terreuses de coucher de soleil à trois niveaux
  * (`tint-x` fond pastel, `tint-x-ink` texte, `tint-x-bold` aplat de décor, jamais de texte).
  * Règles : rôles sémantiques nommés (jamais `slate-*`/`rose-*` bruts), casse de phrase
  * (jamais d'uppercase micro-texte), jamais `font-black`.
@@ -20,73 +21,73 @@
   --font-display: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* ---- Surfaces ---- */
-  --color-canvas: #f7f5ee; /* fond de page, ivoire chaud */
+  --color-canvas: #fcfbf8; /* fond de page, blanc chaud (Duna) */
   --color-surface: #ffffff; /* cartes, champs, en-tête */
-  --color-surface-soft: #f0ede2; /* bandes alternées, cartes plates, survol de ligne */
-  --color-surface-strong: #e5e1d3; /* fonds désactivés */
-  --color-hairline: #e2ded0; /* bordures 1px des cartes et sections */
-  --color-hairline-strong: #cdc8b7; /* champs, boutons outline */
+  --color-surface-soft: #f5f4ee; /* bandes alternées, cartes plates, survol de ligne */
+  --color-surface-strong: #ebe8e1; /* fonds désactivés */
+  --color-hairline: #e7e4dc; /* bordures 1px des cartes et sections */
+  --color-hairline-strong: #d3cfc4; /* champs, boutons outline */
 
   /* ---- Encre ---- */
-  --color-ink: #1b2140; /* titres, bouton principal, la seule surface sombre — 14,4:1 sur ivoire */
-  --color-ink-elevated: #272e52; /* carte imbriquée sur une surface ink, bouton principal pressé */
-  --color-ink-soft: #3a4060; /* texte courant — 10,1:1 blanc, 9,3:1 ivoire */
-  --color-muted: #5f6680; /* texte secondaire — 5,7:1 blanc, 5,2:1 ivoire */
-  --color-muted-soft: #767c91; /* ≥ 18px ou placeholders seulement — 4,2:1 blanc, 3,8:1 ivoire */
+  --color-ink: #1c1512; /* noir chaud : titres, bouton principal, la seule surface sombre — 17,3:1 sur canvas */
+  --color-ink-elevated: #2c2320; /* carte imbriquée sur une surface ink, bouton principal pressé */
+  --color-ink-soft: #3f3733; /* texte courant — 11,6:1 blanc, 11,1:1 canvas */
+  --color-muted: #6b625c; /* texte secondaire — 5,9:1 blanc, 5,7:1 canvas */
+  --color-muted-soft: #857b74; /* ≥ 18px ou placeholders seulement — 4,1:1 blanc, 4,0:1 canvas */
   --color-on-ink: #ffffff;
-  --color-on-ink-soft: #b9bdd3; /* liens du footer sur ink — 8,4:1 */
-  --color-on-ink-muted: #9298b5; /* méta du footer sur ink — 5,5:1 */
+  --color-on-ink-soft: #cfc5bb; /* liens du footer sur ink — 10,6:1 */
+  --color-on-ink-muted: #a69a90; /* méta du footer sur ink — 6,6:1 */
 
   /* ---- Action principale : l'encre (bouton primary, lignes sélectionnées) ---- */
   --color-primary: var(--color-ink);
   --color-primary-pressed: var(--color-ink-elevated);
-  --color-primary-soft: #eceef5; /* lignes sélectionnées, fond de badge « primary » */
+  --color-primary-soft: #f1ece6; /* lignes sélectionnées, fond de badge « primary » */
   --color-on-primary: #ffffff;
 
-  /* ---- Accent de signal — le teal du logo : liens, focus, sur-titres, état actif ---- */
-  --color-accent: #1d6a70; /* 6,3:1 sur blanc, 5,8:1 sur ivoire */
-  --color-accent-pressed: #0f5964; /* survol des liens */
-  --color-accent-soft: #dcedf0; /* état actif de navigation, tuiles d'icône discrètes */
-  --color-accent-on-ink: #7fc4c6; /* teal lisible sur fond ink — 7,9:1 */
+  /* ---- Accent de signal — le teal du logo, ramené vers le lac ardoise de Duna : liens, focus, sur-titres, état actif ---- */
+  --color-accent: #3d6168; /* 6,8:1 sur blanc, 6,5:1 sur canvas */
+  --color-accent-pressed: #2f4f55; /* survol des liens */
+  --color-accent-soft: #e3ecec; /* état actif de navigation, tuiles d'icône discrètes */
+  --color-accent-on-ink: #9fc3c5; /* teal lisible sur fond ink — 9,5:1 */
 
-  /* ---- Soleil — bouton secondaire / CTA sur fond ink ; texte toujours `text-ink` ---- */
-  --color-sun: #f3c53d; /* encre dessus : 9,6:1 */
-  --color-sun-pressed: #e5b528; /* encre dessus : 8,2:1 */
-  --color-sun-soft: #fbf0c8; /* tuiles d'icône, carte `sun`, sélection de texte */
+  /* ---- Soleil — l'or de Duna : bouton secondaire / CTA sur fond ink ; texte toujours `text-ink` ---- */
+  --color-sun: #f0a848; /* encre dessus : 8,9:1 */
+  --color-sun-pressed: #e39a37; /* encre dessus : 7,7:1 */
+  --color-sun-soft: #fbe9cf; /* tuiles d'icône, carte `sun`, sélection de texte */
 
   /* ---- Sémantique ---- */
-  --color-success: #1b734a; /* 5,1:1 sur success-soft */
-  --color-success-soft: #e3f3ea;
-  --color-warning: #8f5400; /* 5,0:1 sur warning-soft */
-  --color-warning-soft: #fce4cc; /* pêche, distinct de sun-soft */
-  --color-danger: #b42318;
-  --color-danger-soft: #fbe9e7;
-  --color-info: #2b5f9e;
-  --color-info-soft: #e6eef8;
+  --color-success: #3e6b3a; /* 5,3:1 sur success-soft */
+  --color-success-soft: #e6efe1;
+  --color-warning: #8a4b14; /* 5,5:1 sur warning-soft */
+  --color-warning-soft: #fbe3d0; /* pêche, distinct de sun-soft */
+  --color-danger: #a8352a; /* 5,4:1 sur danger-soft */
+  --color-danger-soft: #f9e6e2;
+  --color-info: #3b5f8a; /* 5,5:1 sur info-soft */
+  --color-info-soft: #e5ecf4;
 
   /* ---- Teintes expressives : `tint-x` fond pastel, `tint-x-ink` texte dessus (≥ 6,2:1),
      `tint-x-bold` aplat saturé pour illustrer (LandscapeArt, graphiques) — jamais de texte. ---- */
   --color-tint-sun: var(--color-sun-soft);
-  --color-tint-sun-ink: #6b4a00;
+  --color-tint-sun-ink: #6e4300;
   --color-tint-sun-bold: var(--color-sun);
-  --color-tint-apricot: #fde5d4;
-  --color-tint-apricot-ink: #8a3f12;
-  --color-tint-apricot-bold: #f09a5c;
-  --color-tint-meadow: #ddefdf;
-  --color-tint-meadow-ink: #22613a;
-  --color-tint-meadow-bold: #5aaa6a;
-  --color-tint-lake: #d9eef0;
+  --color-tint-apricot: #fde0c8;
+  --color-tint-apricot-ink: #7a360e;
+  --color-tint-apricot-bold: #f2a97a;
+  --color-tint-meadow: #e3ead9;
+  --color-tint-meadow-ink: #3a5a2e;
+  --color-tint-meadow-bold: #7f9a63;
+  --color-tint-lake: #dfe8e7;
   --color-tint-lake-ink: var(--color-accent-pressed);
-  --color-tint-lake-bold: #2a8d96;
-  --color-tint-lavender: #e9e4f8;
-  --color-tint-lavender-ink: #45348f;
-  --color-tint-lavender-bold: #8b76d6;
-  --color-tint-blossom: #fbe1ec;
-  --color-tint-blossom-ink: #8c2459;
-  --color-tint-blossom-bold: #e1609f;
-  --color-tint-sky: #e0e9fb;
-  --color-tint-sky-ink: #1f3f8c;
-  --color-tint-sky-bold: #3f78dd;
+  --color-tint-lake-bold: #5f8486;
+  --color-tint-lavender: #ebe2ea;
+  --color-tint-lavender-ink: #5e3d58;
+  --color-tint-lavender-bold: #b08aa6;
+  --color-tint-blossom: #fbe3df;
+  --color-tint-blossom-ink: #863540;
+  --color-tint-blossom-bold: #e3a0a8;
+  --color-tint-sky: #e6e9ee;
+  --color-tint-sky-ink: #3b4f66;
+  --color-tint-sky-bold: #8aa1b6;
 
   /* ---- Alias legacy — dashboard uniquement. À SUPPRIMER EN PHASE 4 (grep `brand-`). ---- */
   --color-brand-navy: var(--color-ink);
@@ -101,7 +102,7 @@
      (mockups en perspective, panneaux du méga-menu — DESIGN.md §5 bis). ---- */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
   --shadow-raised: 0 4px 12px rgb(0 0 0 / 0.08);
-  --shadow-floating: 0 32px 64px -16px rgb(27 33 64 / 0.28), 0 16px 32px -16px rgb(27 33 64 / 0.22);
+  --shadow-floating: 0 32px 64px -16px rgb(28 21 18 / 0.28), 0 16px 32px -16px rgb(28 21 18 / 0.22);
 
   /* ---- Perspective des mockups produit (`perspective-hero` + `rotate-x-*`/`rotate-y-*`) ---- */
   --perspective-hero: 1600px;
@@ -362,6 +363,84 @@
     .landscape-birds,
     .landscape-sun-halo,
     .landscape-ripple {
+      animation: none;
+    }
+  }
+}
+
+/* Animation du compagnon (`ui/Companion.tsx`, prop `animated`) : flottement, clignement,
+   salut, étincelles — coupés par `prefers-reduced-motion`. */
+@layer components {
+  .companion-float,
+  .companion-blink,
+  .companion-wave,
+  .companion-sparkle {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .companion-float {
+    animation: companion-float 5s ease-in-out infinite alternate;
+  }
+  .companion-blink {
+    animation: companion-blink 4.5s ease-in-out infinite;
+  }
+  .companion-wave {
+    transform-origin: bottom left;
+    animation: companion-wave 1.6s ease-in-out infinite alternate;
+  }
+  .companion-sparkle {
+    animation: companion-sparkle 2s ease-in-out infinite;
+  }
+  .companion-sparkle-b {
+    animation-delay: -0.7s;
+  }
+  .companion-sparkle-c {
+    animation-delay: -1.4s;
+  }
+
+  @keyframes companion-float {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-5px);
+    }
+  }
+  @keyframes companion-blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+  @keyframes companion-wave {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-18deg);
+    }
+  }
+  @keyframes companion-sparkle {
+    0%,
+    100% {
+      transform: scale(0.8);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .companion-float,
+    .companion-blink,
+    .companion-wave,
+    .companion-sparkle {
       animation: none;
     }
   }

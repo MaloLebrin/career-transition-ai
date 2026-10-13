@@ -142,6 +142,10 @@ describe('EmployeeHome — contenu', () => {
 
     expect(screen.getByRole('heading', { name: /Hello, Camille/ })).toBeInTheDocument()
     expect(screen.getByText('UX designer')).toBeInTheDocument()
+    const companions = document.querySelectorAll('svg[data-pose]')
+    expect(companions).toHaveLength(1)
+    expect(companions[0]).toHaveAttribute('data-pose', 'wave')
+    expect(companions[0]).toHaveAttribute('data-tone', 'inverse')
     expect(screen.getByText(/Progression exercices: 38% \(3\/\s*8\)/)).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Progression des exercices' })).toHaveAttribute(
       'aria-valuenow',

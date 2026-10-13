@@ -2,6 +2,7 @@ import { EmployeeData } from '../../types/employee'
 import AppLink from '../ui/AppLink'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
+import { Companion } from '../ui/Companion'
 import PlanStepsTimeline from './PlanStepsTimeline'
 
 export default function EmployeeHome({
@@ -30,6 +31,13 @@ export default function EmployeeHome({
       <div className="bg-brand-navy p-10 md:p-14 rounded-[48px] text-white shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-brand-sage/10 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-60 h-60 bg-brand-terracotta/8 rounded-full -ml-20 -mb-20 blur-3xl" />
+        <Companion
+          pose="wave"
+          tone="inverse"
+          size="md"
+          animated
+          className="absolute top-10 right-10 z-10 hidden md:block"
+        />
         <div className="relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Hello, {employee.name.split(' ')[0]} 🚀
