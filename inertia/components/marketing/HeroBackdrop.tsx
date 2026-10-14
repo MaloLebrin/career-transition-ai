@@ -33,7 +33,7 @@ export const HeroBackdrop: React.FC<HeroBackdropProps> = ({
         <div className="absolute inset-0 overflow-hidden">
           <LandscapeArt variant="hero" />
         </div>
-        <div className="absolute inset-0 bg-linear-to-b from-canvas/90 via-canvas/70 to-canvas/15 lg:bg-linear-to-r lg:from-canvas lg:via-canvas/85 lg:to-canvas/0" />
+        <div className="absolute inset-0 bg-linear-to-b from-canvas/90 via-canvas/55 to-canvas/0 lg:bg-linear-to-r lg:from-canvas lg:via-canvas/70 lg:via-45% lg:to-canvas/0" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-hairline" />
       </>
     ) : (

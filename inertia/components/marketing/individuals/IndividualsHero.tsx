@@ -92,9 +92,9 @@ export const IndividualsHero: React.FC<IndividualsHeroProps> = ({ registrationOp
         </Parallax>
         <Companion
           pose="wave"
-          size="lg"
+          size="md"
           animated
-          className="absolute -right-2 -bottom-12 hidden lg:block"
+          className="absolute -right-1 -bottom-8 lg:-right-2 lg:-bottom-12 lg:h-40 lg:w-40"
         />
       </div>
     </Container>

@@ -31,7 +31,8 @@ describe('individuals marketing blocks', () => {
       '/inscription'
     )
     const companion = container.querySelector('svg[data-pose="wave"]')
-    expect(companion).toHaveClass('hidden', 'lg:block')
+    expect(companion).toHaveClass('h-24', 'w-24', 'lg:h-40', 'lg:w-40')
+    expect(companion).not.toHaveClass('hidden')
     expect(companion?.querySelector('.companion-float')).not.toBeNull()
     expect(screen.queryByText('Analyse IA prête')).not.toBeInTheDocument()
   })
