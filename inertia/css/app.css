@@ -70,24 +70,24 @@
   --color-tint-sun: var(--color-sun-soft);
   --color-tint-sun-ink: #6e4300;
   --color-tint-sun-bold: var(--color-sun);
-  --color-tint-apricot: #fde0c8;
+  --color-tint-apricot: #fdd8b8;
   --color-tint-apricot-ink: #7a360e;
-  --color-tint-apricot-bold: #f2a97a;
-  --color-tint-meadow: #e3ead9;
+  --color-tint-apricot-bold: #f5a066;
+  --color-tint-meadow: #dfe9cf;
   --color-tint-meadow-ink: #3a5a2e;
-  --color-tint-meadow-bold: #7f9a63;
-  --color-tint-lake: #dfe8e7;
+  --color-tint-meadow-bold: #6e9c4e;
+  --color-tint-lake: #d6e6e4;
   --color-tint-lake-ink: var(--color-accent-pressed);
-  --color-tint-lake-bold: #5f8486;
-  --color-tint-lavender: #ebe2ea;
+  --color-tint-lake-bold: #4a848c;
+  --color-tint-lavender: #eadde9;
   --color-tint-lavender-ink: #5e3d58;
-  --color-tint-lavender-bold: #b08aa6;
-  --color-tint-blossom: #fbe3df;
+  --color-tint-lavender-bold: #b983ae;
+  --color-tint-blossom: #fadcd8;
   --color-tint-blossom-ink: #863540;
-  --color-tint-blossom-bold: #e3a0a8;
-  --color-tint-sky: #e6e9ee;
+  --color-tint-blossom-bold: #e9909c;
+  --color-tint-sky: #dfe6ef;
   --color-tint-sky-ink: #3b4f66;
-  --color-tint-sky-bold: #8aa1b6;
+  --color-tint-sky-bold: #7ea3c4;
 
   /* ---- Alias legacy — dashboard uniquement. À SUPPRIMER EN PHASE 4 (grep `brand-`). ---- */
   --color-brand-navy: var(--color-ink);

@@ -116,12 +116,12 @@ ne jamais combiner `-ink` et `-bold`).
 | Teinte     | `tint-x`     | `tint-x-ink`       | `tint-x-bold` | Évoque                  |
 | ---------- | ------------ | ------------------ | ------------- | ----------------------- |
 | `sun`      | = `sun-soft` | #6e4300            | = `sun`       | Le soleil or de Duna    |
-| `apricot`  | #fde0c8      | #7a360e            | #f2a97a       | Le ciel au couchant     |
-| `meadow`   | #e3ead9      | #3a5a2e            | #7f9a63       | La prairie sauge        |
-| `lake`     | #dfe8e7      | = `accent-pressed` | #5f8486       | Le lac ardoise, le logo |
-| `lavender` | #ebe2ea      | #5e3d58            | #b08aa6       | Les montagnes mauves    |
-| `blossom`  | #fbe3df      | #863540            | #e3a0a8       | Les fleurs rose poudré  |
-| `sky`      | #e6e9ee      | #3b4f66            | #8aa1b6       | Le ciel gris-bleu       |
+| `apricot`  | #fdd8b8      | #7a360e            | #f5a066       | Le ciel au couchant     |
+| `meadow`   | #dfe9cf      | #3a5a2e            | #6e9c4e       | La prairie sauge        |
+| `lake`     | #d6e6e4      | = `accent-pressed` | #4a848c       | Le lac ardoise, le logo |
+| `lavender` | #eadde9      | #5e3d58            | #b983ae       | Les montagnes mauves    |
+| `blossom`  | #fadcd8      | #863540            | #e9909c       | Les fleurs rose poudré  |
+| `sky`      | #dfe6ef      | #3b4f66            | #7ea3c4       | Le ciel gris-bleu       |
 
 Usage : catégories d'exercices, badges de classification, notes partagées (`blossom`),
 compteur de la sidebar (`apricot`). Jamais pour une action.
