@@ -109,7 +109,7 @@ export const RESOURCES_MENU: MenuGroup = {
     {
       label: 'Qui sommes-nous',
       href: '/qui-sommes-nous',
-      description: 'Notre mission et nos engagements.',
+      description: 'Notre mission, nos engagements et l’équipe qui vous accompagne.',
       icon: Users,
       tint: 'sky',
     },

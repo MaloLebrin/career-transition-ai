@@ -24,6 +24,7 @@ import { StepsTimeline } from './StepsTimeline'
 import { FREE_TITLE, LINK_CLASS, TOTAL_WORD } from './individuals/copy'
 import { IndividualsHero } from './individuals/IndividualsHero'
 import { ResultsPlanCard } from './individuals/ResultsPlanCard'
+import { TeamTeaser } from './individuals/TeamTeaser'
 import { AiAnalysisMockup } from './mockups/AiAnalysisMockup'
 import { ExpertMockup } from './mockups/ExpertMockup'
 import { JourneyMockup } from './mockups/JourneyMockup'
@@ -174,6 +175,10 @@ export default function IndividualsPage() {
             </RevealItem>
           </RevealGroup>
         </div>
+      </MarketingSection>
+
+      <MarketingSection tone="surface">
+        <TeamTeaser />
       </MarketingSection>
 
       <MarketingSection tone="soft">

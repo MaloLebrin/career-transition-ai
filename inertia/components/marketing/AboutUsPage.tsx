@@ -1,16 +1,21 @@
 import { Brain, Compass, Lock, UserCheck } from 'lucide-react'
 import { CONTACT_EMAIL, FOOTER_TAGLINE } from '~/config/marketing'
 import { SELLER_IDENTITY } from '#shared/constants/legal'
+import { TEAM_CONTENT_IS_PLACEHOLDER, TEAM_MEMBERS, TESTIMONIALS } from '#shared/constants/team'
 import PublicLayout from '../layout/PublicLayout'
 import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
 import { SectionHeading } from '../ui/SectionHeading'
+import { PlaceholderNotice } from './about/PlaceholderNotice'
+import { TeamHeroCard } from './about/TeamHeroCard'
+import { TeamMemberCard } from './about/TeamMemberCard'
+import { TestimonialCard } from './about/TestimonialCard'
 import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
 import { FeatureCard } from './FeatureCard'
-import { LandscapeArt } from './LandscapeArt'
 import { MarketingSection } from './MarketingSection'
 import { PageHero } from './PageHero'
+import { MARKETING_TINT_CYCLE } from './tints'
 import { RevealGroup } from '../ui/motion/RevealGroup'
 import { RevealItem } from '../ui/motion/RevealItem'
 import { TiltCard } from '../ui/motion/TiltCard'
@@ -61,12 +66,9 @@ export default function AboutUsPage() {
         title="Aider chacun à faire le point sur sa carrière, à son rythme."
         description={FOOTER_TAGLINE}
         aside={
-          <div
-            className="aspect-[4/3] overflow-hidden rounded-2xl border border-hairline shadow-floating"
-            data-testid="about-landscape"
-          >
-            <LandscapeArt variant="hero" />
-          </div>
+          <TiltCard>
+            <TeamHeroCard />
+          </TiltCard>
         }
       />
 
@@ -93,7 +95,28 @@ export default function AboutUsPage() {
         </RevealGroup>
       </MarketingSection>
 
-      <MarketingSection tone="soft">
+      <MarketingSection tone="soft" id="equipe" className="scroll-mt-16">
+        <SectionHeading
+          eyebrow="L’équipe"
+          title="Deux psychologues du travail derrière les accompagnements."
+          description="Les exercices du parcours sont conçus par des psychologues du travail, et ce sont eux qui assurent les suivis. Leur cadre déontologique s’applique à chaque échange : confidentialité, respect de votre rythme, aucune décision prise à votre place. Vous pouvez demander leur accompagnement une fois le forfait réglé, sans engagement."
+        />
+        <RevealGroup className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2" stagger={0.12}>
+          {TEAM_MEMBERS.map((member, index) => (
+            <RevealItem key={member.id} className="h-full">
+              <TiltCard className="h-full">
+                <TeamMemberCard
+                  member={member}
+                  tint={MARKETING_TINT_CYCLE[(index + 1) % MARKETING_TINT_CYCLE.length]}
+                />
+              </TiltCard>
+            </RevealItem>
+          ))}
+        </RevealGroup>
+        {TEAM_CONTENT_IS_PLACEHOLDER && <PlaceholderNotice className="mt-6" />}
+      </MarketingSection>
+
+      <MarketingSection tone="canvas">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="space-y-4">
             <SectionHeading
@@ -126,7 +149,27 @@ export default function AboutUsPage() {
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="canvas">
+      <MarketingSection tone="surface" id="avis" className="scroll-mt-16">
+        <SectionHeading
+          eyebrow="Ils ont fait le point"
+          title="Ce qu’en disent celles et ceux qui ont fait le parcours."
+          description="Des personnes en reconversion, en changement de métier ou en reprise d’activité, qui ont suivi les exercices puis, pour certaines, demandé un accompagnement."
+        />
+        <RevealGroup className="mt-12" stagger={0.1}>
+          <ul className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {TESTIMONIALS.map((testimonial) => (
+              <li key={testimonial.id}>
+                <RevealItem className="h-full">
+                  <TestimonialCard testimonial={testimonial} />
+                </RevealItem>
+              </li>
+            ))}
+          </ul>
+        </RevealGroup>
+        {TEAM_CONTENT_IS_PLACEHOLDER && <PlaceholderNotice className="mt-6" />}
+      </MarketingSection>
+
+      <MarketingSection tone="soft">
         <SectionHeading
           eyebrow="Pour qui"
           title="Particuliers et cabinets de transition."
