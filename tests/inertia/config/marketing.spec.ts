@@ -33,6 +33,7 @@ describe('config/marketing', () => {
       '/securite',
       '/confidentialite',
     ])
+    expect(RESOURCES_MENU.items[0].description).toMatch(/équipe/)
     expect(CABINETS_ACTION.href).toBe('/cabinets')
     expect(REGISTER_ACTION.href).toBe('/inscription')
     expect(WAITLIST_ACTION.href).toBe('/#contact')

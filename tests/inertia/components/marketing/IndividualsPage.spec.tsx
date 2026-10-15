@@ -81,6 +81,18 @@ describe('IndividualsPage (accueil particuliers)', () => {
     ).toHaveTextContent('Pseudonymisation')
   })
 
+  test('présente l’équipe et renvoie vers /qui-sommes-nous', () => {
+    render(<IndividualsPage />)
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: /psychologues du travail/i })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Faire connaissance avec l’équipe' })).toHaveAttribute(
+      'href',
+      '/qui-sommes-nous'
+    )
+  })
+
   test('renvoie vers l’espace cabinet', () => {
     render(<IndividualsPage />)
 

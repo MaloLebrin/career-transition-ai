@@ -43,6 +43,11 @@ test.group('seo | sitemap, canonical, noindex', () => {
     assert.include(xml, 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')
   })
 
+  test('le sitemap liste les pages vitrine, dont « Qui sommes-nous »', ({ assert }) => {
+    assert.include(SITEMAP_PATHS, '/qui-sommes-nous')
+    assert.include(SITEMAP_PATHS, '/')
+  })
+
   test('les pages du sitemap ne sont jamais des espaces noindex', ({ assert }) => {
     for (const path of SITEMAP_PATHS) assert.isFalse(isNoindexPath(path), path)
   })

@@ -18,6 +18,7 @@ export const SITEMAP_PATHS = [
   '/offre',
   '/methodologie',
   '/contact',
+  '/qui-sommes-nous',
   '/securite',
   '/confidentialite',
   '/mentions-legales',
