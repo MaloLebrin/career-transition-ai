@@ -4,22 +4,27 @@ import { TEAM_MEMBERS } from '#shared/constants/team'
 import { TeamHeroCard } from '~/components/marketing/about/TeamHeroCard'
 
 describe('TeamHeroCard (aside du héros Qui sommes-nous)', () => {
-  test('liste les psychologues de l’équipe et renvoie vers la section #equipe', () => {
+  test('présente chaque psychologue sur une tuile teintée et renvoie vers la section #equipe', () => {
     render(<TeamHeroCard />)
 
     const card = screen.getByTestId('about-team-card')
     expect(card).toHaveTextContent('Deux psychologues du travail')
-    expect(within(card).getAllByRole('listitem')).toHaveLength(TEAM_MEMBERS.length)
-    for (const member of TEAM_MEMBERS) {
-      expect(within(card).getByText(`${member.firstName} ${member.lastName}`)).toBeInTheDocument()
-    }
+    const tiles = within(card).getAllByRole('listitem')
+    expect(tiles).toHaveLength(TEAM_MEMBERS.length)
+    tiles.forEach((tile, index) => {
+      const member = TEAM_MEMBERS[index]
+      expect(tile).toHaveTextContent(`${member.firstName} ${member.lastName}`)
+      expect(tile).toHaveTextContent(member.title)
+      expect(tile).toHaveTextContent(member.specialties[0])
+      expect(tile.className).toMatch(/bg-tint-/)
+    })
     expect(within(card).getByRole('link', { name: 'Découvrir l’équipe' })).toHaveAttribute(
       'href',
       '#equipe'
     )
   })
 
-  test('aucune photo : monogrammes décoratifs seulement, et mention des profils d’illustration', () => {
+  test('aucune photo : monogrammes décoratifs, mention des profils d’illustration', () => {
     const { container } = render(<TeamHeroCard />)
 
     expect(container.querySelector('img')).toBeNull()

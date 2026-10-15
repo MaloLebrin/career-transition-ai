@@ -21,4 +21,14 @@ describe('TeamMonogram', () => {
     expect(monogram).toHaveTextContent('JF')
     expect(monogram).toHaveClass('bg-tint-blossom', 'text-tint-blossom-ink', 'h-10')
   })
+
+  test('inversé : disque blanc et initiales teintées, pour un panneau teinté', () => {
+    const { container } = render(
+      <TeamMonogram firstName="Claire" lastName="Morel" tint="lake" size="xl" inverted />
+    )
+    const monogram = container.firstElementChild as HTMLElement
+
+    expect(monogram).toHaveClass('bg-surface', 'text-tint-lake-ink', 'h-20')
+    expect(monogram).not.toHaveClass('bg-tint-lake')
+  })
 })
