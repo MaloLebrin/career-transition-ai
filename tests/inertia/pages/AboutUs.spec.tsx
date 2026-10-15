@@ -18,9 +18,12 @@ describe('AboutUs page', () => {
     expect(screen.getByText('Notre approche')).toBeInTheDocument()
     expect(screen.getByText('Nos engagements')).toBeInTheDocument()
     expect(screen.getByText('Une IA copilote')).toBeInTheDocument()
-    expect(
-      screen.getByTestId('about-landscape').querySelector('svg[data-variant="hero"]')
-    ).not.toBeNull()
+    const heroCard = screen.getByTestId('about-team-card')
+    expect(heroCard).toHaveTextContent('Deux psychologues du travail')
+    expect(within(heroCard).getByRole('link', { name: 'Découvrir l’équipe' })).toHaveAttribute(
+      'href',
+      '#equipe'
+    )
   })
 
   test('présente les psychologues de l’équipe et les avis, avec la note de transparence', () => {

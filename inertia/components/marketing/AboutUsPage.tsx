@@ -7,12 +7,12 @@ import AppLink from '../ui/AppLink'
 import { buttonClassName } from '../ui/Button'
 import { SectionHeading } from '../ui/SectionHeading'
 import { PlaceholderNotice } from './about/PlaceholderNotice'
+import { TeamHeroCard } from './about/TeamHeroCard'
 import { TeamMemberCard } from './about/TeamMemberCard'
 import { TestimonialCard } from './about/TestimonialCard'
 import { BulletList } from './BulletList'
 import { CtaBand } from './CtaBand'
 import { FeatureCard } from './FeatureCard'
-import { LandscapeArt } from './LandscapeArt'
 import { MarketingSection } from './MarketingSection'
 import { PageHero } from './PageHero'
 import { MARKETING_TINT_CYCLE } from './tints'
@@ -66,12 +66,9 @@ export default function AboutUsPage() {
         title="Aider chacun à faire le point sur sa carrière, à son rythme."
         description={FOOTER_TAGLINE}
         aside={
-          <div
-            className="aspect-[4/3] overflow-hidden rounded-2xl border border-hairline shadow-floating"
-            data-testid="about-landscape"
-          >
-            <LandscapeArt variant="hero" />
-          </div>
+          <TiltCard>
+            <TeamHeroCard />
+          </TiltCard>
         }
       />
 

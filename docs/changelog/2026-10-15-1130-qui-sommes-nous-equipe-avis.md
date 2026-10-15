@@ -12,6 +12,9 @@ les accompagnements, et ce qu'en disent les personnes qui ont fait le parcours.
 - **Composants.** `marketing/about/` : `TeamMonogram` (initiales sur disque teinté, pas de
   photo), `TeamMemberCard`, `TestimonialCard` (`figure` / `blockquote` / `figcaption`),
   `PlaceholderNotice` (`role="note"`).
+- **Héros.** Le paysage à droite du titre laisse place à `TeamHeroCard` : les deux
+  psychologues (monogramme, nom, fonction) et un renvoi vers `#equipe`, comme les cartes des
+  héros de `/tarifs` et `/offre`.
 - **Page.** Sections « L'équipe » (`#equipe`) et « Ils ont fait le point » (`#avis`) entre
   l'approche et les publics, tons alternés ; méta description mise à jour.
 - **Accueil.** Bloc `TeamTeaser` (noms, fonctions, lien « Faire connaissance avec l'équipe »)
