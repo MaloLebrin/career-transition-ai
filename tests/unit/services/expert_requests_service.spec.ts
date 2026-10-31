@@ -16,6 +16,11 @@ import ExpertRequest from '#models/expert_request'
 import type User from '#models/user'
 import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { EntitlementsService } from '#services/entitlements_service'
+import { MailService } from '#services/mail/mail_service'
+import {
+  TeamAlertMailService,
+  type ExpertRequestAlertInput,
+} from '#services/mail/team_alert_mail_service'
 import { ExpertRequestsService } from '#services/expert_requests_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import { PlatformTeamService } from '#services/platform_team_service'
@@ -59,15 +64,31 @@ class SpyNotifications extends CandidateNotificationsService {
   }
 }
 
+/** Alertes e-mail observées au lieu d'être envoyées. */
+class SpyAlerts extends TeamAlertMailService {
+  requested: ExpertRequestAlertInput[] = []
+  failing = false
+  constructor() {
+    super(new MailService())
+  }
+  async expertRequested(input: ExpertRequestAlertInput) {
+    if (this.failing) throw new Error('smtp down')
+    this.requested.push(input)
+    return true
+  }
+}
+
 function makeService() {
   const notifications = new SpyNotifications()
+  const alerts = new SpyAlerts()
   const team = new PlatformTeamService(
     new PlatformOrganizationService(),
     new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
   )
   return {
     notifications,
-    service: new ExpertRequestsService(makeEntitlements(), notifications, team),
+    alerts,
+    service: new ExpertRequestsService(makeEntitlements(), notifications, team, alerts),
   }
 }
 
@@ -91,6 +112,29 @@ test.group('ExpertRequestsService.createForUser (#103)', (group) => {
     assert.equal(request.message, 'Je veux construire mon plan.')
     assert.isNull(request.availability)
     assert.deepEqual(notifications.requested, [{ employeeId: employee.id, requestId: request.id }])
+  })
+
+  test('alerte l’équipe par e-mail, et un échec d’envoi ne fait pas échouer la demande', async ({
+    assert,
+  }) => {
+    const { service, alerts } = makeService()
+    const first = await createB2cCandidate({ paid: true })
+
+    const request = await service.createForUser(first.user, {
+      message: 'Je veux construire mon plan.',
+      availability: 'Le soir',
+    })
+    assert.deepEqual(alerts.requested, [
+      { expertRequestId: request.id, employeeId: first.employee.id, availability: 'Le soir' },
+    ])
+
+    alerts.failing = true
+    const second = await createB2cCandidate({ paid: true })
+    const created = await service.createForUser(second.user, {
+      message: 'Une autre demande assez longue.',
+    })
+    assert.equal(created.status, EXPERT_REQUEST_STATUSES.PENDING)
+    assert.lengthOf(alerts.requested, 1)
   })
 
   test('refuse un B2B (403), un B2C non payé (403) et un compte sans fiche (404)', async ({

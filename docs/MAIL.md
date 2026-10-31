@@ -62,6 +62,15 @@ Destinataire des demandes de contact et de démo (formulaire public). Défaut : 
 ADMIN_CONTACT_EMAIL="contact@ton-domaine.fr"
 ```
 
+### `PAYMENT_ALERT_EMAIL` / `EXPERT_REQUEST_ALERT_EMAIL`
+
+Alertes équipe (`TeamAlertMailService`), chacune vers sa propre adresse : `PAYMENT_ALERT_EMAIL` reçoit un e-mail à chaque forfait réglé (webhook ou réconciliation Stripe, pas l'octroi manuel), `EXPERT_REQUEST_ALERT_EMAIL` à chaque demande d'accompagnement par un expert. Variable absente ou vide : aucun envoi. Id du candidat seulement, jamais son nom ni son e-mail.
+
+```bash
+PAYMENT_ALERT_EMAIL="paiements@ton-domaine.fr"
+EXPERT_REQUEST_ALERT_EMAIL="accompagnement@ton-domaine.fr"
+```
+
 ---
 
 ## Utilisation dans le code

@@ -2,6 +2,8 @@ import CandidatePayment from '#models/candidate_payment'
 import Employee from '#models/employee'
 import { EntitlementsService } from '#services/entitlements_service'
 import { reportError } from '#services/error_tracking_service'
+import { MailService } from '#services/mail/mail_service'
+import { TeamAlertMailService } from '#services/mail/team_alert_mail_service'
 import {
   CHECKOUT_PAYMENT_STATUSES,
   DUPLICATE_PAYMENT_REVOKE_REASON,
@@ -26,7 +28,10 @@ const UNIQUE_VIOLATION = '23505'
  */
 @inject()
 export class PaymentsService {
-  constructor(private entitlements: EntitlementsService) {}
+  constructor(
+    private entitlements: EntitlementsService,
+    private alerts: TeamAlertMailService = new TeamAlertMailService(new MailService())
+  ) {}
 
   public async findById(id: number): Promise<CandidatePayment | null> {
     return Number.isInteger(id) && id > 0 ? CandidatePayment.find(id) : null
@@ -154,6 +159,7 @@ export class PaymentsService {
     }
 
     await payment.refresh()
+    await this.alertPaid(payment)
     await this.unlockEffects(payment)
     return true
   }
@@ -215,6 +221,26 @@ export class PaymentsService {
       await this.revokeEffects(payment)
     }
     return false
+  }
+
+  /** Alerte e-mail de l'équipe, au mieux : un échec d'envoi ne bloque pas l'ouverture du droit. */
+  private async alertPaid(payment: CandidatePayment): Promise<void> {
+    if (!payment.employeeId) return
+    try {
+      await this.alerts.paymentReceived({
+        paymentId: payment.id,
+        employeeId: payment.employeeId,
+        amountCents: payment.amountCents,
+        discountCents: payment.discountCents,
+        currency: payment.currency,
+        promoCode: payment.promoCode,
+      })
+    } catch (error) {
+      reportError(error, {
+        tags: { feature: 'stripe_payment', step: 'alert_paid' },
+        extra: { paymentId: payment.id },
+      })
+    }
   }
 
   private async unlockEffects(payment: CandidatePayment): Promise<void> {

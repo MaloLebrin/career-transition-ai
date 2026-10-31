@@ -132,6 +132,8 @@ export const envSchema = {
   MAIL_FROM_NAME: Env.schema.string.optional(),
   RESEND_API_KEY: Env.schema.string.optional(),
   ADMIN_CONTACT_EMAIL: Env.schema.string.optional(),
+  PAYMENT_ALERT_EMAIL: Env.schema.string.optional(),
+  EXPERT_REQUEST_ALERT_EMAIL: Env.schema.string.optional(),
   MAIL_RESEND_TEST_MODE: Env.schema.boolean.optional(),
   MAIL_RESEND_TEST_EVENT: Env.schema.enum.optional([
     'delivered',

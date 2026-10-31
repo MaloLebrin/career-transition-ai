@@ -5,6 +5,11 @@ import type Employee from '#models/employee'
 import { PaymentsService } from '#services/billing/payments_service'
 import { EntitlementsService } from '#services/entitlements_service'
 import { setErrorReporter, type ErrorContext } from '#services/error_tracking_service'
+import { MailService } from '#services/mail/mail_service'
+import {
+  TeamAlertMailService,
+  type PaymentAlertInput,
+} from '#services/mail/team_alert_mail_service'
 import {
   DUPLICATE_PAYMENT_REVOKE_REASON,
   PAYMENT_STATUSES,
@@ -28,8 +33,54 @@ class SpyEntitlements extends EntitlementsService {
   }
 }
 
+/** Alertes e-mail observées au lieu d'être envoyées. */
+class SpyAlerts extends TeamAlertMailService {
+  paid: PaymentAlertInput[] = []
+  constructor(private failWith?: Error) {
+    super(new MailService())
+  }
+  async paymentReceived(input: PaymentAlertInput) {
+    if (this.failWith) throw this.failWith
+    this.paid.push(input)
+    return true
+  }
+}
+
 test.group('PaymentsService.markPaid (#102)', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('alerte l’équipe une seule fois, même si markPaid est rejoué', async ({ assert }) => {
+    const alerts = new SpyAlerts()
+    const service = new PaymentsService(makeEntitlements(), alerts)
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+
+    await service.markPaid(payment, { paymentIntentId: 'pi_alert_1' })
+    await service.markPaid(payment, { paymentIntentId: 'pi_alert_1' })
+
+    assert.lengthOf(alerts.paid, 1)
+    assert.equal(alerts.paid[0].paymentId, payment.id)
+    assert.equal(alerts.paid[0].employeeId, employee.id)
+  })
+
+  test('un échec d’envoi de l’alerte n’empêche pas d’ouvrir le droit', async ({ assert }) => {
+    const alerts = new SpyAlerts(new Error('smtp down'))
+    const entitlements = makeEntitlements()
+    const service = new PaymentsService(entitlements, alerts)
+    const { employee } = await createB2cCandidate()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    }).create()
+
+    const changed = await service.markPaid(payment, { paymentIntentId: 'pi_alert_2' })
+
+    assert.isTrue(changed)
+    assert.isTrue(await entitlements.hasResultsAccess(employee.id))
+  })
 
   test('passe un paiement pending en paid, trace l’intent, ouvre le droit une fois', async ({
     assert,
