@@ -13,6 +13,9 @@ import ExpertRequest from '#models/expert_request'
 import type User from '#models/user'
 import { CandidateNotificationsService } from '#services/candidate_notifications_service'
 import { EntitlementsService } from '#services/entitlements_service'
+import { reportError } from '#services/error_tracking_service'
+import { MailService } from '#services/mail/mail_service'
+import { TeamAlertMailService } from '#services/mail/team_alert_mail_service'
 import { PlatformTeamService } from '#services/platform_team_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import {
@@ -46,7 +49,8 @@ export class ExpertRequestsService {
   constructor(
     private entitlements: EntitlementsService,
     private notifications: CandidateNotificationsService,
-    private team: PlatformTeamService
+    private team: PlatformTeamService,
+    private alerts: TeamAlertMailService = new TeamAlertMailService(new MailService())
   ) {}
 
   public async supportViewFor(user: User): Promise<ExpertSupportView> {
@@ -94,7 +98,24 @@ export class ExpertRequestsService {
     })
 
     await this.notifications.expertRequested(employee, request)
+    await this.alertTeam(employee, request)
     return request
+  }
+
+  /** Alerte e-mail de l'équipe, au mieux : la demande est déjà enregistrée. */
+  private async alertTeam(employee: Employee, request: ExpertRequest): Promise<void> {
+    try {
+      await this.alerts.expertRequested({
+        expertRequestId: request.id,
+        employeeId: employee.id,
+        availability: request.availability,
+      })
+    } catch (error) {
+      reportError(error, {
+        tags: { feature: 'expert_requests', step: 'alert_created' },
+        extra: { expertRequestId: request.id },
+      })
+    }
   }
 
   public async listForEmployee(employee: Employee): Promise<ExpertRequestView[]> {
