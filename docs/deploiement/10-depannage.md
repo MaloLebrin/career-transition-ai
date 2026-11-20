@@ -2,14 +2,14 @@
 
 ## Le service ne démarre pas
 
-| Symptôme dans les logs                    | Cause probable                                                 | Correctif                                                                    |
-| ----------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `Cloudinary … manquant` / refus au boot   | une des 3 variables `CLOUDINARY_*` absente                     | étape [02](02-cloudinary-fichiers.md)                                        |
-| `Invalid environment variables`           | variable obligatoire absente (`APP_KEY`, `APP_URL`, `DB_URL`…) | compléter dans **Environment**                                               |
-| erreur de connexion SSL / `self signed`   | `DB_SSL` ou `sslmode` incohérent                               | `DB_SSL=true` et `?sslmode=require` dans `DB_URL`                            |
-| `password authentication failed`          | mauvaise chaîne Neon                                           | recopier la chaîne (étape [01](01-neon-base-de-donnees.md))                  |
-| `relation … does not exist`               | migrations non jouées                                          | vérifier que la commande de démarrage est `/entrypoint.sh migrate-and-serve` |
-| port non détecté / timeout de déploiement | `PORT`/`HOST` incorrects                                       | `HOST=0.0.0.0`, `PORT=10000` (déjà dans `render.yaml`)                       |
+| Symptôme dans les logs                    | Cause probable                                                 | Correctif                                                                                                                                                                                                             |
+| ----------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Cloudinary … manquant` / refus au boot   | une des 3 variables `CLOUDINARY_*` absente                     | étape [02](02-cloudinary-fichiers.md)                                                                                                                                                                                 |
+| `Invalid environment variables`           | variable obligatoire absente (`APP_KEY`, `APP_URL`, `DB_URL`…) | compléter dans **Environment**                                                                                                                                                                                        |
+| erreur de connexion SSL / `self signed`   | `DB_SSL` ou `sslmode` incohérent                               | `DB_SSL=true` et `?sslmode=require` dans `DB_URL`                                                                                                                                                                     |
+| `password authentication failed`          | mauvaise chaîne Neon                                           | recopier la chaîne (étape [01](01-neon-base-de-donnees.md))                                                                                                                                                           |
+| `relation … does not exist`               | migrations non jouées                                          | vérifier que la commande de démarrage est `/entrypoint.sh migrate-and-serve` ou que `RUN_MIGRATIONS_ON_BOOT=true` est défini ; rattrapage : `node ace migration:run --force` depuis le poste avec la `DB_URL` de prod |
+| port non détecté / timeout de déploiement | `PORT`/`HOST` incorrects                                       | `HOST=0.0.0.0`, `PORT=10000` (déjà dans `render.yaml`)                                                                                                                                                                |
 
 ## Le site est lent ou répond 502/503
 

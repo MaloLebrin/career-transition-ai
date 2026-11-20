@@ -36,6 +36,12 @@ un suffixe si le nom est pris). `APP_URL` doit la reprendre **exactement**, en h
 `migrate-and-serve` exécute `node ace.js migration:run --force` (idempotent), puis démarre le
 serveur. Un redémarrage ne rejoue que les migrations en attente.
 
+Filet : `render.yaml` définit aussi `RUN_MIGRATIONS_ON_BOOT=true`. Si la commande de
+démarrage n'est pas appliquée (service créé à la main via **New → Web Service** plutôt que
+par Blueprint, champ **Settings → Docker Command** vide), le mode `server` par défaut joue
+quand même les migrations. Pour un service créé à la main, ajouter cette variable dans
+**Environment**.
+
 ## Vérifier
 
 - Onglet **Logs** : migrations exécutées, puis serveur à l'écoute sur le port `10000`.

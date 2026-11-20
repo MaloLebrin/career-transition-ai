@@ -4,7 +4,20 @@
 # à lancer avant `server` et `worker`.
 set -e
 
+# Render (`dockerCommand`) ne remplace que le CMD : `/entrypoint.sh migrate-and-serve`
+# arrive en arguments de l'ENTRYPOINT. On ignore notre propre chemin s'il est répété.
+if [ "$1" = "/entrypoint.sh" ] || [ "$1" = "$0" ]; then
+  shift
+fi
+
 MODE="${1:-server}"
+
+# Hébergeurs sans étape de pré-déploiement ni commande de démarrage fiable
+# (service Render créé hors Blueprint) : RUN_MIGRATIONS_ON_BOOT=true fait migrer
+# le mode `server` par défaut. Le compose de prod ne la définit pas.
+if [ "$MODE" = "server" ] && [ "$RUN_MIGRATIONS_ON_BOOT" = "true" ]; then
+  MODE="migrate-and-serve"
+fi
 
 case "$MODE" in
   server)
@@ -16,7 +29,7 @@ case "$MODE" in
   migrate)
     exec node ace.js migration:run --force
     ;;
-  # Hébergeurs sans étape de pré-déploiement (Render Free, docs/DEPLOYMENT_TEST.md) :
+  # Hébergeurs sans étape de pré-déploiement (Render Free, docs/deploiement/) :
   # migrations idempotentes puis serveur. Le compose de prod garde `migrate` explicite.
   migrate-and-serve)
     node ace.js migration:run --force

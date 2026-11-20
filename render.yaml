@@ -23,6 +23,10 @@ services:
         value: '10000'
       - key: LOG_LEVEL
         value: info
+      # Filet si la commande de démarrage n'est pas appliquée (service créé hors
+      # Blueprint) : le mode `server` joue alors les migrations avant de démarrer.
+      - key: RUN_MIGRATIONS_ON_BOOT
+        value: 'true'
       - key: NODE_OPTIONS
         value: --max-old-space-size=384
       - key: SESSION_DRIVER
