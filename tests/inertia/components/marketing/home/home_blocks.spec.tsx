@@ -83,10 +83,18 @@ describe('blocs de l’accueil jumpUjob', () => {
     expect(within(card).getByRole('link', { name: 'Commencer gratuitement' })).toBeInTheDocument()
   })
 
-  test('TrustColumns : trois colonnes et la page sécurité', () => {
+  test('TrustColumns : trois colonnes avec icône et la page sécurité', () => {
     render(<TrustColumns />)
 
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(3)
+    const icons = screen.getAllByTestId('trust-icon')
+    expect(icons).toHaveLength(3)
+    for (const icon of icons) {
+      expect(icon).toHaveAttribute('aria-hidden', 'true')
+      expect(icon.querySelector('svg')).not.toBeNull()
+    }
+    expect(icons[0]).toHaveClass('bg-tint-sun')
+    expect(icons[1]).toHaveClass('bg-tint-lake')
     expect(screen.getByRole('link', { name: 'Lire la page sécurité' })).toHaveAttribute(
       'href',
       '/securite'

@@ -13,7 +13,14 @@ describe('IndividualsPage (accueil jumpUjob, planche 47)', () => {
 
   test('héros : accroche, phrase, deux boutons, mention des exercices offerts', () => {
     setPageProps({ b2cRegistrationEnabled: true })
-    render(<IndividualsPage />)
+    const { container } = render(<IndividualsPage />)
+
+    const backdrop = screen.getByTestId('hero-backdrop')
+    expect(backdrop).toHaveAttribute('data-scene', 'landscape')
+    expect(backdrop.querySelector('svg[data-variant="hero"]')).not.toBeNull()
+    const companion = container.querySelector('svg[data-pose="wave"]')
+    expect(companion).not.toBeNull()
+    expect(companion?.querySelector('.companion-float')).not.toBeNull()
 
     expect(
       screen.getByRole('heading', { level: 1, name: /Le saut, oui\.\s*Le vide, non\./ })

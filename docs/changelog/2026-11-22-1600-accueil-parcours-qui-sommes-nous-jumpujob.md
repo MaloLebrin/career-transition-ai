@@ -5,9 +5,10 @@ descriptions d'exercices partent sur une nouvelle page `/parcours`, et « Qui so
 présente l'équipe dans des bulles galet (planche 50). Le site garde le vouvoiement (décision du
 22 novembre 2026, le tutoiement du brief est écarté) : « Sautez. On tient la rampe. ».
 
-- **Accueil.** Héros « Le saut, oui. Le vide, non. » avec l'unique mockup « Mon parcours »,
+- **Accueil.** Héros « Le saut, oui. Le vide, non. » sur le paysage du design system (montagnes,
+  prairie), avec l'unique mockup « Mon parcours » incliné et le compagnon qui salue,
   trois étapes en cartes jaune pâle, les huit exercices en pastilles (lien vers `/parcours`),
-  le forfait en seul bloc prix (bandeau vert, carte 49 € TTC), confiance en trois colonnes,
+  le forfait en seul bloc prix (bandeau vert, carte 49 € TTC), confiance en trois colonnes avec icônes,
   appel final. Retirés : chiffres clés, « Ce que vous obtenez », le second mockup et le bloc
   cabinets (l'espace cabinet reste dans l'en-tête et le pied de page). Le formulaire de liste
   d'attente reste affiché quand l'inscription est fermée. Titre de page : « Le saut, oui. Le
