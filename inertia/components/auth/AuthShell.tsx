@@ -47,7 +47,7 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   accent = 'none',
   companion = 'wave',
 }) => (
-  <PublicLayout header={{ minimal: true }} footer={false}>
+  <PublicLayout header={{ minimal: true }} footer={false} assistant={false}>
     <div className="relative flex flex-1 items-center justify-center overflow-hidden px-6 py-12 md:py-16">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-40 sm:block md:h-52">
         <LandscapeArt variant="horizon" />
