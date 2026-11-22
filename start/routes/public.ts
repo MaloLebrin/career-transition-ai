@@ -10,6 +10,7 @@ const SitemapController = () => import('#controllers/sitemap_controller')
 router
   .group(() => {
     router.on('/').renderInertia('home', {})
+    router.on('/parcours').renderInertia('Journey', {})
     router.on('/methodologie').renderInertia('Methodology', {})
     router.on('/offre').renderInertia('Offer', {})
     router.on('/tarifs').renderInertia('Pricing', {})

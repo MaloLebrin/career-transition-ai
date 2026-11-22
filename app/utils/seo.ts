@@ -12,6 +12,8 @@ export type RobotsMeta = (typeof ROBOTS_META)[keyof typeof ROBOTS_META]
 /** Pages publiques indexables (`start/routes/public.ts`), listées dans le sitemap. */
 export const SITEMAP_PATHS = [
   '/',
+  '/parcours',
+  '/qui-sommes-nous',
   '/tarifs',
   '/cabinets',
   '/cabinets/tarifs',

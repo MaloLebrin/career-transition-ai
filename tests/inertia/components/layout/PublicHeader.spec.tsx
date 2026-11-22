@@ -39,7 +39,7 @@ describe('PublicHeader', () => {
     await user.click(tab)
 
     expect(tab).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('link', { name: /Le parcours/ })).toHaveAttribute('href', '/#parcours')
+    expect(screen.getByRole('link', { name: /Le parcours/ })).toHaveAttribute('href', '/parcours')
     expect(screen.getByRole('link', { name: /Tarif/ })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByText('Deux exercices offerts, puis un forfait unique.')).toBeInTheDocument()
 

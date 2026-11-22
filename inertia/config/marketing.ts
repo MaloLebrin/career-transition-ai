@@ -48,12 +48,15 @@ export interface MenuGroup {
 /** Action principale de l'espace cabinet. */
 export const DEMO_ACTION: ActionItem = { label: 'Demander une démo', href: '/cabinets#demo' }
 
+/** Le détail des exercices du parcours particulier (brief jumpUjob). */
+export const JOURNEY_PATH = '/parcours'
+
 export const INDIVIDUALS_MENU: MenuGroup = {
   label: 'Particuliers',
   items: [
     {
       label: 'Le parcours',
-      href: '/#parcours',
+      href: JOURNEY_PATH,
       description: 'Huit exercices pour faire le point, à votre rythme.',
       icon: Compass,
       tint: 'lake',

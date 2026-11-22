@@ -81,6 +81,7 @@ declare module '@adonisjs/inertia/types' {
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'errors/too_many_requests': ExtractProps<(typeof import('../../inertia/pages/errors/too_many_requests.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
+    'Journey': ExtractProps<(typeof import('../../inertia/pages/Journey.tsx'))['default']>
     'LegalNotice': ExtractProps<(typeof import('../../inertia/pages/LegalNotice.tsx'))['default']>
     'Login': ExtractProps<(typeof import('../../inertia/pages/Login.tsx'))['default']>
     'Methodology': ExtractProps<(typeof import('../../inertia/pages/Methodology.tsx'))['default']>
