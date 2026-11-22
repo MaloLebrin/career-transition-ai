@@ -16,10 +16,10 @@ présente l'équipe dans des bulles galet (planche 50). Le site garde le vouvoie
 - **/parcours.** Nouvelle route publique : titre, phrase, les huit exercices (numéro, nom,
   description) et le bouton « Commencer gratuitement ». Le menu « Le parcours » y mène ;
   ajoutée au sitemap avec `/qui-sommes-nous`.
-- **Qui sommes-nous.** Héros court, portraits de Clara et Malo découpés dans le galet du logo
-  (`about/GaletPortrait`, couleur de secours et pastille d'initiale tant que les photos
-  manquent), « Pourquoi ce nom », appel final. Noms de famille, intitulés et rôle d'expert à
-  confirmer (`about/team.ts`).
+- **Qui sommes-nous.** Héros court, portraits de deux psychologues aux prénoms fictifs
+  (Sophie et Antoine) découpés dans le galet du logo (`about/GaletPortrait`, couleur de secours
+  et pastille d'initiale tant que les photos manquent), « Pourquoi ce nom », appel final.
+  Les vrais profils (noms, intitulés, rôle d'expert, photos) remplaceront `about/team.ts`.
 - **Pastels.** `BRAND_PASTEL_CYCLE` / `brandPastel()` (`marketing/tints.ts`) : jaune, menthe,
   rose, ciel, vert, pour les pastilles, numéros et tags.
 - **Nettoyage.** `IndividualsHero`, `StepsTimeline`, `PrivacyFlow` et `ExpertMockup`, devenus

@@ -19,14 +19,16 @@ describe('AboutUs page (planche 50)', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: /Deux psychologues du travail/ })
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Clara' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Malo' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Sophie' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Antoine' })).toBeInTheDocument()
     expect(
-      screen.getByRole('img', { name: 'Portrait de Clara, photo à venir' })
+      screen.getByRole('img', { name: 'Portrait de Sophie, photo à venir' })
     ).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Portrait de Malo, photo à venir' })).toBeInTheDocument()
     expect(
-      within(screen.getByRole('list', { name: 'Domaines de Clara' })).getAllByRole('listitem')
+      screen.getByRole('img', { name: 'Portrait de Antoine, photo à venir' })
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('list', { name: 'Domaines de Sophie' })).getAllByRole('listitem')
     ).toHaveLength(4)
     expect(screen.getByText('Pourquoi ce nom')).toBeInTheDocument()
     expect(screen.getByText(/Le U au milieu, c’est vous/)).toBeInTheDocument()
@@ -56,28 +58,28 @@ describe('AboutUs page (planche 50)', () => {
 describe('GaletPortrait', () => {
   test('sans photo : galet de secours et pastille de l’initiale', () => {
     const { container } = render(
-      <GaletPortrait name="Clara" fallbackClassName="fill-sun" badgeClassName="bg-tint-sun-ink" />
+      <GaletPortrait name="Sophie" fallbackClassName="fill-sun" badgeClassName="bg-tint-sun-ink" />
     )
 
     const galet = container.querySelector(`path[d="${GALET_PATH}"].fill-sun`)
     expect(galet).not.toBeNull()
     expect(container.querySelector('image')).toBeNull()
-    expect(screen.getByText('C')).toHaveClass('bg-tint-sun-ink')
+    expect(screen.getByText('S')).toHaveClass('bg-tint-sun-ink')
   })
 
   test('avec photo : image découpée dans le galet', () => {
     const { container } = render(
       <GaletPortrait
-        name="Malo"
-        photoUrl="https://example.test/malo.jpg"
+        name="Antoine"
+        photoUrl="https://example.test/antoine.jpg"
         fallbackClassName="fill-tint-lake"
         badgeClassName="bg-tint-lake-ink"
       />
     )
 
-    expect(screen.getByRole('img', { name: 'Portrait de Malo' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Portrait de Antoine' })).toBeInTheDocument()
     const image = container.querySelector('image')
-    expect(image).toHaveAttribute('href', 'https://example.test/malo.jpg')
+    expect(image).toHaveAttribute('href', 'https://example.test/antoine.jpg')
     const clipId = container.querySelector('clipPath')?.getAttribute('id')
     expect(image).toHaveAttribute('clip-path', `url(#${clipId})`)
   })
