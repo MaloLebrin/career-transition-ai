@@ -26,7 +26,7 @@ describe('config/marketing', () => {
       'Cabinets',
       'Ressources',
     ])
-    expect(INDIVIDUALS_MENU.items.map((item) => item.href)).toEqual(['/#parcours', '/tarifs'])
+    expect(INDIVIDUALS_MENU.items.map((item) => item.href)).toEqual(['/parcours', '/tarifs'])
     expect(RESOURCES_MENU.items.map((item) => item.href)).toEqual([
       '/qui-sommes-nous',
       '/contact',

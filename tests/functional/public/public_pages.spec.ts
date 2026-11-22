@@ -9,6 +9,7 @@ import { test } from '@japa/runner'
  */
 const PUBLIC_PAGES: Array<[string, string]> = [
   ['/', 'home'],
+  ['/parcours', 'Journey'],
   ['/methodologie', 'Methodology'],
   ['/offre', 'Offer'],
   ['/tarifs', 'Pricing'],

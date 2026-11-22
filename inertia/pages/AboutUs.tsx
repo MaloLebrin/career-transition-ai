@@ -6,7 +6,7 @@ export default function AboutUs() {
     <>
       <PageSeo
         title="Qui sommes-nous"
-        description="jumpUjob aide chacun à faire le point sur sa carrière : des exercices issus des sciences comportementales, une IA copilote et un expert si vous le souhaitez."
+        description="Deux psychologues du travail derrière jumpUjob : Clara, l’expert du parcours, et Malo, qui a construit la plateforme."
       />
       <AboutUsPage />
     </>

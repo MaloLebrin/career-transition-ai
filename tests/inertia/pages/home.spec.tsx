@@ -15,9 +15,7 @@ describe('home page', () => {
     setPageProps({ b2cRegistrationEnabled: true })
     render(<Home />)
 
-    expect(
-      screen.getByRole('heading', { level: 1, name: /Faites le point sur votre carrière/ })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: /Le saut, oui\./ })).toBeInTheDocument()
     expect(screen.queryByText(/Structurez vos bilans de compétences/)).not.toBeInTheDocument()
   })
 })

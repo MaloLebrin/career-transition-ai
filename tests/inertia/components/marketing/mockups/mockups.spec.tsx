@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import { EXERCISE_LIST } from '#shared/constants/exercises'
 import { AdvisorDashboardMockup } from '../../../../../inertia/components/marketing/mockups/AdvisorDashboardMockup'
 import { AiAnalysisMockup } from '../../../../../inertia/components/marketing/mockups/AiAnalysisMockup'
-import { ExpertMockup } from '../../../../../inertia/components/marketing/mockups/ExpertMockup'
 import { JourneyMockup } from '../../../../../inertia/components/marketing/mockups/JourneyMockup'
 import { MockupFrame } from '../../../../../inertia/components/marketing/mockups/MockupFrame'
 import { SynthesisMockup } from '../../../../../inertia/components/marketing/mockups/SynthesisMockup'
@@ -36,15 +35,9 @@ describe('live mockups (reduced motion: final state)', () => {
     expect(screen.getByText(/validée par votre conseiller/)).toBeInTheDocument()
   })
 
-  test('SynthesisMockup and ExpertMockup render their final state', () => {
-    render(
-      <>
-        <SynthesisMockup />
-        <ExpertMockup />
-      </>
-    )
+  test('SynthesisMockup renders its final state', () => {
+    render(<SynthesisMockup />)
     expect(screen.getByText('synthese-parcours.pdf')).toBeInTheDocument()
-    expect(screen.getByText(/premier échange/)).toBeInTheDocument()
   })
 
   test('AdvisorDashboardMockup: candidates by initials only, a finished synthesis to review', () => {
