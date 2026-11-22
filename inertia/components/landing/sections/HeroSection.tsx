@@ -58,7 +58,7 @@ export const HeroSection: React.FC = () => {
                 size="display-xl"
                 eyebrow="Pour les cabinets de transition professionnelle"
                 title="Structurez vos bilans de compétences, sans perdre la nuance."
-                description="Transition Carrière donne à vos conseillers un parcours d’exercices prêts à l’emploi, une synthèse assistée par l’IA et des livrables clairs. Le conseiller reste celui qui décide."
+                description="jumpUjob donne à vos conseillers un parcours d’exercices prêts à l’emploi, une synthèse assistée par l’IA et des livrables clairs. Le conseiller reste celui qui décide."
               />
             </div>
             <div className="flex animate-slide-up flex-col gap-3 sm:flex-row" style={enter(120)}>

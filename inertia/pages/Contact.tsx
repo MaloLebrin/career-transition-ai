@@ -6,7 +6,7 @@ export default function Contact() {
     <>
       <PageSeo
         title="Contact"
-        description="Une question sur Transition Carrière, votre compte ou vos données ? Écrivez-nous : nous répondons sous 48 h ouvrées."
+        description="Une question sur jumpUjob, votre compte ou vos données ? Écrivez-nous : nous répondons sous 48 h ouvrées."
       />
       <ContactPage />
     </>

@@ -6,7 +6,7 @@ export default function Security() {
     <>
       <PageSeo
         title="Sécurité et confidentialité"
-        description="Mesures de sécurité de Transition Carrière : hébergement dans l'UE, pseudonymisation avant toute analyse par l'IA, chiffrement et contrôle des accès."
+        description="Mesures de sécurité de jumpUjob : hébergement dans l'UE, pseudonymisation avant toute analyse par l'IA, chiffrement et contrôle des accès."
       />
       <SecurityPage />
     </>

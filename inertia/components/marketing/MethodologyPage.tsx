@@ -104,7 +104,7 @@ export default function MethodologyPage() {
       <PageHero
         eyebrow="Méthodologie"
         title="Une méthode d’accompagnement scientifique, pilotée par l’humain."
-        description="Transition Carrière structure le bilan autour d’outils issus des sciences comportementales et de l’entretien, avec une IA utilisée comme copilote de synthèse (pas comme juge). L’objectif : réduire les biais, augmenter la qualité, et rendre le travail du conseiller plus fluide et traçable."
+        description="jumpUjob structure le bilan autour d’outils issus des sciences comportementales et de l’entretien, avec une IA utilisée comme copilote de synthèse (pas comme juge). L’objectif : réduire les biais, augmenter la qualité, et rendre le travail du conseiller plus fluide et traçable."
         actions={
           <>
             <a href="#contact" className={buttonClassName({ variant: 'primary', size: 'lg' })}>

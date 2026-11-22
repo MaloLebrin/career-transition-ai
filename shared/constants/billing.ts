@@ -72,7 +72,7 @@ export const BILLING_CURRENCY = 'eur'
 export const DEFAULT_RESULTS_PRICE_CENTS = 4900
 
 /** Libellé de la ligne Stripe Checkout (facture et page de paiement). */
-export const RESULTS_PRODUCT_NAME = 'Forfait Transition Carrière — accès complet aux résultats'
+export const RESULTS_PRODUCT_NAME = 'Forfait jumpUjob — accès complet aux résultats'
 
 /** Routes du parcours de paiement (#102), côté candidat. */
 export const BILLING_PATHS = {

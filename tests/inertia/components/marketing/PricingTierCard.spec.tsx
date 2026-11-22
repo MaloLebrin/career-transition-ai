@@ -43,9 +43,9 @@ describe('PricingTierCard', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Professionnel' })).toHaveClass(
       'text-on-ink'
     )
-    // Sur ink, le bouton plein est le soleil : un bouton encre serait invisible.
+    // Sur ink, le bouton est le secondaire (blanc, texte encre) : un bouton encre serait invisible.
     expect(screen.getByRole('link', { name: 'Demander un devis' })).toHaveClass(
-      'bg-sun',
+      'bg-surface',
       'text-ink'
     )
     expect(container.querySelector('.text-accent-on-ink')).toBeInTheDocument()

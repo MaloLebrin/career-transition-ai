@@ -43,7 +43,7 @@ services:
       - key: MAIL_PROVIDER
         value: resend
       - key: MAIL_FROM_NAME
-        value: Transition Carrière
+        value: jumpUjob
       - key: AI_PROVIDER
         value: mistral
       - key: MISTRAL_MODEL

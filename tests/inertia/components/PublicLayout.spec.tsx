@@ -26,7 +26,7 @@ describe('PublicLayout', () => {
       'href',
       '/auth/login'
     )
-    expect(screen.getByRole('contentinfo')).toHaveTextContent('© 2026 Transition Carrière')
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('© 2026 jumpUjob')
   })
 
   test('applies optional className to wrapper', () => {

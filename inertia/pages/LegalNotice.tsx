@@ -6,7 +6,7 @@ export default function LegalNotice() {
     <>
       <PageSeo
         title="Mentions légales"
-        description="Mentions légales de Transition Carrière : éditeur, directeur de la publication et hébergeur."
+        description="Mentions légales de jumpUjob : éditeur, directeur de la publication et hébergeur."
       />
       <LegalNoticePage />
     </>

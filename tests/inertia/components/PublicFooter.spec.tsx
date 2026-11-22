@@ -15,7 +15,7 @@ describe('PublicFooter', () => {
   test('links to the product and legal pages, without buttons', () => {
     render(<PublicFooter />)
 
-    expect(screen.getByRole('link', { name: 'Le parcours' })).toHaveAttribute('href', '/#parcours')
+    expect(screen.getByRole('link', { name: 'Le parcours' })).toHaveAttribute('href', '/parcours')
     expect(screen.getByRole('link', { name: 'Tarif' })).toHaveAttribute('href', '/tarifs')
     expect(screen.getByRole('link', { name: 'Espace cabinet' })).toHaveAttribute(
       'href',
@@ -69,6 +69,6 @@ describe('PublicFooter', () => {
     )
     const footer = screen.getByRole('contentinfo')
     expect(footer).toHaveClass('bg-ink')
-    expect(footer).toHaveTextContent('© 2026 Transition Carrière')
+    expect(footer).toHaveTextContent('© 2026 jumpUjob')
   })
 })

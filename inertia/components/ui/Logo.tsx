@@ -1,6 +1,7 @@
 import { APP_NAME } from '#shared/constants/app'
 import { memo } from 'react'
-import logoMark from '~/assets/images/logo-mark.png'
+import { LogoBadge } from './logo/LogoBadge'
+import { LogoMark } from './logo/LogoMark'
 
 export type LogoSize = 'sm' | 'md' | 'lg'
 export type LogoTone = 'default' | 'inverse'
@@ -9,42 +10,46 @@ export interface LogoProps {
   size?: LogoSize
   className?: string
   showText?: boolean
-  /** `inverse` : wordmark blanc, pour les surfaces ink (footer, bande CTA). */
+  /** `inverse` : wordmark et plongeoir clairs, pour les surfaces ink (footer, bande CTA). */
   tone?: LogoTone
 }
 
-const MARK_SIZE: Record<LogoSize, number> = { sm: 24, md: 32, lg: 40 }
-const TEXT_CLASS: Record<LogoSize, string> = { sm: 'text-base', md: 'text-lg', lg: 'text-xl' }
+/** Hauteur de la marque : `sm` (≤ 32 px) passe à la pastille ronde, illisible en dessous. */
+const MARK_HEIGHT: Record<LogoSize, number> = { sm: 28, md: 44, lg: 52 }
+const TEXT_CLASS: Record<LogoSize, string> = { sm: 'text-lg', md: 'text-2xl', lg: 'text-3xl' }
 
-/** Mark du logo (`inertia/assets/images/logo-mark.png`) + wordmark `APP_NAME` en texte. */
+/** Le nom s'écrit jumpUjob, le U toujours en corail. */
+const WORDMARK = { before: 'jump', accent: 'U', after: 'job' } as const
+
+/**
+ * Logo jumpUjob : marque SVG inline (galet sur plongeoir, ou pastille en `sm`) + wordmark.
+ * Le nom accessible est `APP_NAME` ; le wordmark visuel est masqué aux lecteurs d'écran.
+ */
 export const Logo = memo(function Logo({
   size = 'md',
   className = '',
   showText = true,
   tone = 'default',
 }: LogoProps) {
-  const mark = MARK_SIZE[size]
+  const height = MARK_HEIGHT[size]
   return (
     <span
       className={`inline-flex items-center gap-2.5 ${className}`.trim()}
       role="img"
       aria-label={APP_NAME}
     >
-      <img
-        src={logoMark}
-        alt=""
-        width={mark}
-        height={mark}
-        className="shrink-0"
-        aria-hidden="true"
-      />
+      {size === 'sm' ? <LogoBadge size={height} /> : <LogoMark height={height} tone={tone} />}
       {showText && (
         <span
-          className={`font-display font-bold tracking-tight leading-none ${TEXT_CLASS[size]} ${
+          aria-hidden="true"
+          data-testid="logo-wordmark"
+          className={`font-display font-extrabold tracking-[-0.03em] leading-none ${TEXT_CLASS[size]} ${
             tone === 'inverse' ? 'text-on-ink' : 'text-ink'
           }`}
         >
-          {APP_NAME}
+          {WORDMARK.before}
+          <span className="text-coral">{WORDMARK.accent}</span>
+          {WORDMARK.after}
         </span>
       )}
     </span>

@@ -43,7 +43,7 @@ describe('Button', () => {
   test('applies the primary tone and never uppercases small sizes', () => {
     render(<Button size="sm">Petit</Button>)
     const btn = screen.getByRole('button', { name: 'Petit' })
-    expect(btn).toHaveClass('bg-primary', 'h-9', 'rounded-lg')
+    expect(btn).toHaveClass('bg-primary', 'h-9', 'rounded-full')
     expect(btn).not.toHaveClass('uppercase')
   })
 
@@ -54,10 +54,10 @@ describe('Button', () => {
       </Button>
     )
     const btn = screen.getByRole('button', { name: 'Ancien' })
-    expect(btn).toHaveClass('bg-sun', 'text-ink', 'h-9')
+    expect(btn).toHaveClass('bg-surface', 'text-ink', 'h-9')
   })
 
-  test('secondary is the sun button and the deprecated cta variant maps onto it', () => {
+  test('secondary is the white button with a yellow border and the deprecated cta variant maps onto it', () => {
     render(
       <>
         <Button variant="secondary">Soleil</Button>
@@ -65,11 +65,12 @@ describe('Button', () => {
       </>
     )
     expect(screen.getByRole('button', { name: 'Soleil' })).toHaveClass(
-      'bg-sun',
+      'bg-surface',
+      'border-hairline-strong',
       'text-ink',
-      'hover:bg-sun-pressed'
+      'hover:bg-sun-soft'
     )
-    expect(screen.getByRole('button', { name: 'Ancien CTA' })).toHaveClass('bg-sun')
+    expect(screen.getByRole('button', { name: 'Ancien CTA' })).toHaveClass('bg-surface')
     expect(screen.getByRole('button', { name: 'Soleil' })).toHaveClass(
       'focus-visible:ring-accent/40'
     )

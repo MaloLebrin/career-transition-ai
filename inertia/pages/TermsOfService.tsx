@@ -6,7 +6,7 @@ export default function TermsOfService() {
     <>
       <PageSeo
         title="Conditions générales d’utilisation"
-        description="Conditions générales d'utilisation de la plateforme Transition Carrière."
+        description="Conditions générales d'utilisation de la plateforme jumpUjob."
       />
       <TermsOfServicePage />
     </>

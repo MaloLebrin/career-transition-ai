@@ -2,58 +2,64 @@
 @import 'react-datepicker/dist/react-datepicker.css';
 
 /*
- * Design system « Transition Carrière » — contrat lisible dans DESIGN.md (racine).
+ * Design system « jumpUjob » — contrat lisible dans DESIGN.md (racine).
  *
- * Direction « Duna » : canvas blanc chaud et sections pierre, encre noire chaude, un bouton
- * d'action en encre, un bouton soleil (or, texte encre) pour le CTA secondaire, le teal du logo
- * (ramené vers le lac ardoise) comme accent de signal (liens, focus, sur-titres) et une famille
- * de teintes terreuses de coucher de soleil à trois niveaux
+ * Palette « Agrumes » (brief jumpUjob, planches 47 et 50) : fond crème et sections jaune pâle,
+ * encre noir chaud, bouton d'action en encre, bouton secondaire blanc bordé de jaune, le corail
+ * pour la marque (U du nom, décor) et sa version foncée comme accent de signal (liens, focus,
+ * sur-titres), cinq couples pastel fond / point à trois niveaux
  * (`tint-x` fond pastel, `tint-x-ink` texte, `tint-x-bold` aplat de décor, jamais de texte).
+ * Basculer vers une palette de réserve (Tropical, Pop) = changer les valeurs ci-dessous, pas
+ * les composants.
  * Règles : rôles sémantiques nommés (jamais `slate-*`/`rose-*` bruts), casse de phrase
- * (jamais d'uppercase micro-texte), jamais `font-black`.
+ * (jamais d'uppercase micro-texte), jamais la classe `font-black` (le 900 des titres passe
+ * par les tokens `--text-display-*`).
  *
  * Collision à éviter : une couleur et une taille de texte ne portent jamais le même
  * nom (`--color-x` et `--text-x` génèrent tous deux `text-x`).
  */
 @theme {
-  /* ---- Polices (chargées dans resources/views/inertia_layout.edge) ---- */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* ---- Police (chargée dans resources/views/inertia_layout.edge) : Nunito partout ---- */
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Nunito', ui-sans-serif, system-ui, sans-serif;
 
   /* ---- Surfaces ---- */
-  --color-canvas: #fcfbf8; /* fond de page, blanc chaud (Duna) */
+  --color-canvas: #fffdf5; /* fond de page, crème */
   --color-surface: #ffffff; /* cartes, champs, en-tête */
-  --color-surface-soft: #f5f4ee; /* bandes alternées, cartes plates, survol de ligne */
-  --color-surface-strong: #ebe8e1; /* fonds désactivés */
-  --color-hairline: #e7e4dc; /* bordures 1px des cartes et sections */
-  --color-hairline-strong: #d3cfc4; /* champs, boutons outline */
+  --color-surface-soft: #fff3c4; /* sections secondaires jaune pâle, cartes plates, survol */
+  --color-surface-strong: #ffe9b3; /* fonds désactivés */
+  --color-hairline: #ffe59a; /* filets 1px des cartes et sections */
+  --color-hairline-strong: #ffd96a; /* champs, bordure du bouton secondaire */
 
   /* ---- Encre ---- */
-  --color-ink: #1c1512; /* noir chaud : titres, bouton principal, la seule surface sombre — 17,3:1 sur canvas */
-  --color-ink-elevated: #2c2320; /* carte imbriquée sur une surface ink, bouton principal pressé */
-  --color-ink-soft: #3f3733; /* texte courant — 11,6:1 blanc, 11,1:1 canvas */
-  --color-muted: #6b625c; /* texte secondaire — 5,9:1 blanc, 5,7:1 canvas */
-  --color-muted-soft: #857b74; /* ≥ 18px ou placeholders seulement — 4,1:1 blanc, 4,0:1 canvas */
+  --color-ink: #1f1400; /* noir chaud : titres, bouton principal, la seule surface sombre — 17,8:1 sur canvas */
+  --color-ink-elevated: #352710; /* carte imbriquée sur une surface ink, bouton principal pressé */
+  --color-ink-soft: #3d2e10; /* texte courant — 12,9:1 canvas */
+  --color-muted: #5c4a1e; /* texte secondaire — 8,4:1 canvas, 7,7:1 surface-soft */
+  --color-muted-soft: #9a8650; /* ≥ 18px ou placeholders seulement — 3,5:1 canvas */
   --color-on-ink: #ffffff;
-  --color-on-ink-soft: #cfc5bb; /* liens du footer sur ink — 10,6:1 */
-  --color-on-ink-muted: #a69a90; /* méta du footer sur ink — 6,6:1 */
+  --color-on-ink-soft: #f3e6c0; /* liens du footer sur ink — 14,6:1 */
+  --color-on-ink-muted: #cdb98a; /* méta du footer sur ink — 9,4:1 */
 
   /* ---- Action principale : l'encre (bouton primary, lignes sélectionnées) ---- */
   --color-primary: var(--color-ink);
   --color-primary-pressed: var(--color-ink-elevated);
-  --color-primary-soft: #f1ece6; /* lignes sélectionnées, fond de badge « primary » */
+  --color-primary-soft: #ffedb8; /* lignes sélectionnées, fond de badge « primary » */
   --color-on-primary: #ffffff;
 
-  /* ---- Accent de signal — le teal du logo, ramené vers le lac ardoise de Duna : liens, focus, sur-titres, état actif ---- */
-  --color-accent: #3d6168; /* 6,8:1 sur blanc, 6,5:1 sur canvas */
-  --color-accent-pressed: #2f4f55; /* survol des liens */
-  --color-accent-soft: #e3ecec; /* état actif de navigation, tuiles d'icône discrètes */
-  --color-accent-on-ink: #9fc3c5; /* teal lisible sur fond ink — 9,5:1 */
+  /* ---- Marque : le corail vif — U du nom, décor ; jamais de texte courant (3,05:1 canvas) ---- */
+  --color-coral: #ff5a36;
 
-  /* ---- Soleil — l'or de Duna : bouton secondaire / CTA sur fond ink ; texte toujours `text-ink` ---- */
-  --color-sun: #f0a848; /* encre dessus : 8,9:1 */
-  --color-sun-pressed: #e39a37; /* encre dessus : 7,7:1 */
-  --color-sun-soft: #fbe9cf; /* tuiles d'icône, carte `sun`, sélection de texte */
+  /* ---- Accent de signal — le corail foncé, lisible : liens, focus, sur-titres, état actif ---- */
+  --color-accent: #b23410; /* 6,2:1 sur blanc, 5,6:1 sur surface-soft */
+  --color-accent-pressed: #8f2a0c; /* survol des liens — 8,4:1 */
+  --color-accent-soft: #ffe6dc; /* état actif de navigation, tuiles d'icône discrètes — 5,2:1 accent dessus */
+  --color-accent-on-ink: #ff8a6e; /* corail lisible sur fond ink — 7,9:1 */
+
+  /* ---- Soleil — le jaune du galet : tuiles, cartes `sun`, sélection ; texte toujours `text-ink` ---- */
+  --color-sun: #ffc53d; /* encre dessus : 11,5:1 */
+  --color-sun-pressed: #f5b21e; /* encre dessus : 9,7:1 */
+  --color-sun-soft: #ffe08a; /* tuiles d'icône, carte `sun`, sélection de texte */
 
   /* ---- Sémantique ---- */
   --color-success: #3e6b3a; /* 5,3:1 sur success-soft */
@@ -65,29 +71,30 @@
   --color-info: #3b5f8a; /* 5,5:1 sur info-soft */
   --color-info-soft: #e5ecf4;
 
-  /* ---- Teintes expressives : `tint-x` fond pastel, `tint-x-ink` texte dessus (≥ 6,2:1),
+  /* ---- Teintes expressives : les cinq couples pastel du brief (jaune, menthe, rose, ciel, vert)
+     + pêche et lavande. `tint-x` fond pastel, `tint-x-ink` texte dessus (≥ 4,6:1),
      `tint-x-bold` aplat saturé pour illustrer (LandscapeArt, graphiques) — jamais de texte. ---- */
   --color-tint-sun: var(--color-sun-soft);
-  --color-tint-sun-ink: #6e4300;
+  --color-tint-sun-ink: #8a5a00;
   --color-tint-sun-bold: var(--color-sun);
-  --color-tint-apricot: #fdd8b8;
-  --color-tint-apricot-ink: #7a360e;
-  --color-tint-apricot-bold: #f5a066;
-  --color-tint-meadow: #dfe9cf;
-  --color-tint-meadow-ink: #3a5a2e;
-  --color-tint-meadow-bold: #6e9c4e;
-  --color-tint-lake: #d6e6e4;
-  --color-tint-lake-ink: var(--color-accent-pressed);
-  --color-tint-lake-bold: #4a848c;
-  --color-tint-lavender: #eadde9;
-  --color-tint-lavender-ink: #5e3d58;
-  --color-tint-lavender-bold: #b983ae;
-  --color-tint-blossom: #fadcd8;
-  --color-tint-blossom-ink: #863540;
-  --color-tint-blossom-bold: #e9909c;
-  --color-tint-sky: #dfe6ef;
-  --color-tint-sky-ink: #3b4f66;
-  --color-tint-sky-bold: #7ea3c4;
+  --color-tint-apricot: #ffd9cc;
+  --color-tint-apricot-ink: #7a2e12;
+  --color-tint-apricot-bold: var(--color-coral);
+  --color-tint-meadow: #d9f7a6;
+  --color-tint-meadow-ink: #3c6e0a;
+  --color-tint-meadow-bold: #8fd14f;
+  --color-tint-lake: #b9f0d6;
+  --color-tint-lake-ink: #0b6b4a;
+  --color-tint-lake-bold: #2fbf8a;
+  --color-tint-lavender: #e9ddff;
+  --color-tint-lavender-ink: #5b3a99;
+  --color-tint-lavender-bold: #b48cff;
+  --color-tint-blossom: #ffc9d9;
+  --color-tint-blossom-ink: #a0184c;
+  --color-tint-blossom-bold: #ff7ea6;
+  --color-tint-sky: #cde8ff;
+  --color-tint-sky-ink: #174a8a;
+  --color-tint-sky-bold: #5aaeff;
 
   /* ---- Alias legacy — dashboard uniquement. À SUPPRIMER EN PHASE 4 (grep `brand-`). ---- */
   --color-brand-navy: var(--color-ink);
@@ -102,7 +109,7 @@
      (mockups en perspective, panneaux du méga-menu — DESIGN.md §5 bis). ---- */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
   --shadow-raised: 0 4px 12px rgb(0 0 0 / 0.08);
-  --shadow-floating: 0 32px 64px -16px rgb(28 21 18 / 0.28), 0 16px 32px -16px rgb(28 21 18 / 0.22);
+  --shadow-floating: 0 32px 64px -16px rgb(31 20 0 / 0.22), 0 20px 50px -20px rgb(28 21 18 / 0.1);
 
   /* ---- Perspective des mockups produit (`perspective-hero` + `rotate-x-*`/`rotate-y-*`) ---- */
   --perspective-hero: 1600px;
@@ -115,29 +122,29 @@
   --text-display-xl: 4rem;
   --text-display-xl--line-height: 1.05;
   --text-display-xl--letter-spacing: -0.025em;
-  --text-display-xl--font-weight: 600;
+  --text-display-xl--font-weight: 900;
   --text-display-lg: 3rem;
   --text-display-lg--line-height: 1.1;
   --text-display-lg--letter-spacing: -0.02em;
-  --text-display-lg--font-weight: 600;
+  --text-display-lg--font-weight: 900;
   --text-display-md: 2.25rem;
   --text-display-md--line-height: 1.15;
   --text-display-md--letter-spacing: -0.015em;
-  --text-display-md--font-weight: 600;
+  --text-display-md--font-weight: 900;
   --text-display-sm: 1.75rem;
   --text-display-sm--line-height: 1.2;
   --text-display-sm--letter-spacing: -0.01em;
-  --text-display-sm--font-weight: 600;
+  --text-display-sm--font-weight: 900;
   --text-title-lg: 1.375rem;
   --text-title-lg--line-height: 1.3;
   --text-title-lg--letter-spacing: -0.01em;
-  --text-title-lg--font-weight: 600;
+  --text-title-lg--font-weight: 800;
   --text-title-md: 1.125rem;
   --text-title-md--line-height: 1.4;
-  --text-title-md--font-weight: 600;
+  --text-title-md--font-weight: 800;
   --text-title-sm: 1rem;
   --text-title-sm--line-height: 1.4;
-  --text-title-sm--font-weight: 600;
+  --text-title-sm--font-weight: 800;
   --text-body-lg: 1.125rem;
   --text-body-lg--line-height: 1.5;
   /* corps 16px = `text-base` ; corps 14px = `text-sm` */
@@ -146,7 +153,7 @@
   --text-caption--font-weight: 500;
   --text-eyebrow: 0.875rem;
   --text-eyebrow--line-height: 1.3;
-  --text-eyebrow--font-weight: 500;
+  --text-eyebrow--font-weight: 800;
 
   /* ---- Mouvement (alias camelCase utilisés par le dashboard, à retirer en phase 2) ---- */
   --animate-fade-in: fade-in 0.4s ease-out both;
@@ -243,14 +250,14 @@
   }
 
   body {
-    @apply bg-canvas text-ink-soft font-sans antialiased;
+    @apply bg-canvas text-ink-soft font-sans font-medium antialiased;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display text-ink;
+    @apply font-display font-extrabold text-ink;
   }
 
   :focus-visible {

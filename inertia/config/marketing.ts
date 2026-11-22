@@ -48,12 +48,15 @@ export interface MenuGroup {
 /** Action principale de l'espace cabinet. */
 export const DEMO_ACTION: ActionItem = { label: 'Demander une démo', href: '/cabinets#demo' }
 
+/** Le détail des exercices du parcours particulier (brief jumpUjob). */
+export const JOURNEY_PATH = '/parcours'
+
 export const INDIVIDUALS_MENU: MenuGroup = {
   label: 'Particuliers',
   items: [
     {
       label: 'Le parcours',
-      href: '/#parcours',
+      href: JOURNEY_PATH,
       description: 'Huit exercices pour faire le point, à votre rythme.',
       icon: Compass,
       tint: 'lake',
@@ -181,6 +184,6 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
 ]
 
 export const CONTACT_EMAIL = PRIVACY_CONTACT_EMAIL
-export const COPYRIGHT = '© 2026 Transition Carrière'
+export const COPYRIGHT = '© 2026 jumpUjob'
 export const FOOTER_TAGLINE =
   'Faites le point sur votre carrière à votre rythme : des exercices issus des sciences comportementales, une analyse assistée par l’IA, un expert si vous le souhaitez. Aussi pour les cabinets de transition professionnelle.'

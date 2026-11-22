@@ -1,4 +1,4 @@
-# Plan de tests manuels – Transition Carrière
+# Plan de tests manuels – jumpUjob
 
 Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalités décrites dans `FEATURES.md`.
 

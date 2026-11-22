@@ -69,7 +69,7 @@ test('ConfirmModal maps every variant onto a real button variant (no `undefined`
       onConfirm={vi.fn()}
     />
   )
-  expect(screen.getByRole('button', { name: 'Oui' })).toHaveClass('bg-sun')
+  expect(screen.getByRole('button', { name: 'Oui' })).toHaveClass('bg-surface', 'text-ink')
   expect(screen.getByRole('button', { name: 'Oui' }).className).not.toContain('undefined')
 
   rerender(

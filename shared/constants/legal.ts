@@ -30,7 +30,7 @@ export interface SellerIdentity {
 
 /** Identité du vendeur (CGV, facture). Placeholders tant que le PO ne l'a pas fournie (#95). */
 export const SELLER_IDENTITY: SellerIdentity = {
-  name: 'Transition Carrière',
+  name: 'jumpUjob',
   legalForm: '[forme juridique à compléter]',
   siren: '[SIREN à compléter]',
   address: '[adresse à compléter]',

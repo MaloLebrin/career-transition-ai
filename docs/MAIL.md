@@ -49,7 +49,7 @@ Adresse expéditeur utilisée pour les emails transactionnels.
 
 ```bash
 MAIL_FROM_EMAIL="no-reply@ton-domaine.fr"
-MAIL_FROM_NAME="Transition Carrière"
+MAIL_FROM_NAME="jumpUjob"
 ```
 
 Mode **test-first** (sans domaine vérifié) : si `MAIL_FROM_EMAIL` est absent et que `NODE_ENV != production`, l’app utilise un expéditeur de test (`onboarding@resend.dev`). En production, `MAIL_FROM_EMAIL` est requis.
@@ -84,7 +84,7 @@ import { MailService } from '#services/mail/mail_service'
 
 const mail = new MailService()
 await mail.send({
-  from: { email: 'no-reply@ton-domaine.fr', name: 'Transition Carrière' },
+  from: { email: 'no-reply@ton-domaine.fr', name: 'jumpUjob' },
   to: { email: 'user@example.com', name: 'User' },
   subject: 'Sujet',
   text: 'Contenu texte',
@@ -182,7 +182,7 @@ Sans domaine vérifié, Resend n'envoie qu'à l'adresse de ton propre compte : l
    MAIL_PROVIDER=resend
    RESEND_API_KEY=re_xxx
    MAIL_FROM_EMAIL=no-reply@<ton-domaine>
-   MAIL_FROM_NAME="Transition Carrière"
+   MAIL_FROM_NAME="jumpUjob"
    ADMIN_CONTACT_EMAIL=contact@<ton-domaine>
    ```
 

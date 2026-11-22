@@ -34,7 +34,7 @@ describe('DesignSystem (vitrine)', () => {
       background: 'var(--color-tint-lavender-bold)',
     })
     expect(screen.getByRole('button', { name: 'primary' })).toHaveClass('bg-primary')
-    expect(screen.getByRole('button', { name: 'secondary' })).toHaveClass('bg-sun')
+    expect(screen.getByRole('button', { name: 'secondary' })).toHaveClass('bg-surface')
     expect(screen.queryByRole('button', { name: 'cta' })).not.toBeInTheDocument()
     expect(container.querySelectorAll('svg[data-variant]')).toHaveLength(3)
     expect(container.querySelectorAll('svg[data-pose]')).toHaveLength(10)

@@ -33,7 +33,7 @@ describe('Layout', () => {
         <div>Content</div>
       </Layout>
     )
-    expect(screen.getByText(/Transition Carrière © 2026/)).toBeInTheDocument()
+    expect(screen.getByText(/jumpUjob © 2026/)).toBeInTheDocument()
   })
 
   test('clicking Quitter opens logout confirmation modal', () => {

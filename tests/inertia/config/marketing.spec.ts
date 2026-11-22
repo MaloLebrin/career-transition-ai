@@ -26,7 +26,7 @@ describe('config/marketing', () => {
       'Cabinets',
       'Ressources',
     ])
-    expect(INDIVIDUALS_MENU.items.map((item) => item.href)).toEqual(['/#parcours', '/tarifs'])
+    expect(INDIVIDUALS_MENU.items.map((item) => item.href)).toEqual(['/parcours', '/tarifs'])
     expect(RESOURCES_MENU.items.map((item) => item.href)).toEqual([
       '/qui-sommes-nous',
       '/contact',
@@ -63,7 +63,7 @@ describe('config/marketing', () => {
   test('actions et pied de page sont cohérents', () => {
     expect(LOGIN_ACTION.href).toBe('/auth/login')
     expect(CONTACT_EMAIL).toBe(PRIVACY_CONTACT_EMAIL)
-    expect(COPYRIGHT).toContain('Transition Carrière')
+    expect(COPYRIGHT).toContain('jumpUjob')
     expect(FOOTER_COLUMNS.map((column) => column.title)).toEqual([
       'Particuliers',
       'Cabinets',

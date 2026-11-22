@@ -6,7 +6,7 @@ export default function TermsOfSale() {
     <>
       <PageSeo
         title="Conditions générales de vente"
-        description="Conditions générales de vente du forfait Transition Carrière : prix, paiement, rétractation et médiation."
+        description="Conditions générales de vente du forfait jumpUjob : prix, paiement, rétractation et médiation."
       />
       <TermsOfSalePage />
     </>

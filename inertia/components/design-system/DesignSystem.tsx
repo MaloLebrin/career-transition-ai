@@ -18,7 +18,7 @@ const DesignSystem: React.FC<DesignSystemProps> = ({ onBack }) => (
       <SectionHeading
         level={1}
         size="display-md"
-        eyebrow="Transition Carrière"
+        eyebrow="jumpUjob"
         title="Design system"
         description="Référence vivante des tokens et composants. Le contrat complet est dans DESIGN.md à la racine du dépôt."
       />
