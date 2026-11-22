@@ -1,7 +1,7 @@
 /**
  * L'équipe affichée sur `/qui-sommes-nous` (brief jumpUjob, planche 50). Textes du brief,
- * passés au vouvoiement tant que le tutoiement n'est pas validé. À confirmer par Clara et
- * Malo : noms de famille, intitulés exacts, rôle d'« expert » des séances payantes.
+ * passés au vouvoiement (décision du 22 novembre 2026 : le site garde le « vous »).
+ * À confirmer par Clara et Malo : noms de famille, intitulés exacts, rôle d'« expert » des séances payantes.
  * Photos à venir : `photoUrl` reste `null`, le galet prend la couleur de secours.
  */
 export interface TeamMember {

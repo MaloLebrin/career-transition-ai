@@ -2,8 +2,8 @@
 
 Suite de l'identité jumpUjob : l'accueil passe de neuf blocs à six (planche 47), les
 descriptions d'exercices partent sur une nouvelle page `/parcours`, et « Qui sommes-nous »
-présente l'équipe dans des bulles galet (planche 50). Le tutoiement du brief n'étant pas
-validé, les textes restent au vouvoiement (« Sautez. On tient la rampe. »).
+présente l'équipe dans des bulles galet (planche 50). Le site garde le vouvoiement (décision du
+22 novembre 2026, le tutoiement du brief est écarté) : « Sautez. On tient la rampe. ».
 
 - **Accueil.** Héros « Le saut, oui. Le vide, non. » avec l'unique mockup « Mon parcours »,
   trois étapes en cartes jaune pâle, les huit exercices en pastilles (lien vers `/parcours`),
