@@ -72,7 +72,7 @@ describe('blocs de l’accueil jumpUjob', () => {
     expect(pills[5]).toHaveClass('bg-tint-sun')
   })
 
-  test('PlanBand : prix TTC payé une fois, ancre #tarif, CTA', () => {
+  test('PlanBand : exercices offerts puis prix TTC payé une fois, ancre #tarif, CTA', () => {
     setPageProps({ billing: { paymentsEnabled: true, resultsPriceCents: 4900, currency: 'eur' } })
     const { container } = render(<PlanBand registrationOpen />)
 
@@ -80,6 +80,11 @@ describe('blocs de l’accueil jumpUjob', () => {
     const card = screen.getByRole('group', { name: 'Forfait particuliers' })
     expect(card).toHaveTextContent('49 €')
     expect(card).toHaveTextContent('TTC · payé une seule fois')
+    // Non-régression : le CTA « gratuit » doit être justifié par les exercices offerts.
+    expect(card).toHaveTextContent('Deux exercices offerts pour commencer')
+    expect(
+      screen.getByRole('heading', { name: 'Commencez gratuitement, payez une seule fois.' })
+    ).toBeInTheDocument()
     expect(within(card).getByRole('link', { name: 'Commencer gratuitement' })).toBeInTheDocument()
   })
 

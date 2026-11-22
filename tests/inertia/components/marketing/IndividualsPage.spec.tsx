@@ -50,7 +50,7 @@ describe('IndividualsPage (accueil jumpUjob, planche 47)', () => {
     expect(headings).toEqual([
       'Trois étapes, aucune pression.',
       'Huit exercices pour y voir clair.',
-      'Paiement unique, sans abonnement.',
+      'Commencez gratuitement, payez une seule fois.',
       'Sautez. On tient la rampe.',
     ])
     expect(screen.getByRole('region', { name: 'Confiance' })).toBeInTheDocument()
