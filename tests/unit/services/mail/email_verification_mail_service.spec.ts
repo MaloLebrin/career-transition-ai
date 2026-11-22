@@ -68,11 +68,11 @@ test.group('EmailVerificationMailService.sendVerificationLink (#98)', () => {
     const { user, token } = fixtures()
 
     await withEnv(
-      { ...ENV, MAIL_FROM_EMAIL: 'no-reply@example.test', MAIL_FROM_NAME: 'Transition Carrière' },
+      { ...ENV, MAIL_FROM_EMAIL: 'no-reply@example.test', MAIL_FROM_NAME: 'jumpUjob' },
       () => service.sendVerificationLink({ user, token })
     )
 
-    assert.deepEqual(sent[0].from, { email: 'no-reply@example.test', name: 'Transition Carrière' })
+    assert.deepEqual(sent[0].from, { email: 'no-reply@example.test', name: 'jumpUjob' })
   })
 
   test('refuse un jeton relu depuis la base (secret absent)', async ({ assert }) => {

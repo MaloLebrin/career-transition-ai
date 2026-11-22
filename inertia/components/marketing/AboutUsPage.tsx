@@ -158,7 +158,7 @@ export default function AboutUsPage() {
       </MarketingSection>
 
       <CtaBand
-        title="Une question sur Transition Carrière ?"
+        title="Une question sur jumpUjob ?"
         description="Écrivez-nous, nous revenons vers vous rapidement."
         actions={
           <a

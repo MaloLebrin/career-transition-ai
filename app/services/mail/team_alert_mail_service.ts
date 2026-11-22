@@ -3,7 +3,7 @@ import env from '#start/env'
 import { inject } from '@adonisjs/core'
 
 export const DEFAULT_ALERT_FROM_EMAIL = 'noreply@transitioncarriere.fr'
-export const DEFAULT_ALERT_FROM_NAME = 'Transition Carrière'
+export const DEFAULT_ALERT_FROM_NAME = 'jumpUjob'
 
 /** Lues à l'envoi (et non au chargement du module) pour suivre `env`. */
 function resolveAddresses() {

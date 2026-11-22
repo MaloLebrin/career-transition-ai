@@ -37,7 +37,7 @@ const CARD_VARIANTS: { variant: CardVariant; label: string; usage: string }[] = 
     usage: 'La seule surface ink : CTA, offre mise en avant.',
   },
   { variant: 'sun', label: 'Carte soleil', usage: 'Mise en avant chaude.' },
-  { variant: 'accent', label: 'Carte accent', usage: 'Teinte teal, état actif.' },
+  { variant: 'accent', label: 'Carte accent', usage: 'Corail foncé, état actif.' },
   { variant: 'primary', label: 'Carte primaire', usage: 'Mise en avant discrète.' },
 ]
 

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -32 340 292" width="340" height="292" role="img" aria-label="jumpUjob">
+  <rect y="-32" width="340" height="292" fill="#2D2A4A"/>
+  <path d="M 20 226 C 90 226, 150 224, 200 206" fill="none" stroke="#F6E7FF" stroke-width="16" stroke-linecap="round"/>
+  <rect x="12" y="214" width="26" height="40" rx="8" fill="#F6E7FF"/>
+  <g transform="translate(120 0) rotate(-12 40 183)">
+    <path d="M 128 6 C 196 2, 236 44, 232 104 C 228 170, 186 214, 112 216 C 46 218, 6 172, 8 110 C 10 46, 60 10, 128 6 Z" transform="scale(0.8333333)" fill="#FFC6FF"/>
+    <g fill="none" stroke-width="15" stroke-linecap="round">
+      <path d="M 58 81.5 V 120 Q 58 134 44 134" stroke="#2D2A4A"/>
+      <path d="M 80 62 V 91 A 18 18 0 0 0 116 91 V 62" stroke="#FFFFFF"/>
+      <path d="M 137 81.5 V 120 Q 137 134 123 134" stroke="#2D2A4A"/>
+    </g>
+    <circle cx="92" cy="71" r="5.5" fill="#2D2A4A"/>
+    <circle cx="104" cy="71" r="5.5" fill="#2D2A4A"/>
+  </g>
+</svg>

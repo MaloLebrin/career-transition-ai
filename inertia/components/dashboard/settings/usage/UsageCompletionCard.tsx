@@ -26,7 +26,7 @@ export const UsageCompletionCard = ({ numberOfLicenses }: UsageCompletionCardPro
           ></div>
         </div>
         <p className="text-xs text-indigo-200/60 font-medium italic pt-4">
-          Besoin de plus de licences ? Contactez votre gestionnaire de compte Transition Carrière.
+          Besoin de plus de licences ? Contactez votre gestionnaire de compte jumpUjob.
         </p>
       </div>
     </Card>

@@ -2,9 +2,9 @@ import React, { forwardRef, memo } from 'react'
 
 /**
  * Variantes du design system (DESIGN.md) :
- * - `primary`   : l'action principale, encre (bleu nuit).
- * - `secondary` : le bouton soleil (jaune, texte encre) — CTA secondaire, et le seul
- *                 bouton plein lisible sur une surface ink (ancien `emphasis`, ancien `cta`).
+ * - `primary`   : l'action principale, encre (noir chaud), texte blanc.
+ * - `secondary` : fond blanc bordé de jaune, texte encre — CTA secondaire, et le bouton
+ *                 lisible sur une surface ink (ancien `emphasis`, ancien `cta`).
  * - `outline`   : action secondaire discrète, bordure hairline.
  * - `ghost`     : action discrète, sans fond.
  * - `danger`    : action destructive.
@@ -41,7 +41,7 @@ type ResolvedButtonVariant = Exclude<ButtonVariant, 'emphasis' | 'cta'>
 
 const VARIANTS: Record<ResolvedButtonVariant, string> = {
   primary: 'bg-primary text-on-primary hover:bg-primary-pressed',
-  secondary: 'bg-sun text-ink hover:bg-sun-pressed',
+  secondary: 'bg-surface border-2 border-hairline-strong text-ink hover:bg-sun-soft',
   outline: 'bg-surface border border-hairline-strong text-ink hover:bg-surface-soft',
   ghost: 'bg-transparent text-ink-soft hover:bg-surface-soft hover:text-ink',
   danger: 'bg-danger text-white hover:bg-danger/90',
@@ -54,7 +54,7 @@ const SIZES: Record<Exclude<ButtonSize, 'xs'>, string> = {
 }
 
 const BASE_STYLES =
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-50 disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-50 disabled:cursor-not-allowed'
 
 function resolveVariant(variant: ButtonVariant): ResolvedButtonVariant {
   return variant === 'emphasis' || variant === 'cta' ? 'secondary' : variant

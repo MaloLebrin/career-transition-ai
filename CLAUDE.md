@@ -177,7 +177,7 @@ Toujours `pnpm`, jamais `npm run` ou `yarn`.
 
 ### Design system
 
-Tokens et règles dans `DESIGN.md` (racine) : rôles de couleur nommés (jamais `slate-*`/`rose-*`/`brand-*` dans du code nouveau, cliquet `tests/unit/hygiene/design_tokens.spec.ts`), `bg-primary` (encre) pour l'action, `bg-sun text-ink` pour le bouton secondaire et tout bouton plein sur `bg-ink`, `text-accent` (teal) pour liens/focus/sur-titres, teintes `tint-x`/`tint-x-ink` pour classer et `tint-x-bold` pour illustrer seulement (jamais de texte dessus), casse de phrase (pas d'uppercase micro-texte, pas de `font-black`), rayons `lg/xl/2xl/full` seulement, ombres `shadow-card`/`shadow-raised`. Primitives dans `inertia/components/ui/`, blocs marketing dans `inertia/components/marketing/`, seul bloc illustratif `LandscapeArt`.
+Tokens et règles dans `DESIGN.md` (racine) : rôles de couleur nommés (jamais `slate-*`/`rose-*`/`brand-*` dans du code nouveau, cliquet `tests/unit/hygiene/design_tokens.spec.ts`), `bg-primary` (encre) pour l'action, `Button variant="secondary"` (blanc bordé de jaune) pour le bouton secondaire et sur `bg-ink`, `text-accent` (corail foncé) pour liens/focus/sur-titres, `text-coral` pour la marque seulement (U du nom, décor), police unique Nunito, logo SVG `ui/Logo` (identité jumpUjob), teintes `tint-x`/`tint-x-ink` pour classer et `tint-x-bold` pour illustrer seulement (jamais de texte dessus), casse de phrase (pas d'uppercase micro-texte, pas de `font-black`), rayons `lg/xl/2xl/full` seulement, ombres `shadow-card`/`shadow-raised`. Primitives dans `inertia/components/ui/`, blocs marketing dans `inertia/components/marketing/`, seul bloc illustratif `LandscapeArt`.
 
 ### Tests obligatoires
 

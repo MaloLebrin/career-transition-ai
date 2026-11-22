@@ -59,12 +59,12 @@ const SAMPLES: { className: string; label: string; sample: string }[] = [
   },
 ]
 
-/** Échelle typographique : Manrope pour les titres, Inter pour l'interface. */
+/** Échelle typographique : Nunito partout : 900 pour les titres, 800 pour les titres de carte. */
 export const TypographyShowcase: React.FC = () => (
   <ShowcaseSection
     eyebrow="02"
     title="Typographie"
-    description="Manrope 600 pour les titres, Inter pour tout le reste. Casse de phrase, jamais de majuscules espacées."
+    description="Nunito 900 pour les titres, 800 pour les titres de carte, 500 pour le texte. Casse de phrase, jamais de majuscules espacées."
   >
     <ul className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
       {SAMPLES.map((sample) => (

@@ -23,7 +23,7 @@ describe('PageSeo', () => {
     )
     const byKey = Object.fromEntries(metas.map((m: Record<string, string>) => [m['head-key'], m]))
     expect(byKey['description'].content).toBe('Un forfait unique.')
-    expect(byKey['og:title'].content).toBe('Tarifs - Transition Carrière')
+    expect(byKey['og:title'].content).toBe('Tarifs - jumpUjob')
     expect(byKey['og:description'].content).toBe('Un forfait unique.')
     expect(byKey['og:locale'].content).toBe('fr_FR')
     expect(byKey['twitter:card'].content).toBe('summary')

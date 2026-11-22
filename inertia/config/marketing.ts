@@ -181,6 +181,6 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
 ]
 
 export const CONTACT_EMAIL = PRIVACY_CONTACT_EMAIL
-export const COPYRIGHT = '© 2026 Transition Carrière'
+export const COPYRIGHT = '© 2026 jumpUjob'
 export const FOOTER_TAGLINE =
   'Faites le point sur votre carrière à votre rythme : des exercices issus des sciences comportementales, une analyse assistée par l’IA, un expert si vous le souhaitez. Aussi pour les cabinets de transition professionnelle.'

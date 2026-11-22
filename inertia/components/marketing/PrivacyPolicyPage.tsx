@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
     >
       <LegalSection title="Responsable de traitement">
         <p>
-          <Term>Transition Carrière</Term> — contact :{' '}
+          <Term>jumpUjob</Term> — contact :{' '}
           <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className={MAIL_LINK_CLASS}>
             {PRIVACY_CONTACT_EMAIL}
           </a>
@@ -58,8 +58,8 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection title="Particuliers inscrits en libre-service">
         <p>
-          Pour un compte créé sans cabinet, <Term>Transition Carrière</Term> est responsable de
-          traitement. Le traitement repose sur l’exécution du contrat (
+          Pour un compte créé sans cabinet, <Term>jumpUjob</Term> est responsable de traitement. Le
+          traitement repose sur l’exécution du contrat (
           <AppLink href="/cgu" className={MAIL_LINK_CLASS}>
             conditions d’utilisation
           </AppLink>

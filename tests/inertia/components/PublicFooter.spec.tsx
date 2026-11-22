@@ -69,6 +69,6 @@ describe('PublicFooter', () => {
     )
     const footer = screen.getByRole('contentinfo')
     expect(footer).toHaveClass('bg-ink')
-    expect(footer).toHaveTextContent('© 2026 Transition Carrière')
+    expect(footer).toHaveTextContent('© 2026 jumpUjob')
   })
 })
