@@ -6,7 +6,7 @@ export default function AboutUs() {
     <>
       <PageSeo
         title="Qui sommes-nous"
-        description="Deux psychologues du travail derrière jumpUjob : Clara, l’expert du parcours, et Malo, qui a construit la plateforme."
+        description="Deux psychologues du travail derrière jumpUjob : Sophie, l’expert du parcours, et Antoine, qui a construit la plateforme."
       />
       <AboutUsPage />
     </>
