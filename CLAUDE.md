@@ -266,6 +266,10 @@ Avant d'implémenter : consulter [AdonisJS docs](https://docs.adonisjs.com/) pui
 
 Ne jamais utiliser de fonctions dépréciées du framework.
 
+### Boucles (règle `prefer-array-methods`)
+
+Éviter `for` / `for…of` / `forEach` quand une méthode de tableau exprime l'intention : `map`, `filter`, `find`, `some`, `every`, `flatMap`, `reduce`, `Map.groupBy`, `Object.fromEntries`. La boucle reste admise pour des `await` à enchaîner dans l'ordre, un itérateur asynchrone, ou une sortie anticipée qu'aucune méthode n'exprime.
+
 ---
 
 ## Workflow agent
@@ -296,6 +300,7 @@ Outils Claude : agents `.claude/agents/` (`reviewer` en lecture seule, `backend`
 - Colonne secrète sérialisable, secret ou `.env` commité.
 - `npm` / `yarn`, SQLite en test, filtre `--files` écrit à la main dans la CI, `removeOnComplete: false`.
 - Fonction dépréciée du framework (ex. `vine.compile`).
+- Boucle `for` qui remplit un tableau ou une `Map` là où `map` / `filter` / `reduce` / `Map.groupBy` suffit.
 
 ---
 
