@@ -124,8 +124,7 @@ export class ContactBlocklistService {
     actorId: number
   ): Promise<Map<string, ContactRequestSenderState>> {
     const normalized = [...new Set(emails.map(normalizeContactEmail))]
-    const states = new Map<string, ContactRequestSenderState>()
-    if (normalized.length === 0) return states
+    if (normalized.length === 0) return new Map()
 
     const [blocked, accounts] = await Promise.all([
       BlockedContactEmail.query().whereIn('email', normalized).select('email'),
@@ -134,27 +133,30 @@ export class ContactBlocklistService {
         .select('id', 'name', 'email', 'role', 'organizationId', 'disabledAt'),
     ])
     const blockedEmails = new Set(blocked.map((row) => row.email))
+    const accountsByEmail = Map.groupBy(accounts, (user) => normalizeContactEmail(user.email))
     const platformOrganizationId =
       accounts.length > 0 ? await this.platformOrganizationService.getId() : null
 
-    for (const email of normalized) {
-      const matches = accounts.filter((user) => normalizeContactEmail(user.email) === email)
-      const account = matches.length === 1 ? matches[0] : null
-      states.set(email, {
-        senderBlocked: blockedEmails.has(email),
-        ambiguousAccount: matches.length > 1,
-        account:
-          account && platformOrganizationId !== null
-            ? {
-                id: account.id,
-                name: account.name,
-                role: account.role,
-                disabled: account.disabledAt !== null,
-                canDisable: canDisableSenderAccount(actorId, platformOrganizationId, account),
-              }
-            : null,
+    return new Map(
+      normalized.map((email) => {
+        const matches = accountsByEmail.get(email) ?? []
+        const account = matches.length === 1 ? matches[0] : null
+        const state: ContactRequestSenderState = {
+          senderBlocked: blockedEmails.has(email),
+          ambiguousAccount: matches.length > 1,
+          account:
+            account && platformOrganizationId !== null
+              ? {
+                  id: account.id,
+                  name: account.name,
+                  role: account.role,
+                  disabled: account.disabledAt !== null,
+                  canDisable: canDisableSenderAccount(actorId, platformOrganizationId, account),
+                }
+              : null,
+        }
+        return [email, state]
       })
-    }
-    return states
+    )
   }
 }
