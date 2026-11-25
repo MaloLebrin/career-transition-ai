@@ -26,6 +26,8 @@ const PENDING: ContactRequestItem = {
   type: 'demo',
   status: 'pending',
   createdAt: '2026-10-10T09:00:00.000Z',
+  senderBlocked: false,
+  account: null,
 }
 
 const PAGINATION = { page: 1, pageSize: 25, total: 1, lastPage: 1 }

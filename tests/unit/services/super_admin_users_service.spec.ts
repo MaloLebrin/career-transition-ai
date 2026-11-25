@@ -19,6 +19,8 @@ import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import {
   createAdvisor,
+  createB2cCandidate,
+  createInHouseExpert,
   createOrganization,
   createPlatformOrganization,
   createSuperAdmin,
@@ -460,6 +462,46 @@ test.group('SuperAdminUsersService.update / setDisabled / destroy (#73)', (group
       () => service.setDisabled(actor, otherSuper.id, true),
       SuperAdminUserLockedError
     )
+  })
+
+  test('setDisabledForContactSender : compte client ou particulier, par adresse sans casse', async ({
+    assert,
+  }) => {
+    const { actor, target } = await setup()
+    const { user: particulier } = await createB2cCandidate()
+
+    await service.setDisabledForContactSender(actor, ` ${target.email.toUpperCase()} `, true)
+    await service.setDisabledForContactSender(actor, particulier.email, true)
+    await Promise.all([target.refresh(), particulier.refresh()])
+    assert.isNotNull(target.disabledAt)
+    assert.isNotNull(particulier.disabledAt)
+
+    await service.setDisabledForContactSender(actor, particulier.email, false)
+    await particulier.refresh()
+    assert.isNull(particulier.disabledAt)
+  })
+
+  test('setDisabledForContactSender : équipe plateforme et adresse inconnue → 404 ; soi-même et super admin verrouillés', async ({
+    assert,
+  }) => {
+    const { actor, org } = await setup()
+    const expert = await createInHouseExpert()
+    const otherSuper = await createSuperAdmin(org)
+
+    await assert.rejects(
+      () => service.setDisabledForContactSender(actor, expert.email, true),
+      SuperAdminUserNotFoundError
+    )
+    await assert.rejects(
+      () => service.setDisabledForContactSender(actor, 'personne@exemple.test', true),
+      SuperAdminUserNotFoundError
+    )
+    await assert.rejects(
+      () => service.setDisabledForContactSender(actor, otherSuper.email, true),
+      SuperAdminUserLockedError
+    )
+    await expert.refresh()
+    assert.isNull(expert.disabledAt)
   })
 
   test('destroy : supprime un compte sans données, avec ses jetons', async ({ assert }) => {

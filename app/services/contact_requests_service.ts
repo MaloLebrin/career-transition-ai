@@ -4,8 +4,10 @@ import {
   CONTACT_REQUEST_STATUSES,
   type ContactRequestStatus,
 } from '#shared/constants/contact_request'
+import { ContactBlocklistService } from '#services/contact_blocklist_service'
 import { ContactRequestMailService } from '#services/mail/contact_request_mail_service'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
+import { normalizeContactEmail } from '#shared/helpers/contact_request/sender_account'
 import type {
   ContactRequestItem,
   ContactRequestListParams,
@@ -14,19 +16,30 @@ import type { CreateContactRequestInput } from '#shared/types/contact_request/in
 import type { Paginated } from '#shared/types/pagination'
 import { paginationMeta, whereAnyColumnContains } from '#utils/pagination'
 import { inject } from '@adonisjs/core'
+import logger from '@adonisjs/core/services/logger'
 
 /**
  * Demandes de contact / démo du formulaire public (`ContactDemoForm`).
  */
 @inject()
 export class ContactRequestsService {
-  constructor(private mailService: ContactRequestMailService) {}
+  constructor(
+    private mailService: ContactRequestMailService,
+    private blocklist: ContactBlocklistService = new ContactBlocklistService()
+  ) {}
 
   /**
    * Enregistre la demande (statut `pending`) puis prévient l'équipe et le
    * demandeur. Un échec d'envoi n'annule pas la demande : elle reste en base.
+   * Adresse bloquée : rien n'est enregistré ni envoyé (`null`), et l'appelant répond comme
+   * pour un envoi réussi pour ne pas révéler le blocage.
    */
-  public async create(input: CreateContactRequestInput): Promise<ContactRequest> {
+  public async create(input: CreateContactRequestInput): Promise<ContactRequest | null> {
+    if (await this.blocklist.isBlocked(input.email)) {
+      logger.info('demande de contact ignorée : adresse bloquée')
+      return null
+    }
+
     const contactRequest = await ContactRequest.create({
       ...input,
       status: CONTACT_REQUEST_STATUSES.PENDING,
@@ -42,9 +55,13 @@ export class ContactRequestsService {
 
   /**
    * Une page de la boîte des demandes (back-office super admin) : les plus récentes d'abord,
-   * recherche nom / e-mail / organisation, filtres de statut et de type.
+   * recherche nom / e-mail / organisation, filtres de statut et de type. Chaque demande porte
+   * l'état de son expéditeur (adresse bloquée, compte existant) vu par `actorId`.
    */
-  public async list(params: ContactRequestListParams): Promise<Paginated<ContactRequestItem>> {
+  public async list(
+    params: ContactRequestListParams,
+    actorId: number
+  ): Promise<Paginated<ContactRequestItem>> {
     const query = ContactRequest.query()
       .if(params.status !== null, (q) => q.where('status', params.status!))
       .if(params.type !== null, (q) => q.where('type', params.type!))
@@ -55,8 +72,13 @@ export class ContactRequestsService {
     whereAnyColumnContains(query, ['name', 'email', 'organization'], params.search)
 
     const paginator = await query.paginate(params.page, LIST_PAGE_SIZE)
+    const rows = paginator.all()
+    const senders = await this.blocklist.senderStates(
+      rows.map((row) => row.email),
+      actorId
+    )
     return {
-      items: paginator.all().map((row) => ({
+      items: rows.map((row) => ({
         id: row.id,
         name: row.name,
         email: row.email,
@@ -66,6 +88,7 @@ export class ContactRequestsService {
         type: row.type,
         status: row.status,
         createdAt: row.createdAt.toISO()!,
+        ...senders.get(normalizeContactEmail(row.email))!,
       })),
       pagination: paginationMeta(paginator, LIST_PAGE_SIZE),
     }

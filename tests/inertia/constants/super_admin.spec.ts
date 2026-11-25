@@ -11,6 +11,18 @@ describe('SUPER_ADMIN_PATHS', () => {
     expect(SUPER_ADMIN_PATHS.contactRequestStatus(9)).toBe(
       '/dashboard/super-admin/contact-requests/9/status'
     )
+    expect(SUPER_ADMIN_PATHS.contactRequestBlockSender(9)).toBe(
+      '/dashboard/super-admin/contact-requests/9/block-sender'
+    )
+    expect(SUPER_ADMIN_PATHS.contactRequestUnblockSender(9)).toBe(
+      '/dashboard/super-admin/contact-requests/9/unblock-sender'
+    )
+    expect(SUPER_ADMIN_PATHS.contactRequestDisableAccount(9)).toBe(
+      '/dashboard/super-admin/contact-requests/9/disable-account'
+    )
+    expect(SUPER_ADMIN_PATHS.contactRequestEnableAccount(9)).toBe(
+      '/dashboard/super-admin/contact-requests/9/enable-account'
+    )
     expect(SUPER_ADMIN_PATHS.skill(4)).toBe('/dashboard/super-admin/skills/4')
   })
 })

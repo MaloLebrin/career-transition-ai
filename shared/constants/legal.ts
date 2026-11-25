@@ -139,6 +139,10 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
     duration: '3 ans au maximum après le dernier contact',
   },
   {
+    data: 'Adresses e-mail bloquées pour le formulaire de contact',
+    duration: 'Jusqu’à la levée du blocage',
+  },
+  {
     data: 'Documents du candidat (CV importé, diplômes, attestations…)',
     duration: 'Jusqu’à leur suppression, celle du dossier ou une demande d’effacement',
   },

@@ -7,6 +7,19 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class BlockedContactEmailSchema extends BaseModel {
+  static $columns = ['blockedByUserId', 'createdAt', 'email', 'id'] as const
+  $columns = BlockedContactEmailSchema.$columns
+  @column()
+  declare blockedByUserId: number | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string
+  @column({ isPrimary: true })
+  declare id: number
+}
+
 export class CandidatePaymentSchema extends BaseModel {
   static $columns = ['amountCents', 'createdAt', 'currency', 'discountCents', 'employeeId', 'grantedByUserId', 'id', 'organizationId', 'paidAt', 'productCode', 'promoCode', 'provider', 'refundedAt', 'revokeEffectsAt', 'revokeReason', 'revokedAt', 'revokedByUserId', 'status', 'stripeCheckoutSessionId', 'stripePaymentIntentId', 'stripePromotionCodeId', 'unlockEffectsAt', 'updatedAt', 'userId', 'withdrawalWaivedAt'] as const
   $columns = CandidatePaymentSchema.$columns
