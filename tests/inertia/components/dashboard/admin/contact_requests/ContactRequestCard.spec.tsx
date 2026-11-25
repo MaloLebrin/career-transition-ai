@@ -23,6 +23,7 @@ const REQUEST: ContactRequestItem = {
   createdAt: '2026-10-10T09:00:00.000Z',
   senderBlocked: false,
   account: null,
+  ambiguousAccount: false,
 }
 
 describe('ContactRequestCard', () => {

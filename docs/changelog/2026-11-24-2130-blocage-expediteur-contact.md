@@ -20,8 +20,20 @@ deux e-mails.
   `ContactRequestSenderActions` (confirmation avant blocage et désactivation).
 - **Routes.** `POST /dashboard/super-admin/contact-requests/:id/{block-sender,unblock-sender,
 disable-account,enable-account}` (`SUPER_ADMIN_PATHS`).
-- **RGPD.** Les adresses bloquées sont conservées jusqu'à la levée du blocage (`docs/RGPD.md`,
-  `shared/constants/legal.ts`).
+- **Adresses bloquées.** Page `/dashboard/super-admin/contact-requests/blocked` (recherche,
+  pagination) : un blocage se lève par son id, même si plus aucune demande ne porte l'adresse
+  (`ContactBlocklistService.listBlocked` / `unblockById`).
+- **RGPD.** Une adresse bloquée est conservée 3 ans au maximum (`CONTACT_BLOCK_RETENTION_YEARS`) :
+  `PurgeExpiredContactBlocksJob` lève les blocages plus anciens chaque nuit à 3 h 30
+  (`docs/RGPD.md`, `shared/constants/legal.ts`, `docs/QUEUES.md`).
+- **Robustesse.** Blocage et archivage dans une transaction, insertion qui ignore le doublon
+  (deux clics simultanés) ; le faux succès attend un délai comparable à l'envoi des e-mails
+  (`BLOCKED_CONTACT_RESPONSE_DELAY_MS`) ; si plusieurs comptes portent l'adresse (casse ou
+  organisations différentes), aucun n'est proposé ni désactivé depuis cet écran ; index sur
+  `lower(email)` pour `users` et `contact_requests`.
+- **Limite connue.** La comparaison porte sur l'adresse exacte, casse mise à part : un alias
+  (`nom+autre@…`) ou une autre adresse contourne le blocage. La limite de 3 demandes par heure et
+  par IP reste la première barrière.
 - **Tests.** `contact_blocklist_service.spec.ts`, `sender_account.spec.ts`,
   `tests/functional/admin/contact_requests.spec.ts`, specs des deux composants ; compléments dans
   les specs existantes (service, contrôleur, formulaire public).

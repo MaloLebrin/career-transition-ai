@@ -16,6 +16,9 @@ export const SUPER_ADMIN_PATHS = {
     `/dashboard/super-admin/contact-requests/${id}/disable-account`,
   contactRequestEnableAccount: (id: number) =>
     `/dashboard/super-admin/contact-requests/${id}/enable-account`,
+  blockedContactEmails: '/dashboard/super-admin/contact-requests/blocked',
+  blockedContactEmailUnblock: (id: number) =>
+    `/dashboard/super-admin/contact-requests/blocked/${id}/unblock`,
   skills: '/dashboard/super-admin/skills',
   skill: (id: number) => `/dashboard/super-admin/skills/${id}`,
 } as const

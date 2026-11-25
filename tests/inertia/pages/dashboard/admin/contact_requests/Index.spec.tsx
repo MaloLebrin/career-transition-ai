@@ -28,6 +28,7 @@ const PENDING: ContactRequestItem = {
   createdAt: '2026-10-10T09:00:00.000Z',
   senderBlocked: false,
   account: null,
+  ambiguousAccount: false,
 }
 
 const PAGINATION = { page: 1, pageSize: 25, total: 1, lastPage: 1 }
@@ -59,6 +60,15 @@ describe('ContactRequestsAdmin page (#73)', () => {
     expect(within(item).getByText('Démo')).toBeInTheDocument()
     expect(within(item).getByText('À traiter')).toBeInTheDocument()
     expect(within(item).getByText('Bonjour, je souhaite une démo.')).toBeInTheDocument()
+  })
+
+  test('renvoie vers la liste des adresses bloquées', () => {
+    renderPage()
+
+    expect(screen.getByRole('link', { name: 'Voir les adresses bloquées' })).toHaveAttribute(
+      'href',
+      '/dashboard/super-admin/contact-requests/blocked'
+    )
   })
 
   test('marquer comme traitée, archiver et remettre à traiter postent le statut', async () => {

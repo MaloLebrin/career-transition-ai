@@ -21,6 +21,8 @@ export type ScannedRoutes = {
     'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
     'super_admin_contact_requests.update_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.unblock_address': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.block_sender': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.unblock_sender': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.disable_account': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -178,6 +180,7 @@ export type ScannedRoutes = {
     'super_admin.update_user_role': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.resend_user_onboarding': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.update_status': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin_contact_requests.unblock_address': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.block_sender': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.unblock_sender': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_contact_requests.disable_account': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -259,6 +262,7 @@ export type ScannedRoutes = {
     'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
     'super_admin_skills.index': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
@@ -314,6 +318,7 @@ export type ScannedRoutes = {
     'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.users': { paramsTuple?: []; params?: {} }
     'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
     'super_admin_skills.index': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
     'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }

@@ -22,7 +22,7 @@ const RELOAD = { preserveScroll: true, only: ['requests'] }
 export function ContactRequestSenderActions({ request }: ContactRequestSenderActionsProps) {
   const [pending, setPending] = useState<PendingAction>(null)
   const [submitting, setSubmitting] = useState(false)
-  const { account, senderBlocked } = request
+  const { account, ambiguousAccount, senderBlocked } = request
 
   const post = (path: string) => {
     if (submitting) return
@@ -59,6 +59,10 @@ export function ContactRequestSenderActions({ request }: ContactRequestSenderAct
               </span>
               {account.disabled && <Badge variant="warning">Compte désactivé</Badge>}
             </>
+          ) : ambiguousAccount ? (
+            <span>
+              Plusieurs comptes portent cette adresse : gérez-les depuis la page des comptes
+            </span>
           ) : (
             <span>Aucun compte avec cette adresse</span>
           )}

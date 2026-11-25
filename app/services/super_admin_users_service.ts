@@ -222,7 +222,7 @@ export class SuperAdminUsersService {
   /**
    * Désactive ou réactive le compte qui porte l'adresse d'une demande de contact. Portée plus
    * large que `setDisabled` : les candidats de l'organisation plateforme (particuliers) en font
-   * partie, pas son équipe. Aucun compte à portée → 404.
+   * partie, pas son équipe. Aucun compte à portée, ou plusieurs comptes pour l'adresse → 404.
    */
   public async setDisabledForContactSender(
     actor: User,
@@ -230,9 +230,10 @@ export class SuperAdminUsersService {
     disabled: boolean
   ): Promise<User> {
     const platformOrganizationId = await this.platformOrganizationService.getId()
-    const user = await User.query()
+    const matches = await User.query()
       .whereRaw('LOWER(email) = ?', [normalizeContactEmail(email)])
-      .first()
+      .limit(2)
+    const user = matches.length === 1 ? matches[0] : null
     if (!user || !isSenderAccountInScope(platformOrganizationId, user)) {
       throw new SuperAdminUserNotFoundError()
     }

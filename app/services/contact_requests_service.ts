@@ -1,6 +1,7 @@
 import { ContactRequestNotFoundError } from '#exceptions/contact_request_errors'
 import ContactRequest from '#models/contact_request'
 import {
+  BLOCKED_CONTACT_RESPONSE_DELAY_MS,
   CONTACT_REQUEST_STATUSES,
   type ContactRequestStatus,
 } from '#shared/constants/contact_request'
@@ -17,6 +18,7 @@ import type { Paginated } from '#shared/types/pagination'
 import { paginationMeta, whereAnyColumnContains } from '#utils/pagination'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
+import { setTimeout } from 'node:timers/promises'
 
 /**
  * Demandes de contact / démo du formulaire public (`ContactDemoForm`).
@@ -37,6 +39,7 @@ export class ContactRequestsService {
   public async create(input: CreateContactRequestInput): Promise<ContactRequest | null> {
     if (await this.blocklist.isBlocked(input.email)) {
       logger.info('demande de contact ignorée : adresse bloquée')
+      await this.waitLikeASend()
       return null
     }
 
@@ -51,6 +54,15 @@ export class ContactRequestsService {
     ])
 
     return contactRequest
+  }
+
+  /**
+   * Attente comparable à l'envoi des deux e-mails d'une demande acceptée : sans elle, la
+   * rapidité de la réponse révélerait le blocage.
+   */
+  protected async waitLikeASend(): Promise<void> {
+    const { MIN, MAX } = BLOCKED_CONTACT_RESPONSE_DELAY_MS
+    await setTimeout(MIN + Math.floor(Math.random() * (MAX - MIN)))
   }
 
   /**

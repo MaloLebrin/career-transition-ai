@@ -2,7 +2,10 @@ import { BlockedContactEmailFactory } from '#database/factories/blocked_contact_
 import { ContactRequestFactory } from '#database/factories/contact_request_factory'
 import { ContactRequestNotFoundError } from '#exceptions/contact_request_errors'
 import ContactRequest from '#models/contact_request'
-import { CONTACT_REQUEST_STATUSES } from '#shared/constants/contact_request'
+import {
+  BLOCKED_CONTACT_RESPONSE_DELAY_MS,
+  CONTACT_REQUEST_STATUSES,
+} from '#shared/constants/contact_request'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { ContactRequestsService } from '#services/contact_requests_service'
 import type { CreateContactRequestInput } from '#shared/types/contact_request/inputs'
@@ -71,8 +74,11 @@ test.group('ContactRequestsService.create', (group) => {
     const mails = new FakeContactRequestMailService()
     const service = new ContactRequestsService(mails as any)
 
+    const startedAt = Date.now()
     const created = await service.create(input({ email: 'Spam@Exemple.test' }))
 
+    // Le faux succès attend comme un envoi : une réponse immédiate trahirait le blocage.
+    assert.isAtLeast(Date.now() - startedAt, BLOCKED_CONTACT_RESPONSE_DELAY_MS.MIN - 20)
     assert.isNull(created)
     assert.isNull(await ContactRequest.query().whereILike('email', 'spam@exemple.test').first())
     assert.lengthOf(mails.adminNotificationCalls, 0)

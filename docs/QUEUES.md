@@ -151,6 +151,7 @@ Le fichier `start/scheduler.ts` est préchargé (env `web`) et sert à définir 
 Planifications en place :
 
 - `purge-expired-pdf-exports` : `PurgeExpiredPdfExportsJob` (queue `pdfs`), chaque nuit à 3 h (Europe/Paris), supprime les PDF générés il y a plus de `PDF_EXPORT_RETENTION_DAYS` (30) jours.
+- `purge-expired-contact-blocks` : `PurgeExpiredContactBlocksJob` (queue `default`), chaque nuit à 3 h 30 (Europe/Paris), lève les blocages d'adresses du formulaire de contact posés il y a plus de `CONTACT_BLOCK_RETENTION_YEARS` (3) ans.
 
 Exemples d’API (selon la doc AdonisJS queue) :
 

@@ -504,6 +504,23 @@ test.group('SuperAdminUsersService.update / setDisabled / destroy (#73)', (group
     assert.isNull(expert.disabledAt)
   })
 
+  test('setDisabledForContactSender : plusieurs comptes pour l’adresse → 404, aucun n’est touché', async ({
+    assert,
+  }) => {
+    const { actor, target } = await setup()
+    const twin = await createAdvisor()
+    twin.email = target.email.toUpperCase()
+    await twin.save()
+
+    await assert.rejects(
+      () => service.setDisabledForContactSender(actor, target.email, true),
+      SuperAdminUserNotFoundError
+    )
+    await Promise.all([target.refresh(), twin.refresh()])
+    assert.isNull(target.disabledAt)
+    assert.isNull(twin.disabledAt)
+  })
+
   test('destroy : supprime un compte sans données, avec ses jetons', async ({ assert }) => {
     const { actor, target } = await setup()
     await OnboardingToken.createForUser(target.id)

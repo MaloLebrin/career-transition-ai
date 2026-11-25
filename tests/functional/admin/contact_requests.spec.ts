@@ -1,3 +1,4 @@
+import { BlockedContactEmailFactory } from '#database/factories/blocked_contact_email_factory'
 import { ContactRequestFactory } from '#database/factories/contact_request_factory'
 import BlockedContactEmail from '#models/blocked_contact_email'
 import ContactRequest from '#models/contact_request'
@@ -166,10 +167,65 @@ test.group('Super admin — demandes de contact : blocage de l’expéditeur', (
       SUPER_ADMIN_PATHS.contactRequestUnblockSender(request.id),
       SUPER_ADMIN_PATHS.contactRequestDisableAccount(request.id),
       SUPER_ADMIN_PATHS.contactRequestEnableAccount(request.id),
+      SUPER_ADMIN_PATHS.blockedContactEmailUnblock(1),
     ]) {
       const response = await client.post(path).loginAs(advisor).header('Accept', 'application/json')
       response.assertStatus(403)
     }
     assert.lengthOf(await BlockedContactEmail.all(), 0)
+  })
+
+  test('liste des adresses bloquées : recherche, puis déblocage sans demande associée', async ({
+    client,
+    assert,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const orphan = await BlockedContactEmailFactory.merge({ email: 'spam@exemple.test' }).create()
+    await BlockedContactEmailFactory.merge({ email: 'autre@ailleurs.test' }).create()
+
+    const list = await client
+      .get(SUPER_ADMIN_PATHS.blockedContactEmails)
+      .qs({ search: 'exemple' })
+      .loginAs(superAdmin)
+      .withInertia()
+    const props = assertPage(assert, list, 'dashboard/admin/contact_requests/Blocked', [
+      'blockedEmails',
+      'pagination',
+      'filters',
+    ])
+    const items = props.blockedEmails as Array<{ id: number; email: string }>
+    assert.deepEqual(
+      items.map((item) => item.email),
+      ['spam@exemple.test']
+    )
+
+    const unblocked = await client
+      .post(SUPER_ADMIN_PATHS.blockedContactEmailUnblock(orphan.id))
+      .loginAs(superAdmin)
+      .withInertia()
+      .header('referer', SUPER_ADMIN_PATHS.blockedContactEmails)
+      .redirects(0)
+
+    unblocked.assertStatus(302)
+    assert.equal(unblocked.flashMessage('success'), 'spam@exemple.test est débloquée.')
+    assert.isNull(await BlockedContactEmail.find(orphan.id))
+
+    const again = await client
+      .post(SUPER_ADMIN_PATHS.blockedContactEmailUnblock(orphan.id))
+      .loginAs(superAdmin)
+      .withInertia()
+      .redirects(0)
+    assert.equal(again.flashMessage('success'), 'Cette adresse n’est plus bloquée.')
+  })
+
+  test('la liste des adresses bloquées est réservée au super admin', async ({ client }) => {
+    const advisor = await createAdvisor()
+
+    const response = await client
+      .get(SUPER_ADMIN_PATHS.blockedContactEmails)
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+
+    response.assertStatus(403)
   })
 })

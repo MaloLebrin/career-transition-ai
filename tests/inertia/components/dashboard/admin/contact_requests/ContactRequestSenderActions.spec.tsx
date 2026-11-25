@@ -23,6 +23,7 @@ const REQUEST: ContactRequestItem = {
   createdAt: '2026-10-10T09:00:00.000Z',
   senderBlocked: false,
   account: null,
+  ambiguousAccount: false,
 }
 
 const ACCOUNT = {
@@ -41,6 +42,14 @@ describe('ContactRequestSenderActions', () => {
 
     expect(screen.getByText('Aucun compte avec cette adresse')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Bloquer l’expéditeur' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Désactiver le compte' })).not.toBeInTheDocument()
+  })
+
+  test('plusieurs comptes pour l’adresse : renvoie vers la page des comptes, sans action de compte', () => {
+    render(<ContactRequestSenderActions request={{ ...REQUEST, ambiguousAccount: true }} />)
+
+    expect(screen.getByText(/Plusieurs comptes portent cette adresse/)).toBeInTheDocument()
+    expect(screen.queryByText('Aucun compte avec cette adresse')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Désactiver le compte' })).not.toBeInTheDocument()
   })
 

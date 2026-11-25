@@ -8,6 +8,7 @@ import {
   createAdvisor,
   createB2cCandidate,
   createInHouseExpert,
+  createPlatformOrganization,
   createSuperAdmin,
 } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -98,7 +99,11 @@ test.group('ContactBlocklistService.senderStates', (group) => {
 
     const states = await service.senderStates(['Inconnu@exemple.test'], 1)
 
-    assert.deepEqual(states.get('inconnu@exemple.test'), { senderBlocked: false, account: null })
+    assert.deepEqual(states.get('inconnu@exemple.test'), {
+      senderBlocked: false,
+      account: null,
+      ambiguousAccount: false,
+    })
   })
 
   test('signale l’adresse bloquée, sans casse', async ({ assert }) => {
@@ -137,5 +142,93 @@ test.group('ContactBlocklistService.senderStates', (group) => {
     assert.isTrue(b2c.canDisable)
     assert.isFalse(states.get(expert.email.toLowerCase())!.account!.canDisable)
     assert.isFalse(states.get(actor.email.toLowerCase())!.account!.canDisable)
+  })
+})
+
+test.group('ContactBlocklistService — comptes en doublon, liste et purge', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = new ContactBlocklistService()
+
+  test('plusieurs comptes pour une adresse (casse, organisations) : aucun n’est proposé', async ({
+    assert,
+  }) => {
+    await createPlatformOrganization()
+    const first = await createAdvisor()
+    const second = await createAdvisor()
+    second.email = first.email.toUpperCase()
+    await second.save()
+
+    const states = await service.senderStates([first.email], 1)
+
+    const state = states.get(first.email.toLowerCase())!
+    assert.isNull(state.account)
+    assert.isTrue(state.ambiguousAccount)
+  })
+
+  test('blockSender : deux blocages simultanés de la même adresse ne se heurtent pas', async ({
+    assert,
+  }) => {
+    const actor = await createSuperAdmin()
+    const request = await ContactRequestFactory.merge({ email: 'spam@exemple.test' }).create()
+    const twin = await ContactRequestFactory.merge({ email: 'SPAM@exemple.test' }).create()
+
+    await Promise.all([service.blockSender(actor, request.id), service.blockSender(actor, twin.id)])
+
+    assert.lengthOf(await BlockedContactEmail.query().where('email', 'spam@exemple.test'), 1)
+  })
+
+  test('listBlocked : plus récentes d’abord, recherche par adresse, pagination', async ({
+    assert,
+  }) => {
+    const old = await BlockedContactEmailFactory.merge({
+      email: 'ancien@exemple.test',
+      createdAt: DateTime.now().minus({ days: 2 }),
+    }).create()
+    const recent = await BlockedContactEmailFactory.merge({ email: 'spam@autre.test' }).create()
+
+    const all = await service.listBlocked({ page: 1, search: '' })
+    assert.deepEqual(
+      all.items.map((item) => item.id),
+      [recent.id, old.id]
+    )
+    assert.equal(all.items[0].email, 'spam@autre.test')
+    assert.equal(all.items[1].blockedAt, old.createdAt.toISO())
+    assert.equal(all.pagination.total, 2)
+
+    const found = await service.listBlocked({ page: 1, search: 'ANCIEN' })
+    assert.deepEqual(
+      found.items.map((item) => item.id),
+      [old.id]
+    )
+  })
+
+  test('unblockById lève le blocage sans passer par une demande ; id inconnu → null', async ({
+    assert,
+  }) => {
+    const blocked = await BlockedContactEmailFactory.merge({ email: 'spam@exemple.test' }).create()
+
+    assert.equal(await service.unblockById(blocked.id), 'spam@exemple.test')
+    assert.isFalse(await service.isBlocked('spam@exemple.test'))
+    assert.isNull(await service.unblockById(blocked.id))
+  })
+
+  test('purgeExpired lève les blocages plus anciens que la limite, et seulement eux', async ({
+    assert,
+  }) => {
+    await BlockedContactEmailFactory.merge({
+      email: 'vieux@exemple.test',
+      createdAt: DateTime.now().minus({ years: 3, days: 1 }),
+    }).create()
+    await BlockedContactEmailFactory.merge({
+      email: 'recent@exemple.test',
+      createdAt: DateTime.now().minus({ years: 2 }),
+    }).create()
+
+    const purged = await service.purgeExpired(DateTime.now().minus({ years: 3 }))
+
+    assert.equal(purged, 1)
+    assert.isFalse(await service.isBlocked('vieux@exemple.test'))
+    assert.isTrue(await service.isBlocked('recent@exemple.test'))
   })
 })

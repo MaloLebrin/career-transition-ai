@@ -24,7 +24,17 @@ export interface ContactRequestSenderAccount {
 export interface ContactRequestSenderState {
   /** L'adresse est bloquée pour le formulaire public. */
   senderBlocked: boolean
+  /** Compte unique portant l'adresse ; `null` s'il n'y en a aucun ou s'il y en a plusieurs. */
   account: ContactRequestSenderAccount | null
+  /** Plusieurs comptes portent l'adresse : à gérer depuis la page des comptes. */
+  ambiguousAccount: boolean
+}
+
+/** Une adresse bloquée pour le formulaire de contact, vue du back-office. */
+export interface BlockedContactEmailItem {
+  id: number
+  email: string
+  blockedAt: string
 }
 
 /** Une demande de contact vue du back-office. */

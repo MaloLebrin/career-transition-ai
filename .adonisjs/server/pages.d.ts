@@ -19,6 +19,7 @@ declare module '@adonisjs/inertia/types' {
     'Cabinets': ExtractProps<(typeof import('../../inertia/pages/Cabinets.tsx'))['default']>
     'Contact': ExtractProps<(typeof import('../../inertia/pages/Contact.tsx'))['default']>
     'dashboard/admin/b2c/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/b2c/Index.tsx'))['default']>
+    'dashboard/admin/contact_requests/Blocked': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/contact_requests/Blocked.tsx'))['default']>
     'dashboard/admin/contact_requests/Index': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/contact_requests/Index.tsx'))['default']>
     'dashboard/admin/DesignSystem': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/DesignSystem.tsx'))['default']>
     'dashboard/admin/exercises/Usage': ExtractProps<(typeof import('../../inertia/pages/dashboard/admin/exercises/Usage.tsx'))['default']>

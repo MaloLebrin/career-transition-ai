@@ -372,6 +372,36 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
   - **Vérifications**
     - L'accueil super admin et la page Particuliers affichent inscrits, forfaits réglés, chiffre d'affaires du mois (paiements Stripe payés ce mois, hors octrois manuels), demandes en attente.
 
+### 7.5. Demandes de contact : bloquer un expéditeur
+
+- **Pré-requis** : `node ace db:seed` (une adresse de démo bloquée), compte super admin.
+
+- **Bloquer une adresse**
+  - **Étapes**
+    1. Envoyer un message depuis `/contact`.
+    2. `/dashboard/super-admin/contact-requests` → « Bloquer l'expéditeur » sur la demande, confirmer.
+    3. Renvoyer un message depuis `/contact` avec la même adresse.
+  - **Vérifications**
+    - La demande porte le badge « Expéditeur bloqué » et passe en « Archivée ».
+    - Le second envoi affiche « Votre message a bien été envoyé. », sans nouvelle demande ni e-mail.
+    - Limite connue : un alias (`nom+autre@…`) n'est pas bloqué.
+
+- **Lever un blocage**
+  - **Étapes**
+    1. « Voir les adresses bloquées » → « Débloquer » sur l'adresse.
+  - **Vérifications**
+    - L'adresse disparaît de la liste ; un nouvel envoi depuis `/contact` crée bien une demande.
+
+- **Désactiver le compte de l'expéditeur**
+  - **Étapes**
+    1. Envoyer un message depuis `/contact` avec l'adresse d'un particulier de démo.
+    2. Sur la demande, « Désactiver le compte », confirmer ; tenter de se connecter avec ce compte.
+    3. « Réactiver le compte », puis se reconnecter.
+  - **Vérifications**
+    - La carte affiche le nom et le rôle du compte, puis le badge « Compte désactivé ».
+    - La connexion est refusée tant que le compte est désactivé, puis rétablie.
+    - Pour un membre de l'équipe plateforme ou un super admin, aucun bouton de compte n'est proposé.
+
 ---
 
 ## 8. Jobs de fond

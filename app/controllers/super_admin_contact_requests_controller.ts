@@ -2,6 +2,7 @@ import { ContactBlocklistService } from '#services/contact_blocklist_service'
 import { ContactRequestsService } from '#services/contact_requests_service'
 import { SuperAdminUsersService } from '#services/super_admin_users_service'
 import { parseContactRequestListParams } from '#shared/helpers/contact_request/list_params'
+import { parseListParams } from '#shared/helpers/pagination'
 import { contactRequestStatusValidator } from '#validators/super_admin/contact_request_status_validator'
 import { inject } from '@adonisjs/core'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -53,6 +54,28 @@ export default class SuperAdminContactRequestsController {
   public async unblockSender({ params, response, session }: HttpContext) {
     const contactRequest = await this.blocklist.unblockSender(Number(params.id))
     session.flash('success', `${contactRequest.email} est débloquée.`)
+    return response.redirect().back()
+  }
+
+  /** GET /dashboard/super-admin/contact-requests/blocked */
+  public async blocked({ inertia, request }: HttpContext) {
+    const params = parseListParams(request.qs())
+    const { items, pagination } = await this.blocklist.listBlocked(params)
+
+    return inertia.render('dashboard/admin/contact_requests/Blocked', {
+      blockedEmails: items,
+      pagination,
+      filters: { search: params.search },
+    })
+  }
+
+  /** POST /dashboard/super-admin/contact-requests/blocked/:id/unblock */
+  public async unblockAddress({ params, response, session }: HttpContext) {
+    const email = await this.blocklist.unblockById(Number(params.id))
+    session.flash(
+      'success',
+      email ? `${email} est débloquée.` : 'Cette adresse n’est plus bloquée.'
+    )
     return response.redirect().back()
   }
 

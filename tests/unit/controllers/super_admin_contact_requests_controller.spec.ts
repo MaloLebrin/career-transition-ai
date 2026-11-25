@@ -1,4 +1,5 @@
 import SuperAdminContactRequestsController from '#controllers/super_admin_contact_requests_controller'
+import { BlockedContactEmailFactory } from '#database/factories/blocked_contact_email_factory'
 import { ContactRequestFactory } from '#database/factories/contact_request_factory'
 import BlockedContactEmail from '#models/blocked_contact_email'
 import { ContactBlocklistService } from '#services/contact_blocklist_service'
@@ -69,6 +70,28 @@ test.group('SuperAdminContactRequestsController (#73)', (group) => {
     assert.equal(request.status, 'archived')
     assert.equal(ctx.flashes.success, 'Demande mise à jour.')
     assert.deepEqual(ctx.redirects, ['back'])
+  })
+
+  test('blocked rend la liste des adresses bloquées ; unblockAddress lève le blocage par id', async ({
+    assert,
+  }) => {
+    const blocked = await BlockedContactEmailFactory.merge({ email: 'spam@exemple.test' }).create()
+    const ctx = makeCtx({ search: ' spam ' })
+
+    await controller().blocked(ctx)
+
+    assert.equal(ctx.inertia.rendered.name, 'dashboard/admin/contact_requests/Blocked')
+    assert.deepEqual(ctx.inertia.rendered.props.filters, { search: 'spam' })
+    assert.equal(ctx.inertia.rendered.props.blockedEmails[0].email, 'spam@exemple.test')
+
+    ctx.params = { id: String(blocked.id) }
+    await controller().unblockAddress(ctx)
+    assert.equal(ctx.flashes.success, 'spam@exemple.test est débloquée.')
+    assert.isNull(await BlockedContactEmail.find(blocked.id))
+
+    await controller().unblockAddress(ctx)
+    assert.equal(ctx.flashes.success, 'Cette adresse n’est plus bloquée.')
+    assert.deepEqual(ctx.redirects, ['back', 'back'])
   })
 
   test('blockSender puis unblockSender : flash nommant l’adresse et retour en arrière', async ({

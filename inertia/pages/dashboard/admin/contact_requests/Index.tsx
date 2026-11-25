@@ -12,6 +12,7 @@ import type { ContactRequestItem } from '#shared/types/contact_request/admin'
 import type { PaginationMeta } from '#shared/types/pagination'
 import { ContactRequestCard } from '~/components/dashboard/admin/contact_requests/ContactRequestCard'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import AppLink from '~/components/ui/AppLink'
 import Card from '~/components/ui/Card'
 import Input from '~/components/ui/Input'
 import { Pagination } from '~/components/ui/Pagination'
@@ -68,7 +69,13 @@ export default function ContactRequestsAdmin({
             <h1 className="font-display text-display-sm text-ink">Demandes de contact</h1>
             <p className="text-sm text-muted">
               Messages et demandes de démo envoyés depuis le site public. Marquez-les comme traitées
-              une fois la réponse envoyée, ou bloquez un expéditeur indésirable.
+              une fois la réponse envoyée, ou bloquez un expéditeur indésirable.{' '}
+              <AppLink
+                href={SUPER_ADMIN_PATHS.blockedContactEmails}
+                className="text-accent underline-offset-4 hover:underline"
+              >
+                Voir les adresses bloquées
+              </AppLink>
             </p>
           </div>
 

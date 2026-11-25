@@ -23,6 +23,12 @@ describe('SUPER_ADMIN_PATHS', () => {
     expect(SUPER_ADMIN_PATHS.contactRequestEnableAccount(9)).toBe(
       '/dashboard/super-admin/contact-requests/9/enable-account'
     )
+    expect(SUPER_ADMIN_PATHS.blockedContactEmails).toBe(
+      '/dashboard/super-admin/contact-requests/blocked'
+    )
+    expect(SUPER_ADMIN_PATHS.blockedContactEmailUnblock(3)).toBe(
+      '/dashboard/super-admin/contact-requests/blocked/3/unblock'
+    )
     expect(SUPER_ADMIN_PATHS.skill(4)).toBe('/dashboard/super-admin/skills/4')
   })
 })
