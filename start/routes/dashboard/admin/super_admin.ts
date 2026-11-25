@@ -49,6 +49,37 @@ router
     router
       .post('/contact-requests/:id/status', [SuperAdminContactRequestsController, 'updateStatus'])
       .where('id', router.matchers.number())
+    router.get('/contact-requests/blocked', [SuperAdminContactRequestsController, 'blocked'])
+    router
+      .post('/contact-requests/blocked/:id/unblock', [
+        SuperAdminContactRequestsController,
+        'unblockAddress',
+      ])
+      .where('id', router.matchers.number())
+    router
+      .post('/contact-requests/:id/block-sender', [
+        SuperAdminContactRequestsController,
+        'blockSender',
+      ])
+      .where('id', router.matchers.number())
+    router
+      .post('/contact-requests/:id/unblock-sender', [
+        SuperAdminContactRequestsController,
+        'unblockSender',
+      ])
+      .where('id', router.matchers.number())
+    router
+      .post('/contact-requests/:id/disable-account', [
+        SuperAdminContactRequestsController,
+        'disableAccount',
+      ])
+      .where('id', router.matchers.number())
+    router
+      .post('/contact-requests/:id/enable-account', [
+        SuperAdminContactRequestsController,
+        'enableAccount',
+      ])
+      .where('id', router.matchers.number())
     router.get('/skills', [SuperAdminSkillsController, 'index'])
     router.post('/skills', [SuperAdminSkillsController, 'store'])
     router

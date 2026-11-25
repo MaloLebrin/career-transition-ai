@@ -12,6 +12,10 @@ import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
 import type { SuperAdminCreatableRole } from '#shared/constants/roles'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
+import {
+  isSenderAccountInScope,
+  normalizeContactEmail,
+} from '#shared/helpers/contact_request/sender_account'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { Paginated } from '#shared/types/pagination'
 import type { UserListItem, UserListParams, UserUpdateInput } from '#shared/types/super_admin/lists'
@@ -209,6 +213,30 @@ export class SuperAdminUsersService {
    */
   public async setDisabled(actor: User, userId: number, disabled: boolean): Promise<User> {
     const user = await this.findInScope(userId)
+    this.assertNotLocked(actor, user)
+    user.disabledAt = disabled ? DateTime.now() : null
+    await user.save()
+    return user
+  }
+
+  /**
+   * Désactive ou réactive le compte qui porte l'adresse d'une demande de contact. Portée plus
+   * large que `setDisabled` : les candidats de l'organisation plateforme (particuliers) en font
+   * partie, pas son équipe. Aucun compte à portée, ou plusieurs comptes pour l'adresse → 404.
+   */
+  public async setDisabledForContactSender(
+    actor: User,
+    email: string,
+    disabled: boolean
+  ): Promise<User> {
+    const platformOrganizationId = await this.platformOrganizationService.getId()
+    const matches = await User.query()
+      .whereRaw('LOWER(email) = ?', [normalizeContactEmail(email)])
+      .limit(2)
+    const user = matches.length === 1 ? matches[0] : null
+    if (!user || !isSenderAccountInScope(platformOrganizationId, user)) {
+      throw new SuperAdminUserNotFoundError()
+    }
     this.assertNotLocked(actor, user)
     user.disabledAt = disabled ? DateTime.now() : null
     await user.save()

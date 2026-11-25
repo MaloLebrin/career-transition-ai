@@ -1,0 +1,56 @@
+---
+description: Éviter les boucles for quand une méthode de tableau exprime l'intention — map, filter, reduce, find, some, every, flatMap, Map.groupBy
+globs:
+  - app/**/*.ts
+  - shared/**/*.ts
+  - inertia/**/*.ts
+  - inertia/**/*.tsx
+  - database/**/*.ts
+  - start/**/*.ts
+alwaysApply: false
+---
+
+# Méthodes de tableau plutôt que boucles `for`
+
+Quand on peut, pas de `for` / `for…of` / `forEach` qui remplit un tableau, une `Map` ou un
+compteur déclaré au-dessus : la méthode de tableau dit ce que le code calcule, sans variable
+mutée à suivre.
+
+| Intention                      | À écrire                                             |
+| ------------------------------ | ---------------------------------------------------- |
+| Transformer chaque élément     | `map`                                                |
+| Garder une partie des éléments | `filter`                                             |
+| Trouver un élément             | `find` / `findLast`                                  |
+| Tester une condition           | `some` / `every` / `includes`                        |
+| Transformer et aplatir         | `flatMap`                                            |
+| Agréger en une valeur          | `reduce`                                             |
+| Regrouper par clé              | `Map.groupBy` / `Object.groupBy` (Node 24)           |
+| Construire une `Map` / un objet | `new Map(items.map(…))` / `Object.fromEntries(…)`   |
+
+## Exemple
+
+```ts
+// ❌ variable mutée, et un `filter` relancé à chaque tour
+const states = new Map<string, State>()
+for (const email of emails) {
+  const matches = accounts.filter((user) => normalize(user.email) === email)
+  states.set(email, toState(matches))
+}
+
+// ✅ un regroupement, puis une transformation
+const accountsByEmail = Map.groupBy(accounts, (user) => normalize(user.email))
+const states = new Map(emails.map((email) => [email, toState(accountsByEmail.get(email) ?? [])]))
+```
+
+Référence : `ContactBlocklistService.senderStates` (`app/services/contact_blocklist_service.ts`).
+
+## Quand la boucle reste le bon choix
+
+- `await` **l'un après l'autre** (ordre ou débit à respecter) : `for…of` avec `await`. Des appels
+  indépendants passent par `Promise.all(items.map(…))`.
+- Itérateur asynchrone ou générateur (`for await`, `glob`, flux).
+- Sortie anticipée qu'aucun `find` / `some` / `every` n'exprime.
+- Un `reduce` qui deviendrait moins lisible que la boucle qu'il remplace : préférer alors
+  `Map.groupBy`, `Object.fromEntries` ou une fonction nommée, et sinon garder la boucle.
+
+Pas de `forEach` pour produire une valeur : c'est une boucle déguisée.

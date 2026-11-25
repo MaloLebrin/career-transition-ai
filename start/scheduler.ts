@@ -1,3 +1,4 @@
+import PurgeExpiredContactBlocksJob from '#jobs/purge_expired_contact_blocks_job'
 import PurgeExpiredPdfExportsJob from '#jobs/purge_expired_pdf_exports_job'
 import logger from '@adonisjs/core/services/logger'
 
@@ -10,6 +11,7 @@ import logger from '@adonisjs/core/services/logger'
  */
 export const SCHEDULES = {
   purgeExpiredPdfExports: 'purge-expired-pdf-exports',
+  purgeExpiredContactBlocks: 'purge-expired-contact-blocks',
 } as const
 
 try {
@@ -17,6 +19,12 @@ try {
   await PurgeExpiredPdfExportsJob.schedule({})
     .id(SCHEDULES.purgeExpiredPdfExports)
     .cron('0 3 * * *')
+    .timezone('Europe/Paris')
+    .run()
+  // Chaque nuit à 3 h 30 (heure de Paris).
+  await PurgeExpiredContactBlocksJob.schedule({})
+    .id(SCHEDULES.purgeExpiredContactBlocks)
+    .cron('30 3 * * *')
     .timezone('Europe/Paris')
     .run()
 } catch (error) {

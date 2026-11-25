@@ -3,6 +3,7 @@
  * et reprises dans docs/RGPD.md. Une seule source : un nouveau sous-traitant,
  * une nouvelle durée ou une nouvelle version des conditions se change ici.
  */
+import { CONTACT_BLOCK_RETENTION_YEARS } from '#shared/constants/contact_request'
 
 /** Adresse pour exercer ses droits (accès, rectification, effacement…). */
 export const PRIVACY_CONTACT_EMAIL = 'contact@transitioncarriere.fr'
@@ -137,6 +138,10 @@ export const RETENTION_PERIODS: RetentionPeriod[] = [
   {
     data: 'Demandes de contact et prospection B2B',
     duration: '3 ans au maximum après le dernier contact',
+  },
+  {
+    data: 'Adresses e-mail bloquées pour le formulaire de contact',
+    duration: `${CONTACT_BLOCK_RETENTION_YEARS} ans au maximum après le blocage`,
   },
   {
     data: 'Documents du candidat (CV importé, diplômes, attestations…)',

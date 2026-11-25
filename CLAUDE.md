@@ -143,6 +143,8 @@ Listes paginées (#75) : `LIST_PAGE_SIZE` (`#shared/constants/pagination`), para
 
 Back-office super admin (#73) : `SUPER_ADMIN_PATHS` (`#shared/constants/super_admin`) ; organisations (fiche, renommage — `SuperAdminOrganizationsService.show/update`), comptes (`SuperAdminUsersService.update/setDisabled/destroy`, `users.disabled_at` : connexion refusée par `AuthService.verifyCredentials` puis session coupée par `AuthMiddleware`, suppression refusée dès qu'une autre table référence le compte), boîte `ContactRequestsService.list/updateStatus`, catalogue global `SuperAdminSkillsService` (compétences sans organisation). Erreurs : `organization_errors.ts`, `super_admin_user_errors.ts`, `auth_errors.ts`, `contact_request_errors.ts`, `skill_errors.ts`.
 
+Blocage depuis les demandes de contact : `#services/contact_blocklist_service` (`blockSender`, `unblockSender`, `isBlocked`, `senderStates` — table `blocked_contact_emails`, adresse en minuscules) ; une adresse bloquée reçoit le même message de succès mais `ContactRequestsService.create` n'enregistre ni n'envoie rien (ne jamais révéler le blocage). Compte lié à l'adresse : `SuperAdminUsersService.setDisabledForContactSender` — seule désactivation qui couvre les particuliers de l'organisation plateforme ; règles pures dans `#shared/helpers/contact_request/sender_account`. Composants `ContactRequestCard`, `ContactRequestSenderActions`. Liste des adresses bloquées `/dashboard/super-admin/contact-requests/blocked` (`listBlocked`, `unblockById`) ; blocage borné à `CONTACT_BLOCK_RETENTION_YEARS` (purge nocturne `PurgeExpiredContactBlocksJob`) ; comparaison exacte de l'adresse (un alias `+tag` contourne le blocage) ; plusieurs comptes pour une adresse → aucun n'est proposé (`ambiguousAccount`).
+
 Équipe du cabinet (#71) : `ORGANIZATION_TEAM_ROLES` (`admin`, `advisor` ; `expert` = plateforme), `#services/team_members_service` (`changeRole`, `setDisabled`, `reassignCandidates`, licences `assertAdvisorSeatAvailable` / `MAX_LICENSES_ADVISORS`), `EmployeesService.assertCandidateSeatAvailable` (`MAX_LICENSES_CANDIDATES`), `OrganizationTeamController`, chemins `ORGANIZATION_MEMBER_PATHS`, erreurs `team_errors.ts`. Les limites de licences se vérifient dans les services, jamais seulement dans le front.
 
 Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`), rendu dans le layout Edge via le global `seo` (`start/view.ts`) et `GET /robots.txt` (pas de fichier dans `public/`).
@@ -264,6 +266,10 @@ Avant d'implémenter : consulter [AdonisJS docs](https://docs.adonisjs.com/) pui
 
 Ne jamais utiliser de fonctions dépréciées du framework.
 
+### Boucles (règle `prefer-array-methods`)
+
+Éviter `for` / `for…of` / `forEach` quand une méthode de tableau exprime l'intention : `map`, `filter`, `find`, `some`, `every`, `flatMap`, `reduce`, `Map.groupBy`, `Object.fromEntries`. La boucle reste admise pour des `await` à enchaîner dans l'ordre, un itérateur asynchrone, ou une sortie anticipée qu'aucune méthode n'exprime.
+
 ---
 
 ## Workflow agent
@@ -294,6 +300,7 @@ Outils Claude : agents `.claude/agents/` (`reviewer` en lecture seule, `backend`
 - Colonne secrète sérialisable, secret ou `.env` commité.
 - `npm` / `yarn`, SQLite en test, filtre `--files` écrit à la main dans la CI, `removeOnComplete: false`.
 - Fonction dépréciée du framework (ex. `vine.compile`).
+- Boucle `for` qui remplit un tableau ou une `Map` là où `map` / `filter` / `reduce` / `Map.groupBy` suffit.
 
 ---
 
@@ -306,6 +313,7 @@ Jobs existants :
 - `analyze_exercise_qualitative_job.ts` → queue `ai`
 - `generate_employee_synthesis_pdf.ts` → queue `pdfs`
 - `log_exercise_usage_export.ts` → queue `analytics`
+- `purge_expired_contact_blocks_job.ts` → queue `default` (planifié, `start/scheduler.ts`)
 
 Suivi des erreurs : Sentry si `SENTRY_DSN` (`config/error_tracking.ts`, `#services/error_tracking_service`) — 5xx via `HttpExceptionHandler.report()`, jobs en échec définitif via `watchQueueFailures`. Envoyer par `reportError` (utilisateur = id seulement), jamais `Sentry.*` directement. Vérif : `node ace error-tracking:test`.
 

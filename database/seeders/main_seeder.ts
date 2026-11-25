@@ -1,4 +1,5 @@
 import B2cCandidateSeeder from '#database/seeders/b2c_candidate_seeder'
+import BlockedContactEmailSeeder from '#database/seeders/blocked_contact_email_seeder'
 import EmployeeSeeder from '#database/seeders/employee_seeder'
 import EmployeeSynthesisSeeder from '#database/seeders/employee_synthesis_seeder'
 import MaloExercisesSeeder from '#database/seeders/malo_exercise_seeder'
@@ -20,5 +21,6 @@ export default class MainSeeder extends BaseSeeder {
     await new EmployeeSynthesisSeeder(this.client).run()
     await new MediaSeeder(this.client).run()
     await new B2cCandidateSeeder(this.client).run()
+    await new BlockedContactEmailSeeder(this.client).run()
   }
 }

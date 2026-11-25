@@ -1,3 +1,4 @@
+import { BlockedContactEmailFactory } from '#database/factories/blocked_contact_email_factory'
 import ContactRequest, { CONTACT_REQUEST_STATUSES } from '#models/contact_request'
 import { createAdvisor } from '#tests/support/actors'
 import { inertiaErrors } from '#tests/support/validation'
@@ -69,6 +70,25 @@ test.group('Demandes de contact — POST /contact-requests (functional)', (group
     const saved = await ContactRequest.findByOrFail('email', 'jeanne.martin@example.com')
     assert.isNull(saved.phone)
     assert.isNull(saved.organization)
+  })
+
+  test('adresse bloquée : même réponse qu’un envoi réussi, mais rien n’est enregistré', async ({
+    assert,
+    client,
+  }) => {
+    await BlockedContactEmailFactory.merge({ email: 'jeanne.martin@example.com' }).create()
+
+    const response = await client
+      .post('/contact-requests')
+      .withInertia()
+      .header('referer', ORIGIN)
+      .json(validPayload({ email: 'Jeanne.Martin@Example.com' }))
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', ORIGIN)
+    assert.equal(response.flashMessage('success'), 'Votre message a bien été envoyé.')
+    assert.lengthOf(await ContactRequest.all(), 0)
   })
 
   test('reste accessible à un utilisateur connecté (pas de guest())', async ({ client }) => {
