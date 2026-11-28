@@ -73,7 +73,10 @@ test.group('Auth — actions super admin (functional)', (group) => {
     response.assertHeader('location', '/dashboard')
     assert.equal(response.session(SESSION_KEY), target.id)
     // #143 : l'id du super admin survit à la régénération de session du login.
-    assert.equal(response.session(IMPERSONATOR_SESSION_KEY), superAdmin.id)
+    assert.deepEqual(response.session(IMPERSONATOR_SESSION_KEY), {
+      impersonatorId: superAdmin.id,
+      targetId: target.id,
+    })
     assert.equal(
       response.flashMessage('success'),
       `Vous êtes maintenant connecté en tant que ${target.name}.`
@@ -200,7 +203,9 @@ test.group('Auth — retour de prise d’identité (functional)', (group) => {
     const impersonating = await client
       .get('/dashboard/candidat')
       .loginAs(candidate)
-      .withSession({ [IMPERSONATOR_SESSION_KEY]: superAdmin.id })
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: candidate.id },
+      })
       .withInertia()
     impersonating.assertStatus(200)
     impersonating.assertInertiaPropsContains({
@@ -222,7 +227,9 @@ test.group('Auth — retour de prise d’identité (functional)', (group) => {
     const response = await client
       .post('/auth/impersonation/leave')
       .loginAs(target)
-      .withSession({ [IMPERSONATOR_SESSION_KEY]: superAdmin.id })
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: target.id },
+      })
       .withInertia()
       .redirects(0)
 
@@ -261,13 +268,82 @@ test.group('Auth — retour de prise d’identité (functional)', (group) => {
     const response = await client
       .post('/auth/impersonation/leave')
       .loginAs(target)
-      .withSession({ [IMPERSONATOR_SESSION_KEY]: superAdmin.id })
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: target.id },
+      })
       .withInertia()
       .redirects(0)
 
     response.assertStatus(302)
     response.assertHeader('location', '/auth/login')
     assert.isUndefined(response.session(SESSION_KEY))
+    assert.isUndefined(response.session(IMPERSONATOR_SESSION_KEY))
+  })
+
+  /**
+   * Régression (revue de #143) : une clé restée en session après la déconnexion
+   * forcée du compte pris ne doit jamais rouvrir la session du super admin pour
+   * la personne qui se connecte ensuite sur ce navigateur.
+   */
+  test('clé orpheline d’un autre compte : refus, la session reste celle du connecté', async ({
+    assert,
+    client,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const formerTarget = await createAdvisor()
+    const nextUser = await createAdvisor()
+
+    const response = await client
+      .post('/auth/impersonation/leave')
+      .loginAs(nextUser)
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: formerTarget.id },
+      })
+      .withInertia()
+      .header('Referer', '/dashboard/conseiller')
+      .redirects(0)
+
+    response.assertFlashMessage('error', 'Aucune prise d’identité en cours.')
+    assert.equal(response.session(SESSION_KEY), nextUser.id)
+  })
+
+  test('la déconnexion forcée d’un compte pris désactivé retire la clé', async ({
+    assert,
+    client,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const target = await createAdvisor()
+    target.disabledAt = DateTime.now()
+    await target.save()
+
+    const response = await client
+      .get('/dashboard/conseiller')
+      .loginAs(target)
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: target.id },
+      })
+      .withInertia()
+      .redirects(0)
+
+    response.assertHeader('location', '/auth/login')
+    assert.isUndefined(response.session(SESSION_KEY))
+    assert.isUndefined(response.session(IMPERSONATOR_SESSION_KEY))
+  })
+
+  test('la connexion retire une clé restée en session', async ({ assert, client }) => {
+    const superAdmin = await createSuperAdmin()
+    const advisor = await withPassword(await createAdvisor())
+
+    const response = await client
+      .post('/auth/login')
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: advisor.id },
+      })
+      .withInertia()
+      .json({ email: advisor.email, password: PASSWORD })
+      .redirects(0)
+
+    assert.equal(response.session(SESSION_KEY), advisor.id)
     assert.isUndefined(response.session(IMPERSONATOR_SESSION_KEY))
   })
 
@@ -287,7 +363,9 @@ test.group('Auth — retour de prise d’identité (functional)', (group) => {
     const response = await client
       .post('/auth/logout')
       .loginAs(target)
-      .withSession({ [IMPERSONATOR_SESSION_KEY]: superAdmin.id })
+      .withSession({
+        [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: target.id },
+      })
       .withInertia()
       .redirects(0)
 

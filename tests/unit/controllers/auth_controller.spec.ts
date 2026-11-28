@@ -195,7 +195,10 @@ test.group('AuthController super admin actions', (group) => {
       loggedIn.map((u) => u.id),
       [target.id]
     )
-    assert.equal(session.store[IMPERSONATOR_SESSION_KEY], actor.id)
+    assert.deepEqual(session.store[IMPERSONATOR_SESSION_KEY], {
+      impersonatorId: actor.id,
+      targetId: target.id,
+    })
     assert.equal(response.redirectUrl, '/dashboard')
     assert.deepEqual(session.flashes, [
       ['success', 'Vous êtes maintenant connecté en tant que Target.'],
@@ -229,7 +232,9 @@ test.group('AuthController super admin actions', (group) => {
     const loggedIn: User[] = []
     const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
-    const session = makeSession({ [IMPERSONATOR_SESSION_KEY]: actor.id })
+    const session = makeSession({
+      [IMPERSONATOR_SESSION_KEY]: { impersonatorId: actor.id, targetId: target.id },
+    })
 
     // @ts-expect-error minimal context
     await controller.leaveImpersonation({
@@ -252,7 +257,9 @@ test.group('AuthController super admin actions', (group) => {
     const loggedIn: Array<User | null> = []
     const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
-    const session = makeSession({ [IMPERSONATOR_SESSION_KEY]: 999999 })
+    const session = makeSession({
+      [IMPERSONATOR_SESSION_KEY]: { impersonatorId: 999999, targetId: target.id },
+    })
 
     // @ts-expect-error minimal context
     await controller.leaveImpersonation({

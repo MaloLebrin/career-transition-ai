@@ -58,6 +58,8 @@ export interface FakeCtx {
   logouts: { count: number }
   /** Messages passés à `session.flash(key, value)`, dans l'ordre. */
   flashed: Array<{ key: string; value: unknown }>
+  /** Clés passées à `session.forget(key)`, dans l'ordre. */
+  forgotten: string[]
   /** Statuts posés par `response.status()`. */
   statuses: number[]
   /** Corps passés à `response.status(...).send()`. */
@@ -76,6 +78,7 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
   const authChecks = { count: 0 }
   const logouts = { count: 0 }
   const flashed: Array<{ key: string; value: unknown }> = []
+  const forgotten: string[] = []
   const statuses: number[] = []
   const sent: unknown[] = []
   const rendered: Array<{ component: string; props: unknown }> = []
@@ -94,6 +97,9 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
     session: {
       flash: (key: string, value: unknown) => {
         flashed.push({ key, value })
+      },
+      forget: (key: string) => {
+        forgotten.push(key)
       },
     },
     auth: {
@@ -151,6 +157,7 @@ export function makeCtx(options: FakeCtxOptions = {}): FakeCtx {
     authChecks,
     logouts,
     flashed,
+    forgotten,
     statuses,
     sent,
     rendered,

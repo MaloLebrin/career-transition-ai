@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 import AuthMiddleware from '#middleware/auth_middleware'
+import { IMPERSONATOR_SESSION_KEY } from '#services/impersonation_service'
 import { makeCtx, makeNext } from '#tests/support/http_context'
 
 /**
@@ -44,7 +45,7 @@ test.group('AuthMiddleware', () => {
   test('coupe la session d’un compte désactivé (#73) et renvoie vers la connexion', async ({
     assert,
   }) => {
-    const { ctx, logouts, flashed, redirects } = makeCtx({
+    const { ctx, logouts, flashed, forgotten, redirects } = makeCtx({
       user: { id: 5, disabledAt: new Date() },
     })
     const { next, calls } = makeNext()
@@ -56,6 +57,8 @@ test.group('AuthMiddleware', () => {
     assert.deepEqual(redirects, ['/auth/login'])
     assert.equal(flashed[0].key, 'error')
     assert.include(String(flashed[0].value), 'désactivé')
+    // Prise d'identité en cours (#143) : la clé ne survit pas à la session coupée.
+    assert.deepEqual(forgotten, [IMPERSONATOR_SESSION_KEY])
   })
 
   test('laisse passer un compte actif', async ({ assert }) => {

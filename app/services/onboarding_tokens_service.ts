@@ -80,12 +80,17 @@ export class OnboardingTokensService {
   /**
    * Changement d'e-mail (#143) : l'adresse a pu être prise entre l'envoi du
    * lien et le clic. La fiche candidat, qui en garde une copie, suit.
+   * L'unicité n'étant garantie que par organisation en base, un verrou
+   * transactionnel sur l'adresse sérialise deux confirmations simultanées.
    */
   private async applyNewEmail(
     user: User,
     newEmail: string,
     trx: TransactionClientContract
   ): Promise<void> {
+    await trx.rawQuery('SELECT pg_advisory_xact_lock(hashtext(?))', [
+      `email:${newEmail.toLowerCase()}`,
+    ])
     const taken = await User.query({ client: trx })
       .whereRaw('LOWER(email) = ?', [newEmail.toLowerCase()])
       .whereNot('id', user.id)

@@ -1,3 +1,4 @@
+import { IMPERSONATOR_SESSION_KEY } from '#services/impersonation_service'
 import { OnboardingTokensService } from '#services/onboarding_tokens_service'
 import { isConseillerDashboardRole } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -51,6 +52,7 @@ export default class OnboardingController {
     const user = await this.onboardingTokens.consume(tokenRecord, payload.password)
 
     await auth.use('web').login(user)
+    session.forget(IMPERSONATOR_SESSION_KEY)
     session.flash('success', 'Mot de passe créé. Bienvenue !')
     if (user.role === USERS_ROLES.EMPLOYEE) {
       return response.redirect('/dashboard/candidat')

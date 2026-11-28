@@ -1,6 +1,10 @@
 import { AuthService } from '#services/auth_service'
 import { CandidatProfileService } from '#services/candidat_profile_service'
-import { IMPERSONATOR_SESSION_KEY, ImpersonationService } from '#services/impersonation_service'
+import {
+  IMPERSONATOR_SESSION_KEY,
+  ImpersonationService,
+  impersonationSession,
+} from '#services/impersonation_service'
 import { loginValidator } from '#validators/auth/auth_login_validator'
 import { registerCandidateValidator } from '#validators/auth/auth_register_candidate_validator'
 import { registerValidator } from '#validators/auth/auth_register_validator'
@@ -17,19 +21,21 @@ export default class AuthController {
     private impersonation: ImpersonationService = new ImpersonationService()
   ) {}
 
-  public async login({ request, auth, response }: HttpContext) {
+  public async login({ request, auth, response, session }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
+    session.forget(IMPERSONATOR_SESSION_KEY)
 
     return response.redirect().status(303).toPath('/dashboard')
   }
 
-  public async register({ request, auth, response }: HttpContext) {
+  public async register({ request, auth, response, session }: HttpContext) {
     const payload = await request.validateUsing(registerValidator)
     await this.authService.register(payload)
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
+    session.forget(IMPERSONATOR_SESSION_KEY)
 
     return response.redirect().status(303).toPath('/dashboard')
   }
@@ -39,7 +45,7 @@ export default class AuthController {
    * session ouverte. `/dashboard` l'envoie vers l'onboarding candidat
    * (`checkOnboarding()`), la fiche n'étant pas encore onboardée.
    */
-  public async registerCandidate({ request, auth, response }: HttpContext) {
+  public async registerCandidate({ request, auth, response, session }: HttpContext) {
     const payload = await request.validateUsing(registerCandidateValidator)
     // La case CGU est validée puis horodatée par le service : elle ne fait pas partie de l'entrée.
     await this.authService.registerCandidate({
@@ -49,6 +55,7 @@ export default class AuthController {
     })
     const user = await this.authService.verifyCredentials(payload.email, payload.password)
     await auth.use('web').login(user)
+    session.forget(IMPERSONATOR_SESSION_KEY)
 
     return response.redirect().status(303).toPath('/dashboard')
   }
@@ -72,7 +79,7 @@ export default class AuthController {
     }
 
     await auth.use('web').login(targetUser)
-    session.put(IMPERSONATOR_SESSION_KEY, actor.id)
+    session.put(IMPERSONATOR_SESSION_KEY, impersonationSession(actor, targetUser))
     session.flash('success', `Vous êtes maintenant connecté en tant que ${targetUser.name}.`)
     return response.redirect('/dashboard')
   }
@@ -84,7 +91,8 @@ export default class AuthController {
    */
   public async leaveImpersonation({ auth, response, session }: HttpContext) {
     const impersonator = await this.impersonation.resolveImpersonator(
-      session.get(IMPERSONATOR_SESSION_KEY)
+      session.get(IMPERSONATOR_SESSION_KEY),
+      auth.getUserOrFail()
     )
     session.forget(IMPERSONATOR_SESSION_KEY)
 

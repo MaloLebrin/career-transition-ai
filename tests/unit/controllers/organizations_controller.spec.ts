@@ -31,6 +31,9 @@ class FakeOrganizationsService {
 
 type InviteAdvisorCall = { organizationId: number; name: string; email: string; role: string }
 
+/** Les actions testées ici ne lisent pas l'adresse en attente (#143). */
+const fakeEmailVerification = { pendingEmailFor: async () => null } as any
+
 class FakeAdvisorService {
   public inviteAdvisorCalls: InviteAdvisorCall[] = []
   public inviteAdvisorError: Error | null = null
@@ -73,7 +76,11 @@ function makeResponse() {
 test.group('OrganizationsController.updateFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any, new FakeAdvisorService() as any)
+    const controller = new OrganizationsController(
+      service as any,
+      new FakeAdvisorService() as any,
+      fakeEmailVerification
+    )
     const response = makeResponse()
 
     await controller.updateFromDashboard({
@@ -95,7 +102,11 @@ test.group('OrganizationsController.updateFromDashboard', () => {
     })
 
     const service = new FakeOrganizationsService()
-    const controller = new OrganizationsController(service as any, new FakeAdvisorService() as any)
+    const controller = new OrganizationsController(
+      service as any,
+      new FakeAdvisorService() as any,
+      fakeEmailVerification
+    )
     const session = makeSession()
     const response = makeResponse()
 
@@ -120,7 +131,11 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
   test('returns 401 when user is not authenticated', async ({ assert }) => {
     const service = new FakeOrganizationsService()
     const advisorService = new FakeAdvisorService()
-    const controller = new OrganizationsController(service as any, advisorService as any)
+    const controller = new OrganizationsController(
+      service as any,
+      advisorService as any,
+      fakeEmailVerification
+    )
     const response = makeResponse()
 
     await controller.storeAdvisorFromDashboard({
@@ -137,7 +152,11 @@ test.group('OrganizationsController.storeAdvisorFromDashboard', () => {
   test('calls service.inviteAdvisor then redirects with success flash', async ({ assert }) => {
     const service = new FakeOrganizationsService()
     const advisorService = new FakeAdvisorService()
-    const controller = new OrganizationsController(service as any, advisorService as any)
+    const controller = new OrganizationsController(
+      service as any,
+      advisorService as any,
+      fakeEmailVerification
+    )
     const session = makeSession()
     const response = makeResponse()
 

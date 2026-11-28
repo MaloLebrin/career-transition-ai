@@ -12,7 +12,7 @@ export default class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private advisorService: AdvisorService,
-    private emailVerification?: EmailVerificationService
+    private emailVerification: EmailVerificationService
   ) {}
 
   /**
@@ -60,7 +60,7 @@ export default class OrganizationsController {
     }
     const members = await this.organizationsService.listAdvisors(orgId)
     // Nouvelle adresse en attente de confirmation (#143), affichée sous le champ e-mail.
-    const pendingEmail = (await this.emailVerification?.pendingEmailFor(auth.user)) ?? null
+    const pendingEmail = await this.emailVerification.pendingEmailFor(auth.user)
 
     return (inertia as any).render('dashboard/conseiller/settings/Home', {
       organization,

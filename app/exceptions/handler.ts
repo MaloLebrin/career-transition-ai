@@ -68,6 +68,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_ENTITLEMENT_ALREADY_GRANTED',
     'E_EMAIL_ALREADY_VERIFIED',
     'E_EMAIL_CHANGE_CONFLICT',
+    'E_EMAIL_CHANGE_LINK_NOT_SENT',
     'E_IMPERSONATION_NOT_ALLOWED',
     'E_NOT_IMPERSONATING',
     'E_EMAIL_NOT_VERIFIED',

@@ -4,7 +4,6 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
-    'webhooks.stripe': { paramsTuple?: []; params?: {} }
     'super_admin.home': { paramsTuple?: []; params?: {} }
     'super_admin.organizations': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
@@ -51,12 +50,6 @@ export type ScannedRoutes = {
     'experiences.delete': { paramsTuple?: []; params?: {} }
     'candidat.expertRequests.index': { paramsTuple?: []; params?: {} }
     'candidat.expertRequests.store': { paramsTuple?: []; params?: {} }
-    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
-    'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
-    'pdf_exports.index': { paramsTuple?: []; params?: {} }
-    'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'employees.index_dashboard': { paramsTuple?: []; params?: {} }
     'employees.store_from_dashboard': { paramsTuple?: []; params?: {} }
     'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -119,10 +112,12 @@ export type ScannedRoutes = {
     'event_stream': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+    'webhooks.stripe': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.register_candidate': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
+    'auth.leave_impersonation': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'passwords.send_reset_link': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'passwords.show_forgot': { paramsTuple?: []; params?: {} }
@@ -159,6 +154,12 @@ export type ScannedRoutes = {
     'candidat.chat.show': { paramsTuple?: []; params?: {} }
     'candidat.chat.store': { paramsTuple?: []; params?: {} }
     'candidat.chat.read': { paramsTuple?: []; params?: {} }
+    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
+    'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
+    'pdf_exports.index': { paramsTuple?: []; params?: {} }
+    'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
     'conseiller.chat.index': { paramsTuple?: []; params?: {} }
     'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'conseiller.chat.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -171,8 +172,119 @@ export type ScannedRoutes = {
     'robots': { paramsTuple?: []; params?: {} }
     'sitemap': { paramsTuple?: []; params?: {} }
   }
+  GET: {
+    'super_admin.home': { paramsTuple?: []; params?: {} }
+    'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
+    'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
+    'super_admin.expert_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin.team.index': { paramsTuple?: []; params?: {} }
+    'super_admin.b2c.index': { paramsTuple?: []; params?: {} }
+    'super_admin.payments.index': { paramsTuple?: []; params?: {} }
+    'candidat.expertRequests.index': { paramsTuple?: []; params?: {} }
+    'employees.index_dashboard': { paramsTuple?: []; params?: {} }
+    'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employee_syntheses.show_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'conseiller.employees.documents.download': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
+    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
+    'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
+    'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
+    'dashboard.index': { paramsTuple?: []; params?: {} }
+    'pdf_export_downloads.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'passwords.show_forgot': { paramsTuple?: []; params?: {} }
+    'passwords.show_reset': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
+    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
+    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'employee_syntheses.show_candidate': { paramsTuple?: []; params?: {} }
+    'candidat.documents.download': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
+    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
+    'candidat.data.export': { paramsTuple?: []; params?: {} }
+    'candidat.billing.offer': { paramsTuple?: []; params?: {} }
+    'candidat.billing.success': { paramsTuple?: []; params?: {} }
+    'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
+    'candidat.chat.show': { paramsTuple?: []; params?: {} }
+    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
+    'pdf_exports.index': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'health_checks': { paramsTuple?: []; params?: {} }
+    'robots': { paramsTuple?: []; params?: {} }
+    'sitemap': { paramsTuple?: []; params?: {} }
+  }
+  HEAD: {
+    'super_admin.home': { paramsTuple?: []; params?: {} }
+    'super_admin.organizations': { paramsTuple?: []; params?: {} }
+    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'super_admin.users': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
+    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
+    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
+    'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
+    'super_admin.expert_requests.index': { paramsTuple?: []; params?: {} }
+    'super_admin.team.index': { paramsTuple?: []; params?: {} }
+    'super_admin.b2c.index': { paramsTuple?: []; params?: {} }
+    'super_admin.payments.index': { paramsTuple?: []; params?: {} }
+    'candidat.expertRequests.index': { paramsTuple?: []; params?: {} }
+    'employees.index_dashboard': { paramsTuple?: []; params?: {} }
+    'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employee_syntheses.show_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
+    'conseiller.employees.documents.download': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
+    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
+    'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
+    'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
+    'dashboard.index': { paramsTuple?: []; params?: {} }
+    'pdf_export_downloads.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'event_stream': { paramsTuple?: []; params?: {} }
+    'passwords.show_forgot': { paramsTuple?: []; params?: {} }
+    'passwords.show_reset': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
+    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
+    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
+    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'employee_syntheses.show_candidate': { paramsTuple?: []; params?: {} }
+    'candidat.documents.download': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
+    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
+    'candidat.data.export': { paramsTuple?: []; params?: {} }
+    'candidat.billing.offer': { paramsTuple?: []; params?: {} }
+    'candidat.billing.success': { paramsTuple?: []; params?: {} }
+    'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
+    'candidat.chat.show': { paramsTuple?: []; params?: {} }
+    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
+    'pdf_exports.index': { paramsTuple?: []; params?: {} }
+    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
+    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
+    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'health_checks': { paramsTuple?: []; params?: {} }
+    'robots': { paramsTuple?: []; params?: {} }
+    'sitemap': { paramsTuple?: []; params?: {} }
+  }
   POST: {
-    'webhooks.stripe': { paramsTuple?: []; params?: {} }
     'super_admin.store_organization': { paramsTuple?: []; params?: {} }
     'super_admin.store_user': { paramsTuple?: []; params?: {} }
     'super_admin.disable_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -230,10 +342,12 @@ export type ScannedRoutes = {
     'organization_logos.store': { paramsTuple?: []; params?: {} }
     'subscribe': { paramsTuple?: []; params?: {} }
     'unsubscribe': { paramsTuple?: []; params?: {} }
+    'webhooks.stripe': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.register_candidate': { paramsTuple?: []; params?: {} }
     'auth.logout': { paramsTuple?: []; params?: {} }
+    'auth.leave_impersonation': { paramsTuple?: []; params?: {} }
     'auth.impersonate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'passwords.send_reset_link': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'passwords.send_forgot': { paramsTuple?: []; params?: {} }
@@ -256,126 +370,12 @@ export type ScannedRoutes = {
     'onboarding.submit': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'contact_requests.store': { paramsTuple?: []; params?: {} }
   }
-  GET: {
-    'super_admin.home': { paramsTuple?: []; params?: {} }
-    'super_admin.organizations': { paramsTuple?: []; params?: {} }
-    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'super_admin.users': { paramsTuple?: []; params?: {} }
-    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
-    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
-    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
-    'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
-    'super_admin.expert_requests.index': { paramsTuple?: []; params?: {} }
-    'super_admin.team.index': { paramsTuple?: []; params?: {} }
-    'super_admin.b2c.index': { paramsTuple?: []; params?: {} }
-    'super_admin.payments.index': { paramsTuple?: []; params?: {} }
-    'candidat.expertRequests.index': { paramsTuple?: []; params?: {} }
-    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
-    'pdf_exports.index': { paramsTuple?: []; params?: {} }
-    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
-    'employees.index_dashboard': { paramsTuple?: []; params?: {} }
-    'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employee_syntheses.show_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
-    'conseiller.employees.documents.download': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
-    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
-    'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
-    'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
-    'dashboard.index': { paramsTuple?: []; params?: {} }
-    'pdf_export_downloads.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'event_stream': { paramsTuple?: []; params?: {} }
-    'passwords.show_forgot': { paramsTuple?: []; params?: {} }
-    'passwords.show_reset': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
-    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
-    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
-    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
-    'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
-    'employee_syntheses.show_candidate': { paramsTuple?: []; params?: {} }
-    'candidat.documents.download': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
-    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
-    'candidat.data.export': { paramsTuple?: []; params?: {} }
-    'candidat.billing.offer': { paramsTuple?: []; params?: {} }
-    'candidat.billing.success': { paramsTuple?: []; params?: {} }
-    'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
-    'candidat.chat.show': { paramsTuple?: []; params?: {} }
-    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
-    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'health_checks': { paramsTuple?: []; params?: {} }
-    'robots': { paramsTuple?: []; params?: {} }
-    'sitemap': { paramsTuple?: []; params?: {} }
-  }
-  HEAD: {
-    'super_admin.home': { paramsTuple?: []; params?: {} }
-    'super_admin.organizations': { paramsTuple?: []; params?: {} }
-    'super_admin.show_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'super_admin.users': { paramsTuple?: []; params?: {} }
-    'super_admin_contact_requests.index': { paramsTuple?: []; params?: {} }
-    'super_admin_contact_requests.blocked': { paramsTuple?: []; params?: {} }
-    'super_admin_skills.index': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage': { paramsTuple?: []; params?: {} }
-    'super_admin.exercise_usage_export': { paramsTuple?: []; params?: {} }
-    'super_admin.pdf_exports': { paramsTuple?: []; params?: {} }
-    'super_admin.expert_requests.index': { paramsTuple?: []; params?: {} }
-    'super_admin.team.index': { paramsTuple?: []; params?: {} }
-    'super_admin.b2c.index': { paramsTuple?: []; params?: {} }
-    'super_admin.payments.index': { paramsTuple?: []; params?: {} }
-    'candidat.expertRequests.index': { paramsTuple?: []; params?: {} }
-    'dashboard.advisor_home': { paramsTuple?: []; params?: {} }
-    'pdf_exports.index': { paramsTuple?: []; params?: {} }
-    'exercise_results.show_dashboard_conseiller_exercise_self': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
-    'employees.index_dashboard': { paramsTuple?: []; params?: {} }
-    'employees.show_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.show_profile_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.download_dossier': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employee_syntheses.show_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'employees.show_step_detail': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
-    'conseiller.employees.documents.download': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
-    'exercise_results.exercise_list_conseiller': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'exercise_results.show_exercise_result_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
-    'exercise_results.show_dashboard': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
-    'organizations.settings_dashboard': { paramsTuple?: []; params?: {} }
-    'dashboard.index': { paramsTuple?: []; params?: {} }
-    'pdf_export_downloads.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'event_stream': { paramsTuple?: []; params?: {} }
-    'passwords.show_forgot': { paramsTuple?: []; params?: {} }
-    'passwords.show_reset': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'email_verification.verify': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'dashboard.candidat_home': { paramsTuple?: []; params?: {} }
-    'dashboardEmployeeProfile': { paramsTuple?: []; params?: {} }
-    'employees.show_step_detail_candidat': { paramsTuple: [ParamValue]; params: {'stepId': ParamValue} }
-    'exercise_results.exercise_list_candidat': { paramsTuple?: []; params?: {} }
-    'exercise_results.show_dashboard_candidat': { paramsTuple: [ParamValue]; params: {'type': ParamValue} }
-    'employee_syntheses.show_candidate': { paramsTuple?: []; params?: {} }
-    'candidat.documents.download': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
-    'dashboard.candidat_onboarding': { paramsTuple?: []; params?: {} }
-    'candidat.data.export': { paramsTuple?: []; params?: {} }
-    'candidat.billing.offer': { paramsTuple?: []; params?: {} }
-    'candidat.billing.success': { paramsTuple?: []; params?: {} }
-    'candidat.billing.cancel': { paramsTuple?: []; params?: {} }
-    'candidat.chat.show': { paramsTuple?: []; params?: {} }
-    'conseiller.chat.index': { paramsTuple?: []; params?: {} }
-    'conseiller.chat.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
-    'onboarding.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
-    'health_checks': { paramsTuple?: []; params?: {} }
-    'robots': { paramsTuple?: []; params?: {} }
-    'sitemap': { paramsTuple?: []; params?: {} }
-  }
   PUT: {
     'super_admin.update_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin.update_user': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'super_admin_skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'educations.update': { paramsTuple?: []; params?: {} }
     'experiences.update': { paramsTuple?: []; params?: {} }
-    'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
-    'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employees.update_from_dashboard': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employee_syntheses.update_advisor': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'support_plan_steps.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
@@ -384,6 +384,8 @@ export type ScannedRoutes = {
     'passwords.update': { paramsTuple?: []; params?: {} }
     'candidat_onboarding.complete': { paramsTuple?: []; params?: {} }
     'auth.update_profile_candidat': { paramsTuple?: []; params?: {} }
+    'auth.update_from_dashboard': { paramsTuple?: []; params?: {} }
+    'notes.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'super_admin.destroy_organization': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -391,13 +393,13 @@ export type ScannedRoutes = {
     'super_admin_skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'educations.delete': { paramsTuple?: []; params?: {} }
     'experiences.delete': { paramsTuple?: []; params?: {} }
-    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'employee_syntheses.destroy_pdf_advisor': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'exportId': ParamValue} }
     'support_plan_steps.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'stepId': ParamValue} }
     'conseiller.employees.documents.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'mediaId': ParamValue} }
     'exercise_results.reset_conseiller': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'type': ParamValue} }
     'organization_logos.destroy': { paramsTuple?: []; params?: {} }
     'candidat.documents.destroy': { paramsTuple: [ParamValue]; params: {'mediaId': ParamValue} }
+    'notes.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PATCH: {
     'notifications.mark_as_read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
