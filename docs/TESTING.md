@@ -182,14 +182,19 @@ Le workflow est réglé pour consommer le moins de minutes possible :
 
 - **Pas de CI sur une PR en draft.** Le job `plan` est sauté, et tous les autres en dépendent.
   La CI part au passage en « Ready for review » ; repasser en draft annule le run en cours.
-- **Un push annule le run précédent** de la même PR (ou de `main`) : `concurrency` +
-  `cancel-in-progress`.
+- **Un push annule le run précédent** de la même PR (`concurrency` + `cancel-in-progress`). Pas
+  sur `main` : chaque run n'y regarde que les commits de son push (`github.event.before`..`HEAD`),
+  donc un run annulé laisserait ses changements sans test.
+- **Fichiers modifiés** : diff contre la base de la PR, ou contre `github.event.before` sur un
+  push, en `--no-renames` (un fichier sorti de `deploy/` compte par son ancien chemin). Base
+  introuvable (nouvelle branche, `workflow_dispatch`) → CI complète.
 - **PR de doc seule** (Markdown, `docs/`, `.claude/`, `.cursor/`) : seul le shard
   `unit-integration` tourne (`--unit-only`), parce qu'il porte la garde des liens
   `docs_links.spec.ts`.
 - **`docker-image`** ne tourne que si `Dockerfile`, `.dockerignore`, `docker/`, `deploy/`,
   `scripts/smoke_compose_prod.sh`, les manifestes pnpm ou le workflow changent. Le reste du build
-  est couvert par `smoke-prod-build`. Les couches sont mises en cache (`type=gha`).
+  est couvert par `smoke-prod-build`. Les couches sont mises en cache (`type=gha`), lu partout
+  et écrit depuis `main` seulement.
 - **Lint, typecheck et Vitest partagent un job** (`checks`) : une seule installation, et une minute
   facturée au lieu de trois. Le job `build` a disparu : `smoke-prod-build` construit déjà l'app.
 - `timeout-minutes` sur chaque job, pour qu'un run bloqué ne brûle pas 6 h.
