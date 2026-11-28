@@ -85,6 +85,51 @@ test.group('EmployeeSynthesisPdfService.generateShareablePdf — structure', () 
     assert.isAbove(rich.length, empty.length)
   })
 
+  test('courbe de vie d’une longue carrière : la carte passe à la page suivante au lieu d’être rognée', async ({
+    assert,
+  }) => {
+    const service = new EmployeeSynthesisPdfService()
+    const lifeCurve = (years: number) => {
+      const payload = buildMinimalPayload()
+      payload.employee.exercises = [
+        {
+          id: 7,
+          type: 'LIFE_CURVE',
+          date: '2026-01-10T00:00:00.000Z',
+          duration: 450,
+          data: {
+            points: Array.from({ length: years }, (_, i) => ({
+              year: 1980 + i,
+              satisfaction: i % 10,
+              label: `Événement professionnel numéro ${i + 1}, avec un libellé assez long`,
+            })),
+            reflection: { form: 'En vagues.', coherence: 'Oui.' },
+          },
+          quantitativeScore: 0,
+          qualitativeAnalysis: 'Analyse de la courbe de vie.',
+        },
+      ]
+      payload.latestCompletedByType = { life_curve: 7 }
+      return service.generateShareablePdf({ payload })
+    }
+    const pageCount = (pdf: Uint8Array) =>
+      (
+        Buffer.from(pdf)
+          .toString('latin1')
+          .match(/\/Type \/Page\b/g) ?? []
+      ).length
+
+    // Carte insécable (avant) : la liste débordait du bas de la page, rognée, et le
+    // nombre de pages plafonnait. Elle se poursuit désormais sur les pages suivantes.
+    const short = await lifeCurve(5)
+    const long = await lifeCurve(80)
+    const veryLong = await lifeCurve(160)
+    assert.equal(pageCount(short), 1)
+    assert.isAbove(pageCount(long), pageCount(short))
+    assert.isAbove(pageCount(veryLong), pageCount(long))
+    // Trois rendus, dont deux longs (~1 s chacun)
+  }).timeout(20_000)
+
   test("ne lance pas d'erreur avec des tableaux vides", async ({ assert }) => {
     const service = new EmployeeSynthesisPdfService()
     const payload = buildMinimalPayload()

@@ -34,17 +34,22 @@ describe('LifeCurveResultView (frise)', () => {
     expect(fills).toContain('var(--color-tint-sun)')
     expect(container.querySelectorAll('clipPath')).toHaveLength(2)
 
-    const markers = Array.from(container.querySelectorAll('g[tabindex="0"]'))
-    expect(markers).toHaveLength(4)
-    expect(markers.map((g) => g.querySelector('title')?.textContent)).toEqual([
+    const titles = Array.from(svg.querySelectorAll('g > title')).map((t) => t.textContent)
+    expect(titles).toEqual([
       '2017 · Mémoire de master · 8/10',
       '2019 · Période de doute · 2/10',
       '2021 · 5/10',
       '2024 · Projet de formateur · 9/10',
     ])
     ;['2017', '2019', '2021', '2024'].forEach((year) =>
-      expect(within(svg as unknown as HTMLElement).getByText(year)).toBeInTheDocument()
+      expect(within(svg).getByText(year)).toBeInTheDocument()
     )
+  })
+
+  test('aucun élément focusable dans la frise (role="img" : enfants décoratifs)', () => {
+    render(<LifeCurveResultView points={POINTS} reflection={{}} />)
+    const svg = screen.getByRole('img', { name: /^Frise/ })
+    expect(svg.querySelectorAll('[tabindex], a, button')).toHaveLength(0)
   })
 
   test('légende des événements : année, libellé et niveau, triés', () => {

@@ -1,6 +1,7 @@
 import {
   LIFE_CURVE_REFLECTION_KEYS,
   LIFE_CURVE_REFLECTION_LABELS,
+  LIFE_CURVE_TEXTS,
   type LifeCurveReflectionKey,
 } from '#shared/constants/life_curve'
 import { normalizeLifeCurveEvents } from '#shared/helpers/exercise/life_curve_timeline'
@@ -37,11 +38,11 @@ export default function LifeCurveResultView({ points, reflection }: Props) {
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-muted">
             <span className="flex items-center gap-2">
               <span aria-hidden className="size-3 rounded-full bg-tint-blossom" />
-              Hauts : au-dessus de 5/10
+              {LIFE_CURVE_TEXTS.LEGEND_HIGH}
             </span>
             <span className="flex items-center gap-2">
               <span aria-hidden className="size-3 rounded-full bg-tint-sun" />
-              Bas : au-dessous de 5/10
+              {LIFE_CURVE_TEXTS.LEGEND_LOW}
             </span>
           </div>
           <LifeCurveTimeline events={events} />

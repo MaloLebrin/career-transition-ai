@@ -23,6 +23,13 @@ const EXERCISE_LABELS: Record<string, string> = {
   SKILL_MAPPING: 'Cartographie des compétences',
 }
 
+/**
+ * Cartes qui peuvent passer d'une page à l'autre : leur contenu est découpé en
+ * blocs insécables (courbe de vie : frise, puis une ligne par événement), alors
+ * qu'une carte entière dépasserait une page A4 pour une longue carrière.
+ */
+const WRAPPABLE_EXERCISE_TYPES = new Set(['LIFE_CURVE'])
+
 // ─── document ─────────────────────────────────────────────────────────────────
 
 export function SynthesisPdfDocument({
@@ -166,7 +173,11 @@ export function SynthesisPdfDocument({
               if (ex.duration) metaParts.push(`${ex.duration} min`)
 
               return (
-                <View key={ex.id} style={s.exerciseCard} wrap={false}>
+                <View
+                  key={ex.id}
+                  style={s.exerciseCard}
+                  wrap={WRAPPABLE_EXERCISE_TYPES.has(ex.type)}
+                >
                   {/* Header */}
                   <View style={s.exerciseCardHeader}>
                     <Text style={s.exerciseCardTitle}>{label}</Text>

@@ -6,9 +6,15 @@ import {
 } from '#shared/helpers/exercise/life_curve_timeline'
 
 /** Repère SVG : la frise s'étire en largeur, le texte garde une taille lisible (min-width). */
-const SIZE = { width: 720, height: 260, padLeft: 36, padRight: 36, padTop: 24, padBottom: 24 }
-/** Écart minimal entre deux années affichées sous l'axe. */
-const MIN_YEAR_GAP = 36
+const SIZE = {
+  width: 720,
+  height: 260,
+  padLeft: 36,
+  padRight: 36,
+  padTop: 24,
+  padBottom: 24,
+  minYearGap: 40,
+}
 
 const DOT_FILL: Record<LifeCurveMarker['tone'], string> = {
   high: 'var(--color-tint-blossom-ink)',
@@ -36,9 +42,6 @@ export function LifeCurveTimeline({ events }: Props) {
   if (!timeline) return null
 
   const { markers } = timeline
-  const spacing = markers.length > 1 ? markers[1].x - markers[0].x : SIZE.width
-  const yearStep = Math.max(1, Math.ceil(MIN_YEAR_GAP / spacing))
-  const showYear = (i: number) => i % yearStep === 0 || i === markers.length - 1
 
   const highs = markers.filter((m) => m.tone === 'high').length
   const lows = markers.filter((m) => m.tone === 'low').length
@@ -103,12 +106,11 @@ export function LifeCurveTimeline({ events }: Props) {
         />
         <path d={timeline.arrowPath} fill="var(--color-ink)" />
 
-        {markers.map((m, i) => (
-          <g
-            key={m.year}
-            tabIndex={0}
-            className="focus:outline-none [&:focus>circle]:stroke-accent"
-          >
+        {/* Points décoratifs pour les lecteurs d'écran (enfants d'un role="img") :
+            le détail accessible est dans la liste des événements. L'infobulle
+            <title> reste pour la souris. */}
+        {markers.map((m) => (
+          <g key={m.year}>
             <title>{markerTitle(m)}</title>
             <circle cx={m.x} cy={m.curveY} r={4} fill={DOT_FILL[m.tone]} />
             <circle
@@ -119,7 +121,7 @@ export function LifeCurveTimeline({ events }: Props) {
               stroke="var(--color-surface)"
               strokeWidth={2}
             />
-            {showYear(i) && (
+            {m.showYear && (
               <text
                 x={m.x}
                 y={m.labelSide === 'below' ? timeline.axisY + 24 : timeline.axisY - 14}

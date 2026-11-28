@@ -2,11 +2,11 @@
  * Géométrie de la frise « courbe de vie » : un axe horizontal au niveau neutre
  * (5/10), une courbe lissée qui passe par chaque événement, au-dessus de l'axe
  * pour les hauts et au-dessous pour les bas, et un point par événement sur
- * l'axe. L'amplitude est relative : le plus grand écart au neutre touche le
- * haut ou le bas de la frise. Calcul pur, partagé par la page de résultat (SVG) et le PDF de
- * synthèse (`@react-pdf/renderer`) : chacun ne fait que dessiner.
+ * l'axe. L'amplitude se cale sur le plus grand écart au neutre (au moins
+ * `LIFE_CURVE_MIN_AMPLITUDE`). Calcul pur, partagé par la page de résultat (SVG)
+ * et le PDF de synthèse (`@react-pdf/renderer`) : chacun ne fait que dessiner.
  */
-import { LIFE_CURVE_SCALE } from '../../constants/life_curve.js'
+import { LIFE_CURVE_MIN_AMPLITUDE, LIFE_CURVE_SCALE } from '../../constants/life_curve.js'
 import { monotonePath } from './monotone_path.js'
 
 export type LifeCurveEvent = { year: number; satisfaction: number; label?: string }
@@ -22,6 +22,8 @@ export type LifeCurveTimelineSize = {
   padTop: number
   /** Marge sous la valeur minimale (années sous l'axe). */
   padBottom: number
+  /** Écart minimal entre deux années écrites du même côté de l'axe. */
+  minYearGap: number
 }
 
 export type LifeCurveMarker = {
@@ -35,6 +37,8 @@ export type LifeCurveMarker = {
   tone: 'high' | 'low' | 'neutral'
   /** Côté de l'axe où écrire l'année : à l'opposé de la courbe, pour ne pas la masquer. */
   labelSide: 'above' | 'below'
+  /** L'année s'affiche (pas de chevauchement avec sa voisine du même côté). */
+  showYear: boolean
 }
 
 export type LifeCurveTimeline = {
@@ -58,8 +62,7 @@ export function normalizeLifeCurveEvents(raw: unknown): LifeCurveEvent[] {
   if (!Array.isArray(raw)) return []
   const valid = raw
     .filter(
-      (p): p is LifeCurveEvent =>
-        Number.isFinite(p?.year) && Number.isFinite(p?.satisfaction) && p !== null
+      (p): p is LifeCurveEvent => Number.isFinite(p?.year) && Number.isFinite(p?.satisfaction)
     )
     .map((p) => ({
       year: p.year,
@@ -75,6 +78,37 @@ function toneOf(satisfaction: number): LifeCurveMarker['tone'] {
   if (satisfaction > LIFE_CURVE_SCALE.NEUTRAL) return 'high'
   if (satisfaction < LIFE_CURVE_SCALE.NEUTRAL) return 'low'
   return 'neutral'
+}
+
+/**
+ * Choisit les années à écrire, de gauche à droite et côté par côté : une année
+ * s'affiche si elle est assez loin de la dernière écrite du même côté. La
+ * dernière année s'affiche toujours, quitte à masquer sa voisine trop proche.
+ * Les événements peuvent être irréguliers (2000, puis 2018 à 2024) : l'écart se
+ * mesure entre voisins, jamais sur la première paire.
+ */
+export function withYearLabels(markers: LifeCurveMarker[], minGap: number): LifeCurveMarker[] {
+  const shown = markers.map(() => false)
+  const lastShown: Record<LifeCurveMarker['labelSide'], number | null> = {
+    above: null,
+    below: null,
+  }
+  markers.forEach((m, i) => {
+    const previous = lastShown[m.labelSide]
+    if (previous === null || m.x - markers[previous].x >= minGap) {
+      shown[i] = true
+      lastShown[m.labelSide] = i
+    }
+  })
+
+  const lastIndex = markers.length - 1
+  if (lastIndex >= 0 && !shown[lastIndex]) {
+    const side = markers[lastIndex].labelSide
+    const previous = lastShown[side]
+    if (previous !== null) shown[previous] = false
+    shown[lastIndex] = true
+  }
+  return markers.map((m, i) => ({ ...m, showYear: shown[i] }))
 }
 
 export function buildLifeCurveTimeline(
@@ -94,7 +128,10 @@ export function buildLifeCurveTimeline(
   const { NEUTRAL } = LIFE_CURVE_SCALE
   const halfHeight = (height - padTop - padBottom) / 2
   const axisY = padTop + halfHeight
-  const maxDeviation = Math.max(1, ...events.map((e) => Math.abs(e.satisfaction - NEUTRAL)))
+  const maxDeviation = Math.max(
+    LIFE_CURVE_MIN_AMPLITUDE,
+    ...events.map((e) => Math.abs(e.satisfaction - NEUTRAL))
+  )
   const toY = (s: number) => axisY - ((s - NEUTRAL) / maxDeviation) * halfHeight
 
   const curvePoints = events.map((e) => ({ x: toX(e.year), y: toY(e.satisfaction) }))
@@ -116,14 +153,18 @@ export function buildLifeCurveTimeline(
     areaPath,
     highClip: { x: 0, y: 0, width, height: axisY },
     lowClip: { x: 0, y: axisY, width, height: height - axisY },
-    markers: events.map((e, i) => ({
-      year: e.year,
-      satisfaction: e.satisfaction,
-      label: e.label ?? '',
-      x: curvePoints[i].x,
-      curveY: curvePoints[i].y,
-      tone: toneOf(e.satisfaction),
-      labelSide: e.satisfaction < LIFE_CURVE_SCALE.NEUTRAL ? 'above' : 'below',
-    })),
+    markers: withYearLabels(
+      events.map((e, i) => ({
+        year: e.year,
+        satisfaction: e.satisfaction,
+        label: e.label ?? '',
+        x: curvePoints[i].x,
+        curveY: curvePoints[i].y,
+        tone: toneOf(e.satisfaction),
+        labelSide: e.satisfaction < NEUTRAL ? 'above' : 'below',
+        showYear: false,
+      })),
+      size.minYearGap
+    ),
   }
 }

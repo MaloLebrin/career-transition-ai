@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
+  LIFE_CURVE_MIN_AMPLITUDE,
+  LIFE_CURVE_TEXTS,
   LIFE_CURVE_REFLECTION_KEYS,
   LIFE_CURVE_REFLECTION_LABELS,
   LIFE_CURVE_SCALE,
@@ -23,5 +25,20 @@ describe('shared/constants/life_curve', () => {
     Object.values(LIFE_CURVE_REFLECTION_LABELS).forEach((label) =>
       expect(label.trim()).not.toBe('')
     )
+  })
+
+  test('amplitude plancher : un écart réel inférieur ne remplit pas la frise', () => {
+    expect(LIFE_CURVE_MIN_AMPLITUDE).toBeGreaterThan(0)
+    expect(LIFE_CURVE_MIN_AMPLITUDE).toBeLessThanOrEqual(
+      LIFE_CURVE_SCALE.MAX - LIFE_CURVE_SCALE.NEUTRAL
+    )
+  })
+
+  test('légende dérivée du niveau neutre de l’échelle', () => {
+    expect(LIFE_CURVE_TEXTS).toEqual({
+      LEGEND_HIGH: 'Hauts : au-dessus de 5/10',
+      LEGEND_LOW: 'Bas : au-dessous de 5/10',
+      UNLABELED_EVENT: 'Sans libellé',
+    })
   })
 })
