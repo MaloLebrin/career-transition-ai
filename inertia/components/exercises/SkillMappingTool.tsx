@@ -1,24 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react'
+import type {
+  ExerciseToolProps,
+  SkillMappingDraft,
+  SkillMappingResult,
+  SkillMappingRow,
+} from '#shared/types/exercise/tool'
+import React, { useState } from 'react'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import { extractSkillMappingFromText } from '../../helpers/ai'
-import { ExerciseDraft, Experience } from '../../types'
+import { Experience } from '../../types'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
-interface SkillRow {
-  id: string
-  mission: string
-  activity: string
-  proof: string
-}
+type SkillRow = SkillMappingRow
 
-interface Props {
-  onSave: (
-    data: { mapping: SkillRow[]; experienceId: string; jobTitle: string },
-    duration: number
-  ) => void
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
+type Props = ExerciseToolProps<SkillMappingResult, SkillMappingDraft> & {
   experiences: Experience[]
 }
 
@@ -33,39 +30,23 @@ const SkillMappingTool: React.FC<Props> = ({
   const [rows, setRows] = useState<SkillRow[]>([])
   const [narrative, setNarrative] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
-  const startTimeRef = useRef<number>(Date.now())
-  const onSaveDraftRef = useRef(onSaveDraft)
-  const didInitRef = useRef(false)
+  const timer = useExerciseTimer()
+  const draft = useExerciseDraft<SkillMappingDraft>(
+    { rows, selectedExpId, step, narrative },
+    onSaveDraft,
+    {
+      initialDraftPromise,
+      onHydrate: (data) => {
+        if (!data) return
+        setRows(data.rows || [])
+        setSelectedExpId(data.selectedExpId || '')
+        setStep(data.step || 1)
+        setNarrative(data.narrative || '')
+      },
+    }
+  )
 
   const selectedExp = experiences.find((e) => e.id === selectedExpId)
-
-  useEffect(() => {
-    let cancelled = false
-    if (didInitRef.current) return
-    didInitRef.current = true
-
-    initialDraftPromise?.then((draft) => {
-      if (cancelled) return
-      if (draft && (draft as any).data) {
-        setRows((draft as any).data.rows || [])
-        setSelectedExpId((draft as any).data.selectedExpId || '')
-        setStep((draft as any).data.step || 1)
-        setNarrative((draft as any).data.narrative || '')
-      }
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    onSaveDraftRef.current = onSaveDraft
-  }, [onSaveDraft])
-
-  useEffect(() => {
-    Promise.resolve(onSaveDraftRef.current({ rows, selectedExpId, step, narrative })).catch(() => {})
-  }, [rows, selectedExpId, step, narrative])
 
   const handleProcessNarrative = async () => {
     if (!narrative.trim()) return
@@ -102,14 +83,14 @@ const SkillMappingTool: React.FC<Props> = ({
   }
 
   const handleSave = () => {
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    draft.cancel()
     onSave(
       {
         mapping: rows,
         experienceId: selectedExpId,
         jobTitle: selectedExp?.title || 'Analyse de récit',
       },
-      duration
+      timer.elapsedSeconds()
     )
   }
 

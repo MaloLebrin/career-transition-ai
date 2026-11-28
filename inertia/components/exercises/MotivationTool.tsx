@@ -1,27 +1,26 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import type {
+  ExerciseToolProps,
+  MotivationDraft,
+  MotivationResult,
+} from '#shared/types/exercise/tool'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   emptyMotivationMatrix,
   motivationResumeState,
 } from '#shared/helpers/exercise/motivation_resume'
 import { MOTIVATIONS } from '../../constants/motivations'
-import { ExerciseDraft } from '../../types'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
-interface Props {
-  onSave: (
-    results: { ranked: string[]; scores: Record<string, number>; matrix: (number | null)[][] },
-    duration: number
-  ) => void
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
-}
+type Props = ExerciseToolProps<MotivationResult, MotivationDraft>
 
 const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
   const [isStarted, setIsStarted] = useState(false)
   const [currentI, setCurrentI] = useState(0)
   const [currentJ, setCurrentJ] = useState(1)
-  const startTimeRef = useRef<number | null>(null)
+  const timer = useExerciseTimer({ autoStart: false })
   const [matrix, setMatrix] = useState<(number | null)[][]>(emptyMotivationMatrix)
 
   const totalDuels = (22 * 21) / 2
@@ -43,31 +42,26 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
     return 'Encore quelques duels...'
   }, [progressPercent])
 
-  useEffect(() => {
-    if (initialDraftPromise) {
-      initialDraftPromise.then((draft) => {
-        // Brouillon en cours : reprise au prochain duel. Résultat terminé ou données
-        // invalides : écran d'accueil, l'exercice repart d'une matrice vide.
-        const resume = motivationResumeState(draft?.data)
-        if (!resume) return
-        setMatrix(resume.matrix)
-        setCurrentI(resume.currentI)
-        setCurrentJ(resume.currentJ)
-        setIsStarted(true)
-        startTimeRef.current = Date.now()
-      })
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isStarted) {
-      onSaveDraft({ matrix, currentI, currentJ })
-    }
-  }, [matrix, currentI, currentJ, isStarted])
+  const draft = useExerciseDraft<MotivationDraft>({ matrix, currentI, currentJ }, onSaveDraft, {
+    initialDraftPromise,
+    // Rien n'est enregistré avant le premier duel, ni après le dernier (résultat final).
+    enabled: isStarted && matrix[20]?.[21] == null,
+    onHydrate: (data) => {
+      // Brouillon en cours : reprise au prochain duel. Résultat terminé ou données
+      // invalides : écran d'accueil, l'exercice repart d'une matrice vide.
+      const resume = motivationResumeState(data)
+      if (!resume) return
+      setMatrix(resume.matrix)
+      setCurrentI(resume.currentI)
+      setCurrentJ(resume.currentJ)
+      setIsStarted(true)
+      timer.restart()
+    },
+  })
 
   const handleStart = () => {
     setIsStarted(true)
-    startTimeRef.current = Date.now()
+    timer.restart()
   }
 
   const handleDecision = (winnerIdx: number) => {
@@ -86,9 +80,8 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
   }
 
   const calculateAndSave = (finalMatrix: (number | null)[][]) => {
-    const duration = startTimeRef.current
-      ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-      : 0
+    draft.cancel()
+    const duration = timer.elapsedSeconds()
     const totals: Record<number, number> = {}
     MOTIVATIONS.forEach((_, idx) => (totals[idx] = 0))
 

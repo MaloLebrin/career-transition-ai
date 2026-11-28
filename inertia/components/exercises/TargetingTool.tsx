@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import { suggestTargets } from '../../helpers/ai'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -21,7 +22,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
     null
   )
   const [isSuggesting, setIsSuggesting] = useState(false)
-  const startTimeRef = useRef<number>(Date.now())
+  const timer = useExerciseTimer()
 
   const handleAISuggest = async () => {
     if (!employeeProfile) return
@@ -63,7 +64,7 @@ const TargetingTool: React.FC<Props> = ({ onSave, employeeProfile }) => {
       alert('Veuillez ajouter au moins une cible avec un nom.')
       return
     }
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    const duration = timer.elapsedSeconds()
     onSave({ targets: validTargets }, duration)
   }
 

@@ -1,6 +1,7 @@
 import { afterEach, describe, test, expect, vi } from 'vitest'
 import { render, screen, act, waitFor, fireEvent } from '@testing-library/react'
 import CircleOfControlTool from '../../../inertia/components/exercises/CircleOfControlTool'
+import { EXERCISE_DRAFT_DEBOUNCE_MS } from '../../../inertia/hooks/use_exercise_draft'
 
 describe('CircleOfControlTool', () => {
   const onSave = vi.fn()
@@ -107,6 +108,9 @@ describe('CircleOfControlTool — tri complet', () => {
     expect(screen.getByText('Analyse terminée !')).toBeInTheDocument()
     expect(screen.getByText("Zones d'Influence").previousSibling).toHaveTextContent('2')
     expect(screen.getByText('Zones de Lâcher-prise').previousSibling).toHaveTextContent('18')
+    act(() => {
+      vi.advanceTimersByTime(EXERCISE_DRAFT_DEBOUNCE_MS)
+    })
     expect(onSaveDraft).toHaveBeenLastCalledWith(expect.objectContaining({ gameState: 'summary' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Transmettre le diagnostic' }))

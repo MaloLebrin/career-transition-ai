@@ -9,7 +9,7 @@ describe('ValuesTool', () => {
     const onSave = vi.fn()
     const onSaveDraft = vi.fn()
 
-    render(<ValuesTool onSave={onSave} onSaveDraft={onSaveDraft} />)
+    const { unmount } = render(<ValuesTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     expect(screen.getByText(/Classement des valeurs/i)).toBeInTheDocument()
     expect(screen.getByText(/portrait et la situation/i)).toBeInTheDocument()
@@ -25,12 +25,20 @@ describe('ValuesTool', () => {
       screen.getByText(first.label).closest('button')!.click()
     })
 
-    expect(onSaveDraft).toHaveBeenCalled()
+    // Brouillon différé (#170) : rien n'est encore parti.
+    expect(onSaveDraft).not.toHaveBeenCalled()
     expect(screen.getByText(/Votre hiérarchie \(1\/10\)/i)).toBeInTheDocument()
 
     const ranked = screen.getByTestId(`ranked-value-${first.label}`)
     expect(within(ranked).getByText(first.definition)).toBeInTheDocument()
     expect(onSave).not.toHaveBeenCalled()
+
+    // Le brouillon en attente part en quittant l'exercice.
+    unmount()
+    expect(onSaveDraft).toHaveBeenCalledTimes(1)
+    expect(onSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedValues: [first.label], step: 1 })
+    )
   })
 
   test('allows reordering ranked values via drag and drop', () => {
@@ -74,6 +82,25 @@ describe('ValuesTool — parcours complet', () => {
       await user.click(screen.getByText(value.label).closest('button')!)
     }
   }
+
+  test('« Enregistrer » abandonne le brouillon en attente : aucun POST de brouillon après le résultat (#170)', () => {
+    const onSave = vi.fn()
+    const onSaveDraft = vi.fn()
+    const { unmount } = render(<ValuesTool onSave={onSave} onSaveDraft={onSaveDraft} />)
+
+    for (const value of SCHWARTZ_VALUES) {
+      fireEvent.click(screen.getByText(value.label).closest('button')!)
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Suivant : Figures marquantes' }))
+    fireEvent.change(screen.getAllByPlaceholderText('Nom de la personne')[0], {
+      target: { value: 'Simone Veil' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer mon profil de valeurs' }))
+    unmount()
+
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSaveDraft).not.toHaveBeenCalled()
+  })
 
   test('retirer une valeur classée la remet dans la liste à classer', async () => {
     const user = userEvent.setup()
@@ -127,9 +154,18 @@ describe('ValuesTool — parcours complet', () => {
     await user.type(values[0], 'Persévérance')
     await user.type(names[2], 'Mandela')
 
-    expect(onSaveDraft).toHaveBeenLastCalledWith(
-      expect.objectContaining({ step: 2, selectedValues: SCHWARTZ_VALUES.map((v) => v.label) })
+    // Toute la saisie part en un ou deux brouillons différés, jamais un par frappe (#170).
+    await waitFor(
+      () =>
+        expect(onSaveDraft).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            step: 2,
+            selectedValues: SCHWARTZ_VALUES.map((v) => v.label),
+          })
+        ),
+      { timeout: 4000 }
     )
+    expect(onSaveDraft.mock.calls.length).toBeLessThanOrEqual(3)
 
     await user.click(screen.getByRole('button', { name: 'Retour au classement' }))
     await user.click(screen.getByRole('button', { name: 'Suivant : Figures marquantes' }))

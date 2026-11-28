@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ExerciseDraft } from '../../types'
+import type { DiscDraft, ExerciseToolProps } from '#shared/types/exercise/tool'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -11,80 +13,51 @@ import {
   type DiscSelection,
 } from './disc/disc_scoring'
 
-interface Props {
-  onSave: (data: any, duration: number) => void
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
-  initialResultData?: any
+type DiscToolDraft = DiscDraft<DiscSelection, DiscComputation>
+
+type Props = ExerciseToolProps<Record<string, unknown>, DiscToolDraft> & {
+  /** Résultat terminé : repris pour réafficher la synthèse quand il contient les sélections. */
+  initialResultData?: Partial<DiscToolDraft> | null
 }
 
-const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, initialResultData }) => {
+function isSelections(value: unknown): value is Record<number, DiscSelection> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+const DISCTool: React.FC<Props> = ({
+  onSave,
+  onSaveDraft,
+  initialDraftPromise,
+  initialResultData,
+}) => {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [selections, setSelections] = useState<Record<number, DiscSelection>>({})
   const [resultPreview, setResultPreview] = useState<DiscComputation | null>(null)
-  const startTimeRef = useRef<number>(Date.now())
-  const hasInitializedRef = useRef(false)
-  const onSaveDraftRef = useRef(onSaveDraft)
+  const timer = useExerciseTimer()
 
   const blocksCount = DISC_BLOCKS.length
 
-  useEffect(() => {
-    onSaveDraftRef.current = onSaveDraft
-  }, [onSaveDraft])
+  const applyInitialData = (data: Partial<DiscToolDraft> | null | undefined) => {
+    if (isSelections(data?.selections)) setSelections(data.selections)
 
-  useEffect(() => {
-    if (hasInitializedRef.current) return
-    hasInitializedRef.current = true
+    const idx = data?.currentIdx
+    if (typeof idx === 'number' && Number.isFinite(idx) && idx >= 0) setCurrentIdx(idx)
 
-    const applyInitialData = (data: any) => {
-      const selectionsCandidate = data?.selections
-      const currentIdxCandidate = data?.currentIdx
-      const resultCandidate = data?.resultPreview
-
-      if (
-        selectionsCandidate &&
-        typeof selectionsCandidate === 'object' &&
-        !Array.isArray(selectionsCandidate)
-      ) {
-        setSelections(selectionsCandidate)
-      }
-
-      if (
-        typeof currentIdxCandidate === 'number' &&
-        Number.isFinite(currentIdxCandidate) &&
-        currentIdxCandidate >= 0
-      ) {
-        setCurrentIdx(currentIdxCandidate)
-      }
-
-      if (resultCandidate && typeof resultCandidate === 'object') {
-        setResultPreview(resultCandidate)
-      }
+    if (data?.resultPreview && typeof data.resultPreview === 'object') {
+      setResultPreview(data.resultPreview)
     }
+  }
 
-    if (initialDraftPromise) {
-      initialDraftPromise.then((draft) => {
-        const data = (draft as any)?.data
-        const hasSelections = Boolean(data?.selections && typeof data.selections === 'object')
-
-        if (hasSelections) {
-          applyInitialData(data)
-          return
-        }
-
-        // Fallback: completed legacy/new result data (if it contains selections)
-        applyInitialData(initialResultData)
-      })
-      return
+  const draft = useExerciseDraft<DiscToolDraft>(
+    { selections, currentIdx, resultPreview },
+    onSaveDraft,
+    {
+      initialDraftPromise,
+      // Sans brouillon exploitable : on retombe sur le résultat terminé (s'il contient les sélections).
+      onHydrate: (data) =>
+        applyInitialData(data && isSelections(data.selections) ? data : initialResultData),
     }
-
-    // No draft available: try completed result data
-    applyInitialData(initialResultData)
-  }, [initialDraftPromise, initialResultData])
-
-  useEffect(() => {
-    onSaveDraftRef.current({ selections, currentIdx, resultPreview })
-  }, [selections, currentIdx, resultPreview])
+  )
 
   const handleSelect = (trait: DiscSelection['most'], type: 'most' | 'least') => {
     const currentSelection = selections[currentIdx] || { most: '', least: '' }
@@ -110,7 +83,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
 
   const saveResults = useCallback(() => {
     if (!resultPreview) return
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    draft.cancel()
 
     onSave(
       {
@@ -129,9 +102,9 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
         currentIdx,
         version: resultPreview.version,
       },
-      duration
+      timer.elapsedSeconds()
     )
-  }, [onSave, resultPreview, selections, currentIdx])
+  }, [onSave, resultPreview, selections, currentIdx, draft, timer])
 
   const currentBlock = DISC_BLOCKS[currentIdx]
 
@@ -176,7 +149,7 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
                           setSelections({})
                           setCurrentIdx(0)
                           setResultPreview(null)
-                          startTimeRef.current = Date.now()
+                          timer.restart()
                         }}
                         variant="outline"
                         size="sm"
@@ -195,8 +168,8 @@ const DISCTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise, i
             <>
               <p className="text-slate-500 mb-10 font-medium">
                 Choisissez la proposition qui vous ressemble{' '}
-                <span className="text-violet-600 font-black">LE PLUS</span> et celle qui vous ressemble{' '}
-                <span className="text-rose-500 font-black">LE MOINS</span>.
+                <span className="text-violet-600 font-black">LE PLUS</span> et celle qui vous
+                ressemble <span className="text-rose-500 font-black">LE MOINS</span>.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

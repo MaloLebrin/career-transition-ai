@@ -34,7 +34,7 @@ describe('MotivationTool', () => {
     const onSave = vi.fn()
     const onSaveDraft = vi.fn()
 
-    render(<MotivationTool onSave={onSave} onSaveDraft={onSaveDraft} />)
+    const { unmount } = render(<MotivationTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     // Démarrer l'exercice
     const startButton = screen.getByRole('button', { name: /Commencer l'analyse/i })
@@ -50,8 +50,12 @@ describe('MotivationTool', () => {
       firstOption.click()
     })
 
-    expect(onSaveDraft).toHaveBeenCalled()
+    // Brouillon différé (#170), envoyé au plus tard en quittant l'exercice.
+    expect(onSaveDraft).not.toHaveBeenCalled()
     expect(onSave).not.toHaveBeenCalled()
+    unmount()
+    expect(onSaveDraft).toHaveBeenCalledTimes(1)
+    expect(onSaveDraft).toHaveBeenCalledWith(expect.objectContaining({ currentI: 0, currentJ: 2 }))
   })
 
   // Non-régression : un exercice terminé était repris comme un brouillon, d'où

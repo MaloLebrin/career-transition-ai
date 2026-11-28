@@ -24,7 +24,9 @@ describe('SkillMappingTool', () => {
       },
     ] as any
 
-    render(<SkillMappingTool onSave={onSave} onSaveDraft={onSaveDraft} experiences={experiences} />)
+    const { unmount } = render(
+      <SkillMappingTool onSave={onSave} onSaveDraft={onSaveDraft} experiences={experiences} />
+    )
 
     expect(screen.getByText(/Racontez votre parcours/i)).toBeInTheDocument()
 
@@ -52,9 +54,16 @@ describe('SkillMappingTool', () => {
       expect(screen.getByText(/Validation des Acquis/i)).toBeInTheDocument()
     })
 
-    // Le draft doit avoir été sauvegardé au moins une fois (useEffect)
-    expect(onSaveDraft).toHaveBeenCalled()
+    // Brouillon différé (#170) : envoyé une seule fois, au plus tard en quittant l'exercice.
     expect(onSave).not.toHaveBeenCalled()
+    unmount()
+    expect(onSaveDraft).toHaveBeenCalledTimes(1)
+    expect(onSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        step: 2,
+        narrative: "Dans mon dernier poste, j'étais responsable de...",
+      })
+    )
   })
 
   test('allows adding a manual row and saving the mapping', async () => {

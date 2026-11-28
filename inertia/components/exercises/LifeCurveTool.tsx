@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import type {
+  ExerciseToolProps,
+  LifeCurveDraft,
+  LifeCurvePoint,
+  LifeCurveReflection,
+  LifeCurveResult,
+} from '#shared/types/exercise/tool'
+import React, { useState } from 'react'
 import {
   CartesianGrid,
   Line,
@@ -9,34 +16,26 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { ExerciseDraft } from '../../types'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
-interface Point {
-  year: number
-  satisfaction: number // 1 to 10
-  label: string
-}
+type Point = LifeCurvePoint
+type Reflection = LifeCurveReflection
 
-interface Reflection {
-  form: string
-  mostlySatisfied: string
-  amplitude: string
-  explanation: string
-  surprise: string
-  coherence: string
-}
+type Props = ExerciseToolProps<LifeCurveResult, LifeCurveDraft>
 
-interface Props {
-  onSave: (data: { points: Point[]; reflection: Reflection }, duration: number) => void
-  // Added missing draft props
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
+const EMPTY_REFLECTION: Reflection = {
+  form: '',
+  mostlySatisfied: '',
+  amplitude: '',
+  explanation: '',
+  surprise: '',
+  coherence: '',
 }
 
 const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
-  const [draftHydrated, setDraftHydrated] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
   const [points, setPoints] = useState<Point[]>([])
   const [newPoint, setNewPoint] = useState<Point>({
@@ -44,78 +43,20 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
     satisfaction: 5,
     label: '',
   })
-  const [reflection, setReflection] = useState<Reflection>({
-    form: '',
-    mostlySatisfied: '',
-    amplitude: '',
-    explanation: '',
-    surprise: '',
-    coherence: '',
+  const [reflection, setReflection] = useState<Reflection>(EMPTY_REFLECTION)
+  const timer = useExerciseTimer()
+  // Hydratation unique (la page recrée la promesse à chaque rendu) ; brouillon
+  // enregistré uniquement pendant l'étape 1.
+  const draft = useExerciseDraft<LifeCurveDraft>({ points, reflection, step }, onSaveDraft, {
+    initialDraftPromise,
+    enabled: step === 1,
+    onHydrate: (data) => {
+      if (!data) return
+      setPoints(data.points || [])
+      setReflection(data.reflection || EMPTY_REFLECTION)
+      setStep(data.step || 1)
+    },
   })
-  const startTimeRef = useRef<number>(Date.now())
-  const onSaveDraftRef = useRef(onSaveDraft)
-  const lastAutoSavePayloadRef = useRef<string | null>(null)
-  const draftAppliedRef = useRef(false)
-
-  // Hydrate once. The page passes a new Promise on every render (autosave, Inertia
-  // props). Re-applying that draft would wipe points the user just added.
-  useEffect(() => {
-    let cancelled = false
-    if (draftAppliedRef.current) {
-      setDraftHydrated(true)
-      return () => {
-        cancelled = true
-      }
-    }
-    if (!initialDraftPromise) {
-      draftAppliedRef.current = true
-      setDraftHydrated(true)
-      return () => {
-        cancelled = true
-      }
-    }
-    initialDraftPromise
-      .then((draft) => {
-        if (cancelled || draftAppliedRef.current) return
-        draftAppliedRef.current = true
-        if (draft && draft.data) {
-          setPoints(draft.data.points || [])
-          setReflection(
-            draft.data.reflection || {
-              form: '',
-              mostlySatisfied: '',
-              amplitude: '',
-              explanation: '',
-              surprise: '',
-              coherence: '',
-            }
-          )
-          setStep(draft.data.step || 1)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setDraftHydrated(true)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [initialDraftPromise])
-
-  // Auto-save draft (uniquement pendant l'étape 1)
-  useEffect(() => {
-    onSaveDraftRef.current = onSaveDraft
-  }, [onSaveDraft])
-
-  useEffect(() => {
-    if (step !== 1 || !draftHydrated) return
-
-    const payload = { points, reflection, step }
-    const serialized = JSON.stringify(payload)
-    if (serialized === lastAutoSavePayloadRef.current) return
-    lastAutoSavePayloadRef.current = serialized
-
-    onSaveDraftRef.current(payload)
-  }, [points, reflection, step, draftHydrated])
 
   const handleAddPoint = () => {
     if (!newPoint.label) return
@@ -131,8 +72,8 @@ const LifeCurveTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromi
   const sortedData = [...points].sort((a, b) => a.year - b.year)
 
   const handleSave = () => {
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
-    onSave({ points: sortedData, reflection }, duration)
+    draft.cancel()
+    onSave({ points: sortedData, reflection }, timer.elapsedSeconds())
   }
 
   return (

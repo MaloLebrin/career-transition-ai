@@ -1,14 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { ExerciseDraft } from '../../types'
+import type {
+  CircleOfControlDecision,
+  CircleOfControlDraft,
+  CircleOfControlGameState,
+  CircleOfControlResult,
+  ExerciseToolProps,
+} from '#shared/types/exercise/tool'
+import React, { useEffect, useState } from 'react'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
-interface Props {
-  onSave: (data: any, duration: number) => void
-  // Added missing draft props
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
-}
+type Props = ExerciseToolProps<CircleOfControlResult, CircleOfControlDraft>
 
 const CONTROL_ITEMS = [
   { id: '1', label: "L'opinion des autres" },
@@ -34,59 +37,31 @@ const CONTROL_ITEMS = [
 ]
 
 const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
-  const [gameState, setGameState] = useState<'intro' | 'playing' | 'summary'>('intro')
+  const [gameState, setGameState] = useState<CircleOfControlGameState>('intro')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [decisions, setDecisions] = useState<Record<string, 'inside' | 'outside'>>({})
+  const [decisions, setDecisions] = useState<CircleOfControlDraft['decisions']>({})
   const [animationDir, setAnimationDir] = useState<'left' | 'right' | null>(null)
-  const startTimeRef = useRef<number>(Date.now())
-  const onSaveDraftRef = useRef(onSaveDraft)
-  const didInitRef = useRef(false)
-  const lastSavedKeyRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    onSaveDraftRef.current = onSaveDraft
-  }, [onSaveDraft])
-
-  // Load draft on mount
-  useEffect(() => {
-    if (initialDraftPromise) {
-      initialDraftPromise.then((draft) => {
-        if (didInitRef.current) return
-        didInitRef.current = true
-
-        if (draft && draft.data) {
-          setDecisions(draft.data.decisions || {})
-          setCurrentIndex(draft.data.currentIndex || 0)
-          setGameState(draft.data.gameState || 'intro')
-        } else {
-          // still mark init complete to avoid loops when parent recreates promise
-        }
-      })
+  const timer = useExerciseTimer()
+  const draft = useExerciseDraft<CircleOfControlDraft>(
+    { decisions, currentIndex, gameState },
+    onSaveDraft,
+    {
+      initialDraftPromise,
+      onHydrate: (data) => {
+        if (!data) return
+        setDecisions(data.decisions || {})
+        setCurrentIndex(data.currentIndex || 0)
+        setGameState(data.gameState || 'intro')
+      },
     }
-  }, [initialDraftPromise])
-
-  // Auto-save draft
-  useEffect(() => {
-    if (!didInitRef.current) return
-
-    const key = JSON.stringify({
-      gameState,
-      currentIndex,
-      decisions,
-    })
-
-    if (lastSavedKeyRef.current === key) return
-    lastSavedKeyRef.current = key
-
-    onSaveDraftRef.current({ decisions, currentIndex, gameState })
-  }, [decisions, currentIndex, gameState])
+  )
 
   const handleStart = () => {
-    startTimeRef.current = Date.now()
+    timer.restart()
     setGameState('playing')
   }
 
-  const handleDecision = (type: 'inside' | 'outside') => {
+  const handleDecision = (type: CircleOfControlDecision) => {
     if (animationDir) return
 
     setAnimationDir(type === 'outside' ? 'left' : 'right')
@@ -123,12 +98,12 @@ const CircleOfControlTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraf
   }, [gameState, animationDir, currentIndex])
 
   const handleSave = () => {
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    draft.cancel()
     const inControl = CONTROL_ITEMS.filter((i) => decisions[i.id] === 'inside').map((i) => i.label)
     const outControl = CONTROL_ITEMS.filter((i) => decisions[i.id] === 'outside').map(
       (i) => i.label
     )
-    onSave({ inControl, outControl }, duration)
+    onSave({ inControl, outControl }, timer.elapsedSeconds())
   }
 
   if (gameState === 'intro') {

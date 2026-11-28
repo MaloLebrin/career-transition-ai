@@ -18,8 +18,11 @@ import limiter from '@adonisjs/limiter/services/main'
 import type { errors } from '@adonisjs/limiter'
 import type { HttpContext } from '@adonisjs/core/http'
 
-/** Quota de `throttleExerciseSave` (requêtes par minute et par compte). */
-export const EXERCISE_SAVE_LIMIT = 60
+/** Quota de `throttleExerciseDraft` (brouillons, requêtes par minute et par compte). */
+export const EXERCISE_DRAFT_LIMIT = 60
+
+/** Quota de `throttleExerciseResult` (résultats finaux, requêtes par minute et par compte). */
+export const EXERCISE_RESULT_LIMIT = 20
 
 type ThrottleException = InstanceType<typeof errors.E_TOO_MANY_REQUESTS>
 
@@ -165,15 +168,31 @@ export const throttleCheckout = limiter.define('checkout', ({ auth, request }: H
 })
 
 /**
- * Sauvegarde d'exercice candidat (brouillon et résultat) : écritures en base
- * et, à la complétion, mise en file d'une analyse IA (quota et facturation).
- * 60/min par compte — l'enregistrement automatique reste très en deçà.
+ * Brouillon d'exercice candidat (enregistrement automatique, différé côté
+ * navigateur par `useExerciseDraft`, #170) : 60/min par compte. Compteur
+ * distinct de `throttleExerciseResult` : l'autosave n'épuise jamais le quota
+ * du clic « Terminer ».
  */
-export const throttleExerciseSave = limiter.define(
-  'exercise_save',
+export const throttleExerciseDraft = limiter.define(
+  'exercise_draft',
   ({ auth, request }: HttpContext) => {
     return limiter
-      .allowRequests(EXERCISE_SAVE_LIMIT)
+      .allowRequests(EXERCISE_DRAFT_LIMIT)
+      .every('1 minute')
+      .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
+      .limitExceeded(frenchMessage)
+  }
+)
+
+/**
+ * Résultat final d'exercice candidat : écriture en base et mise en file d'une
+ * analyse IA (quota et facturation). 20/min par compte, compteur propre (#170).
+ */
+export const throttleExerciseResult = limiter.define(
+  'exercise_result',
+  ({ auth, request }: HttpContext) => {
+    return limiter
+      .allowRequests(EXERCISE_RESULT_LIMIT)
       .every('1 minute')
       .usingKey(auth.user ? `user_${auth.user.id}` : clientIp(request))
       .limitExceeded(frenchMessage)
