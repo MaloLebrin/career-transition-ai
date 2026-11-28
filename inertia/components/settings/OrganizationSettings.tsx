@@ -23,12 +23,15 @@ interface Props {
   /** Passed from dashboard/Settings page (server-rendered). When omitted, loads via organizationId + API. */
   organization?: Organization
   members?: Advisor[]
+  /** Nouvelle adresse e-mail en attente de confirmation (#143). */
+  pendingEmail?: string | null
   onBack: () => void
 }
 
 const OrganizationSettings: React.FC<Props> = ({
   organization: organizationProp,
   members: membersProp,
+  pendingEmail = null,
   onBack,
 }) => {
   const { user } = useAuth()
@@ -92,7 +95,11 @@ const OrganizationSettings: React.FC<Props> = ({
               </span>
               Mon Profil Personnel
             </h3>
-            <ProfileForm user={user as UserSession} setSuccess={setSuccess} />
+            <ProfileForm
+              user={user as UserSession}
+              setSuccess={setSuccess}
+              pendingEmail={pendingEmail}
+            />
           </Card>
 
           <Card className="space-y-8 p-10 border-2 border-violet-100 bg-white">

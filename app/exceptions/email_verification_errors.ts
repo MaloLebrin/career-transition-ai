@@ -13,3 +13,13 @@ export class EmailAlreadyVerifiedError extends DomainException {
     super(message, { status: 409, code: 'E_EMAIL_ALREADY_VERIFIED' })
   }
 }
+
+/**
+ * Changement d'e-mail (#143) : la nouvelle adresse appartient déjà à un autre
+ * compte (à la demande, ou prise entre l'envoi du lien et le clic) → 409.
+ */
+export class EmailChangeConflictError extends DomainException {
+  constructor(message: string = 'Cette adresse e-mail est déjà utilisée par un autre compte.') {
+    super(message, { status: 409, code: 'E_EMAIL_CHANGE_CONFLICT' })
+  }
+}

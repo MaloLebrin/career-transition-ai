@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import config from '@adonisjs/core/services/config'
 import InertiaMiddleware from '#middleware/inertia_middleware'
+import { IMPERSONATOR_SESSION_KEY } from '#services/impersonation_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import { EmployeeFactory } from '#database/factories/employee_factory'
 import { NotificationFactory } from '#database/factories/notification_factory'
@@ -29,6 +30,7 @@ function makeShareCtx(
     flash?: Record<string, unknown>
     csrfToken?: string
     withSession?: boolean
+    sessionValues?: Record<string, unknown>
   } = {}
 ) {
   const flash = options.flash ?? {}
@@ -39,6 +41,7 @@ function makeShareCtx(
           flashMessages: {
             get: (key: string, fallback?: unknown) => flash[key] ?? fallback,
           },
+          get: (key: string) => options.sessionValues?.[key],
         }
   return {
     auth: options.user === undefined ? undefined : { user: options.user },
@@ -309,6 +312,30 @@ test.group('InertiaMiddleware.share', () => {
     })
     const guestProps = await share(makeShareCtx())
     assert.deepEqual(guestProps.billing, props.billing)
+  })
+
+  test('prop impersonation (#143) : nom du super admin pendant une prise d’identité seulement', async ({
+    assert,
+  }) => {
+    const superAdmin = await createSuperAdmin()
+    const advisor = await createAdvisor()
+
+    const impersonating = await share(
+      makeShareCtx({
+        user: advisor,
+        sessionValues: { [IMPERSONATOR_SESSION_KEY]: superAdmin.id },
+      })
+    )
+    assert.deepEqual(impersonating.impersonation, { impersonatorName: superAdmin.name })
+
+    const normal = await share(makeShareCtx({ user: advisor }))
+    assert.notProperty(normal, 'impersonation')
+
+    // Clé orpheline sans session ouverte : aucun bandeau.
+    const guest = await share(
+      makeShareCtx({ sessionValues: { [IMPERSONATOR_SESSION_KEY]: superAdmin.id } })
+    )
+    assert.notProperty(guest, 'impersonation')
   })
 
   test('conseiller et invité : pas de prop entitlement', async ({ assert }) => {

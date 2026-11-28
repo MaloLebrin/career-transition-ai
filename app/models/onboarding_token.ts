@@ -26,6 +26,14 @@ export default class OnboardingToken extends BaseModel {
    */
   declare plainToken?: string
 
+  /**
+   * Changement d'e-mail (#143) : adresse à laquelle le lien a été envoyé, qui
+   * remplace celle du compte au clic. `null` pour un lien d'onboarding ou de
+   * vérification de l'adresse actuelle.
+   */
+  @column()
+  declare newEmail: string | null
+
   @column.dateTime()
   declare expiresAt: DateTime
 
@@ -45,7 +53,7 @@ export default class OnboardingToken extends BaseModel {
 
   static async createForUser(
     userId: number,
-    options: { expiresInDays?: number; client?: QueryClientContract } = {}
+    options: { expiresInDays?: number; newEmail?: string; client?: QueryClientContract } = {}
   ): Promise<OnboardingToken> {
     const plainToken = randomBytes(32).toString('hex')
     const record = await OnboardingToken.create(
@@ -54,6 +62,7 @@ export default class OnboardingToken extends BaseModel {
         token: OnboardingToken.hash(plainToken),
         expiresAt: DateTime.now().plus({ days: options.expiresInDays ?? 7 }),
         usedAt: null,
+        newEmail: options.newEmail ?? null,
       },
       { client: options.client }
     )

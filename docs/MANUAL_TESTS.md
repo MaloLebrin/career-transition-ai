@@ -301,8 +301,21 @@ Objectif : couvrir, par des scénarios concrets, l’ensemble des fonctionnalit�
 - **Impersonation**
   - **Étapes**
     1. Sur une organisation, utiliser l’action d’impersonation.
+    2. Cliquer « Revenir à mon compte » dans le bandeau bleu en haut de page (#143).
   - **Vérifications**
     - L’interface se comporte comme si on était admin de ce cabinet (accès à ses réglages, etc.).
+    - Le bandeau « Vous naviguez en tant que … » est visible sur toutes les pages du tableau de bord.
+    - Le retour rouvre l’espace super admin sans redemander le mot de passe ; le bandeau disparaît.
+    - Prendre l’identité d’un autre super admin ou d’un compte désactivé est refusé.
+
+- **Changement d’e-mail (conseiller / admin, #143)**
+  - **Étapes**
+    1. Réglages → « Mon profil personnel » : saisir une nouvelle adresse, enregistrer.
+    2. Ouvrir le lien reçu à la nouvelle adresse.
+  - **Vérifications**
+    - Avant le clic : l’adresse du compte est inchangée, « Confirmation en attente pour … » s’affiche.
+    - Après le clic : la nouvelle adresse sert à la connexion, l’ancienne reçoit un avis de changement.
+    - Le lien ne permet pas de définir un mot de passe via `/onboarding/:token`.
 
 ### 7.2. Utilisateurs
 

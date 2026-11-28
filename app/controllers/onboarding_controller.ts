@@ -14,7 +14,7 @@ export default class OnboardingController {
    * GET /onboarding/:token — Show set-password page (guest).
    */
   public async show({ params, inertia }: HttpContext) {
-    const tokenRecord = await this.onboardingTokens.findByPlainToken(String(params.token))
+    const tokenRecord = await this.onboardingTokens.findForOnboarding(String(params.token))
 
     if (!tokenRecord) {
       return (inertia as any).render('onboarding/InvalidToken', {})
@@ -35,7 +35,7 @@ export default class OnboardingController {
    * POST /onboarding/:token — Set password, consume token, log in, redirect to dashboard.
    */
   public async submit({ params, request, response, auth, session }: HttpContext) {
-    const tokenRecord = await this.onboardingTokens.findByPlainToken(String(params.token))
+    const tokenRecord = await this.onboardingTokens.findForOnboarding(String(params.token))
 
     if (!tokenRecord) {
       session.flash('error', 'Lien invalide ou expiré.')

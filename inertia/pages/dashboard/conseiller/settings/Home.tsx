@@ -7,9 +7,15 @@ import type { Organization } from '~/types'
 interface DashboardSettingsProps {
   organization: Organization
   members: Advisor[]
+  /** Nouvelle adresse e-mail en attente de confirmation (#143). */
+  pendingEmail?: string | null
 }
 
-export default function DashboardSettings({ organization, members }: DashboardSettingsProps) {
+export default function DashboardSettings({
+  organization,
+  members,
+  pendingEmail = null,
+}: DashboardSettingsProps) {
   return (
     <>
       <Head title="Réglages" />
@@ -18,6 +24,7 @@ export default function DashboardSettings({ organization, members }: DashboardSe
           <OrganizationSettings
             organization={organization}
             members={members}
+            pendingEmail={pendingEmail}
             onBack={() => router.visit('/dashboard/conseiller')}
           />
         </div>

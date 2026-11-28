@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import AuthController from '#controllers/auth_controller'
 import { AuthService } from '#services/auth_service'
+import { IMPERSONATOR_SESSION_KEY } from '#services/impersonation_service'
 import { EmployeesService } from '#services/employees_service'
 import { CandidatProfileService } from '#services/candidat_profile_service'
 import User from '#models/user'
@@ -17,12 +18,23 @@ import { DateTime } from 'luxon'
 const fakeEmployeesService = { getEmployeeForUser: async () => ({}), applyUpdate: () => {} } as any
 const fakeCandidatProfileService = { updateForUser: async () => ({}) } as any
 
-function makeSession() {
+function makeSession(initial: Record<string, unknown> = {}) {
   const flashes: Array<[string, string]> = []
+  const store: Record<string, unknown> = { ...initial }
   return {
     flashes,
+    store,
     flash(key: string, value: string) {
       this.flashes.push([key, value])
+    },
+    get(key: string) {
+      return store[key]
+    },
+    put(key: string, value: unknown) {
+      store[key] = value
+    },
+    forget(key: string) {
+      delete store[key]
     },
   }
 }
@@ -78,24 +90,35 @@ test.group('AuthController.updateFromDashboard', (group) => {
     assert.isTrue(response.unauthorizedCalled)
   })
 
-  test('updates profile and redirects with success flash', async ({ assert }) => {
-    const org = await Organization.create({
-      name: 'Profile Org',
-      slug: `profile-org-${Date.now()}`,
+  test('updates the name and flashes success when the email is unchanged', async ({ assert }) => {
+    const user = await createUser('advisor')
+    const service = { updateProfile: async () => ({ pendingEmail: null }) }
+    const controller = new AuthController(service as any, fakeCandidatProfileService)
+    const session = makeSession()
+    const response = makeResponse()
+
+    // @ts-expect-error minimal context
+    await controller.updateFromDashboard({
+      auth: { user },
+      request: { validateUsing: () => Promise.resolve({ name: 'New', email: user.email }) },
+      response: response as any,
+      session: session as any,
     })
 
-    const oldEmail = `old-profile-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const newEmail = `new-profile-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
+    assert.deepEqual(session.flashes, [['success', 'Profil mis à jour.']])
+    assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
+  })
 
-    const user = await User.create({
-      organizationId: org.id,
-      email: oldEmail,
-      name: 'Old Profile',
-      password: await hash.make('secret123'),
-      role: 'advisor',
-    })
-
-    const service = new AuthService()
+  /** #143 : l'adresse ne change qu'après le clic sur le lien envoyé à la nouvelle. */
+  test('announces the confirmation link sent to the new address', async ({ assert }) => {
+    const user = await createUser('advisor')
+    const calls: unknown[] = []
+    const service = {
+      updateProfile: async (_u: User, input: { email: string }) => {
+        calls.push(input)
+        return { pendingEmail: input.email }
+      },
+    }
     const controller = new AuthController(service as any, fakeCandidatProfileService)
     const session = makeSession()
     const response = makeResponse()
@@ -104,23 +127,33 @@ test.group('AuthController.updateFromDashboard', (group) => {
     await controller.updateFromDashboard({
       auth: { user },
       request: {
-        validateUsing: () =>
-          Promise.resolve({
-            name: 'New Profile',
-            email: newEmail,
-          }),
+        validateUsing: () => Promise.resolve({ name: 'New', email: 'nouvelle@example.com' }),
       },
       response: response as any,
       session: session as any,
     })
 
-    await user.refresh()
-    assert.equal(user.name, 'New Profile')
-    assert.equal(user.email, newEmail)
-    assert.deepEqual(session.flashes, [['success', 'Profil mis à jour.']])
+    assert.deepEqual(calls, [{ name: 'New', email: 'nouvelle@example.com' }])
+    assert.deepEqual(session.flashes, [
+      [
+        'success',
+        'Profil mis à jour. Un lien de confirmation a été envoyé à nouvelle@example.com : votre adresse changera après votre clic.',
+      ],
+    ])
     assert.equal(response.redirectUrl, '/dashboard/conseiller/settings')
   })
 })
+
+async function createUser(role: 'advisor' | 'super_admin') {
+  const org = await Organization.create({ name: 'Org', slug: `org-${Date.now()}-${Math.random()}` })
+  return User.create({
+    organizationId: org.id,
+    email: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`,
+    name: role === 'advisor' ? 'Target' : 'Super Admin',
+    password: 'secret123',
+    role,
+  })
+}
 
 /**
  * Accès (401/403) porté par les middlewares de route `auth()` + `superAdmin()`
@@ -130,19 +163,21 @@ test.group('AuthController.updateFromDashboard', (group) => {
 test.group('AuthController super admin actions', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
 
-  async function createTarget() {
-    const org = await Organization.create({ name: 'Org', slug: `org-${Date.now()}` })
-    return User.create({
-      organizationId: org.id,
-      email: `target-${Date.now()}@example.com`,
-      name: 'Target',
-      password: 'secret123',
-      role: 'advisor',
-    })
+  function authFor(actor: User, loggedIn: User[]) {
+    return {
+      getUserOrFail: () => actor,
+      use: () => ({
+        login: async (user: User) => loggedIn.push(user),
+        logout: async () => loggedIn.push(null as any),
+      }),
+    }
   }
 
-  test('impersonate logs in as the target user', async ({ assert }) => {
-    const target = await createTarget()
+  test('impersonate logs in as the target and keeps the super admin id in session (#143)', async ({
+    assert,
+  }) => {
+    const actor = await createUser('super_admin')
+    const target = await createUser('advisor')
     const loggedIn: User[] = []
     const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
@@ -150,7 +185,7 @@ test.group('AuthController super admin actions', (group) => {
 
     // @ts-expect-error minimal context
     await controller.impersonate({
-      auth: { use: () => ({ login: async (user: User) => loggedIn.push(user) }) },
+      auth: authFor(actor, loggedIn),
       params: { id: target.id },
       response: response as any,
       session: session as any,
@@ -160,6 +195,7 @@ test.group('AuthController super admin actions', (group) => {
       loggedIn.map((u) => u.id),
       [target.id]
     )
+    assert.equal(session.store[IMPERSONATOR_SESSION_KEY], actor.id)
     assert.equal(response.redirectUrl, '/dashboard')
     assert.deepEqual(session.flashes, [
       ['success', 'Vous êtes maintenant connecté en tant que Target.'],
@@ -167,20 +203,83 @@ test.group('AuthController super admin actions', (group) => {
   })
 
   test('impersonate flashes an error for an unknown user', async ({ assert }) => {
+    const actor = await createUser('super_admin')
     const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
     const response = makeResponse()
     const session = makeSession()
 
     // @ts-expect-error minimal context
     await controller.impersonate({
-      auth: { use: () => assert.fail('ne doit pas ouvrir de session') },
+      auth: { getUserOrFail: () => actor, use: () => assert.fail('ne doit pas ouvrir de session') },
       params: { id: 999999 },
       response: response as any,
       session: session as any,
     })
 
     assert.equal(response.redirectUrl, '/dashboard/super-admin')
+    assert.isUndefined(session.store[IMPERSONATOR_SESSION_KEY])
     assert.deepEqual(session.flashes, [['error', "Utilisateur introuvable pour l'impersonation."]])
+  })
+
+  test('leaveImpersonation logs the super admin back in and clears the session key', async ({
+    assert,
+  }) => {
+    const actor = await createUser('super_admin')
+    const target = await createUser('advisor')
+    const loggedIn: User[] = []
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
+    const response = makeResponse()
+    const session = makeSession({ [IMPERSONATOR_SESSION_KEY]: actor.id })
+
+    // @ts-expect-error minimal context
+    await controller.leaveImpersonation({
+      auth: authFor(target, loggedIn),
+      response: response as any,
+      session: session as any,
+    })
+
+    assert.deepEqual(
+      loggedIn.map((u) => u.id),
+      [actor.id]
+    )
+    assert.isUndefined(session.store[IMPERSONATOR_SESSION_KEY])
+    assert.equal(response.redirectUrl, '/dashboard/super-admin')
+    assert.deepEqual(session.flashes, [['success', 'Vous êtes de retour sur votre compte.']])
+  })
+
+  test('leaveImpersonation logs out when the original account is gone', async ({ assert }) => {
+    const target = await createUser('advisor')
+    const loggedIn: Array<User | null> = []
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
+    const response = makeResponse()
+    const session = makeSession({ [IMPERSONATOR_SESSION_KEY]: 999999 })
+
+    // @ts-expect-error minimal context
+    await controller.leaveImpersonation({
+      auth: authFor(target, loggedIn as User[]),
+      response: response as any,
+      session: session as any,
+    })
+
+    assert.deepEqual(loggedIn, [null])
+    assert.isUndefined(session.store[IMPERSONATOR_SESSION_KEY])
+    assert.equal(response.redirectUrl, '/auth/login')
+  })
+
+  test('logout clears an impersonation in progress', async ({ assert }) => {
+    const controller = new AuthController(new AuthService(), fakeCandidatProfileService)
+    const response = makeResponse()
+    const session = makeSession({ [IMPERSONATOR_SESSION_KEY]: 1 })
+
+    // @ts-expect-error minimal context
+    await controller.logout({
+      auth: { use: () => ({ logout: async () => {} }) },
+      response: response as any,
+      session: session as any,
+    })
+
+    assert.isUndefined(session.store[IMPERSONATOR_SESSION_KEY])
+    assert.equal(response.redirectUrl, '/')
   })
 })
 

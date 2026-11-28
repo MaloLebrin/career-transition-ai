@@ -249,6 +249,7 @@
   - Création d’une nouvelle organisation (nom, slug).
 - **Impersonation**
   - Possibilité pour la direction / super admin de se connecter “en tant que” un administrateur de cabinet, pour l’accompagner ou diagnostiquer des problèmes.
+  - Un bandeau rappelle la prise d’identité et « Revenir à mon compte » rouvre la session du super admin sans se reconnecter (#143).
 
 ### 7.2 Utilisateurs
 
