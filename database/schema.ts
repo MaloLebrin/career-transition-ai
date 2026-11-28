@@ -421,7 +421,7 @@ export class NotificationSchema extends BaseModel {
 }
 
 export class OnboardingTokenSchema extends BaseModel {
-  static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'usedAt', 'userId'] as const
+  static $columns = ['createdAt', 'expiresAt', 'id', 'newEmail', 'token', 'usedAt', 'userId'] as const
   $columns = OnboardingTokenSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -429,6 +429,8 @@ export class OnboardingTokenSchema extends BaseModel {
   declare expiresAt: DateTime
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare newEmail: string | null
   @column()
   declare token: string
   @column.dateTime()
