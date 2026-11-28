@@ -19,13 +19,17 @@ const EXERCISE_LABELS: Record<string, string> = {
   CV_ANALYSIS: 'Analyse CV',
   TARGETING: 'Ciblage',
   DISC: 'DISC',
-  CIRCLE_OF_CONTROL: "Cercle de contrôle",
+  CIRCLE_OF_CONTROL: 'Cercle de contrôle',
   SKILL_MAPPING: 'Cartographie des compétences',
 }
 
 // ─── document ─────────────────────────────────────────────────────────────────
 
-export function SynthesisPdfDocument({ employee, synthesis, latestCompletedByType }: SynthesisPdfProps) {
+export function SynthesisPdfDocument({
+  employee,
+  synthesis,
+  latestCompletedByType,
+}: SynthesisPdfProps) {
   const generationDate = new Date().toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: '2-digit',
@@ -42,7 +46,6 @@ export function SynthesisPdfDocument({ employee, synthesis, latestCompletedByTyp
   return (
     <Document>
       <Page size="A4" style={s.page}>
-
         {/* ─── Page header ─────────────────────────────────────────────────── */}
         <View style={s.pageHeader}>
           <Text style={s.pageHeaderEyebrow}>DOSSIER DE SYNTHÈSE</Text>
@@ -125,7 +128,9 @@ export function SynthesisPdfDocument({ employee, synthesis, latestCompletedByTyp
               return (
                 <View key={edu.id} style={s.card} wrap={false}>
                   <SubLabel label={edu.degree} />
-                  <Text style={s.bodySmall}>{edu.school}  ·  {datePart}</Text>
+                  <Text style={s.bodySmall}>
+                    {edu.school} · {datePart}
+                  </Text>
                   {edu.description?.trim() && (
                     <Text style={[s.body, { marginTop: 4 }]}>{edu.description}</Text>
                   )}

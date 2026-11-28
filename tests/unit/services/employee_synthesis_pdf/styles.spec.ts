@@ -12,7 +12,8 @@ const PDF_DIR = app.makePath('app/services/employee_synthesis_pdf')
 async function referencedKeys(prefix: 's' | 'C'): Promise<Set<string>> {
   const keys = new Set<string>()
   const pattern = new RegExp(`\\b${prefix}\\.([a-zA-Z]+)`, 'g')
-  for (const entry of await readdir(PDF_DIR)) {
+  // Récursif : les graphiques d'exercice vivent dans `charts/`.
+  for (const entry of await readdir(PDF_DIR, { recursive: true })) {
     if (!entry.endsWith('.tsx')) continue
     const source = await readFile(`${PDF_DIR}/${entry}`, 'utf8')
     for (const match of source.matchAll(pattern)) keys.add(match[1])
