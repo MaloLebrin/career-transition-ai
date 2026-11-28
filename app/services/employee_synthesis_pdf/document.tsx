@@ -1,7 +1,16 @@
 import { Document, Page, Text, View } from '@react-pdf/renderer'
 import type { EmployeeSynthesisPayload } from '#services/employee_synthesis_service'
-import { Footer, ScoreBlock, SectionTitle, SkillBar, SubLabel, formatDate } from './components.js'
+import {
+  Footer,
+  ScoreBlock,
+  SectionTitle,
+  SkillBar,
+  SubLabel,
+  formatDate,
+  synthesisRoleText,
+} from './components.js'
 import { ExerciseChart, TYPES_WITH_CHART } from './exercise_charts.js'
+import { formatDurationSeconds } from '#shared/helpers/date'
 import { s } from './styles.js'
 
 export type SynthesisPdfProps = Omit<EmployeeSynthesisPayload, 'synthesis'> & {
@@ -36,7 +45,7 @@ export function SynthesisPdfDocument({
     year: 'numeric',
   })
 
-  const roleText = employee.currentRole + (employee.targetRole ? ` → ${employee.targetRole}` : '')
+  const roleText = synthesisRoleText(employee)
 
   const latestIds = new Set(Object.values(latestCompletedByType))
   const exercisesToShow = employee.exercises
@@ -163,7 +172,7 @@ export function SynthesisPdfDocument({
               const label = EXERCISE_LABELS[ex.type] ?? ex.type
               const metaParts: string[] = []
               if (ex.date) metaParts.push(formatDate(ex.date))
-              if (ex.duration) metaParts.push(`${ex.duration} min`)
+              if (ex.duration) metaParts.push(formatDurationSeconds(ex.duration))
 
               return (
                 <View key={ex.id} style={s.exerciseCard} wrap={false}>

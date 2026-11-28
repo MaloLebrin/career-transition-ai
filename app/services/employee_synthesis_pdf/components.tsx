@@ -1,4 +1,5 @@
 import { Text, View } from '@react-pdf/renderer'
+import { APP_TIME_ZONE } from '#shared/helpers/date'
 import { C, s } from './styles.js'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -7,7 +8,26 @@ export function formatDate(iso: string | null | undefined): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: APP_TIME_ZONE,
+  })
+}
+
+/**
+ * Séparateur « poste actuel › poste visé ». Les polices standard du PDF
+ * (Helvetica, encodage WinAnsi) n'ont pas de glyphe « → » : il sortait en « ' ».
+ */
+export const ROLE_SEPARATOR = ' › '
+
+export function synthesisRoleText(employee: {
+  currentRole: string
+  targetRole?: string | null
+}): string {
+  const target = employee.targetRole?.trim()
+  return target ? `${employee.currentRole}${ROLE_SEPARATOR}${target}` : employee.currentRole
 }
 
 export function getScoreColor(score: number, max = 10): string {

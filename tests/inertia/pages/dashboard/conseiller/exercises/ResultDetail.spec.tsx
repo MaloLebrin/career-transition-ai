@@ -122,6 +122,26 @@ describe('Détail d’un résultat d’exercice (conseiller)', () => {
     expect(screen.getByText('—')).toBeInTheDocument()
   })
 
+  test('date de passage : le jour enregistré, même dans un navigateur à l’ouest de Paris', () => {
+    const previousTz = process.env.TZ
+    process.env.TZ = 'America/Montreal'
+    try {
+      render(
+        <ExerciseResultDetail
+          employeeId="5"
+          employeeName="Camille"
+          exerciseTitle="Valeurs"
+          // Colonne DATE sérialisée par Luxon dans le fuseau du serveur (Europe/Paris)
+          result={{ ...result, date: '2024-06-02T00:00:00.000+02:00', duration: 120 } as never}
+        />
+      )
+      expect(screen.getByText('2 juin 2024')).toBeInTheDocument()
+      expect(screen.getByText('2 min')).toBeInTheDocument()
+    } finally {
+      process.env.TZ = previousTz
+    }
+  })
+
   test('propose de réinitialiser l’exercice du type affiché, absent sans résultat', async () => {
     const { rerender } = render(
       <ExerciseResultDetail

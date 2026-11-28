@@ -1,4 +1,12 @@
 /**
+ * Fuseau d'affichage des dates : celui de l'application (`TZ` du serveur).
+ * Sans lui, une date de calendrier sérialisée à minuit heure de Paris
+ * (`2024-06-02T00:00:00+02:00`) s'affiche la veille dans un navigateur à
+ * l'ouest de Paris.
+ */
+export const APP_TIME_ZONE = 'Europe/Paris'
+
+/**
  * Format a date string to a short month and year format (e.g. "janv. 2022")
  */
 export function formatDate(
@@ -8,7 +16,7 @@ export function formatDate(
   if (!dateStr) return '—'
   const d = new Date(dateStr)
   if (Number.isNaN(d.getTime())) return dateStr
-  return d.toLocaleDateString('fr-FR', options)
+  return d.toLocaleDateString('fr-FR', { ...options, timeZone: APP_TIME_ZONE })
 }
 
 export function formatSessionDate(dateStr: string | undefined): string {
@@ -19,7 +27,21 @@ export function formatSessionDate(dateStr: string | undefined): string {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: APP_TIME_ZONE,
   })
+}
+
+/**
+ * Durée d'un exercice, stockée en secondes (`exercise_results.duration`),
+ * en texte lisible : « 45 s », « 2 min », « 11 min 20 s ».
+ */
+export function formatDurationSeconds(seconds: number | null | undefined): string {
+  if (!seconds || seconds <= 0 || !Number.isFinite(seconds)) return '—'
+  const total = Math.round(seconds)
+  const mins = Math.floor(total / 60)
+  const secs = total % 60
+  if (mins === 0) return `${secs} s`
+  return secs === 0 ? `${mins} min` : `${mins} min ${secs} s`
 }
 
 export function formatRelativeTime(isoDate: string): string {
@@ -43,6 +65,6 @@ export function formatDateTimeFR(dateStr: string | undefined): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Paris',
+    timeZone: APP_TIME_ZONE,
   })
 }

@@ -8,6 +8,7 @@ import Button from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import type { ExerciseResult } from '~/types'
 import type { Note } from '~/types/note'
+import { formatDurationSeconds, formatSessionDate } from '#shared/helpers/date'
 
 interface ExerciseResultDetailProps {
   employeeId: string
@@ -15,17 +16,6 @@ interface ExerciseResultDetailProps {
   result: (Omit<ExerciseResult, 'type'> & { type: string }) | null
   exerciseTitle: string
   notes?: Note[]
-}
-
-function formatSessionDate(dateStr: string | undefined): string {
-  if (!dateStr) return '—'
-  const d = new Date(dateStr)
-  if (Number.isNaN(d.getTime())) return dateStr
-  return d.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
 }
 
 export default function ExerciseResultDetail({
@@ -112,7 +102,7 @@ export default function ExerciseResultDetail({
                         Durée totale
                       </div>
                       <div className="text-base font-black text-slate-900">
-                        {Math.floor(result.duration / 60)} min {result.duration % 60} s
+                        {formatDurationSeconds(result.duration)}
                       </div>
                     </div>
                   </div>
