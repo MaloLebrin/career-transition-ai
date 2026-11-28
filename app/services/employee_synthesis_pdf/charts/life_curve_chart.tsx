@@ -1,13 +1,14 @@
 import {
   Circle as SvgCircle,
   Line as SvgLine,
-  Polyline as SvgPolyline,
+  Path as SvgPath,
   Svg,
   Text,
   View,
 } from '@react-pdf/renderer'
 import { C } from '../styles.js'
 import { safeArr, safeObj, SvgText } from './chart_helpers.js'
+import { monotonePath } from './monotone_path.js'
 
 // ─── LIFE_CURVE ───────────────────────────────────────────────────────────────
 
@@ -38,7 +39,8 @@ export function LifeCurveChart({ data }: { data: unknown }) {
   const toX = (y: number) => PL + ((y - minYear) / yearRange) * iW
   const toY = (s: number) => PT + iH - (Math.min(10, Math.max(0, s)) / 10) * iH
 
-  const polyline = points.map((p) => `${toX(p.year)},${toY(p.satisfaction)}`).join(' ')
+  // Courbe lissée, comme sur la page web (recharts `type="monotone"`)
+  const curve = monotonePath(points.map((p) => ({ x: toX(p.year), y: toY(p.satisfaction) })))
   const midY = toY(5)
 
   const reflectionEntries = Object.entries(reflection).filter(([, v]) => String(v).trim())
@@ -122,7 +124,7 @@ export function LifeCurveChart({ data }: { data: unknown }) {
             ))}
 
           {/* The curve */}
-          <SvgPolyline points={polyline} fill="none" stroke={C.primary} strokeWidth={2} />
+          <SvgPath d={curve} fill="none" stroke={C.primary} strokeWidth={2} />
 
           {/* Data points */}
           {points.map((p, i) => (
