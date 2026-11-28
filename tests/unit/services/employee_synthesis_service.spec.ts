@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import { makeEntitlements } from '#tests/support/entitlements'
 import Employee from '#models/employee'
 import EmployeeSynthesis, { EMPLOYEE_SYNTHESIS_SHARE_STATUSES } from '#models/employee_synthesis'
@@ -122,11 +123,14 @@ test.group('EmployeeSynthesisService — visibilité candidat et exports (#101)'
   }) => {
     const { user, employee } = await createCandidate()
     const other = await createCandidate()
+    // Même createdAt pour les deux exports : le plus récent se départage par id (CI instable sinon).
+    const createdAt = DateTime.now()
     await PdfExportFactory.merge({
       userId: user.id,
       organizationId: employee.organizationId,
       employeeId: employee.id,
       status: PDF_EXPORT_STATUSES.FAILED,
+      createdAt,
     }).create()
     const latest = await PdfExportFactory.merge({
       userId: user.id,
@@ -134,6 +138,7 @@ test.group('EmployeeSynthesisService — visibilité candidat et exports (#101)'
       employeeId: employee.id,
       status: PDF_EXPORT_STATUSES.COMPLETED,
       filePath: 'exports/1/2.pdf',
+      createdAt,
     }).create()
     await PdfExportFactory.merge({
       userId: other.user.id,

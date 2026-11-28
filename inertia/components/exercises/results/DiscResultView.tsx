@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId, useMemo } from 'react'
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -7,6 +7,13 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from 'recharts'
+import {
+  DISC_TRAIT_PALETTE,
+  DISC_WHEEL_TRAIT_ANGLES,
+  DISC_WHEEL_TRAITS,
+  type DiscWheelTrait,
+} from '#shared/constants/disc_wheel'
+import { discRadarDomain, discRadarTicks } from '#shared/helpers/exercise/disc_wheel_geometry'
 import DiscResultSummary from '../disc/DiscResultSummary'
 
 interface DiscScores {
@@ -20,45 +27,105 @@ interface Props {
   scores: DiscScores
 }
 
+/**
+ * Recharts écrit les couleurs en attributs SVG, qui ne lisent pas les variables CSS :
+ * hex des tokens `ink`, `muted` et `hairline-strong` (`inertia/css/app.css`).
+ */
+const CHART_INK = '#1f1400'
+const CHART_MUTED = '#5c4a1e'
+const CHART_GRID = '#ffd96a'
+
+/** Recharts compte les angles depuis 3 h, sens trigonométrique : D en haut à droite, comme la roue. */
+const RADAR_START_ANGLE = 90 - DISC_WHEEL_TRAIT_ANGLES.D
+
+type RadarDotProps = { cx?: number; cy?: number; payload?: { trait: DiscWheelTrait } }
+
+function TraitDot({ cx, cy, payload }: RadarDotProps) {
+  if (cx === undefined || cy === undefined || !payload) return <g />
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={6}
+      fill={DISC_TRAIT_PALETTE[payload.trait].boldHex}
+      stroke="#ffffff"
+      strokeWidth={2}
+    />
+  )
+}
+
 const DiscResultView: React.FC<Props> = ({ scores }) => {
-  const discData = [
-    { trait: 'D', value: Number(scores.D) || 0, full: 100 },
-    { trait: 'I', value: Number(scores.I) || 0, full: 100 },
-    { trait: 'S', value: Number(scores.S) || 0, full: 100 },
-    { trait: 'C', value: Number(scores.C) || 0, full: 100 },
-  ]
+  // Id unique : plusieurs résultats peuvent s'afficher sur une même page (étape du plan).
+  const titleId = useId()
+  const percent = useMemo(
+    () => ({
+      D: Number(scores.D) || 0,
+      I: Number(scores.I) || 0,
+      S: Number(scores.S) || 0,
+      C: Number(scores.C) || 0,
+    }),
+    [scores.D, scores.I, scores.S, scores.C]
+  )
+  const domain = discRadarDomain(percent)
+  const ticks = discRadarTicks(domain)
+  const discData = DISC_WHEEL_TRAITS.map((trait) => ({ trait, value: percent[trait] }))
 
   return (
     <div className="space-y-10">
-      <DiscResultSummary
-        percent={{
-          D: Number(scores.D) || 0,
-          I: Number(scores.I) || 0,
-          S: Number(scores.S) || 0,
-          C: Number(scores.C) || 0,
-        }}
-        showAbout={false}
-      />
+      <DiscResultSummary percent={percent} showAbout={false} />
 
-      <div className="flex justify-center h-[350px] bg-slate-50 rounded-[48px] p-8 border border-slate-100">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={discData}>
-            <PolarGrid stroke="#e2e8f0" />
-            <PolarAngleAxis
-              dataKey="trait"
-              tick={{ fontSize: 14, fontWeight: 900, fill: '#1e293b' }}
-            />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} axisLine={false} tick={false} />
-            <Radar
-              name="DISC"
-              dataKey="value"
-              stroke="#8b5cf6"
-              fill="#8b5cf6"
-              fillOpacity={0.6}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
+      <section
+        aria-labelledby={titleId}
+        className="rounded-2xl border border-hairline bg-surface-soft p-6 sm:p-8"
+      >
+        <h4 id={titleId} className="text-title-md text-ink">
+          Équilibre des quatre traits
+        </h4>
+        <p className="mt-1 text-sm text-muted">
+          Échelle resserrée de {domain[0]} à {domain[1]} % pour faire ressortir les écarts entre vos
+          traits.
+        </p>
+        <div className="mt-4 h-[360px]" data-testid="disc-radar">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart
+              cx="50%"
+              cy="50%"
+              outerRadius="75%"
+              data={discData}
+              startAngle={RADAR_START_ANGLE}
+              endAngle={RADAR_START_ANGLE - 360}
+            >
+              <PolarGrid stroke={CHART_GRID} gridType="circle" />
+              <PolarAngleAxis
+                dataKey="trait"
+                tickFormatter={(trait: DiscWheelTrait) => `${trait} · ${percent[trait]} %`}
+                tick={{ fontSize: 13, fontWeight: 800, fill: CHART_INK }}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={domain}
+                ticks={ticks}
+                tickFormatter={(value: number) => `${value} %`}
+                tick={{ fontSize: 11, fill: CHART_MUTED }}
+                axisLine={false}
+                allowDataOverflow
+              />
+              <Radar
+                name="DISC"
+                dataKey="value"
+                stroke={CHART_INK}
+                strokeWidth={2}
+                fill={DISC_TRAIT_PALETTE.I.boldHex}
+                fillOpacity={0.35}
+                dot={({ cx, cy, index, payload }: RadarDotProps & { index: number }) => (
+                  <TraitDot key={index} cx={cx} cy={cy} payload={payload} />
+                )}
+                isAnimationActive={false}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
     </div>
   )
 }

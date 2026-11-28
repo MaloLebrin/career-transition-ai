@@ -68,7 +68,11 @@ export class EmployeeSynthesisService {
     scope: { organizationId: number } | { userId: number },
     employeeId: number
   ): Promise<LatestPdfJob | null> {
-    const query = PdfExport.query().where('employeeId', employeeId).orderBy('createdAt', 'desc')
+    // Départage par id : deux exports créés à la même milliseconde ont le même createdAt.
+    const query = PdfExport.query()
+      .where('employeeId', employeeId)
+      .orderBy('createdAt', 'desc')
+      .orderBy('id', 'desc')
     if ('organizationId' in scope) {
       query.where('organizationId', scope.organizationId)
     } else {
