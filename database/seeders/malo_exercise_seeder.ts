@@ -62,13 +62,13 @@ export default class MaloExercisesSeeder extends BaseSeeder {
             { year: 2012, satisfaction: 7, label: 'Premières responsabilités d’animation' },
             { year: 2013, satisfaction: 8, label: 'Passage manager d’équipe' },
             { year: 2014, satisfaction: 7, label: 'Recrutement et formation des animateurs' },
-            { year: 2015, satisfaction: 5, label: 'Routine, plafond de verre' },
+            { year: 2015, satisfaction: 3, label: 'Routine, plafond de verre' },
             { year: 2016, satisfaction: 7, label: 'Reprise d’études : master de psychologie' },
             { year: 2017, satisfaction: 8, label: 'Mémoire sur l’accompagnement des équipes' },
             { year: 2018, satisfaction: 6, label: 'Master obtenu, départ du Portique club' },
-            { year: 2019, satisfaction: 3, label: 'Période de doute, sans projet clair' },
+            { year: 2019, satisfaction: 2, label: 'Période de doute, sans projet clair' },
             { year: 2020, satisfaction: 6, label: 'Reconversion : bootcamp Le Reacteur' },
-            { year: 2021, satisfaction: 5, label: 'Missions courtes, intégration difficile' },
+            { year: 2021, satisfaction: 4, label: 'Missions courtes, intégration difficile' },
             { year: 2022, satisfaction: 7, label: 'Arrivée chez Zenika' },
             { year: 2023, satisfaction: 8, label: 'Mentorat des développeurs juniors' },
             { year: 2024, satisfaction: 9, label: 'Projet de devenir formateur tech' },
@@ -78,7 +78,7 @@ export default class MaloExercisesSeeder extends BaseSeeder {
             mostlySatisfied:
               'Oui dans l’ensemble : la satisfaction reste au-dessus de la moyenne la plupart des années.',
             amplitude:
-              'Forte entre 2017 et 2020 (de 8 à 3 puis 6), plus stable depuis mon arrivée chez Zenika.',
+              'Forte entre 2017 et 2020 (de 8 à 2 puis 6), plus stable depuis mon arrivée chez Zenika.',
             explanation:
               'Les sommets coïncident avec les moments où je transmets ou accompagne ; les creux avec la routine ou l’absence de projet.',
             surprise:

@@ -1,82 +1,68 @@
-import React from 'react'
 import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-
-interface LifeCurvePoint {
-  year: number
-  satisfaction: number
-}
+  LIFE_CURVE_REFLECTION_KEYS,
+  LIFE_CURVE_REFLECTION_LABELS,
+  type LifeCurveReflectionKey,
+} from '#shared/constants/life_curve'
+import { normalizeLifeCurveEvents } from '#shared/helpers/exercise/life_curve_timeline'
+import Card from '~/components/ui/Card'
+import { LifeCurveEventList } from './LifeCurveEventList'
+import { LifeCurveTimeline } from './LifeCurveTimeline'
 
 interface Props {
-  points: LifeCurvePoint[]
+  points: unknown
   reflection: Record<string, string>
 }
 
-const LifeCurveResultView: React.FC<Props> = ({ points, reflection }) => {
+const isKnownKey = (key: string): key is LifeCurveReflectionKey =>
+  (LIFE_CURVE_REFLECTION_KEYS as readonly string[]).includes(key)
+
+function reflectionEntries(reflection: Record<string, string>): Array<[string, string]> {
+  const known = LIFE_CURVE_REFLECTION_KEYS.filter((k) => String(reflection[k] ?? '').trim()).map(
+    (k): [string, string] => [LIFE_CURVE_REFLECTION_LABELS[k], String(reflection[k])]
+  )
+  const others = Object.entries(reflection)
+    .filter(([k, v]) => !isKnownKey(k) && String(v ?? '').trim())
+    .map(([k, v]): [string, string] => [k, String(v)])
+  return [...known, ...others]
+}
+
+export default function LifeCurveResultView({ points, reflection }: Props) {
+  const events = normalizeLifeCurveEvents(points)
+  const entries = reflectionEntries(reflection ?? {})
+
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div className="relative h-[400px] w-full min-w-0 bg-slate-50 rounded-[48px] border border-slate-100">
-        <div className="absolute inset-0 p-8">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={points} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis
-                dataKey="year"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-              />
-              <YAxis
-                domain={[0, 10]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: '24px',
-                  border: 'none',
-                  boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-                  fontWeight: 900,
-                }}
-                itemStyle={{ color: '#6366f1' }}
-              />
-              <ReferenceLine y={5} stroke="#cbd5e1" strokeDasharray="5 5" />
-              <Line
-                type="monotone"
-                dataKey="satisfaction"
-                stroke="#6366f1"
-                strokeWidth={4}
-                dot={{ r: 6, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
-                isAnimationActive={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(reflection).map(([key, value]) => (
-          <div
-            key={key}
-            className="p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm"
-          >
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-              {key}
-            </div>
-            <div className="text-sm font-bold text-slate-700 leading-relaxed">{String(value)}</div>
+      {events.length >= 2 ? (
+        <Card padding="lg" className="space-y-6">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-muted">
+            <span className="flex items-center gap-2">
+              <span aria-hidden className="size-3 rounded-full bg-tint-blossom" />
+              Hauts : au-dessus de 5/10
+            </span>
+            <span className="flex items-center gap-2">
+              <span aria-hidden className="size-3 rounded-full bg-tint-sun" />
+              Bas : au-dessous de 5/10
+            </span>
           </div>
-        ))}
-      </div>
+          <LifeCurveTimeline events={events} />
+          <LifeCurveEventList events={events} />
+        </Card>
+      ) : (
+        <Card padding="lg">
+          <p className="text-muted">Pas assez d’événements pour tracer la frise.</p>
+        </Card>
+      )}
+
+      {entries.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {entries.map(([label, value]) => (
+            <Card key={label} padding="md">
+              <h4 className="mb-2 text-caption text-muted">{label}</h4>
+              <p className="font-bold leading-relaxed text-ink">{value}</p>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
-
-export default LifeCurveResultView

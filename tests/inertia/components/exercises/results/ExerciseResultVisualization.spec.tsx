@@ -50,11 +50,17 @@ describe('ExerciseResultVisualization', () => {
     const result = {
       ...baseResult,
       type: EXERCICE_RESULTS_TYPES.LIFE_CURVE,
-      data: { points: [], reflection: {} },
+      data: {
+        points: [
+          { year: 2020, satisfaction: 7 },
+          { year: 2021, satisfaction: 3 },
+        ],
+        reflection: {},
+      },
     }
     render(<ExerciseResultVisualization result={result} />)
 
-    expect(screen.getByTestId('line-chart')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /^Frise de 2020 à 2021/ })).toBeInTheDocument()
   })
 
   test('renders DiscResultView for DISC type', () => {
@@ -153,10 +159,16 @@ describe('ExerciseResultVisualization', () => {
     const result = {
       ...baseResult,
       type: 'LIFE_CURVE' as any,
-      data: { points: [], reflection: {} },
+      data: {
+        points: [
+          { year: 2020, satisfaction: 7 },
+          { year: 2021, satisfaction: 3 },
+        ],
+        reflection: {},
+      },
     }
     render(<ExerciseResultVisualization result={result} />)
 
-    expect(screen.getByTestId('line-chart')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /^Frise de 2020 à 2021/ })).toBeInTheDocument()
   })
 })

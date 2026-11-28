@@ -19,6 +19,12 @@ export const C = {
   amberBg: '#fef3c7',
   red: '#dc2626',
   redBg: '#fee2e2',
+  // Frise de la courbe de vie (teintes DESIGN.md : encre, blossom, sun)
+  ink: '#1f1400',
+  highBg: '#ffc9d9',
+  highInk: '#a0184c',
+  lowBg: '#ffe08a',
+  lowInk: '#8a5a00',
 } as const
 
 export const PAGE_PAD = 40
