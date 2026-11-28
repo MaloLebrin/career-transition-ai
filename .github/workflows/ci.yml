@@ -1,13 +1,98 @@
 name: CI
 
+# Économie de minutes (docs/TESTING.md § « Coût de la CI ») :
+# - pas de CI sur une PR en draft : elle part au passage en « Ready for review » ;
+# - un nouveau push annule le run en cours de la même PR (ou de `main`) ;
+# - le job `plan` lit les fichiers modifiés : une PR de doc seule ne fait
+#   tourner que le shard unit-integration (garde des liens `docs_links.spec.ts`),
+#   et `docker-image` ne tourne que si l'image ou la pile de prod peut changer ;
+# - les jobs sautés apparaissent « skipped », ce que la protection de branche
+#   compte comme un succès — pas de `paths-ignore`, qui laisserait les checks
+#   requis en attente pour toujours.
 on:
   push:
     branches: [main]
   pull_request:
+    # `converted_to_draft` : le run démarre, `plan` est sauté, et la
+    # concurrence annule le run qui tournait encore.
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  lint:
+  # Unique point d'entrée : draft → tout est sauté (les autres jobs en dépendent).
+  # La matrice de shards n'est pas écrite à la main : `scripts/ci_test_shards.mjs`
+  # la dérive de `tests/functional/` et équilibre les specs au fichier près. Un
+  # nouveau répertoire de tests est donc shardé sans toucher à ce fichier — une
+  # liste `--files` maintenue ici serait une allowlist, et tout répertoire absent
+  # de cette liste ne tournerait jamais en CI sans que rien n'échoue.
+  plan:
+    name: plan (changements, matrice)
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+      docker: ${{ steps.changes.outputs.docker }}
+      shards: ${{ steps.compute.outputs.shards }}
+    steps:
+      # Profondeur 2 : sur une PR, HEAD est le commit de merge et HEAD^1 la
+      # base ; sur `main` (squash), HEAD^1 est le commit précédent.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: changes
+        name: Fichiers modifiés
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git rev-parse -q --verify HEAD^1 >/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "docker=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only HEAD^1 HEAD)
+          echo "$files"
+          # Doc seule : Markdown, docs/, règles des agents.
+          if echo "$files" | grep -qvE '^(docs/|\.claude/|\.cursor/)|\.mdc?$|^LICENSE$'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+          # Image et pile de prod : le reste du build est couvert par smoke-prod-build.
+          if echo "$files" | grep -qE '^(Dockerfile|\.dockerignore|docker/|deploy/|scripts/smoke_compose_prod\.sh|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.github/workflows/)'; then
+            echo "docker=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "docker=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Script sans dépendance : pas de pnpm install à payer pour 150 ms de calcul.
+      - id: compute
+        name: Matrice des shards
+        run: |
+          if [ "${{ steps.changes.outputs.code }}" = true ]; then
+            echo "shards=$(node scripts/ci_test_shards.mjs)" >> "$GITHUB_OUTPUT"
+            node scripts/ci_test_shards.mjs --explain
+          else
+            echo "shards=$(node scripts/ci_test_shards.mjs --unit-only)" >> "$GITHUB_OUTPUT"
+            echo "Doc seule : shard unit-integration uniquement."
+          fi
+
+  # Lint, typecheck et Vitest dans un seul job : une seule installation des
+  # dépendances, et une seule minute arrondie au lieu de trois. Chaque étape
+  # tourne même si la précédente échoue, pour tout voir en un run.
+  checks:
+    name: lint · typecheck · test-frontend
+    needs: [plan]
+    if: needs.plan.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       # Pas de `version:` ici : l'action lit `packageManager` de package.json,
@@ -18,42 +103,30 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - id: install
+        run: pnpm install --frozen-lockfile --prefer-offline
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm lint
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm typecheck
+      - name: Frontend tests (Vitest)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm test:inertia
 
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-
-  # Test de fumée du build de production : `build` ne fait que compiler, et les
-  # suites de tests tournent sur les sources. Ici on démarre `build/` comme en
-  # production (NODE_ENV=production, dépendances de prod seules, hors du dépôt)
-  # et on échoue si `/health`, `/` ou `/auth/login` ne répondent pas 200 avec
-  # le rendu SSR, si un asset du manifest manque, ou si les logs du serveur ou
-  # du worker contiennent une erreur ou « No jobs found for locations ».
+  # Test de fumée du build de production — tient aussi lieu de job `build` :
+  # il lance `pnpm run build` avant de démarrer `build/` comme en production
+  # (NODE_ENV=production, dépendances de prod seules, hors du dépôt). Il échoue
+  # si `/health`, `/` ou `/auth/login` ne répondent pas 200 avec le rendu SSR,
+  # si un asset du manifest manque, ou si les logs du serveur ou du worker
+  # contiennent une erreur ou « No jobs found for locations ».
   # Voir scripts/smoke_prod_build.mjs.
   smoke-prod-build:
+    needs: [plan]
+    if: needs.plan.outputs.code == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16-alpine
@@ -101,7 +174,7 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm run build
       # Copie hors du dépôt : depuis `build/`, Node remonterait jusqu'au
       # `node_modules` racine et masquerait une dépendance de dev importée au
@@ -109,7 +182,7 @@ jobs:
       - name: Installer le build comme en production
         run: |
           cp -r build "$RUNNER_TEMP/app"
-          cd "$RUNNER_TEMP/app" && pnpm install --prod --frozen-lockfile
+          cd "$RUNNER_TEMP/app" && pnpm install --prod --frozen-lockfile --prefer-offline
       - name: Migrations depuis le build
         working-directory: ${{ runner.temp }}/app
         run: node ace.js migration:run --force
@@ -121,8 +194,13 @@ jobs:
   # `migrate`, `seed`, `server` — et échoue si `/health` ne répond pas 200, si
   # le conteneur ne tourne pas en `node` ou si son HEALTHCHECK n'est pas
   # `healthy`. Même base et même env minimal que `smoke-prod-build`.
+  # Ne tourne que si l'image peut changer (`plan.outputs.docker`) ; les couches
+  # sont mises en cache (cache GitHub Actions) pour ne pas tout reconstruire.
   docker-image:
+    needs: [plan]
+    if: needs.plan.outputs.docker == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:16-alpine
@@ -139,8 +217,15 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Build de l'image
-        run: docker build -t career-transition-ai:ci .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: career-transition-ai:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Env du conteneur
         run: |
           cat > "$RUNNER_TEMP/docker.env" <<'EOF'
@@ -193,35 +278,15 @@ jobs:
       - name: Compose de production (deploy/)
         run: APP_IMAGE=career-transition-ai:ci scripts/smoke_compose_prod.sh
 
-  # La matrice n'est pas écrite à la main : `scripts/ci_test_shards.mjs` la
-  # dérive de `tests/functional/` et équilibre les specs au fichier près. Un
-  # nouveau répertoire de tests est donc shardé sans toucher à ce fichier — une
-  # liste `--files` maintenue ici serait une allowlist, et tout répertoire absent
-  # de cette liste ne tournerait jamais en CI sans que rien n'échoue.
-  test-backend-matrix:
-    name: test-backend (matrice)
-    runs-on: ubuntu-latest
-    outputs:
-      shards: ${{ steps.compute.outputs.shards }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      # Script sans dépendance : pas de pnpm install à payer pour 150 ms de calcul.
-      - id: compute
-        run: echo "shards=$(node scripts/ci_test_shards.mjs)" >> "$GITHUB_OUTPUT"
-      - name: Répartition des shards
-        run: node scripts/ci_test_shards.mjs --explain
-
   test-backend-shards:
     name: 'test-backend (${{ matrix.shard.name }})'
     runs-on: ubuntu-latest
-    needs: [test-backend-matrix]
+    timeout-minutes: 20
+    needs: [plan]
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ fromJson(needs.test-backend-matrix.outputs.shards) }}
+        shard: ${{ fromJson(needs.plan.outputs.shards) }}
     services:
       postgres:
         image: postgres:16-alpine
@@ -243,7 +308,7 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --prefer-offline
       - name: 'Backend tests (PostgreSQL) — ${{ matrix.shard.name }}'
         run: node ace test ${{ matrix.shard.suites }} ${{ matrix.shard.files != '' && format('--files="{0}"', matrix.shard.files) || '' }}
         # Aligné sur `.env.test` et sur le service `postgres_test` du
@@ -267,16 +332,18 @@ jobs:
           AI_PROVIDER: none
 
   # Job d'agrégation : l'unique check `test-backend` à exiger dans la
-  # protection de branche, quel que soit le nombre de shards.
+  # protection de branche, quel que soit le nombre de shards. Sauté (donc
+  # « skipped », compté comme succès) quand `plan` l'est, sur une PR en draft.
   test-backend:
     name: test-backend
     runs-on: ubuntu-latest
-    needs: [test-backend-matrix, test-backend-shards]
-    if: always()
+    timeout-minutes: 5
+    needs: [plan, test-backend-shards]
+    if: ${{ !cancelled() && needs.plan.result != 'skipped' }}
     steps:
       - name: Check backend shard results
         run: |
-          if [ "${{ needs.test-backend-matrix.result }}" != "success" ]; then
+          if [ "${{ needs.plan.result }}" != "success" ]; then
             echo "Shard matrix generation failed."
             exit 1
           fi
@@ -284,16 +351,3 @@ jobs:
             echo "One or more test-backend shards failed."
             exit 1
           fi
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Frontend tests (Vitest)
-        run: pnpm test:inertia

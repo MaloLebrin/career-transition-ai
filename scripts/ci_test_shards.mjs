@@ -27,6 +27,7 @@
  *   node scripts/ci_test_shards.mjs            # JSON compact (consommé par la CI)
  *   node scripts/ci_test_shards.mjs --explain  # tableau lisible des shards
  *   node scripts/ci_test_shards.mjs --shards=4 # simuler un autre découpage
+ *   node scripts/ci_test_shards.mjs --unit-only # PR de doc seule : unit-integration
  *
  * Pour raccourcir la CI : augmenter FUNCTIONAL_SHARD_COUNT. Aucun autre
  * changement n'est nécessaire, la matrice et les filtres suivent. Le nombre
@@ -103,6 +104,15 @@ export function buildMatrix(count = FUNCTIONAL_SHARD_COUNT) {
   ]
 }
 
+/**
+ * Matrice d'une PR qui ne touche que la doc (job `plan` de la CI) : seul le
+ * shard unit-integration tourne, il porte la garde des liens
+ * (`tests/unit/hygiene/docs_links.spec.ts`).
+ */
+export function buildUnitOnlyMatrix() {
+  return buildMatrix().filter((shard) => shard.suites !== 'functional')
+}
+
 // `process.argv[1]` est absent quand le module est importé par un autre
 // process (le test-garde, un `node -e`) : ne pas le tester ferait lever
 // pathToFileURL au simple import.
@@ -115,7 +125,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     process.exit(1)
   }
 
-  if (process.argv.includes('--explain')) {
+  if (process.argv.includes('--unit-only')) {
+    console.log(JSON.stringify(buildUnitOnlyMatrix()))
+  } else if (process.argv.includes('--explain')) {
     const shards = buildFunctionalShards(count)
     const total = shards.reduce((sum, shard) => sum + shard.weight, 0)
     console.log(
