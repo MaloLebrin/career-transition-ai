@@ -1,18 +1,24 @@
+import env from '#start/env'
+import { LIMITER_STORES, RATE_LIMITS_TABLE } from '#shared/constants/runtime_stores'
 import { defineConfig, stores } from '@adonisjs/limiter'
 
 /**
  * Rate limiting des endpoints publics (issue #23), défini dans
  * `start/limiter.ts`.
  *
- * Store `memory` : un seul process web sert le HTTP (le worker de queue n'en
- * sert pas). Les compteurs repartent à zéro au redémarrage, ce qui suffit contre
- * la force brute et le spam. Plusieurs instances web → passer au store
- * `database` (table `rate_limits`, `node ace make:migration` depuis le stub du
- * package) pour partager les compteurs.
+ * Store `database` par défaut (#172) : table `rate_limits` de Postgres,
+ * compteurs partagés par toutes les instances web et conservés au
+ * redémarrage. Les lignes expirées sont purgées toutes les 5 minutes
+ * (`clearExpiredByTimeout`). `LIMITER_STORE=memory` : compteurs propres au
+ * process, perdus au redémarrage (dépannage seulement).
  */
 const limiterConfig = defineConfig({
-  default: 'memory',
+  default: env.get('LIMITER_STORE', LIMITER_STORES.DATABASE),
   stores: {
+    database: stores.database({
+      tableName: RATE_LIMITS_TABLE,
+      clearExpiredByTimeout: true,
+    }),
     memory: stores.memory({}),
   },
 })

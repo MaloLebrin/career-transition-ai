@@ -31,6 +31,8 @@ Checklist des points à traiter avant ou pour la mise en production.
 
 - [ ] **Tests** — Ajouter ou compléter les tests (onboarding, super admin, parcours critiques) pour limiter les régressions.
 - [x] **Monitoring / erreurs** — Sentry (5xx serveur et jobs en échec définitif), activé par `SENTRY_DSN` : mise en place et vérification dans [DEPLOYMENT.md](DEPLOYMENT.md#suivi-des-erreurs-sentry). Page de secours React (`ErrorBoundary`).
+- [x] **Temps réel web ↔ worker (#172)** — diffusions Transmit relayées par Postgres `LISTEN/NOTIFY` (`TRANSMIT_TRANSPORT=postgres`) : « PDF prêt » et notifications créées par un job arrivent en direct. À vérifier après le premier déploiement : lancer un export PDF, la page **Exports PDF** passe à « prêt » sans recharger ([DEPLOYMENT.md](DEPLOYMENT.md) §0.6).
+- [x] **Rate limiting partagé (#172)** — `LIMITER_STORE=database` (table `rate_limits`) : compteurs communs à toutes les instances web et conservés au redémarrage.
 - [ ] **Lenteurs** — Pas de suivi des temps de réponse (traces Sentry désactivées pour le quota gratuit).
 - [ ] **Logs** — Configurer le niveau de log et la rotation en production.
 

@@ -124,6 +124,20 @@ router.get('/health', async ({ response }) => {
 
 `config/transmit.ts` : `pingInterval: '30s'`.
 
+#### Temps réel entre web et worker (Transmit, #172)
+
+Le navigateur tient sa connexion SSE (`/__transmit/events`) avec le process **web**, alors que les jobs du **worker** diffusent (`broadcastPdfExportUpdatedToUsers`, `NotificationService.notify`). Sans bus, ces événements n'atteignaient jamais le navigateur. `TRANSMIT_TRANSPORT=postgres` (défaut) relaie chaque `transmit.broadcast()` par Postgres `LISTEN/NOTIFY` (`app/utils/postgres_transmit_transport.ts`, canal `transmit_broadcast`) :
+
+- **une connexion Postgres de plus par process** (web, worker), hors pool Lucid et hors transaction ; rien à installer ni à superviser en plus de la base ;
+- valable aussi entre **plusieurs instances web** (chat, notifications) ;
+- connexion d'écoute coupée (redémarrage de Postgres) : reconnexion à délai croissant (1 s → 30 s), canaux ré-écoutés, diffusions en échec rejouées ; avertissements `Transmit (postgres)` dans les logs ;
+- charge > ~7,9 Ko (limite de `NOTIFY`) : relais abandonné et journalisé, la donnée reste visible au rechargement ;
+- **pas de pooler en mode transaction** (PgBouncer `transaction`, port « pooled » de Neon) devant cette connexion : `LISTEN` exige une session. Le compose de prod se connecte directement au Postgres.
+
+`TRANSMIT_TRANSPORT=none` : diffusion locale seulement (tout en un process, `QUEUE_DRIVER=sync`). `memory` : tests uniquement.
+
+Pourquoi pas Redis : un service de plus sur la VM (mémoire, persistance, mises à jour, supervision) et deux dépendances (`ioredis`, `@adonisjs/redis`) pour un volume de quelques messages par minute ; Postgres porte déjà la queue et suffit. Redis redevient pertinent au-delà d'une machine ou pour des charges > 8 Ko : `@adonisjs/transmit/transports` fournit `redis()`, à brancher dans `transmitTransport()`.
+
 Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de `X-Forwarded-For`, écrite par le client : elle ne sert à aucune décision de sécurité. Le rate limiting (ci-dessous) utilise `clientIp()` (`app/utils/client_ip.ts`), soit l'entrée la plus à **droite**, celle que le proxy (Caddy) réécrit. Un seul proxy doit donc se trouver devant l'app ; avec deux proxys chaînés (ex. CDN devant Caddy), la clé deviendrait l'IP du premier proxy et tous les clients partageraient un compteur.
 
 #### Rate limiting des endpoints publics
@@ -137,7 +151,7 @@ Avec ce `trustProxy`, `request.ip()` renvoie l'entrée la plus à **gauche** de 
 | `POST /contact-requests`  | 3 / heure (2 e-mails Resend par demande) | IP                      |
 | `POST /onboarding/:token` | 10 / minute                              | IP                      |
 
-Au-delà : 429 avec `Retry-After` et `X-RateLimit-*`. Une requête Inertia reçoit à la place un redirect back (303) avec `flash.error` et `errors.rateLimit` (`app/exceptions/handler.ts`). Store `memory` (`config/limiter.ts`) : les compteurs sont propres au process web et repartent à zéro au redémarrage. Avec plusieurs instances web, passer au store `database`.
+Au-delà : 429 avec `Retry-After` et `X-RateLimit-*`. Une requête Inertia reçoit à la place un redirect back (303) avec `flash.error` et `errors.rateLimit` (`app/exceptions/handler.ts`). Store `database` (`LIMITER_STORE=database`, défaut, `config/limiter.ts`, #172) : compteurs dans la table `rate_limits` (migration `1791000000007_create_rate_limits_table`), partagés par toutes les instances web et conservés au redémarrage ; lignes expirées purgées toutes les 5 minutes. `LIMITER_STORE=memory` : compteurs propres au process, remis à zéro au redémarrage (dépannage seulement). En test, `limiter.clear()` vide la table avant chaque test functional (`tests/bootstrap.ts`).
 
 ### 0.7 Dockerfile et entrypoint (scénario 2)
 
@@ -432,6 +446,8 @@ Modèle à copier : [`.env.production.example`](../.env.production.example) (le 
 | `DB_URL` **ou** `DB_HOST`+`DB_PORT`+`DB_USER`+`DB_PASSWORD`+`DB_DATABASE` | oui (l'un des deux)                                 | Postgres managé : URL `?sslmode=require` ; compose : `DB_HOST=postgres`                                                                                                                                                                                                          |
 | `DB_SSL`                                                                  | non (défaut `true`)                                 | `false` seulement pour un Postgres sans TLS                                                                                                                                                                                                                                      |
 | `QUEUE_DRIVER`                                                            | oui                                                 | `sync` (mono-process) ou `database` (worker) ; pas de `redis` (aucun adapter)                                                                                                                                                                                                    |
+| `TRANSMIT_TRANSPORT`                                                      | non (défaut `postgres`)                             | `postgres` : diffusions du worker relayées au web par `LISTEN/NOTIFY` (§0.6) ; `none` seulement en mono-process                                                                                                                                                                  |
+| `LIMITER_STORE`                                                           | non (défaut `database`)                             | `database` : compteurs du rate limiting dans `rate_limits`, partagés et persistants (§0.6)                                                                                                                                                                                       |
 | `AI_PROVIDER`                                                             | non                                                 | `mistral` ou `none`                                                                                                                                                                                                                                                              |
 | `MISTRAL_API_KEY`, `MISTRAL_MODEL`                                        | si `mistral`                                        | clé ; `mistral-small-latest`                                                                                                                                                                                                                                                     |
 | `REGISTRATION_ENABLED`                                                    | non (défaut `false` en production, `true` ailleurs) | `false` pendant la beta fermée : `/auth/register` redirige vers la connexion, `POST /auth/register` renvoie 403 et le lien « S'inscrire » disparaît. Les comptes se créent depuis l'UI super admin                                                                               |
