@@ -23,7 +23,7 @@ const BASELINE: Record<string, number> = {
   'inertia/components/dashboard': 233,
   'inertia/components/design-system': 0,
   'inertia/components/errors': 0,
-  'inertia/components/exercises': 230,
+  'inertia/components/exercises': 225,
   'inertia/components/landing': 0,
   'inertia/components/layout': 0,
   'inertia/components/marketing': 0,
