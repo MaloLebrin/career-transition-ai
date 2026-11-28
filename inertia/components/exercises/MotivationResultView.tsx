@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { formatDate } from '../../../shared/helpers/date'
 import MotivationMatrix from './motivation/MotivationMatrix'
+import { rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
+import { MotivationRankingColumn } from './motivation/MotivationRankingColumn'
 
 interface Props {
   data: {
@@ -22,8 +24,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
   }
 
   const ranked = Array.isArray(data.ranked) ? data.ranked : []
-  const top3 = ranked.slice(0, 3)
-  const bottom3 = [...ranked].reverse().slice(0, 3)
+  const { top, bottom } = rankingExtremes(ranked)
   const matrix = Array.isArray(data.matrix) ? data.matrix : []
 
   return (
@@ -34,7 +35,9 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
           <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
             Date de passage
           </div>
-          <div className="text-lg font-black text-slate-900">{formatDate(date, { month: 'short', year: 'numeric', day: 'numeric' })}</div>
+          <div className="text-lg font-black text-slate-900">
+            {formatDate(date, { month: 'short', year: 'numeric', day: 'numeric' })}
+          </div>
         </div>
         <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
           <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -50,48 +53,17 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
         </div>
       </div>
 
-      {/* Extreme Factors Breakdown */}
-      <div className="grid grid-cols-1 gap-8">
-        <div className="bg-emerald-50/50 p-8 rounded-[40px] border border-emerald-100">
-          <h5 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6 flex items-center">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
-            Top 3 Leviers d'Engagement
+      {ranked.length > 0 && (
+        <section className="space-y-4" aria-labelledby="motivation-extremes-title">
+          <h5 id="motivation-extremes-title" className="text-xl font-bold text-ink">
+            Vos 3 premières et 3 dernières motivations
           </h5>
-          <div className="space-y-4">
-            {top3.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center bg-white p-5 rounded-[24px] shadow-sm border border-emerald-50 group hover:scale-[1.02] transition-all"
-              >
-                <span className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-sm mr-4">
-                  {i + 1}
-                </span>
-                <span className="min-w-0 text-base font-semibold leading-snug text-ink">{item}</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <MotivationRankingColumn title="Les 3 premières" items={top} tone="lake" />
+            <MotivationRankingColumn title="Les 3 dernières" items={bottom} tone="apricot" />
           </div>
-        </div>
-
-        <div className="bg-rose-50/50 p-8 rounded-[40px] border border-rose-100">
-          <h5 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-6 flex items-center">
-            <span className="w-2 h-2 bg-rose-500 rounded-full mr-2"></span>
-            Facteurs Neutres ou de Désengagement
-          </h5>
-          <div className="space-y-4">
-            {bottom3.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center bg-white p-5 rounded-[24px] shadow-sm border border-rose-50 group hover:scale-[1.02] transition-all"
-              >
-                <span className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-sm mr-4">
-                  {i + 1}
-                </span>
-                <span className="min-w-0 text-base font-semibold leading-snug text-ink">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        </section>
+      )}
 
       {ranked.length > 0 && (
         <section className="space-y-4">
@@ -123,9 +95,7 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
           </button>
         </div>
 
-        {showMatrix && (
-          <MotivationMatrix matrix={matrix} />
-        )}
+        {showMatrix && <MotivationMatrix matrix={matrix} />}
       </div>
     </div>
   )
