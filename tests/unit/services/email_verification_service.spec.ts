@@ -80,6 +80,23 @@ test.group('EmailVerificationService.sendLink', (group) => {
     assert.lengthOf(await activeTokens(user.id), 1)
   })
 
+  test('un renvoi de vérification garde la demande de changement d’e-mail en cours', async ({
+    assert,
+  }) => {
+    const { user } = await createB2cCandidate()
+    const { service } = makeService()
+    await service.requestEmailChange(user, 'nouvelle@example.com')
+
+    await service.sendLink(user)
+
+    assert.equal(await service.pendingEmailFor(user), 'nouvelle@example.com')
+    const active = await activeTokens(user.id)
+    assert.sameMembers(
+      active.map((t) => t.newEmail),
+      [null, 'nouvelle@example.com']
+    )
+  })
+
   test('une panne du fournisseur remonte (le renvoi explicite doit l’afficher)', async ({
     assert,
   }) => {
@@ -240,6 +257,19 @@ test.group('EmailVerificationService.requestEmailChange (#143)', (group) => {
     assert.isNull(await service.requestEmailChange(advisor, advisor.email.toUpperCase()))
     assert.lengthOf(changeLinks, 0)
     assert.isNull(await service.pendingEmailFor(advisor))
+  })
+
+  test('revenir à son adresse actuelle annule la demande en cours', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { service, changeLinks } = makeService()
+
+    await service.requestEmailChange(advisor, 'coquille@example.com')
+    assert.isNull(await service.requestEmailChange(advisor, advisor.email))
+
+    assert.isNull(await service.pendingEmailFor(advisor))
+    assert.deepEqual(await service.verify(changeLinks[0].plainToken!), { outcome: 'invalid' })
+    await advisor.refresh()
+    assert.notEqual(advisor.email, 'coquille@example.com')
   })
 
   test('adresse d’un autre compte (casse comprise) : refus, aucun lien', async ({ assert }) => {
