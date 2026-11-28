@@ -2,6 +2,7 @@ import { EmailChangeConflictError } from '#exceptions/email_verification_errors'
 import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
+import { UserEmailService } from '#services/user_email_service'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
@@ -18,6 +19,8 @@ import { DateTime } from 'luxon'
  * choisir le mot de passe du compte.
  */
 export class OnboardingTokensService {
+  private userEmails = new UserEmailService()
+
   /** Jeton correspondant au secret du lien, avec son utilisateur, ou `null`. */
   public async findByPlainToken(plainToken: string): Promise<OnboardingToken | null> {
     if (!plainToken) return null
@@ -80,8 +83,10 @@ export class OnboardingTokensService {
   /**
    * Changement d'e-mail (#143) : l'adresse a pu être prise entre l'envoi du
    * lien et le clic. La fiche candidat, qui en garde une copie, suit.
-   * L'unicité n'étant garantie que par organisation en base, un verrou
-   * transactionnel sur l'adresse sérialise deux confirmations simultanées.
+   * L'index unique `users (lower(email))` (#169) interdit le doublon ; le
+   * verrou transactionnel sur l'adresse sérialise deux confirmations
+   * simultanées pour que la seconde reçoive l'erreur de domaine plutôt qu'une
+   * violation de contrainte.
    */
   private async applyNewEmail(
     user: User,
@@ -91,10 +96,7 @@ export class OnboardingTokensService {
     await trx.rawQuery('SELECT pg_advisory_xact_lock(hashtext(?))', [
       `email:${newEmail.toLowerCase()}`,
     ])
-    const taken = await User.query({ client: trx })
-      .whereRaw('LOWER(email) = ?', [newEmail.toLowerCase()])
-      .whereNot('id', user.id)
-      .first()
+    const taken = await this.userEmails.isTaken(newEmail, { exceptUserId: user.id }, trx)
     if (taken) throw new EmailChangeConflictError()
 
     user.email = newEmail

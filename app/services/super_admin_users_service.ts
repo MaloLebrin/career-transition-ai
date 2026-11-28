@@ -1,5 +1,4 @@
 import DomainException from '#exceptions/domain_exception'
-import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import {
   SuperAdminRoleLockedError,
   SuperAdminUserHasDataError,
@@ -10,6 +9,7 @@ import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
+import { UserEmailService } from '#services/user_email_service'
 import type { SuperAdminCreatableRole } from '#shared/constants/roles'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import {
@@ -44,6 +44,8 @@ type CreatePlatformUserInput = {
 
 @inject()
 export class SuperAdminUsersService {
+  private userEmails = new UserEmailService()
+
   constructor(
     private onboardingMailService: OnboardingMailService,
     private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService()
@@ -111,14 +113,7 @@ export class SuperAdminUsersService {
     const email = input.email.trim()
     const name = input.name.trim()
 
-    const existing = await User.query()
-      .where('organizationId', input.organizationId)
-      .whereRaw('LOWER(email) = ?', [email.toLowerCase()])
-      .first()
-
-    if (existing) {
-      throw new EmailAlreadyUsedException()
-    }
+    await this.userEmails.assertAvailable(email)
 
     const temporaryPassword = randomBytes(32).toString('hex')
     const user = await User.create({
@@ -191,11 +186,7 @@ export class SuperAdminUsersService {
     const user = await this.findInScope(userId)
     const email = input.email.trim()
 
-    const taken = await User.query()
-      .whereRaw('LOWER(email) = ?', [email.toLowerCase()])
-      .whereNot('id', user.id)
-      .first()
-    if (taken) throw new EmailAlreadyUsedException()
+    await this.userEmails.assertAvailable(email, { exceptUserId: user.id })
 
     user.name = input.name.trim()
     if (email.toLowerCase() !== user.email.toLowerCase()) {

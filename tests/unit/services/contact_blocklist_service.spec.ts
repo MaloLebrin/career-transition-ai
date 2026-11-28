@@ -150,22 +150,6 @@ test.group('ContactBlocklistService — comptes en doublon, liste et purge', (gr
 
   const service = new ContactBlocklistService()
 
-  test('plusieurs comptes pour une adresse (casse, organisations) : aucun n’est proposé', async ({
-    assert,
-  }) => {
-    await createPlatformOrganization()
-    const first = await createAdvisor()
-    const second = await createAdvisor()
-    second.email = first.email.toUpperCase()
-    await second.save()
-
-    const states = await service.senderStates([first.email], 1)
-
-    const state = states.get(first.email.toLowerCase())!
-    assert.isNull(state.account)
-    assert.isTrue(state.ambiguousAccount)
-  })
-
   test('blockSender : deux blocages simultanés de la même adresse ne se heurtent pas', async ({
     assert,
   }) => {

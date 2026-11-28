@@ -151,6 +151,8 @@ Référencement : `noindex` par défaut partout (`SEO_INDEXING`, `config/seo.ts`
 
 IA côté navigateur (import de CV, cartographie, ciblage) : uniquement via `POST /dashboard/ai/*` (`AiAssistController`, `throttleAi`, client `createServerAiClient`) — jamais de SDK ni de clé `VITE_*` dans le bundle.
 
+E-mails de compte (#169) : une adresse = un compte sur toute la plateforme, casse ignorée (index unique `users (lower(email))`). Tout service qui crée un compte ou en change l'adresse passe par `#services/user_email_service` (`assertAvailable` → `EmailAlreadyUsedException` 409, `isTaken`, `findByEmail`) — jamais de contrôle borné à l'organisation ni sensible à la casse.
+
 Mots de passe (#68) : `#services/passwords_service` — oubli (`/auth/forgot-password`, lien haché 1 h `PasswordResetToken`, même réponse que le compte existe ou non), changement connecté (`PUT /dashboard/password`, e-mail de confirmation), lien envoyé par le super admin ; jamais de mot de passe généré ni affiché.
 
 Accès aux exercices du candidat (#100) : `#services/exercise_access_service` (`resolve(employee)` → `ExerciseAccess` de `shared/types/exercise/access.ts`, `canAccess`, `shouldRunAiAnalysis`) — B2B par le plan d'accompagnement (`lockedReason: 'plan'`), B2C par le forfait (`EntitlementsService`, exercices gratuits `B2C_FREE_EXERCISE_TYPES`, `lockedReason: 'payment'`). Lectures pures dans `#shared/helpers/exercise_access` ; politique IA documentée dans `docs/AI_JOBS.md` ; composants B2C dans `inertia/components/dashboard/b2c/`.

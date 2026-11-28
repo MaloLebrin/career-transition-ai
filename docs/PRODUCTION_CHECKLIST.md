@@ -39,6 +39,17 @@ Checklist des points à traiter avant ou pour la mise en production.
 - [x] **Pagination** — Listes des candidats, organisations, utilisateurs et exports PDF paginées (25 par page) avec recherche côté serveur (#75). Les notifications ne sont pas listées en entier : la cloche en charge 20 au plus.
 - [x] **Sauvegardes** — Scénario 2 : `deploy/backup.sh` + crontab sur la VM ; scénario 1 : `pg_dump` manuel de la base Neon. Procédures dans [DEPLOYMENT.md](DEPLOYMENT.md) §1.5 et §2.6.
 - [ ] **Migrations** — Tester les migrations sur une copie de la prod avant déploiement.
+- [ ] **E-mails de compte uniques (#169)** — la migration `1791000000007_make_users_email_globally_unique` pose l'index unique `users (lower(email))` et **échoue** (sans rien modifier) s'il existe des adresses portées par plusieurs comptes, casse comprise. Avant de déployer, lancer la détection sur la base de production et dédoublonner à la main (aucun dédoublonnage automatique) :
+
+  ```sql
+  SELECT lower(email) AS email, array_agg(id ORDER BY id) AS user_ids,
+         array_agg(organization_id ORDER BY id) AS organization_ids
+  FROM users
+  GROUP BY lower(email)
+  HAVING count(*) > 1;
+  ```
+
+  Aucune ligne → la migration passe. Sinon, pour chaque adresse, choisir le compte à garder et changer l'adresse des autres (ou les supprimer depuis le back-office s'ils ne portent aucune donnée), puis relancer la requête.
 
 ## Fonctionnel
 

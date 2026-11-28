@@ -1,4 +1,3 @@
-import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import Education from '#models/education'
 import Employee from '#models/employee'
 import EmployeeSkill from '#models/employee_skill'
@@ -7,6 +6,7 @@ import Skill from '#models/skill'
 import User from '#models/user'
 import { EmailVerificationService } from '#services/email_verification_service'
 import { EmployeesService } from '#services/employees_service'
+import { UserEmailService } from '#services/user_email_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { EXPERIENCES_TYPES } from '#shared/constants/experience'
@@ -53,6 +53,8 @@ type UpdateOptions = {
 
 @inject()
 export class CandidatProfileService {
+  private userEmails = new UserEmailService()
+
   constructor(
     private employeesService: EmployeesService,
     private emailVerification: EmailVerificationService
@@ -146,11 +148,7 @@ export class CandidatProfileService {
 
         if (trx) {
           if (nextEmail !== user.email) {
-            const existing = await User.query({ client: trx })
-              .where('email', nextEmail)
-              .whereNot('id', '=', user.id)
-              .first()
-            if (existing) throw new EmailAlreadyUsedException()
+            await this.userEmails.assertAvailable(nextEmail, { exceptUserId: user.id }, trx)
           }
           user.merge({ name: nextName, email: nextEmail })
           // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
@@ -159,11 +157,7 @@ export class CandidatProfileService {
         } else {
           // no transaction => keep existing AuthService behavior elsewhere; here we do minimal update
           if (nextEmail !== user.email) {
-            const existing = await User.query()
-              .where('email', nextEmail)
-              .whereNot('id', '=', user.id)
-              .first()
-            if (existing) throw new EmailAlreadyUsedException()
+            await this.userEmails.assertAvailable(nextEmail, { exceptUserId: user.id })
           }
           user.merge({ name: nextName, email: nextEmail })
           // Nouvelle adresse = non vérifiée (#98) : le lien précédent ne vaut plus.
