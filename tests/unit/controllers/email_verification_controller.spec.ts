@@ -1,4 +1,6 @@
 import EmailVerificationController, {
+  EMAIL_CHANGE_TAKEN_MESSAGE,
+  EMAIL_CHANGED_MESSAGE,
   EMAIL_VERIFICATION_INVALID_MESSAGE,
   EMAIL_VERIFICATION_SENT_MESSAGE,
   EMAIL_VERIFIED_MESSAGE,
@@ -53,7 +55,7 @@ test.group('EmailVerificationController.verify', () => {
     const controller = makeController({
       verify: async (token: string) => {
         received.push(token)
-        return { id: 3 }
+        return { outcome: 'verified' }
       },
     })
     const { ctx, flashes, calls } = makeCtx(undefined)
@@ -68,7 +70,7 @@ test.group('EmailVerificationController.verify', () => {
   test('candidat connecté : retour sur /dashboard/candidat ; autre rôle : /dashboard', async ({
     assert,
   }) => {
-    const controller = makeController({ verify: async () => ({ id: 3 }) })
+    const controller = makeController({ verify: async () => ({ outcome: 'verified' }) })
 
     const candidate = makeCtx({ id: 3, role: 'employee' })
     await controller.verify(candidate.ctx)
@@ -80,13 +82,25 @@ test.group('EmailVerificationController.verify', () => {
   })
 
   test('lien invalide : flash erreur, même destination', async ({ assert }) => {
-    const controller = makeController({ verify: async () => null })
+    const controller = makeController({ verify: async () => ({ outcome: 'invalid' }) })
     const { ctx, flashes, calls } = makeCtx({ id: 3, role: 'employee' })
 
     await controller.verify(ctx)
 
     assert.deepEqual(flashes, [['error', EMAIL_VERIFICATION_INVALID_MESSAGE]])
     assert.equal(calls.redirect, '/dashboard/candidat')
+  })
+
+  test('changement d’e-mail (#143) : succès ou adresse prise entre-temps', async ({ assert }) => {
+    const changed = makeCtx({ id: 9, role: 'advisor' })
+    await makeController({ verify: async () => ({ outcome: 'email_changed' }) }).verify(changed.ctx)
+    assert.deepEqual(changed.flashes, [['success', EMAIL_CHANGED_MESSAGE]])
+    assert.equal(changed.calls.redirect, '/dashboard')
+
+    const taken = makeCtx(undefined)
+    await makeController({ verify: async () => ({ outcome: 'email_taken' }) }).verify(taken.ctx)
+    assert.deepEqual(taken.flashes, [['error', EMAIL_CHANGE_TAKEN_MESSAGE]])
+    assert.equal(taken.calls.redirect, '/auth/login')
   })
 })
 

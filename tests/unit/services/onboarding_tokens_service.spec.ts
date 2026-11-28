@@ -1,7 +1,9 @@
+import { EmailChangeConflictError } from '#exceptions/email_verification_errors'
+import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingTokensService } from '#services/onboarding_tokens_service'
-import { createB2cCandidate, createCandidate } from '#tests/support/actors'
+import { createAdvisor, createB2cCandidate, createCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import hash from '@adonisjs/core/services/hash'
 import { test } from '@japa/runner'
@@ -115,5 +117,65 @@ test.group('OnboardingTokensService.consumeForEmailVerification (#98)', (group) 
     assert.equal(fresh.emailVerifiedAt?.toISO(), verifiedAt.toISO())
     await token.refresh()
     assert.isNotNull(token.usedAt)
+  })
+})
+
+/**
+ * Changement d'e-mail (#143) : le lien part vers une adresse qui n'est pas
+ * encore celle du compte, il ne doit jamais permettre d'en choisir le mot de passe.
+ */
+test.group('OnboardingTokensService — liens de changement d’e-mail (#143)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('findForOnboarding ignore un lien de changement d’e-mail, garde un lien d’onboarding', async ({
+    assert,
+  }) => {
+    const { user } = await createCandidate({ onboarded: false })
+    const onboarding = await OnboardingToken.createForUser(user.id)
+    const change = await OnboardingToken.createForUser(user.id, { newEmail: 'autre@example.com' })
+
+    const found = await service.findForOnboarding(onboarding.plainToken!)
+    assert.equal(found?.id, onboarding.id)
+    assert.isNull(await service.findForOnboarding(change.plainToken!))
+    assert.isNull(await service.findForOnboarding('inconnu'))
+    const anyPurpose = await service.findByPlainToken(change.plainToken!)
+    assert.equal(anyPurpose?.id, change.id)
+  })
+
+  test('consumeForEmailVerification applique la nouvelle adresse au compte et à la fiche', async ({
+    assert,
+  }) => {
+    const { user, employee } = await createCandidate()
+    const token = await OnboardingToken.createForUser(user.id, { newEmail: 'neuve@example.com' })
+    const record = (await service.findByPlainToken(token.plainToken!))!
+
+    await service.consumeForEmailVerification(record)
+
+    const fresh = await User.findOrFail(user.id)
+    assert.equal(fresh.email, 'neuve@example.com')
+    assert.isNotNull(fresh.emailVerifiedAt)
+    const card = await Employee.findOrFail(employee.id)
+    assert.equal(card.email, 'neuve@example.com')
+    await token.refresh()
+    assert.isNotNull(token.usedAt)
+  })
+
+  test('adresse prise par un autre compte : refus, rien n’est consommé', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const other = await createAdvisor()
+    const token = await OnboardingToken.createForUser(advisor.id, {
+      newEmail: other.email.toUpperCase(),
+    })
+    const record = (await service.findByPlainToken(token.plainToken!))!
+
+    await assert.rejects(
+      () => service.consumeForEmailVerification(record),
+      EmailChangeConflictError
+    )
+
+    await token.refresh()
+    assert.isNull(token.usedAt)
+    const unchanged = await User.findOrFail(advisor.id)
+    assert.notEqual(unchanged.email, other.email)
   })
 })

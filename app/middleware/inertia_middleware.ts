@@ -8,6 +8,7 @@ import Organization from '#models/organization'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { PLATFORM_TEAM_ROLES } from '#shared/constants/roles'
 import { EntitlementsService } from '#services/entitlements_service'
+import { IMPERSONATOR_SESSION_KEY, ImpersonationService } from '#services/impersonation_service'
 import { NotificationService } from '#services/notification_service'
 import { receivesNotifications } from '#shared/helpers/roles'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
@@ -52,6 +53,11 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       }
     }
 
+    // Prise d'identité en cours (#143) : bandeau « Revenir à mon compte ».
+    const impersonation = user
+      ? await new ImpersonationService().bannerFor(session?.get(IMPERSONATOR_SESSION_KEY))
+      : null
+
     let notifications: any[] = []
     let unreadNotificationsCount = 0
     if (user && receivesNotifications(user.role)) {
@@ -70,6 +76,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
       // Droits d'accès aux résultats du candidat (#94), absents hors espace candidat :
       // `inertia.always()` refuse `null`, et la prop doit survivre aux rechargements partiels.
       ...(entitlement ? { entitlement: ctx.inertia.always(entitlement) } : {}),
+      ...(impersonation ? { impersonation: ctx.inertia.always(impersonation) } : {}),
       employees: ctx.inertia.always(employees),
       csrfToken: request.csrfToken,
       notifications: ctx.inertia.always(notifications),

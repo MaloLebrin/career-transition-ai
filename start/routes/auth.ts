@@ -26,6 +26,11 @@ router
       .post('/register/candidat', [AuthController, 'registerCandidate'])
       .use([throttleRegister, middleware.registrationOpen({ kind: 'candidate' })])
     router.post('/logout', [AuthController, 'logout'])
+    // Fin d'une prise d'identité (#143) : la session est celle du compte pris,
+    // pas du super admin, d'où `auth()` seul.
+    router
+      .post('/impersonation/leave', [AuthController, 'leaveImpersonation'])
+      .use(middleware.auth())
     router
       .group(() => {
         router.post('/impersonate/:id', [AuthController, 'impersonate'])

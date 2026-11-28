@@ -143,70 +143,51 @@ test.group('AuthService', (group) => {
     }
   })
 
-  test('updateProfile updates name and email', async ({ assert }) => {
-    const org = await Organization.create({
-      name: 'Org Profile',
-      slug: `org-profile-${Date.now()}`,
-    })
+  /**
+   * #143 : le nom change tout de suite, l'e-mail seulement après le clic sur
+   * le lien envoyé à la nouvelle adresse (délégué à `EmailVerificationService`).
+   */
+  test('updateProfile met le nom à jour et demande la confirmation de la nouvelle adresse', async ({
+    assert,
+  }) => {
+    const user = await createAdvisor()
+    const oldEmail = user.email
+    const requested: Array<[number, string]> = []
+    const emailVerification = {
+      requestEmailChange: async (u: User, email: string) => {
+        requested.push([u.id, email])
+        return email
+      },
+    } as unknown as EmailVerificationService
+    const service = new AuthService(undefined, emailVerification)
 
-    const oldEmail = `old-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-    const newEmail = `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}@example.com`
-
-    const user = await User.create({
-      organizationId: org.id,
-      email: oldEmail,
-      name: 'Old Name',
-      password: await hash.make('secret123'),
-      role: USERS_ROLES.ADVISOR,
-    })
-
-    const service = new AuthService()
-    const dto = await service.updateProfile(user, {
+    const result = await service.updateProfile(user, {
       name: 'New Name',
-      email: newEmail,
+      email: 'new@example.com',
     })
 
-    assert.equal(dto.name, 'New Name')
-    assert.equal(dto.email, newEmail)
-
+    assert.deepEqual(result, { pendingEmail: 'new@example.com' })
+    assert.deepEqual(requested, [[user.id, 'new@example.com']])
     await user.refresh()
     assert.equal(user.name, 'New Name')
-    assert.equal(user.email, newEmail)
+    assert.equal(user.email, oldEmail)
   })
 
-  test('updateProfile rejects duplicate email', async ({ assert }) => {
-    const org = await Organization.create({
-      name: 'Org Profile Dup',
-      slug: `org-profile-dup-${Date.now()}`,
-    })
+  test('updateProfile : adresse refusée, le nom ne change pas', async ({ assert }) => {
+    const user = await createAdvisor()
+    const emailVerification = {
+      requestEmailChange: async () => {
+        throw new Error('Cette adresse e-mail est déjà utilisée par un autre compte.')
+      },
+    } as unknown as EmailVerificationService
+    const service = new AuthService(undefined, emailVerification)
 
-    const existing = await User.create({
-      organizationId: org.id,
-      email: 'existing@example.com',
-      name: 'Existing',
-      password: await hash.make('secret123'),
-      role: USERS_ROLES.ADVISOR,
-    })
-
-    const user = await User.create({
-      organizationId: org.id,
-      email: 'user@example.com',
-      name: 'User',
-      password: await hash.make('secret123'),
-      role: USERS_ROLES.ADVISOR,
-    })
-
-    const service = new AuthService()
-
-    try {
-      await service.updateProfile(user, {
-        name: 'User',
-        email: existing.email,
-      })
-      assert.fail('Expected updateProfile to throw on duplicate email')
-    } catch (error: any) {
-      assert.include(error.message, 'déjà utilisé')
-    }
+    await assert.rejects(
+      () => service.updateProfile(user, { name: 'Autre', email: 'pris@example.com' }),
+      /déjà utilisée/
+    )
+    await user.refresh()
+    assert.notEqual(user.name, 'Autre')
   })
 })
 

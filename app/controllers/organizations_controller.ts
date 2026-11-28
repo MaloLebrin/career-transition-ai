@@ -1,4 +1,5 @@
 import Organization from '#models/organization'
+import { EmailVerificationService } from '#services/email_verification_service'
 import { OrganizationsService } from '#services/organizations_service'
 import { updateOrganizationValidator } from '#validators/organization/organization_update_validator'
 import { inviteAdvisorValidator } from '#validators/user/invite_advisor_validator'
@@ -10,7 +11,8 @@ import { AdvisorService } from '../services/advisor_service.js'
 export default class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
-    private advisorService: AdvisorService
+    private advisorService: AdvisorService,
+    private emailVerification?: EmailVerificationService
   ) {}
 
   /**
@@ -57,10 +59,13 @@ export default class OrganizationsController {
       return response.notFound()
     }
     const members = await this.organizationsService.listAdvisors(orgId)
+    // Nouvelle adresse en attente de confirmation (#143), affichée sous le champ e-mail.
+    const pendingEmail = (await this.emailVerification?.pendingEmailFor(auth.user)) ?? null
 
     return (inertia as any).render('dashboard/conseiller/settings/Home', {
       organization,
       members,
+      pendingEmail,
     })
   }
 }
