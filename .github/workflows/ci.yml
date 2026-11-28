@@ -18,9 +18,12 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   workflow_dispatch:
 
+# Annulation sur les PR seulement : sur `main`, chaque run ne regarde que les
+# commits de son push, donc annuler un run laisserait ses changements (une
+# modification du Dockerfile, par exemple) sans jamais être testés.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -43,19 +46,31 @@ jobs:
       shards: ${{ steps.compute.outputs.shards }}
     steps:
       # Profondeur 2 : sur une PR, HEAD est le commit de merge et HEAD^1 la
-      # base ; sur `main` (squash), HEAD^1 est le commit précédent.
+      # base, donc le diff couvre toute la PR. Sur un push, la base est
+      # `github.event.before` (tous les commits du push, pas seulement le
+      # dernier). Base introuvable (nouvelle branche, dispatch) → tout tourne.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - id: changes
         name: Fichiers modifiés
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || ! git rev-parse -q --verify HEAD^1 >/dev/null; then
+          case "$GITHUB_EVENT_NAME" in
+            pull_request) base=HEAD^1 ;;
+            push) base="$BEFORE"; git fetch -q --depth=1 origin "$base" 2>/dev/null || base= ;;
+            *) base= ;;
+          esac
+          if [ -z "$base" ] || ! git rev-parse -q --verify "$base^{commit}" >/dev/null; then
+            echo "Base introuvable : CI complète."
             echo "code=true" >> "$GITHUB_OUTPUT"
             echo "docker=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          files=$(git diff --name-only HEAD^1 HEAD)
+          # --no-renames : un fichier déplacé compte aussi par son ancien chemin
+          # (sortir un fichier de deploy/ doit relancer docker-image).
+          files=$(git diff --name-only --no-renames "$base" HEAD)
           echo "$files"
           # Doc seule : Markdown, docs/, règles des agents.
           if echo "$files" | grep -qvE '^(docs/|\.claude/|\.cursor/)|\.mdc?$|^LICENSE$'; then
@@ -224,8 +239,11 @@ jobs:
           context: .
           load: true
           tags: career-transition-ai:ci
+          # Lecture partout, écriture depuis `main` seulement : un cache écrit
+          # par une PR n'est lisible que par elle, et chaque export de couches
+          # coûte du temps et grignote les 10 Go de cache du dépôt.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: ${{ github.event_name == 'pull_request' && '' || 'type=gha,mode=max' }}
       - name: Env du conteneur
         run: |
           cat > "$RUNNER_TEMP/docker.env" <<'EOF'
