@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useId, useMemo } from 'react'
 import { DISC_TRAIT_COLORS, DISC_TRAIT_LABELS, DISC_TRAITS, type DiscScores } from './disc_scoring'
 import { DISC_PROFILE_COPY } from './disc_profile_copy'
 import type { DiscTrait } from './disc_questionnaire'
@@ -41,6 +41,7 @@ export default function DiscResultSummary({
   showAbout = true,
   footer,
 }: Props) {
+  const wheelTitleId = useId()
   const computedTop = useMemo(() => computeTopTwo(percent), [percent])
   const dom = dominant ?? computedTop.dominant
   const sec = secondary ?? computedTop.secondary
@@ -137,10 +138,10 @@ export default function DiscResultSummary({
       </div>
 
       <section
-        aria-labelledby="disc-wheel-title"
+        aria-labelledby={wheelTitleId}
         className="rounded-2xl border border-hairline bg-surface p-6 shadow-card sm:p-8"
       >
-        <h4 id="disc-wheel-title" className="text-title-md text-ink">
+        <h4 id={wheelTitleId} className="text-title-md text-ink">
           Votre position sur la roue
         </h4>
         <p className="mt-1 text-sm text-muted">

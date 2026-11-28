@@ -140,4 +140,17 @@ describe('DiscWheel', () => {
     expect(panel).toHaveTextContent('Coopératif')
     expect(panel).not.toHaveTextContent('Touchez une zone')
   })
+
+  test('au clavier, Entrée et Espace gardent la carte ouverte après le focus', () => {
+    render(<DiscWheel percent={FACILITANT_PROFILE} />)
+    const zone = screen.getByRole('button', { name: /^Zone Expansif/ })
+    expect(zone).not.toHaveAttribute('aria-expanded')
+
+    fireEvent.focus(zone)
+    fireEvent.keyDown(zone, { key: 'Enter' })
+    expect(within(screen.getByRole('tooltip')).getByText('Expansif')).toBeInTheDocument()
+
+    fireEvent.keyDown(zone, { key: ' ' })
+    expect(within(screen.getByRole('tooltip')).getByText('Expansif')).toBeInTheDocument()
+  })
 })

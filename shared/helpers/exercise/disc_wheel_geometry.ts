@@ -177,13 +177,17 @@ export function discRadarDomain(percent: DiscPercentInput): [number, number] {
   return [low, high]
 }
 
-/** Graduations du radar : bornes du domaine et paliers intermédiaires de 10 ou 20 points. */
+/**
+ * Graduations du radar : bornes du domaine et paliers intermédiaires de 10 ou 20 points.
+ * Quand l'écart n'est pas un multiple du pas, la borne haute remplace le dernier palier
+ * au lieu de s'y ajouter : deux graduations à 10 points l'une de l'autre se chevauchent.
+ */
 export function discRadarTicks([low, high]: [number, number]): number[] {
   const step = high - low > 50 ? 20 : 10
   const count = Math.floor((high - low) / step)
-  return Array.from({ length: count + 1 }, (_, index) => low + index * step).concat(
-    (high - low) % step === 0 ? [] : [high]
-  )
+  const ticks = Array.from({ length: count + 1 }, (_, index) => low + index * step)
+  if (ticks[ticks.length - 1] !== high) ticks[ticks.length - 1] = high
+  return ticks
 }
 
 /** Position d'un score dans le domaine du radar, 0..1. */

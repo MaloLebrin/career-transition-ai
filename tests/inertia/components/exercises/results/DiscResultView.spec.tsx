@@ -63,4 +63,20 @@ describe('DiscResultView', () => {
     expect(screen.getByTestId('disc-wheel')).toBeInTheDocument()
     expect(screen.getByTestId('disc-wheel-reading')).toHaveTextContent('zone Facilitant')
   })
+
+  test('deux vues sur une même page gardent des titres de section uniques', () => {
+    const scores = { D: 75, I: 60, S: 45, C: 80 }
+    render(
+      <>
+        <DiscResultView scores={scores} />
+        <DiscResultView scores={scores} />
+      </>
+    )
+    const radarSections = screen.getAllByRole('region', { name: 'Équilibre des quatre traits' })
+    const wheelSections = screen.getAllByRole('region', { name: 'Votre position sur la roue' })
+    expect(radarSections).toHaveLength(2)
+    expect(wheelSections).toHaveLength(2)
+    const ids = [...radarSections, ...wheelSections].map((s) => s.getAttribute('aria-labelledby'))
+    expect(new Set(ids).size).toBe(4)
+  })
 })

@@ -149,7 +149,14 @@ describe('shared/helpers/exercise/disc_wheel_geometry', () => {
   test('discRadarTicks : paliers de 10, ou de 20 au-delà de 50 points', () => {
     expect(discRadarTicks([30, 70])).toEqual([30, 40, 50, 60, 70])
     expect(discRadarTicks([10, 90])).toEqual([10, 30, 50, 70, 90])
-    expect(discRadarTicks([0, 70])).toEqual([0, 20, 40, 60, 70])
+    expect(discRadarTicks([0, 70])).toEqual([0, 20, 40, 70])
+  })
+
+  test('discRadarTicks : la borne haute remplace un palier trop proche', () => {
+    expect(discRadarTicks([10, 80])).toEqual([10, 30, 50, 80])
+    const ticks = discRadarTicks([10, 80])
+    const gaps = ticks.slice(1).map((tick, index) => tick - ticks[index])
+    expect(Math.min(...gaps)).toBeGreaterThan(10)
   })
 
   test('discRadarRatio : position relative bornée', () => {

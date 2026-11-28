@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useId, useMemo } from 'react'
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -55,6 +55,8 @@ function TraitDot({ cx, cy, payload }: RadarDotProps) {
 }
 
 const DiscResultView: React.FC<Props> = ({ scores }) => {
+  // Id unique : plusieurs résultats peuvent s'afficher sur une même page (étape du plan).
+  const titleId = useId()
   const percent = useMemo(
     () => ({
       D: Number(scores.D) || 0,
@@ -73,10 +75,10 @@ const DiscResultView: React.FC<Props> = ({ scores }) => {
       <DiscResultSummary percent={percent} showAbout={false} />
 
       <section
-        aria-labelledby="disc-radar-title"
+        aria-labelledby={titleId}
         className="rounded-2xl border border-hairline bg-surface-soft p-6 sm:p-8"
       >
-        <h4 id="disc-radar-title" className="text-title-md text-ink">
+        <h4 id={titleId} className="text-title-md text-ink">
           Équilibre des quatre traits
         </h4>
         <p className="mt-1 text-sm text-muted">

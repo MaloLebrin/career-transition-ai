@@ -85,7 +85,6 @@ export function DiscWheel({ percent }: DiscWheelProps) {
     'role': 'button',
     'aria-label': label,
     'aria-describedby': active === key ? popoverId : undefined,
-    'aria-expanded': active === key,
     'onMouseEnter': () => setActive(key),
     'onMouseLeave': () => setActive(focusedRef.current),
     'onFocus': () => {
@@ -96,14 +95,15 @@ export function DiscWheel({ percent }: DiscWheelProps) {
       focusedRef.current = null
       setActive((current) => (current === key ? null : current))
     },
-    // Un toucher émet mouseenter + focus avant click : le clic ouvre toujours, sans basculer,
-    // sinon la carte se refermerait aussitôt sur mobile. Fermeture : Échap, blur, survol ailleurs.
+    // Un toucher émet mouseenter + focus avant click, et le focus clavier ouvre déjà la carte :
+    // clic, Entrée et Espace ouvrent toujours, sans basculer, sinon ils la refermeraient.
+    // Fermeture : Échap, blur, survol ailleurs.
     'onClick': () => setActive(key),
     'onKeyDown': (event: React.KeyboardEvent) => {
       if (event.key === 'Escape') setActive(null)
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
-        setActive((current) => (current === key ? null : key))
+        setActive(key)
       }
     },
   })
