@@ -79,4 +79,65 @@ describe('DiscWheel', () => {
     fireEvent.mouseEnter(screen.getByRole('button', { name: /^Zone Expansif/ }))
     expect(screen.queryByText('Votre profil se situe ici')).not.toBeInTheDocument()
   })
+
+  test('un toucher (mouseenter, focus puis click) ouvre la carte sans la refermer', () => {
+    render(<DiscWheel percent={FACILITANT_PROFILE} />)
+    const zone = screen.getByRole('button', { name: 'Zone Directif (trait D Dominant)' })
+
+    fireEvent.mouseEnter(zone)
+    fireEvent.focus(zone)
+    fireEvent.click(zone)
+    expect(within(screen.getByRole('tooltip')).getByText('Directif')).toBeInTheDocument()
+
+    // Un second toucher sur la même zone la laisse ouverte.
+    fireEvent.click(zone)
+    expect(screen.getByRole('tooltip')).toBeInTheDocument()
+  })
+
+  test('toucher une autre zone remplace la carte', () => {
+    render(<DiscWheel percent={FACILITANT_PROFILE} />)
+    const directif = screen.getByRole('button', { name: 'Zone Directif (trait D Dominant)' })
+    const expansif = screen.getByRole('button', { name: /^Zone Expansif/ })
+
+    fireEvent.mouseEnter(directif)
+    fireEvent.focus(directif)
+    fireEvent.click(directif)
+    fireEvent.mouseLeave(directif)
+    fireEvent.blur(directif)
+    fireEvent.mouseEnter(expansif)
+    fireEvent.focus(expansif)
+    fireEvent.click(expansif)
+
+    expect(within(screen.getByRole('tooltip')).getByText('Expansif')).toBeInTheDocument()
+  })
+
+  test('quitter une zone survolée revient à la zone qui a le focus', () => {
+    render(<DiscWheel percent={FACILITANT_PROFILE} />)
+    const focused = screen.getByRole('button', { name: /^Zone Facilitant/ })
+    const hovered = screen.getByRole('button', { name: /^Zone Directif/ })
+
+    fireEvent.focus(focused)
+    fireEvent.mouseEnter(hovered)
+    expect(within(screen.getByRole('tooltip')).getByText('Directif')).toBeInTheDocument()
+
+    fireEvent.mouseLeave(hovered)
+    expect(within(screen.getByRole('tooltip')).getByText('Facilitant')).toBeInTheDocument()
+
+    fireEvent.mouseLeave(screen.getByTestId('disc-wheel'))
+    expect(within(screen.getByRole('tooltip')).getByText('Facilitant')).toBeInTheDocument()
+
+    fireEvent.blur(focused)
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  })
+
+  test('le panneau mobile a toujours sa place et montre la zone touchée', () => {
+    render(<DiscWheel percent={FACILITANT_PROFILE} />)
+    const panel = screen.getByTestId('disc-wheel-panel')
+    expect(panel).toHaveAttribute('aria-hidden', 'true')
+    expect(panel).toHaveTextContent('Touchez une zone ou le point pour afficher sa description.')
+
+    fireEvent.click(screen.getByRole('button', { name: /^Zone Coopératif/ }))
+    expect(panel).toHaveTextContent('Coopératif')
+    expect(panel).not.toHaveTextContent('Touchez une zone')
+  })
 })

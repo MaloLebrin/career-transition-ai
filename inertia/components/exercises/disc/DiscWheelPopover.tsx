@@ -85,10 +85,23 @@ function PointContent({ position }: { position: DiscWheelPosition }) {
   )
 }
 
+function TargetContent({
+  target,
+  candidateZoneKey,
+}: {
+  target: DiscWheelPopoverTarget
+  candidateZoneKey: string | null
+}) {
+  return target.kind === 'zone' ? (
+    <ZoneContent zone={target.zone} isCandidateZone={target.zone.key === candidateZoneKey} />
+  ) : (
+    <PointContent position={target.position} />
+  )
+}
+
 /**
- * Carte d'explication affichée au survol / focus d'une zone ou du point de la roue DISC.
- * Dès `sm`, elle flotte et s'ouvre vers le centre de la roue pour ne pas déborder ;
- * en dessous, elle s'affiche sous la roue.
+ * Carte d'explication flottante, affichée dès `sm` au survol / focus d'une zone ou du point
+ * de la roue DISC. Elle s'ouvre vers le centre de la roue pour ne pas déborder.
  */
 export function DiscWheelPopover({ id, target, candidateZoneKey, anchor }: DiscWheelPopoverProps) {
   // Ancre proche de l'axe vertical : carte centrée, ouverte vers le centre de la roue.
@@ -104,11 +117,9 @@ export function DiscWheelPopover({ id, target, candidateZoneKey, anchor }: DiscW
         top: `${Math.max(8, Math.min(92, anchor.y))}%`,
         ...(opensLeft ? { right: `${100 - anchor.x}%` } : { left: `${anchor.x}%` }),
       }
-  // Sous `sm`, la roue est trop petite pour une carte flottante : la carte suit la roue
-  // (position statique, les décalages inline sont alors ignorés).
   const placement = centered
-    ? `sm:-translate-x-1/2 ${opensUp ? 'sm:mt-0 sm:mb-4' : 'sm:mt-4'}`
-    : `sm:mt-0 sm:-translate-y-1/2 ${opensLeft ? 'sm:mr-3' : 'sm:ml-3'}`
+    ? `-translate-x-1/2 ${opensUp ? 'mb-4' : 'mt-4'}`
+    : `-translate-y-1/2 ${opensLeft ? 'mr-3' : 'ml-3'}`
 
   return (
     <div
@@ -116,12 +127,40 @@ export function DiscWheelPopover({ id, target, candidateZoneKey, anchor }: DiscW
       role="tooltip"
       data-testid="disc-wheel-popover"
       style={style}
-      className={`pointer-events-none static z-10 mt-3 w-full rounded-xl sm:absolute sm:w-60 sm:max-w-[75%] border border-hairline bg-surface p-4 shadow-raised motion-safe:animate-fade-in ${placement}`}
+      className={`pointer-events-none absolute z-10 hidden w-60 max-w-[75%] rounded-xl border border-hairline bg-surface p-4 shadow-raised motion-safe:animate-fade-in sm:block ${placement}`}
     >
-      {target.kind === 'zone' ? (
-        <ZoneContent zone={target.zone} isCandidateZone={target.zone.key === candidateZoneKey} />
+      <TargetContent target={target} candidateZoneKey={candidateZoneKey} />
+    </div>
+  )
+}
+
+/**
+ * Sous `sm`, la roue est trop petite pour une carte flottante : un panneau de hauteur
+ * réservée sous la roue affiche la zone touchée, sans décaler la page à chaque toucher.
+ * Doublon visuel de la carte flottante (masquée à cette taille), caché aux lecteurs d'écran
+ * qui lisent déjà la carte via `aria-describedby`.
+ */
+export function DiscWheelPanel({
+  target,
+  candidateZoneKey,
+}: {
+  target: DiscWheelPopoverTarget | null
+  candidateZoneKey: string | null
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      data-testid="disc-wheel-panel"
+      className="grid min-h-56 rounded-xl border border-hairline bg-surface-soft p-4 sm:hidden"
+    >
+      {target ? (
+        <div>
+          <TargetContent target={target} candidateZoneKey={candidateZoneKey} />
+        </div>
       ) : (
-        <PointContent position={target.position} />
+        <p className="self-center text-center text-sm text-muted">
+          Touchez une zone ou le point pour afficher sa description.
+        </p>
       )}
     </div>
   )

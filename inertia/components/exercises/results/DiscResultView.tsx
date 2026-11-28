@@ -102,7 +102,7 @@ const DiscResultView: React.FC<Props> = ({ scores }) => {
               <PolarRadiusAxis
                 angle={90}
                 domain={domain}
-                ticks={ticks as any}
+                ticks={ticks}
                 tickFormatter={(value: number) => `${value} %`}
                 tick={{ fontSize: 11, fill: CHART_MUTED }}
                 axisLine={false}
@@ -115,8 +115,8 @@ const DiscResultView: React.FC<Props> = ({ scores }) => {
                 strokeWidth={2}
                 fill={DISC_TRAIT_PALETTE.I.boldHex}
                 fillOpacity={0.35}
-                dot={(props: RadarDotProps & { key?: string }) => (
-                  <TraitDot key={props.payload?.trait} {...props} />
+                dot={({ cx, cy, index, payload }: RadarDotProps & { index: number }) => (
+                  <TraitDot key={index} cx={cx} cy={cy} payload={payload} />
                 )}
                 isAnimationActive={false}
               />

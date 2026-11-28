@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useId } from 'react'
 import {
   Circle as SvgCircle,
   Defs as SvgDefs,
@@ -607,6 +607,8 @@ function DiscWheelPdf({ scores }: { scores: DiscScoresPdf }) {
   const ringOpacity = [0.35, 0.6, 0.9]
   const position = discWheelPosition(scores)
   const point = discWheelPoint(position, CX, CY, R)
+  // Ids de dégradé uniques par roue : deux roues dans un même PDF ne se mélangent pas.
+  const gradientPrefix = `disc-pdf-${useId().replace(/:/g, '')}`
 
   return (
     <Svg width={WIDTH} height={HEIGHT}>
@@ -619,7 +621,7 @@ function DiscWheelPdf({ scores }: { scores: DiscScoresPdf }) {
           return (
             <SvgLinearGradient
               key={zone.key}
-              id={`disc-pdf-${zone.key}`}
+              id={`${gradientPrefix}-${zone.key}`}
               gradientUnits="userSpaceOnUse"
               x1={from.x}
               y1={from.y}
@@ -636,7 +638,9 @@ function DiscWheelPdf({ scores }: { scores: DiscScoresPdf }) {
       {DISC_WHEEL_ZONES.flatMap((zone) => {
         const { start, end } = discWheelZoneBounds(zone)
         const fill =
-          zone.traits.length === 1 ? DISC_COLORS[zone.traits[0]].bar : `url(#disc-pdf-${zone.key})`
+          zone.traits.length === 1
+            ? DISC_COLORS[zone.traits[0]].bar
+            : `url(#${gradientPrefix}-${zone.key})`
         return ringOpacity.map((opacity, index) => (
           <SvgPath
             key={`${zone.key}-${index}`}
