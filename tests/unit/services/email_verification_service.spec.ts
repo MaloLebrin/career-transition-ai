@@ -1,6 +1,7 @@
 import {
   EmailAlreadyVerifiedError,
   EmailChangeConflictError,
+  EmailChangeLinkNotSentError,
 } from '#exceptions/email_verification_errors'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
@@ -16,7 +17,9 @@ import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 /** Double de `EmailVerificationMailService` : garde les envois, peut simuler une panne. */
-function makeService(options: { failing?: boolean; failingNotice?: boolean } = {}) {
+function makeService(
+  options: { failing?: boolean; failingNotice?: boolean; failingChangeLink?: boolean } = {}
+) {
   const links: Array<{ userId: number; plainToken?: string }> = []
   const changeLinks: Array<{ userId: number; to: string | null; plainToken?: string }> = []
   const notices: Array<{ userId: number; to: string; newEmail: string }> = []
@@ -26,6 +29,7 @@ function makeService(options: { failing?: boolean; failingNotice?: boolean } = {
       links.push({ userId: user.id, plainToken: token.plainToken })
     },
     async sendEmailChangeLink({ user, token }: { user: User; token: OnboardingToken }) {
+      if (options.failingChangeLink) throw new Error('provider down')
       changeLinks.push({ userId: user.id, to: token.newEmail, plainToken: token.plainToken })
     },
     async sendEmailChangedNotice({ user, previousEmail }: { user: User; previousEmail: string }) {
@@ -203,6 +207,30 @@ test.group('EmailVerificationService.requestEmailChange (#143)', (group) => {
     assert.equal(row.newEmail, 'nouvelle@example.com')
     assert.equal(row.token, OnboardingToken.hash(changeLinks[0].plainToken!))
     assert.equal(await service.pendingEmailFor(advisor), 'nouvelle@example.com')
+  })
+
+  test('enregistre la nouvelle adresse en minuscules', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { service, changeLinks } = makeService()
+
+    assert.equal(
+      await service.requestEmailChange(advisor, 'Claire.Conseil@Example.com'),
+      'claire.conseil@example.com'
+    )
+    assert.equal(changeLinks[0].to, 'claire.conseil@example.com')
+  })
+
+  /** Revue de #143 : pas de « confirmation en attente » pour un lien jamais parti. */
+  test('échec d’envoi du lien : erreur dédiée, demande annulée', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { service } = makeService({ failingChangeLink: true })
+
+    await assert.rejects(
+      () => service.requestEmailChange(advisor, 'nouvelle@example.com'),
+      EmailChangeLinkNotSentError
+    )
+    assert.isNull(await service.pendingEmailFor(advisor))
+    assert.lengthOf(await activeTokens(advisor.id), 0)
   })
 
   test('même adresse (casse comprise) : rien n’est envoyé', async ({ assert }) => {

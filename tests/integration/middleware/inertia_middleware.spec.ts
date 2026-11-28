@@ -323,7 +323,9 @@ test.group('InertiaMiddleware.share', () => {
     const impersonating = await share(
       makeShareCtx({
         user: advisor,
-        sessionValues: { [IMPERSONATOR_SESSION_KEY]: superAdmin.id },
+        sessionValues: {
+          [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: advisor.id },
+        },
       })
     )
     assert.deepEqual(impersonating.impersonation, { impersonatorName: superAdmin.name })
@@ -331,11 +333,14 @@ test.group('InertiaMiddleware.share', () => {
     const normal = await share(makeShareCtx({ user: advisor }))
     assert.notProperty(normal, 'impersonation')
 
-    // Clé orpheline sans session ouverte : aucun bandeau.
-    const guest = await share(
-      makeShareCtx({ sessionValues: { [IMPERSONATOR_SESSION_KEY]: superAdmin.id } })
-    )
+    // Clé orpheline : aucun bandeau sans session ouverte ni pour un autre compte.
+    const stale = {
+      [IMPERSONATOR_SESSION_KEY]: { impersonatorId: superAdmin.id, targetId: advisor.id },
+    }
+    const guest = await share(makeShareCtx({ sessionValues: stale }))
     assert.notProperty(guest, 'impersonation')
+    const other = await share(makeShareCtx({ user: superAdmin, sessionValues: stale }))
+    assert.notProperty(other, 'impersonation')
   })
 
   test('conseiller et invité : pas de prop entitlement', async ({ assert }) => {

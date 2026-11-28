@@ -1,4 +1,5 @@
 import { middleware } from '#start/kernel'
+import { throttleEmailVerification } from '#start/limiter'
 import router from '@adonisjs/core/services/router'
 
 const DashboardController = () => import('#controllers/dashboard_controller')
@@ -16,7 +17,8 @@ router
     router.get('/', [DashboardController, 'advisorHome'])
     // Le profil (nom, e-mail, mot de passe) se modifie dans les réglages.
     router.get('/profile', ({ response }) => response.redirect('/dashboard/conseiller/settings'))
-    router.put('/profile', [AuthController, 'updateFromDashboard'])
+    // Une nouvelle adresse reçoit un lien (#143) : même quota que le renvoi du lien de vérification.
+    router.put('/profile', [AuthController, 'updateFromDashboard']).use(throttleEmailVerification)
     router.get('/pdf-exports', [PdfExportsController, 'index']).as('pdf_exports.index')
 
     /**

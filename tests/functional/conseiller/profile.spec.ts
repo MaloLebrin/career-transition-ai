@@ -184,6 +184,42 @@ test.group('Conseiller — profil', (group) => {
     assert.lengthOf(mails.sent, 0)
   })
 
+  test('5 mises à jour par quart d’heure et par compte, puis refus sans e-mail (#143)', async ({
+    client,
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+
+    for (let i = 0; i < 5; i++) {
+      const ok = await client
+        .put(PROFILE)
+        .json({ name: advisor.name, email: `essai-${i}@example.com` })
+        .loginAs(advisor)
+        .withInertia()
+        .redirects(0)
+      ok.assertStatus(303)
+    }
+    // Inertia : flash d'erreur + retour arrière ; hors Inertia : 429 brut.
+    const inertia = await client
+      .put(PROFILE)
+      .json({ name: advisor.name, email: 'encore@example.com' })
+      .loginAs(advisor)
+      .withInertia()
+      .header('Referer', SETTINGS)
+      .redirects(0)
+    inertia.assertHeader('location', SETTINGS)
+    assert.match(inertia.flashMessage('error') ?? '', /Trop de tentatives|réessayez/i)
+
+    const json = await client
+      .put(PROFILE)
+      .json({ name: advisor.name, email: 'encore@example.com' })
+      .loginAs(advisor)
+      .header('Accept', 'application/json')
+      .redirects(0)
+    json.assertStatus(429)
+    assert.lengthOf(mails.sent, 5)
+  })
+
   test('rejette un nom vide et un email invalide', async ({ client, assert }) => {
     const advisor = await createAdvisor()
 

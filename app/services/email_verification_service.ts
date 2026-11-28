@@ -1,6 +1,7 @@
 import {
   EmailAlreadyVerifiedError,
   EmailChangeConflictError,
+  EmailChangeLinkNotSentError,
 } from '#exceptions/email_verification_errors'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
@@ -73,8 +74,9 @@ export class EmailVerificationService {
    * l'adresse en attente, ou `null` si elle ne diffère pas de l'actuelle.
    */
   public async requestEmailChange(user: User, newEmail: string): Promise<string | null> {
-    const email = newEmail.trim()
-    if (email.toLowerCase() === user.email.toLowerCase()) return null
+    // En minuscules : la connexion compare l'adresse saisie à celle du compte.
+    const email = newEmail.trim().toLowerCase()
+    if (email === user.email.toLowerCase()) return null
     if (await this.isTakenByAnother(user, email)) throw new EmailChangeConflictError()
 
     const token = await db.transaction(async (trx) => {
@@ -90,7 +92,16 @@ export class EmailVerificationService {
         client: trx,
       })
     })
-    await this.mails.sendEmailChangeLink({ user, token })
+    try {
+      await this.mails.sendEmailChangeLink({ user, token })
+    } catch (error) {
+      // Pas de « confirmation en attente » pour un lien qui n'est jamais parti.
+      token.usedAt = DateTime.now()
+      await token.save()
+      logger.error({ err: error, userId: user.id }, 'email change link failed')
+      reportError(error, { userId: user.id, tags: { kind: 'email_change' } })
+      throw new EmailChangeLinkNotSentError()
+    }
     return email
   }
 

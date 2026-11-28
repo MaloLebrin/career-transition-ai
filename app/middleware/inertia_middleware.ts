@@ -55,7 +55,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 
     // Prise d'identité en cours (#143) : bandeau « Revenir à mon compte ».
     const impersonation = user
-      ? await new ImpersonationService().bannerFor(session?.get(IMPERSONATOR_SESSION_KEY))
+      ? await new ImpersonationService().bannerFor(session?.get(IMPERSONATOR_SESSION_KEY), user)
       : null
 
     let notifications: any[] = []

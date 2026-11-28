@@ -10,10 +10,15 @@ import { DateTime } from 'luxon'
 
 function makeSession() {
   const flashes: Array<[string, string]> = []
+  const forgotten: string[] = []
   return {
     flashes,
+    forgotten,
     flash(key: string, value: string) {
       this.flashes.push([key, value])
+    },
+    forget(key: string) {
+      this.forgotten.push(key)
     },
   }
 }
@@ -95,5 +100,7 @@ test.group('OnboardingController.submit', (group) => {
     assert.isTrue(DateTime.isDateTime(user.onboardingCompletedAt))
     assert.equal(response.redirectUrl, '/dashboard/conseiller')
     assert.deepEqual(session.flashes, [['success', 'Mot de passe créé. Bienvenue !']])
+    // Nouvelle session : aucune prise d'identité ne la suit (#143).
+    assert.deepEqual(session.forgotten, ['impersonation'])
   })
 })

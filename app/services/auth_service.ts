@@ -46,7 +46,7 @@ export class AuthService {
    * Throws if credentials are invalid.
    */
   public async verifyCredentials(email: string, password: string): Promise<User> {
-    const user = await User.findBy('email', email)
+    const user = await this.findForLogin(email)
     if (!user) {
       throw new InvalidCredentialsException()
     }
@@ -59,6 +59,20 @@ export class AuthService {
       throw new AccountDisabledError()
     }
     return user
+  }
+
+  /**
+   * Compte d'une adresse de connexion : correspondance exacte, sinon sans tenir
+   * compte de la casse (une adresse enregistrée « Claire@Example.com » se
+   * connecte avec « claire@example.com »), seulement si un seul compte correspond.
+   */
+  private async findForLogin(email: string): Promise<User | null> {
+    const exact = await User.findBy('email', email)
+    if (exact) return exact
+    const matches = await User.query()
+      .whereRaw('LOWER(email) = ?', [email.trim().toLowerCase()])
+      .limit(2)
+    return matches.length === 1 ? matches[0] : null
   }
 
   /**

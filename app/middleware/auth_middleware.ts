@@ -1,4 +1,5 @@
 import { AccountDisabledError } from '#exceptions/auth_errors'
+import { IMPERSONATOR_SESSION_KEY } from '#services/impersonation_service'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import type { Authenticators } from '@adonisjs/auth/types'
@@ -25,6 +26,7 @@ export default class AuthMiddleware {
     // Compte désactivé par le super admin (#73) : la session en cours est coupée.
     if (ctx.auth.user?.disabledAt) {
       await ctx.auth.use('web').logout()
+      ctx.session.forget(IMPERSONATOR_SESSION_KEY)
       ctx.session.flash('error', new AccountDisabledError().message)
       return ctx.response.redirect(this.redirectTo)
     }

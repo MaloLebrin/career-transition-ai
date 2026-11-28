@@ -110,8 +110,9 @@ export const throttleChangePassword = limiter.define(
 )
 
 /**
- * Renvoi du lien de vérification d'e-mail (#98) : chaque demande envoie un
- * e-mail (quota Resend). 5 / 15 min par compte.
+ * Renvoi du lien de vérification d'e-mail (#98) et mise à jour du profil
+ * conseiller, qui envoie un lien à une nouvelle adresse (#143) : chaque demande
+ * peut envoyer un e-mail (quota Resend). 5 / 15 min par compte.
  */
 export const throttleEmailVerification = limiter.define(
   'email_verification',
