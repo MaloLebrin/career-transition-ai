@@ -1,4 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  emptyMotivationMatrix,
+  motivationResumeState,
+} from '#shared/helpers/exercise/motivation_resume'
 import { MOTIVATIONS } from '../../constants/motivations'
 import { ExerciseDraft } from '../../types'
 import Button from '../ui/Button'
@@ -18,11 +22,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
   const [currentI, setCurrentI] = useState(0)
   const [currentJ, setCurrentJ] = useState(1)
   const startTimeRef = useRef<number | null>(null)
-  const [matrix, setMatrix] = useState<(number | null)[][]>(
-    Array(22)
-      .fill(null)
-      .map(() => Array(22).fill(null))
-  )
+  const [matrix, setMatrix] = useState<(number | null)[][]>(emptyMotivationMatrix)
 
   const totalDuels = (22 * 21) / 2
   const currentDuelNumber = useMemo(() => {
@@ -46,13 +46,15 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
   useEffect(() => {
     if (initialDraftPromise) {
       initialDraftPromise.then((draft) => {
-        if (draft && draft.data) {
-          setMatrix(draft.data.matrix)
-          setCurrentI(draft.data.currentI)
-          setCurrentJ(draft.data.currentJ)
-          setIsStarted(true)
-          startTimeRef.current = Date.now()
-        }
+        // Brouillon en cours : reprise au prochain duel. Résultat terminé ou données
+        // invalides : écran d'accueil, l'exercice repart d'une matrice vide.
+        const resume = motivationResumeState(draft?.data)
+        if (!resume) return
+        setMatrix(resume.matrix)
+        setCurrentI(resume.currentI)
+        setCurrentJ(resume.currentJ)
+        setIsStarted(true)
+        startTimeRef.current = Date.now()
       })
     }
   }, [])

@@ -2,6 +2,7 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen, act, waitFor } from '@testing-library/react'
 import MotivationTool from '../../../inertia/components/exercises/MotivationTool'
 import { MOTIVATIONS } from '../../../inertia/constants/motivations'
+import { emptyMotivationMatrix } from '../../../shared/helpers/exercise/motivation_resume'
 
 describe('MotivationTool', () => {
   test('renders intro screen and starts exercise', async () => {
@@ -51,5 +52,45 @@ describe('MotivationTool', () => {
 
     expect(onSaveDraft).toHaveBeenCalled()
     expect(onSave).not.toHaveBeenCalled()
+  })
+
+  // Non-régression : un exercice terminé était repris comme un brouillon, d'où
+  // « NaN% », « Duel NaN / 231 » et des options vides (puis un plantage).
+  test('exercice terminé : écran d’accueil, puis un nouveau passage depuis le premier duel', async () => {
+    const matrix = emptyMotivationMatrix().map((row, i) => row.map((_, j) => (j > i ? i : null)))
+    const completed = Promise.resolve({
+      data: { ranked: MOTIVATIONS.map((m) => m.label), scores: {}, matrix, step: 2 },
+    } as any)
+
+    render(
+      <MotivationTool onSave={vi.fn()} onSaveDraft={vi.fn()} initialDraftPromise={completed} />
+    )
+    await act(async () => {
+      await completed
+    })
+
+    expect(screen.queryByText(/NaN/)).not.toBeInTheDocument()
+    const start = screen.getByRole('button', { name: /Commencer l'analyse/i })
+    await act(async () => {
+      start.click()
+    })
+    expect(screen.getByText('0%')).toBeInTheDocument()
+    expect(screen.getByText(MOTIVATIONS[0].label)).toBeInTheDocument()
+    expect(screen.getByText(MOTIVATIONS[1].label)).toBeInTheDocument()
+  })
+
+  test('brouillon sans position enregistrée : reprise au premier duel non joué', async () => {
+    const matrix = emptyMotivationMatrix()
+    matrix[0][1] = 0
+    const draft = Promise.resolve({ data: { matrix } } as any)
+
+    render(<MotivationTool onSave={vi.fn()} onSaveDraft={vi.fn()} initialDraftPromise={draft} />)
+    await act(async () => {
+      await draft
+    })
+
+    expect(screen.queryByText(/NaN/)).not.toBeInTheDocument()
+    expect(screen.getByText(MOTIVATIONS[0].label)).toBeInTheDocument()
+    expect(screen.getByText(MOTIVATIONS[2].label)).toBeInTheDocument()
   })
 })

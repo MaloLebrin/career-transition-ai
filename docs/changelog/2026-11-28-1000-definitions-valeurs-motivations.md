@@ -16,4 +16,11 @@ ce que recouvre un libellé (« La hauteur des enjeux stratégiques », « La co
   recherche par libellé `motivationDefinition` / `valueDefinition`.
 - **Design system.** `ValuesResultView` passe aux tokens (ligne de base
   `inertia/components/exercises` du cliquet abaissée à 253).
+- **Correctif — reprise d'un exercice Motivations terminé.** Le résultat terminé était
+  repris comme un brouillon : sans `currentI`/`currentJ`, l'outil affichait « NaN% »,
+  « Duel NaN / 231 » et deux options vides. `motivationResumeState`
+  (`#shared/helpers/exercise/motivation_resume`) calcule la reprise : brouillon → prochain
+  duel non joué ; exercice terminé ou données invalides → écran d'accueil et matrice vide.
+  Non-régression : helper, `MotivationTool`, et la page candidat rendue avec la charge
+  utile réelle d'un exercice terminé (`HomeResumeCompleted.spec.tsx`).
 - **Hors périmètre.** Le PDF de synthèse n'affiche pas les définitions.
