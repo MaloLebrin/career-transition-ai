@@ -1,5 +1,4 @@
 import type { UserSessionDto } from '#dtos/auth_dto'
-import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import { AccountDisabledError } from '#exceptions/auth_errors'
 import InvalidCredentialsException from '#exceptions/invalid_credentials_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
@@ -11,6 +10,7 @@ import { EmailVerificationMailService } from '#services/mail/email_verification_
 import { MailService } from '#services/mail/mail_service'
 import { OnboardingTokensService } from '#services/onboarding_tokens_service'
 import { PlatformOrganizationService } from '#services/platform_organization_service'
+import { UserEmailService } from '#services/user_email_service'
 import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { TERMS_VERSION } from '#shared/constants/legal'
@@ -33,6 +33,8 @@ type RegisterInput = {
 
 @inject()
 export class AuthService {
+  private userEmails = new UserEmailService()
+
   constructor(
     private platformOrganizationService: PlatformOrganizationService = new PlatformOrganizationService(),
     private emailVerification: EmailVerificationService = new EmailVerificationService(
@@ -62,17 +64,12 @@ export class AuthService {
   }
 
   /**
-   * Compte d'une adresse de connexion : correspondance exacte, sinon sans tenir
-   * compte de la casse (une adresse enregistrée « Claire@Example.com » se
-   * connecte avec « claire@example.com »), seulement si un seul compte correspond.
+   * Compte d'une adresse de connexion, sans tenir compte de la casse (une
+   * adresse enregistrée « Claire@Example.com » se connecte avec
+   * « claire@example.com ») : l'adresse est unique sur toute la plateforme (#169).
    */
   private async findForLogin(email: string): Promise<User | null> {
-    const exact = await User.findBy('email', email)
-    if (exact) return exact
-    const matches = await User.query()
-      .whereRaw('LOWER(email) = ?', [email.trim().toLowerCase()])
-      .limit(2)
-    return matches.length === 1 ? matches[0] : null
+    return this.userEmails.findByEmail(email)
   }
 
   /**
@@ -80,10 +77,7 @@ export class AuthService {
    * Throws if email or organization name is already used.
    */
   public async register(input: RegisterInput): Promise<UserSessionDto> {
-    const existingUser = await User.findBy('email', input.email)
-    if (existingUser) {
-      throw new EmailAlreadyUsedException()
-    }
+    await this.userEmails.assertAvailable(input.email)
 
     const existingOrg = await Organization.findBy('name', input.organizationName.trim())
     if (existingOrg) {
@@ -126,10 +120,7 @@ export class AuthService {
    * commit ; son échec n'annule pas l'inscription.
    */
   public async registerCandidate(input: RegisterCandidateInput): Promise<UserSessionDto> {
-    const existingUser = await User.findBy('email', input.email)
-    if (existingUser) {
-      throw new EmailAlreadyUsedException()
-    }
+    await this.userEmails.assertAvailable(input.email)
 
     const platformOrganizationId = await this.platformOrganizationService.getId()
     const name = input.name.trim()

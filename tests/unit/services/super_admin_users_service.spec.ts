@@ -99,6 +99,28 @@ test.group('SuperAdminUsersService.createUserWithInvite', (group) => {
     )
   })
 
+  test('refuse une adresse portée par un compte d’une autre organisation, autre casse (#169)', async ({
+    assert,
+  }) => {
+    const platformOrg = await createPlatformOrganization()
+    const existing = await createAdvisor()
+    const clientOrg = await createOrganization()
+    const service = new SuperAdminUsersService({ sendSetPasswordLink: async () => {} } as any)
+
+    await assert.rejects(
+      () =>
+        service.createUserWithInvite({
+          organizationId: clientOrg.id,
+          name: 'Bob',
+          email: existing.email.toUpperCase(),
+          role: 'admin',
+          platformOrganizationId: platformOrg.id,
+        }),
+      EmailAlreadyUsedException
+    )
+    assert.lengthOf(await User.query().where('organizationId', clientOrg.id), 0)
+  })
+
   test('throws when targeting platform organization', async ({ assert }) => {
     const platformOrg = await Organization.create({
       name: 'Platform 3',
@@ -502,23 +524,6 @@ test.group('SuperAdminUsersService.update / setDisabled / destroy (#73)', (group
     )
     await expert.refresh()
     assert.isNull(expert.disabledAt)
-  })
-
-  test('setDisabledForContactSender : plusieurs comptes pour l’adresse → 404, aucun n’est touché', async ({
-    assert,
-  }) => {
-    const { actor, target } = await setup()
-    const twin = await createAdvisor()
-    twin.email = target.email.toUpperCase()
-    await twin.save()
-
-    await assert.rejects(
-      () => service.setDisabledForContactSender(actor, target.email, true),
-      SuperAdminUserNotFoundError
-    )
-    await Promise.all([target.refresh(), twin.refresh()])
-    assert.isNull(target.disabledAt)
-    assert.isNull(twin.disabledAt)
   })
 
   test('destroy : supprime un compte sans données, avec ses jetons', async ({ assert }) => {

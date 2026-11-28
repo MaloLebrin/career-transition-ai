@@ -16,6 +16,7 @@ import { EmployeesService } from '#services/employees_service'
 import Employee from '#models/employee'
 import Organization from '#models/organization'
 import User from '#models/user'
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
 import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
@@ -140,6 +141,72 @@ test.group('EmployeesService — doublons à la création', (group) => {
       assert.equal(Number(count[0].$extras.total), 1)
     })
   }
+})
+
+test.group('EmployeesService.create — adresse déjà utilisée (#169)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('invitation refusée si un compte d’une autre organisation porte l’adresse (casse ignorée)', async ({
+    assert,
+  }) => {
+    const sent: unknown[] = []
+    const service = new EmployeesService({
+      sendSetPasswordLink: async (payload: unknown) => sent.push(payload),
+    } as any)
+    const other = await createCandidate()
+    const org = await createOrganization()
+
+    await assert.rejects(
+      () =>
+        service.create(
+          { organizationId: org.id, name: 'Homonyme', email: other.user.email.toUpperCase() },
+          { sendInvite: true }
+        ),
+      EmailAlreadyUsedException
+    )
+    assert.deepEqual(sent, [])
+    assert.lengthOf(await Employee.query().where('organizationId', org.id), 0)
+    assert.lengthOf(await User.query().where('organizationId', org.id), 0)
+  })
+
+  test('invitation refusée si l’adresse est celle d’un conseiller du même cabinet', async ({
+    assert,
+  }) => {
+    const service = new EmployeesService({ sendSetPasswordLink: async () => {} } as any)
+    const advisor = await createAdvisor()
+
+    await assert.rejects(
+      () =>
+        service.create(
+          { organizationId: advisor.organizationId, name: 'Candidat', email: advisor.email },
+          { sendInvite: true }
+        ),
+      EmailAlreadyUsedException
+    )
+  })
+
+  test('resendOnboardingLink refuse de créer un compte si l’adresse appartient à une autre organisation', async ({
+    assert,
+  }) => {
+    const sent: unknown[] = []
+    const service = new EmployeesService({
+      sendSetPasswordLink: async (payload: unknown) => sent.push(payload),
+    } as any)
+    const advisor = await createAdvisor()
+    const other = await createCandidate()
+    const employee = await EmployeeFactory.merge({
+      organizationId: advisor.organizationId,
+      advisorId: advisor.id,
+      userId: null,
+      email: other.user.email.toUpperCase(),
+      onboarded: false,
+    }).create()
+
+    await assert.rejects(() => service.resendOnboardingLink(employee), EmailAlreadyUsedException)
+    assert.deepEqual(sent, [])
+    await employee.refresh()
+    assert.isNull(employee.userId)
+  })
 })
 
 test.group('EmployeesService.findEmployeeForUser', (group) => {

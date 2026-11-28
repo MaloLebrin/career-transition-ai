@@ -41,9 +41,7 @@ test.group('AuthService', (group) => {
   })
 
   /** Revue de #143 : une adresse enregistrée avec des majuscules reste utilisable. */
-  test('verifyCredentials retrouve un compte sans tenir compte de la casse, si un seul correspond', async ({
-    assert,
-  }) => {
+  test('verifyCredentials retrouve un compte sans tenir compte de la casse', async ({ assert }) => {
     const service = new AuthService()
     const user = await createAdvisor()
     user.email = 'Claire.Conseil@Example.com'
@@ -52,12 +50,6 @@ test.group('AuthService', (group) => {
 
     const found = await service.verifyCredentials('claire.conseil@example.com', 'secret123')
     assert.equal(found.id, user.id)
-
-    // Deux comptes ne différant que par la casse (organisations distinctes) : aucun n'est choisi.
-    const twin = await createAdvisor()
-    twin.email = 'CLAIRE.CONSEIL@EXAMPLE.COM'
-    await twin.save()
-    await assert.rejects(() => service.verifyCredentials('claire.conseil@example.com', 'secret123'))
   })
 
   test('verifyCredentials returns user when credentials are valid', async ({ assert }) => {

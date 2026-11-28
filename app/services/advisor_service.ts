@@ -1,10 +1,10 @@
-import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import { AdvisorDto } from '#dtos/organization_dto'
 import OnboardingToken from '#models/onboarding_token'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { TeamMembersService } from '#services/team_members_service'
+import { UserEmailService } from '#services/user_email_service'
 import { userToAdvisorDto } from '#shared/helpers/advisor/mappers'
 import type { InviteAdvisorInput } from '#shared/types/advisor/invite_advisor'
 import { inject } from '@adonisjs/core'
@@ -17,15 +17,12 @@ export class AdvisorService {
     private team: TeamMembersService = new TeamMembersService()
   ) {}
 
-  public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
-    const existing = await User.query()
-      .where('organizationId', input.organizationId)
-      .whereRaw('LOWER(email) = ?', [input.email.toLowerCase()])
-      .first()
+  private userEmails = new UserEmailService()
 
-    if (existing) {
-      throw new EmailAlreadyUsedException('Cet email est déjà utilisé par un compte existant.')
-    }
+  public async inviteAdvisor(input: InviteAdvisorInput): Promise<AdvisorDto> {
+    await this.userEmails.assertAvailable(input.email, {
+      message: 'Cet email est déjà utilisé par un compte existant.',
+    })
 
     await this.team.assertAdvisorSeatAvailable(input.organizationId)
 

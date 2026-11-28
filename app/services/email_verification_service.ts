@@ -11,6 +11,7 @@ import {
   EmailVerificationMailService,
 } from '#services/mail/email_verification_mail_service'
 import { OnboardingTokensService } from '#services/onboarding_tokens_service'
+import { UserEmailService } from '#services/user_email_service'
 import type { EmailVerificationResult } from '#shared/types/auth/email_change'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
@@ -29,6 +30,8 @@ import { DateTime } from 'luxon'
  */
 @inject()
 export class EmailVerificationService {
+  private userEmails = new UserEmailService()
+
   constructor(
     private mails: EmailVerificationMailService,
     private tokens: OnboardingTokensService
@@ -142,11 +145,7 @@ export class EmailVerificationService {
   }
 
   private async isTakenByAnother(user: User, email: string): Promise<boolean> {
-    const existing = await User.query()
-      .whereRaw('LOWER(email) = ?', [email.toLowerCase()])
-      .whereNot('id', user.id)
-      .first()
-    return existing !== null
+    return this.userEmails.isTaken(email, { exceptUserId: user.id })
   }
 
   /** L'adresse a déjà changé : un échec d'envoi de l'avis ne doit pas l'annuler. */

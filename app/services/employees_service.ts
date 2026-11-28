@@ -1,5 +1,6 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import { mapEmployee } from '#mappers/employee_mapper'
+import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import EmployeeAlreadyExistsException from '#exceptions/employee_already_exists_exception'
 import { EmployeeAlreadyOnboardedError, EmployeeNotFoundError } from '#exceptions/employee_errors'
 import { CandidateLicenseLimitReachedError } from '#exceptions/team_errors'
@@ -9,6 +10,7 @@ import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
 import { teamEmployeeScope } from '#services/team_employee_scope_service'
+import { UserEmailService } from '#services/user_email_service'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { MAX_LICENSES_CANDIDATES } from '#shared/constants/organisation'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
@@ -31,6 +33,8 @@ function randomPassword(): string {
 
 @inject()
 export class EmployeesService {
+  private userEmails = new UserEmailService()
+
   constructor(private onboardingMailService: OnboardingMailService) {}
 
   /** Fiche d'un candidat dans le périmètre de l'équipe, sinon 404. */
@@ -100,10 +104,7 @@ export class EmployeesService {
     }
 
     if (!user) {
-      user = await User.query()
-        .where('organizationId', employee.organizationId)
-        .where('email', employee.email)
-        .first()
+      user = await this.reusableCandidateAccount(employee.email, employee.organizationId)
     }
 
     if (!user) {
@@ -124,6 +125,25 @@ export class EmployeesService {
 
     const token = await OnboardingToken.createForUser(user.id)
     await this.onboardingMailService.sendSetPasswordLink({ user, token })
+  }
+
+  /**
+   * Compte déjà porteur de l'adresse d'un candidat à inviter. L'adresse est
+   * unique sur toute la plateforme, casse ignorée (#169) : un compte candidat
+   * du même cabinet est réutilisé ; un compte d'une autre organisation, ou
+   * qui n'est pas un compte candidat, refuse l'invitation
+   * (`EmailAlreadyUsedException`, 409) au lieu de créer un doublon.
+   */
+  private async reusableCandidateAccount(
+    email: string,
+    organizationId: number
+  ): Promise<User | null> {
+    const account = await this.userEmails.findByEmail(email)
+    if (!account) return null
+    if (account.organizationId !== organizationId || account.role !== USERS_ROLES.EMPLOYEE) {
+      throw new EmailAlreadyUsedException()
+    }
+    return account
   }
 
   /**
@@ -153,10 +173,7 @@ export class EmployeesService {
 
     let existingUser: User | null = null
     if (sendInvite) {
-      existingUser = await User.query()
-        .where('organizationId', input.organizationId)
-        .where('email', input.email)
-        .first()
+      existingUser = await this.reusableCandidateAccount(input.email, input.organizationId)
 
       if (existingUser) {
         // Une fiche existe déjà pour ce compte (ou cet email) dans l'organisation :

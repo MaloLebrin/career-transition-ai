@@ -1,11 +1,11 @@
 import { OrganizationNotFoundError } from '#exceptions/organization_errors'
-import EmailAlreadyUsedException from '#exceptions/email_already_used_exception'
 import OrganizationNameAlreadyUsedException from '#exceptions/organization_name_already_used_exception'
 import Employee from '#models/employee'
 import OnboardingToken from '#models/onboarding_token'
 import Organization from '#models/organization'
 import User from '#models/user'
 import { OnboardingMailService } from '#services/onboarding_mail_service'
+import { UserEmailService } from '#services/user_email_service'
 import { LIST_PAGE_SIZE } from '#shared/constants/pagination'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { Paginated } from '#shared/types/pagination'
@@ -32,6 +32,8 @@ type CreateOrganizationWithOwnerInput = {
 
 @inject()
 export class SuperAdminOrganizationsService {
+  private userEmails = new UserEmailService()
+
   constructor(private onboardingMailService: OnboardingMailService) {}
 
   /**
@@ -171,12 +173,7 @@ export class SuperAdminOrganizationsService {
     const ownerName = input.ownerName.trim()
     const ownerEmail = input.ownerEmail.trim()
 
-    const existingUser = await User.query()
-      .whereRaw('LOWER(email) = ?', [ownerEmail.toLowerCase()])
-      .first()
-    if (existingUser) {
-      throw new EmailAlreadyUsedException()
-    }
+    await this.userEmails.assertAvailable(ownerEmail)
 
     const existingOrg = await Organization.findBy('name', organizationName)
     if (existingOrg) {

@@ -163,19 +163,23 @@ test.group('AdvisorService.inviteAdvisor', (group) => {
     assert.equal(Number(count.$extras.total), 1)
   })
 
-  test('le même e-mail reste disponible dans une autre organisation', async ({ assert }) => {
+  test('refuse une adresse déjà utilisée dans une autre organisation, casse comprise (#169)', async ({
+    assert,
+  }) => {
     const { service } = makeService()
     const existing = await createAdvisor()
     const otherOrg = await createOrganization()
 
-    const dto = await service.inviteAdvisor({
-      organizationId: otherOrg.id,
-      name: 'Homonyme',
-      email: existing.email,
-      role: 'advisor',
-    })
-
-    assert.equal(dto.organizationId, otherOrg.id)
-    assert.notEqual(dto.id, existing.id)
+    await assert.rejects(
+      () =>
+        service.inviteAdvisor({
+          organizationId: otherOrg.id,
+          name: 'Homonyme',
+          email: existing.email.toUpperCase(),
+          role: 'advisor',
+        }),
+      EmailAlreadyUsedException
+    )
+    assert.lengthOf(await User.query().where('organizationId', otherOrg.id), 0)
   })
 })

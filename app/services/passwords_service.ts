@@ -7,6 +7,7 @@ import PasswordResetToken from '#models/password_reset_token'
 import User from '#models/user'
 import { reportError } from '#services/error_tracking_service'
 import { PasswordMailService } from '#services/mail/password_mail_service'
+import { UserEmailService } from '#services/user_email_service'
 import type { ChangePasswordInput } from '#shared/types/auth/password'
 import { inject } from '@adonisjs/core'
 import hash from '@adonisjs/core/services/hash'
@@ -27,15 +28,16 @@ import { DateTime } from 'luxon'
 export class PasswordsService {
   constructor(private mails: PasswordMailService) {}
 
+  private userEmails = new UserEmailService()
+
   /**
    * Envoie un lien de réinitialisation si un compte porte cet e-mail. Ne dit
    * jamais si le compte existe (ni par le retour, ni par une erreur d'envoi) :
    * le contrôleur répond le même message dans tous les cas.
    */
   public async requestReset(email: string): Promise<void> {
-    const user = await User.query()
-      .whereRaw('lower(email) = ?', [email.trim().toLowerCase()])
-      .first()
+    // Adresse unique sur toute la plateforme, casse ignorée (#169) : jamais le compte d'un autre.
+    const user = await this.userEmails.findByEmail(email)
     if (!user) return
 
     try {
