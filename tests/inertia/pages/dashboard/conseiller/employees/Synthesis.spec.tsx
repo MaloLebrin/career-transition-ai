@@ -254,3 +254,40 @@ describe('EmployeeSynthesisPage — export PDF en échec (#72)', () => {
     expect(screen.queryByRole('button', { name: 'Relancer le PDF' })).not.toBeInTheDocument()
   })
 })
+
+describe('EmployeeSynthesisPage — score des résultats (#168)', () => {
+  function renderWith(exercises: Array<Record<string, unknown>>) {
+    render(
+      <EmployeeSynthesisPage
+        employeeId="10"
+        employee={{ ...baseEmployee, exercises } as never}
+        synthesis={makeSynthesis('shared')}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+  }
+
+  test('n’affiche pas de score quand le résultat n’en a pas (null ou 0)', () => {
+    renderWith([
+      {
+        id: 1,
+        type: 'MOTIVATION',
+        status: 'completed',
+        date: '2026-01-15',
+        quantitativeScore: null,
+      },
+      { id: 2, type: 'VALUES', status: 'completed', date: '2026-01-15', quantitativeScore: 0 },
+    ])
+
+    expect(screen.queryByText(/Score:/)).not.toBeInTheDocument()
+  })
+
+  test('affiche le score historique quand il existe', () => {
+    renderWith([
+      { id: 1, type: 'MOTIVATION', status: 'completed', date: '2026-01-15', quantitativeScore: 10 },
+    ])
+
+    expect(screen.getByText('Score: 10')).toBeInTheDocument()
+  })
+})

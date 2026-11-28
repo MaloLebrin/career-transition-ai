@@ -91,12 +91,7 @@ export function useAdvisorExercises(
     }
   }
 
-  const saveResult = async (
-    type: ExerciseType,
-    data: unknown,
-    quantScore: number,
-    duration: number
-  ) => {
+  const saveResult = async (type: ExerciseType, data: unknown, duration: number) => {
     if (!employee) return
 
     setIsAnalyzing(true)
@@ -118,8 +113,6 @@ export function useAdvisorExercises(
           date: new Date().toISOString().split('T')[0],
           duration,
           data,
-          quantitativeScore: quantScore,
-          qualitativeAnalysis: '',
           plan: buildCompletedPlanPayload(employee.plan ?? [], type, now),
         })
       }

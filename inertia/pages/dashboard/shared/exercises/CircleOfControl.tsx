@@ -26,13 +26,15 @@ export default function CircleOfControlExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.CIRCLE_OF_CONTROL]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -77,7 +79,7 @@ export default function CircleOfControlExercise({
           <div className="w-full">
             <CircleOfControlTool
               onSave={(data, duration) =>
-                saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)
+                saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, duration)
               }
               onSaveDraft={(data) => saveDraft(ExerciseType.CIRCLE_OF_CONTROL, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}

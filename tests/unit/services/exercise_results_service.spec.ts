@@ -84,8 +84,6 @@ test.group('ExerciseResultsService', (group) => {
       date: '2025-01-05',
       duration: 30,
       data: { foo: 'bar' },
-      quantitativeScore: 10,
-      qualitativeAnalysis: 'Analyse',
       plan: [
         {
           id: step.id,
@@ -98,7 +96,8 @@ test.group('ExerciseResultsService', (group) => {
     assert.equal(dto.id, employee.id)
     assert.lengthOf(dto.exercises, 1)
     assert.equal(dto.exercises[0].type, 'MOTIVATION')
-    assert.equal(dto.exercises[0].quantitativeScore, 10)
+    // Le score n'est plus fourni par le client (#168) : rien n'est enregistré.
+    assert.equal(dto.exercises[0].quantitativeScore, 0)
     assert.lengthOf(dto.plan, 1)
     assert.isTrue(dto.plan[0].completed)
 
@@ -173,8 +172,6 @@ test.group('ExerciseResultsService', (group) => {
       date: '2025-01-05',
       duration: 30,
       data: { foo: 'bar' },
-      quantitativeScore: 10,
-      qualitativeAnalysis: 'Analyse',
       plan: [{ id: step.id, completed: true }],
     })
 
@@ -577,6 +574,72 @@ test.group('ExerciseResultsService.saveResult — politique IA B2C (#100)', (gro
       .where('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
       .firstOrFail()
     assert.notEqual(row.qualitativeAnalysis, 'Ancienne analyse')
+  })
+})
+
+test.group('ExerciseResultsService.saveResult — champs réservés au serveur (#168)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  /** Entrée non typée : simule un appelant qui ferait passer les champs retirés. */
+  function forgedInput(employeeId: number, type: string) {
+    return {
+      employeeId,
+      type: type as any,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
+      plan: [],
+      quantitativeScore: 99,
+      qualitativeAnalysis: 'Analyse forgée',
+    } as Parameters<ExerciseResultsService['saveResult']>[0]
+  }
+
+  test('création : ni score ni analyse forgés, l’analyse gratuite est produite par le job', async ({
+    assert,
+  }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+
+    await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.VALUES))
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.VALUES)
+      .firstOrFail()
+    assert.isNull(row.quantitativeScore)
+    assert.isNotNull(row.qualitativeAnalysis)
+    assert.notEqual(row.qualitativeAnalysis, 'Analyse forgée')
+  })
+
+  test('mise à jour : analyse et score existants conservés', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+    const row = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      status: exerciceResultStatusValues.COMPLETED,
+      quantitativeScore: 7,
+      qualitativeAnalysis: 'Analyse du job',
+    }).create()
+
+    await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.VALUES))
+
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Analyse du job')
+    assert.equal(row.quantitativeScore, 7)
+  })
+
+  test('exercice verrouillé : aucune analyse, même forgée', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+
+    await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.DISC))
+
+    const row = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.DISC)
+      .firstOrFail()
+    assert.isNull(row.qualitativeAnalysis)
+    assert.isNull(row.quantitativeScore)
   })
 })
 

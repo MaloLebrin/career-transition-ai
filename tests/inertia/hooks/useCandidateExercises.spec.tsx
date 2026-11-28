@@ -85,7 +85,7 @@ describe('useCandidateExercises', () => {
     const { result } = renderHook(() => useCandidateExercises(mockEmployee as any, onComplete))
 
     await act(async () => {
-      await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 10, 60)
+      await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 60)
     })
 
     expect(mockRouterPost).toHaveBeenCalledWith(
@@ -94,5 +94,17 @@ describe('useCandidateExercises', () => {
       expect.any(Object)
     )
     expect(onComplete).toHaveBeenCalled()
+  })
+
+  test("saveResult n'envoie ni score ni analyse (#168)", async () => {
+    const { result } = renderHook(() => useCandidateExercises(mockEmployee as any, onComplete))
+
+    await act(async () => {
+      await result.current.saveResult(ExerciseType.DISC, { data: 'x' }, 60)
+    })
+
+    const payload = mockRouterPost.mock.calls.at(-1)?.[1] as Record<string, unknown>
+    expect(payload).not.toHaveProperty('quantitativeScore')
+    expect(payload).not.toHaveProperty('qualitativeAnalysis')
   })
 })

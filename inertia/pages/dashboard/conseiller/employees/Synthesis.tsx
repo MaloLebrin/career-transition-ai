@@ -233,9 +233,12 @@ export default function EmployeeSynthesisPage({
                             >
                               {title}
                             </div>
-                            <div className="text-xs text-brand-navy/50 mt-1">
-                              Score: {res.quantitativeScore ?? 0}
-                            </div>
+                            {/* Pas de score saisi par le client (#168) : 0 / null = aucun score (comme le PDF). */}
+                            {(res.quantitativeScore ?? 0) > 0 && (
+                              <div className="text-xs text-brand-navy/50 mt-1">
+                                Score: {res.quantitativeScore}
+                              </div>
+                            )}
                           </div>
                           {isLatestCompleted && (
                             <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">

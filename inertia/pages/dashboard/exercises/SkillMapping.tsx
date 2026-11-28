@@ -26,13 +26,15 @@ export default function SkillMappingExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.SKILL_MAPPING]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -76,9 +78,7 @@ export default function SkillMappingExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <SkillMappingTool
-              onSave={(data, duration) =>
-                saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
-              }
+              onSave={(data, duration) => saveResult(ExerciseType.SKILL_MAPPING, data, duration)}
               onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}
               experiences={selectedEmployee?.experiences || []}

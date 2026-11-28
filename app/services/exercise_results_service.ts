@@ -42,8 +42,6 @@ type SaveResultInput = {
   date?: string
   duration?: number
   data: Record<string, unknown>
-  quantitativeScore?: number
-  qualitativeAnalysis?: string
   plan: Array<{ id: number; completed: boolean; lastUpdated?: string }>
 }
 
@@ -153,6 +151,8 @@ export class ExerciseResultsService {
     // Politique B2C (#100) : un exercice gratuit n'est analysé qu'une fois.
     const hadAnalysis = Boolean(existing?.qualitativeAnalysis)
 
+    // `quantitativeScore` et `qualitativeAnalysis` ne viennent jamais du client
+    // (#168) : seul `AnalyzeExerciseQualitativeJob` écrit l'analyse.
     let resultRow: ExerciseResult
     if (existing) {
       existing.merge({
@@ -161,8 +161,6 @@ export class ExerciseResultsService {
         duration: input.duration ?? existing.duration,
         progressPercent,
         data: input.data,
-        quantitativeScore: input.quantitativeScore ?? existing.quantitativeScore,
-        qualitativeAnalysis: input.qualitativeAnalysis ?? existing.qualitativeAnalysis,
       })
       await existing.save()
       resultRow = existing
@@ -175,8 +173,6 @@ export class ExerciseResultsService {
         duration: input.duration ?? null,
         progressPercent,
         data: input.data,
-        quantitativeScore: input.quantitativeScore ?? null,
-        qualitativeAnalysis: input.qualitativeAnalysis ?? null,
       })
     }
 

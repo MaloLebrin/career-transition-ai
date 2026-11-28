@@ -40,8 +40,6 @@ function makeCtx(overrides: any = {}) {
         date: '2025-01-01',
         duration: 120,
         data: { foo: 'bar' },
-        quantitativeScore: 10,
-        qualitativeAnalysis: 'ok',
         plan: [],
       }),
     },

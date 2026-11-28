@@ -13,8 +13,6 @@ test.group('saveExerciseResultValidator', () => {
       date: '2025-01-05',
       duration: 30,
       data: { foo: 'bar' },
-      quantitativeScore: 10,
-      qualitativeAnalysis: 'Analyse',
       plan: [{ id: 1, completed: true, lastUpdated: '2025-01-05T10:00:00Z' }],
     }
 
@@ -42,12 +40,24 @@ test.group('saveExerciseResultValidator', () => {
       date: '2025-01-05',
       duration: 0,
       data: { foo: 'bar' },
-      quantitativeScore: 10,
-      qualitativeAnalysis: '',
       plan: [],
     }
 
     const result = await saveExerciseResultValidator.validate(data)
     assert.equal(result.duration, 0)
+  })
+
+  test('écarte le score et l’analyse envoyés par le client (#168)', async ({ assert }) => {
+    const result = await saveExerciseResultValidator.validate({
+      type: exerciceResultTypesValues[0],
+      status: exerciceResultStatusValuesValues[1],
+      data: {},
+      quantitativeScore: 99,
+      qualitativeAnalysis: 'Analyse forgée',
+      plan: [],
+    })
+
+    assert.notProperty(result, 'quantitativeScore')
+    assert.notProperty(result, 'qualitativeAnalysis')
   })
 })

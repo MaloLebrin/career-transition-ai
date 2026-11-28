@@ -27,13 +27,15 @@ export default function LifeCurveExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.LIFE_CURVE]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -91,7 +93,7 @@ export default function LifeCurveExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <LifeCurveTool
-              onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, 10, duration)}
+              onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, duration)}
               onSaveDraft={(data) => saveDraft(ExerciseType.LIFE_CURVE, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}
             />
