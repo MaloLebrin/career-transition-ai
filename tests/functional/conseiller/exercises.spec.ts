@@ -265,6 +265,33 @@ test.group('Conseiller — exercices : enregistrement', (group) => {
     )
   })
 
+  test('ignore une analyse ou un score envoyés par le client (#168)', async ({
+    client,
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+
+    const response = await client
+      .post(`${exercisesUrl(employee.id)}/${EXERCICE_RESULTS_TYPES.DISC}/result`)
+      .json({
+        type: EXERCICE_RESULTS_TYPES.DISC,
+        status: exerciceResultStatusValues.COMPLETED,
+        data: { profile: 'D' },
+        quantitativeScore: 99,
+        qualitativeAnalysis: 'Analyse écrite à la main',
+        plan: [],
+      })
+      .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
+    response.assertStatus(302)
+
+    const result = await ExerciseResult.query().where('employeeId', employee.id).firstOrFail()
+    assert.isNull(result.quantitativeScore)
+    assert.notEqual(result.qualitativeAnalysis, 'Analyse écrite à la main')
+  })
+
   test('rejette un résultat sans statut ni plan', async ({ client, assert, db }) => {
     const advisor = await createAdvisor()
     const employee = await createEmployeeFor(advisor)

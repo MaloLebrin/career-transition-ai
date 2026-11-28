@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util'
 import type { EmployeeDto } from '#dtos/employee_dto'
 import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import { EmployeeNotFoundError } from '#exceptions/employee_errors'
@@ -42,8 +43,6 @@ type SaveResultInput = {
   date?: string
   duration?: number
   data: Record<string, unknown>
-  quantitativeScore?: number
-  qualitativeAnalysis?: string
   plan: Array<{ id: number; completed: boolean; lastUpdated?: string }>
 }
 
@@ -151,8 +150,11 @@ export class ExerciseResultsService {
       .first()
 
     // Politique B2C (#100) : un exercice gratuit n'est analysé qu'une fois.
-    const hadAnalysis = Boolean(existing?.qualitativeAnalysis)
+    // Le marqueur `analyzedAt` (#168) survit à l'effacement du texte ci-dessous.
+    const hadAnalysis = Boolean(existing?.analyzedAt)
 
+    // `quantitativeScore` et `qualitativeAnalysis` ne viennent jamais du client
+    // (#168) : seul `AnalyzeExerciseQualitativeJob` écrit l'analyse.
     let resultRow: ExerciseResult
     if (existing) {
       existing.merge({
@@ -161,9 +163,12 @@ export class ExerciseResultsService {
         duration: input.duration ?? existing.duration,
         progressPercent,
         data: input.data,
-        quantitativeScore: input.quantitativeScore ?? existing.quantitativeScore,
-        qualitativeAnalysis: input.qualitativeAnalysis ?? existing.qualitativeAnalysis,
       })
+      // Réponses modifiées : l'analyse décrivait les anciennes, elle est
+      // effacée (relancée ci-dessous si la politique IA le permet).
+      if (!isDeepStrictEqual(existing.$original.data ?? {}, input.data ?? {})) {
+        existing.qualitativeAnalysis = null
+      }
       await existing.save()
       resultRow = existing
     } else {
@@ -175,8 +180,6 @@ export class ExerciseResultsService {
         duration: input.duration ?? null,
         progressPercent,
         data: input.data,
-        quantitativeScore: input.quantitativeScore ?? null,
-        qualitativeAnalysis: input.qualitativeAnalysis ?? null,
       })
     }
 

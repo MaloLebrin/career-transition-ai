@@ -254,3 +254,40 @@ describe('EmployeeSynthesisPage — export PDF en échec (#72)', () => {
     expect(screen.queryByRole('button', { name: 'Relancer le PDF' })).not.toBeInTheDocument()
   })
 })
+
+describe('EmployeeSynthesisPage — score des résultats (#168)', () => {
+  test('n’affiche aucun score, même historique (constante du front)', () => {
+    render(
+      <EmployeeSynthesisPage
+        employeeId="10"
+        employee={
+          {
+            ...baseEmployee,
+            exercises: [
+              {
+                id: 1,
+                type: 'MOTIVATION',
+                status: 'completed',
+                date: '2026-01-15',
+                quantitativeScore: 10,
+              },
+              {
+                id: 2,
+                type: 'VALUES',
+                status: 'completed',
+                date: '2026-01-15',
+                quantitativeScore: 0,
+              },
+            ],
+          } as never
+        }
+        synthesis={makeSynthesis('shared')}
+        latestCompletedByType={{}}
+        latestPdfJob={null}
+      />
+    )
+
+    expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
+    expect(screen.queryByText(/Score/)).not.toBeInTheDocument()
+  })
+})

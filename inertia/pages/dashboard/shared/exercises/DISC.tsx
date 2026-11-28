@@ -15,22 +15,21 @@ interface DISCExerciseProps {
   initialDraftsByType?: Record<string, ExerciseDraft | null>
 }
 
-export default function DISCExercise({
-  employeeId,
-  initialDraftsByType,
-}: DISCExerciseProps) {
+export default function DISCExercise({ employeeId, initialDraftsByType }: DISCExerciseProps) {
   const targetId = employeeId || null
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.DISC]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -74,7 +73,7 @@ export default function DISCExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <DISCTool
-              onSave={(data, duration) => saveResult(ExerciseType.DISC, data, 10, duration)}
+              onSave={(data, duration) => saveResult(ExerciseType.DISC, data, duration)}
               onSaveDraft={(data) => saveDraft(ExerciseType.DISC, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}
             />

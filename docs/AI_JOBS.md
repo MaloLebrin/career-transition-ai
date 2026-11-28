@@ -8,7 +8,7 @@ Ce document décrit **comment le job d’analyse qualitative** est déclenché, 
 | ------------------------------------------------------------------------------------------------- | ----- | ------------------------------ |
 | [`app/jobs/analyze_exercise_qualitative_job.ts`](../app/jobs/analyze_exercise_qualitative_job.ts) | `ai`  | `{ exerciseResultId: number }` |
 
-Le job charge l’`ExerciseResult`, vérifie que le statut est **terminé** (`completed`), appelle le fournisseur IA configuré, puis enregistre le texte dans `exercise_results.qualitative_analysis`.
+Le job charge l’`ExerciseResult`, vérifie que le statut est **terminé** (`completed`), appelle le fournisseur IA configuré, puis enregistre le texte dans `exercise_results.qualitative_analysis` et la date dans `exercise_results.analyzed_at`. Le job est le **seul** à écrire ces colonnes : le client n'envoie jamais d'analyse ni de score (#168).
 
 ---
 
@@ -36,9 +36,11 @@ Le `dispatch` est conditionné par `ExerciseAccessService.shouldRunAiAnalysis(em
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | B2B (candidat d'un cabinet)                       | Toujours, à chaque résultat complété (inchangé)                                                          |
 | B2C, forfait réglé                                | Toujours                                                                                                 |
-| B2C, exercice gratuit (`B2C_FREE_EXERCISE_TYPES`) | **Une seule fois** : pas de relance si `qualitative_analysis` est déjà rempli                            |
+| B2C, exercice gratuit (`B2C_FREE_EXERCISE_TYPES`) | **Une seule fois** : pas de relance si `analyzed_at` est déjà posé (#168)                                |
 | B2C, exercice verrouillé                          | Jamais (le contrôleur refuse d'ailleurs l'écriture ; déblocage au paiement, #104)                        |
 | B2C, forfait réglé a posteriori                   | Au déblocage (#104), un job par exercice complété sans analyse (`EntitlementsService.onResultsUnlocked`) |
+
+Réponses modifiées (#168) : quand un résultat terminé est réenregistré avec d'autres réponses (`data`), `ExerciseResultsService.saveResult` efface `qualitative_analysis` (elle décrivait les anciennes réponses) mais garde `analyzed_at`. L'analyse est relancée si la politique ci-dessus le permet ; sinon (exercice gratuit déjà analysé) le résultat reste sans analyse, et sera analysé au déblocage du forfait.
 
 Le job notifie le conseiller (`ai_synthesis_ready`) **et**, pour un particulier B2C, le candidat lui-même (`ai_analysis_ready_candidate`, lien vers `/dashboard/candidat/exercises/:type`) : sans conseiller, personne d'autre ne lui relaierait l'information.
 
@@ -96,7 +98,7 @@ Le job utilise [`resolveAiTextCompletionProvider()`](../app/services/ai/resolve_
 | `mistral`        | `MISTRAL_API_KEY` | API Chat Completions Mistral (`MISTRAL_MODEL` optionnel, défaut `mistral-small-latest`) |
 | `none` ou absent | —                 | Texte de substitution, **sans** appel réseau                                            |
 
-En cas d’exception (clé invalide, réseau, etc.), le job enregistre un message d’erreur dans `qualitative_analysis` et log l’erreur.
+En cas d’exception (clé invalide, réseau, etc.) ou de réponse vide, le job **n’écrit rien** (ni texte ni `analyzed_at`) et log l’erreur : le résultat reste sans analyse et pourra être relancé.
 
 ---
 

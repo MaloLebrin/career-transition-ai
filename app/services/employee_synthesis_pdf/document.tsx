@@ -2,14 +2,13 @@ import { Document, Page, Text, View } from '@react-pdf/renderer'
 import type { EmployeeSynthesisPayload } from '#services/employee_synthesis_service'
 import {
   Footer,
-  ScoreBlock,
   SectionTitle,
   SkillBar,
   SubLabel,
   formatDate,
   synthesisRoleText,
 } from './components.js'
-import { ExerciseChart, TYPES_WITH_CHART } from './exercise_charts.js'
+import { ExerciseChart } from './exercise_charts.js'
 import { formatDurationSeconds } from '#shared/helpers/date'
 import { s } from './styles.js'
 
@@ -201,11 +200,6 @@ export function SynthesisPdfDocument({
                   <View style={s.exerciseCardBody}>
                     {/* Type-specific chart */}
                     <ExerciseChart type={ex.type} data={ex.data} />
-
-                    {/* Generic score block (fallback for types without a specific chart) */}
-                    {ex.quantitativeScore > 0 && !TYPES_WITH_CHART.has(ex.type) && (
-                      <ScoreBlock score={ex.quantitativeScore} max={10} />
-                    )}
 
                     {/* Qualitative analysis */}
                     {ex.qualitativeAnalysis?.trim() && (

@@ -27,13 +27,15 @@ export default function MotivationExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.MOTIVATION]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -91,7 +93,7 @@ export default function MotivationExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <MotivationTool
-              onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, 10, duration)}
+              onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, duration)}
               onSaveDraft={(data) => saveDraft(ExerciseType.MOTIVATION, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}
             />

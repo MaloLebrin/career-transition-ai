@@ -233,9 +233,6 @@ export default function EmployeeSynthesisPage({
                             >
                               {title}
                             </div>
-                            <div className="text-xs text-brand-navy/50 mt-1">
-                              Score: {res.quantitativeScore ?? 0}
-                            </div>
                           </div>
                           {isLatestCompleted && (
                             <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">

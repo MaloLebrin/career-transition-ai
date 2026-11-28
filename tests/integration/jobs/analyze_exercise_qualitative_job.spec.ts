@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import ExerciseResult from '#models/exercise_result'
 import Notification from '#models/notification'
@@ -62,6 +63,7 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
 
     await result.refresh()
     assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+    assert.isNotNull(result.analyzedAt)
 
     const notifications = await Notification.query().where('user_id', advisor.id)
     assert.lengthOf(notifications, 1)
@@ -184,6 +186,7 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
 
     await result.refresh()
     assert.isNull(result.qualitativeAnalysis)
+    assert.isNull(result.analyzedAt)
     assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
   })
 
@@ -227,16 +230,48 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
     assert.isNull(result.qualitativeAnalysis)
   })
 
-  test('B2C gratuit : analyse déjà présente → non régénérée', async ({ assert }) => {
+  test('B2C gratuit : déjà analysé → non régénéré', async ({ assert }) => {
     const { employee } = await createB2cCandidate()
     const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
     result.qualitativeAnalysis = 'Première analyse'
+    result.analyzedAt = DateTime.now()
     await result.save()
 
     await run(result.id)
 
     await result.refresh()
     assert.equal(result.qualitativeAnalysis, 'Première analyse')
+  })
+
+  test('B2C gratuit : texte effacé (réponses modifiées) mais déjà analysé → pas de seconde analyse (#168)', async ({
+    assert,
+  }) => {
+    const { employee } = await createB2cCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+    result.analyzedAt = DateTime.now()
+    await result.save()
+
+    await run(result.id)
+
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysis)
+  })
+
+  test('réponse IA vide : ni texte ni marqueur d’analyse (#168)', async ({ assert }) => {
+    const { employee } = await createCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    const original = NullAiTextProvider.prototype.completeText
+    NullAiTextProvider.prototype.completeText = async () => '   '
+    try {
+      await run(result.id)
+    } finally {
+      NullAiTextProvider.prototype.completeText = original
+    }
+
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysis)
+    assert.isNull(result.analyzedAt)
   })
 
   test("n'envoie ni le nom ni l'e-mail du candidat au fournisseur IA (RGPD)", async ({

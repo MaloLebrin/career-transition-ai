@@ -232,7 +232,7 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
   test('enregistrer le résultat transmet le type, les données, le score 10 et la durée', async () => {
     const { user } = await renderPage(<Page employeeId="5" />)
     await user.click(screen.getByRole('button', { name: 'stub-save' }))
-    expect(hook.saveResult).toHaveBeenCalledWith(type, { from: tool }, 10, 42)
+    expect(hook.saveResult).toHaveBeenCalledWith(type, { from: tool }, 42)
   })
 
   test('après enregistrement, redirige vers le lien retour', async () => {

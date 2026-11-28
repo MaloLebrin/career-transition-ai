@@ -15,21 +15,20 @@ interface ValuesExerciseProps {
   initialDraftsByType?: Record<string, ExerciseDraft | null>
 }
 
-export default function ValuesExercise({
-  employeeId,
-  initialDraftsByType,
-}: ValuesExerciseProps) {
+export default function ValuesExercise({ employeeId, initialDraftsByType }: ValuesExerciseProps) {
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(employeeId ?? null)
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.VALUES]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
     selectedEmployee,
@@ -73,7 +72,7 @@ export default function ValuesExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <ValuesTool
-              onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, 10, duration)}
+              onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, duration)}
               onSaveDraft={(data) => saveDraft(ExerciseType.VALUES, data)}
               initialDraftPromise={Promise.resolve(getInitialDraft())}
             />

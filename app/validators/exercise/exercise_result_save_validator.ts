@@ -11,8 +11,8 @@ export const saveExerciseResultValidator = vine.create({
   /** 0 is valid (e.g. exercise finalized in under 1s; client sends floor(seconds)). */
   duration: vine.number().min(0).optional(),
   data: vine.object({}).allowUnknownProperties(),
-  quantitativeScore: vine.number().optional(),
-  qualitativeAnalysis: vine.string().optional(),
+  // Ni `quantitativeScore` ni `qualitativeAnalysis` (#168) : l'analyse n'est
+  // écrite que par `AnalyzeExerciseQualitativeJob`, le score jamais par le client.
   plan: vine.array(
     vine.object({
       id: vine.number(),

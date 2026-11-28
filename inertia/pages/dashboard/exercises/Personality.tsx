@@ -15,9 +15,7 @@ interface PersonalityExerciseProps {
   initialDraftsByType?: Record<string, unknown>
 }
 
-export default function PersonalityExercise({
-  employeeId,
-}: PersonalityExerciseProps) {
+export default function PersonalityExercise({ employeeId }: PersonalityExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
@@ -25,7 +23,9 @@ export default function PersonalityExercise({
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, saveResult } = useAdvisorExercises(
     selectedEmployee,
@@ -61,9 +61,7 @@ export default function PersonalityExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <PersonalityTool
-              onSave={(data, duration) =>
-                saveResult(ExerciseType.PERSONALITY, data, 10, duration)
-              }
+              onSave={(data, duration) => saveResult(ExerciseType.PERSONALITY, data, duration)}
             />
           </div>
         </div>

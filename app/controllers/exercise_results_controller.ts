@@ -124,8 +124,6 @@ export default class ExerciseResultsController {
       date: payload.date,
       duration: payload.duration,
       data: payload.data,
-      quantitativeScore: payload.quantitativeScore,
-      qualitativeAnalysis: payload.qualitativeAnalysis,
       plan: payload.plan,
     })
 
@@ -504,8 +502,6 @@ export default class ExerciseResultsController {
       date: payload.date,
       duration: payload.duration,
       data: payload.data,
-      quantitativeScore: payload.quantitativeScore,
-      qualitativeAnalysis: payload.qualitativeAnalysis,
       plan: payload.plan,
     })
 

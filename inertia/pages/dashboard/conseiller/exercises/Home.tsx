@@ -47,7 +47,7 @@ export default function ConseillerExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[exerciseType]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
 
   const backHref = `/dashboard/conseiller/employees/${employeeId}`
@@ -72,8 +72,7 @@ export default function ConseillerExercise({
     }
   )
 
-  const exerciseType =
-    EXERCISE_TYPES[type.toUpperCase()] ?? null
+  const exerciseType = EXERCISE_TYPES[type.toUpperCase()] ?? null
 
   return (
     <>
@@ -99,35 +98,33 @@ export default function ConseillerExercise({
           <div className="w-full">
             {exerciseType === ExerciseType.MOTIVATION && (
               <MotivationTool
-                onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, 10, duration)}
+                onSave={(data, duration) => saveResult(ExerciseType.MOTIVATION, data, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.MOTIVATION, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.MOTIVATION))}
               />
             )}
             {exerciseType === ExerciseType.VALUES && (
               <ValuesTool
-                onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, 10, duration)}
+                onSave={(data, duration) => saveResult(ExerciseType.VALUES, data, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.VALUES, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.VALUES))}
               />
             )}
             {exerciseType === ExerciseType.LIFE_CURVE && (
               <LifeCurveTool
-                onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, 10, duration)}
+                onSave={(data, duration) => saveResult(ExerciseType.LIFE_CURVE, data, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.LIFE_CURVE, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.LIFE_CURVE))}
               />
             )}
             {exerciseType === ExerciseType.PERSONALITY && (
               <PersonalityTool
-                onSave={(data, duration) =>
-                  saveResult(ExerciseType.PERSONALITY, data, 10, duration)
-                }
+                onSave={(data, duration) => saveResult(ExerciseType.PERSONALITY, data, duration)}
               />
             )}
             {exerciseType === ExerciseType.TARGETING && (
               <TargetingTool
-                onSave={(data, duration) => saveResult(ExerciseType.TARGETING, data, 10, duration)}
+                onSave={(data, duration) => saveResult(ExerciseType.TARGETING, data, duration)}
                 employeeProfile={
                   selectedEmployee
                     ? {
@@ -140,16 +137,14 @@ export default function ConseillerExercise({
             )}
             {exerciseType === ExerciseType.DISC && (
               <DISCTool
-                onSave={(data, duration) => saveResult(ExerciseType.DISC, data, 10, duration)}
+                onSave={(data, duration) => saveResult(ExerciseType.DISC, data, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.DISC, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.DISC))}
               />
             )}
             {exerciseType === ExerciseType.SKILL_MAPPING && (
               <SkillMappingTool
-                onSave={(data, duration) =>
-                  saveResult(ExerciseType.SKILL_MAPPING, data, 10, duration)
-                }
+                onSave={(data, duration) => saveResult(ExerciseType.SKILL_MAPPING, data, duration)}
                 onSaveDraft={(data) => saveDraft(ExerciseType.SKILL_MAPPING, data)}
                 initialDraftPromise={Promise.resolve(getInitialDraft(ExerciseType.SKILL_MAPPING))}
                 experiences={selectedEmployee?.experiences || []}
@@ -158,7 +153,7 @@ export default function ConseillerExercise({
             {exerciseType === ExerciseType.CIRCLE_OF_CONTROL && (
               <CircleOfControlTool
                 onSave={(data, duration) =>
-                  saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, 10, duration)
+                  saveResult(ExerciseType.CIRCLE_OF_CONTROL, data, duration)
                 }
                 onSaveDraft={(data) => saveDraft(ExerciseType.CIRCLE_OF_CONTROL, data)}
                 initialDraftPromise={Promise.resolve(

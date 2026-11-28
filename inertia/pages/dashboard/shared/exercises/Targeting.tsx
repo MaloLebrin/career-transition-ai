@@ -16,9 +16,7 @@ interface TargetingExerciseProps {
   initialDraftsByType?: Record<string, unknown>
 }
 
-export default function TargetingExercise({
-  employeeId,
-}: TargetingExerciseProps) {
+export default function TargetingExercise({ employeeId }: TargetingExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
@@ -26,7 +24,9 @@ export default function TargetingExercise({
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
   const { isAnalyzing, saveResult } = useAdvisorExercises(
     selectedEmployee,
@@ -76,7 +76,7 @@ export default function TargetingExercise({
           <ExerciseSaveOverlay open={isAnalyzing} />
           <div className="w-full">
             <TargetingTool
-              onSave={(data, duration) => saveResult(ExerciseType.TARGETING, data, 10, duration)}
+              onSave={(data, duration) => saveResult(ExerciseType.TARGETING, data, duration)}
               employeeProfile={
                 selectedEmployee
                   ? {

@@ -242,43 +242,6 @@ export const s = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // ── score block
-  scoreBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 12,
-    backgroundColor: C.superLight,
-    borderRadius: 6,
-    padding: 10,
-  },
-  scoreValue: {
-    fontSize: 28,
-    fontFamily: 'Helvetica-Bold',
-    lineHeight: 1,
-  },
-  scoreDivider: {
-    fontSize: 10,
-    color: C.gray,
-  },
-  scoreMax: {
-    fontSize: 14,
-    color: C.gray,
-    fontFamily: 'Helvetica-Bold',
-  },
-  scoreRight: {
-    flex: 1,
-  },
-  scoreBarTrack: {
-    flexDirection: 'row',
-    gap: 3,
-    marginBottom: 4,
-  },
-  scoreBarLabel: {
-    fontSize: 8,
-    color: C.gray,
-  },
-
   // ── analysis box
   analysisBox: {
     backgroundColor: C.superLight,

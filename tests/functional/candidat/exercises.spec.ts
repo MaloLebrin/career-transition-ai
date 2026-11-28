@@ -73,7 +73,6 @@ function resultPayload(overrides: Record<string, unknown> = {}) {
     date: '2026-01-15T10:00:00.000Z',
     duration: 420,
     data: { step: 2, answers: { autonomie: 5 } },
-    quantitativeScore: 80,
     plan: [],
     ...overrides,
   }
@@ -441,7 +440,7 @@ test.group('Candidat — exercices : résultat (POST)', (group) => {
       .firstOrFail()
     assert.equal(result.status, exerciceResultStatusValues.COMPLETED)
     assert.equal(result.duration, 420)
-    assert.equal(result.quantitativeScore, 80)
+    assert.isNull(result.quantitativeScore)
     assert.equal(result.date?.toISODate(), '2026-01-15')
 
     const notification = await Notification.query()
@@ -709,16 +708,17 @@ test.group('Candidat B2C — exercices (#100)', (group) => {
     )
 
     // Une relance ne déclenche pas de seconde analyse (ni de seconde notification).
-    stored.qualitativeAnalysis = 'Analyse déjà produite'
-    await stored.save()
     await client
       .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
       .loginAs(user)
       .json(resultPayload({ data: { step: 2, answers: { autonomie: 1 } } }))
       .redirects(0)
 
+    // Réponses modifiées (#168) : l'analyse des anciennes réponses est effacée,
+    // sans seconde analyse gratuite (`analyzed_at` conservé).
     await stored.refresh()
-    assert.equal(stored.qualitativeAnalysis, 'Analyse déjà produite')
+    assert.isNull(stored.qualitativeAnalysis)
+    assert.isNotNull(stored.analyzedAt)
     assert.notEqual(stored.qualitativeAnalysis, firstAnalysis)
     assert.lengthOf(
       await Notification.query()
@@ -726,6 +726,49 @@ test.group('Candidat B2C — exercices (#100)', (group) => {
         .where('type', NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE),
       1
     )
+  })
+
+  test('une analyse ou un score envoyés par le client sont ignorés et l’analyse gratuite a lieu (#168)', async ({
+    client,
+    assert,
+  }) => {
+    const { user, employee } = await createB2cCandidate()
+    const forged = { qualitativeAnalysis: 'Analyse écrite par le candidat', quantitativeScore: 99 }
+
+    const response = await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
+      .loginAs(user)
+      .json(resultPayload(forged))
+      .redirects(0)
+    response.assertStatus(302)
+    response.assertHeader('location', '/dashboard/candidat')
+
+    const stored = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', EXERCICE_RESULTS_TYPES.MOTIVATION)
+      .firstOrFail()
+    assert.isNull(stored.quantitativeScore)
+    // Le texte forgé aurait compté comme « analyse déjà faite » : le job IA
+    // (queue `sync`, fournisseur `none`) n'aurait pas tourné.
+    assert.isNotNull(stored.qualitativeAnalysis)
+    assert.notEqual(stored.qualitativeAnalysis, forged.qualitativeAnalysis)
+    assert.lengthOf(
+      await Notification.query()
+        .where('userId', user.id)
+        .where('type', NOTIFICATION_TYPES.AI_ANALYSIS_READY_CANDIDATE),
+      1
+    )
+
+    // Une relance forgée n'écrase pas l'analyse produite par le job.
+    const jobAnalysis = stored.qualitativeAnalysis
+    await client
+      .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
+      .loginAs(user)
+      .json(resultPayload(forged))
+      .redirects(0)
+    await stored.refresh()
+    assert.equal(stored.qualitativeAnalysis, jobAnalysis)
+    assert.isNull(stored.quantitativeScore)
   })
 
   test('forfait payé : l’analyse IA est relancée à chaque résultat', async ({ client, assert }) => {

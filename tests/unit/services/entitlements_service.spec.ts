@@ -19,6 +19,7 @@ import config from '@adonisjs/core/services/config'
 import testUtils from '@adonisjs/core/services/test_utils'
 import db from '@adonisjs/lucid/services/db'
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 
 /** #94 — un droit d'accès = un paiement `paid` non révoqué ; les B2B ont toujours accès. */
 test.group('EntitlementsService — lecture des droits', (group) => {
@@ -309,6 +310,28 @@ test.group('EntitlementsService — déblocage et retrait (#104)', (group) => {
     assert.equal(notification.type, NOTIFICATION_TYPES.RESULTS_UNLOCKED)
     assert.deepEqual(notification.meta, { employeeId: employee.id, href: '/dashboard/candidat' })
     assert.lengthOf(await Notification.query().where('userId', other.user.id), 0)
+  })
+
+  test('unlockResults relance un exercice gratuit refait (texte effacé, déjà analysé) (#168)', async ({
+    assert,
+  }) => {
+    const service = new SpyDispatchEntitlements(testNotifications())
+    const { employee } = await createB2cCandidate()
+    const redone = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      qualitativeAnalysis: null,
+      analyzedAt: DateTime.now(),
+    }).create()
+    const payment = await CandidatePaymentFactory.merge({
+      employeeId: employee.id,
+      organizationId: employee.organizationId,
+    })
+      .apply('paid')
+      .create()
+
+    await service.unlockResults(employee, payment)
+
+    assert.deepEqual(service.dispatched, [redone.id])
   })
 
   test('grantManual déclenche le même déblocage ; revoke prévient du retrait', async ({
