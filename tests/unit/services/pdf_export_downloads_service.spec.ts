@@ -13,7 +13,9 @@ import {
   createAdvisor,
   createB2cCandidate,
   createCandidate,
+  createInHouseExpert,
   createOrganization,
+  createPlatformOrganization,
   createSuperAdmin,
   createUser,
 } from '#tests/support/actors'
@@ -219,6 +221,37 @@ test.group('PdfExportDownloadsService — forfait des particuliers (#101)', (gro
     const pdfExport = await exportOf(employee, user)
 
     const found = await service.findFor(user, pdfExport.id)
+    assert.equal(found.id, pdfExport.id)
+  })
+})
+
+test.group('PdfExportDownloadsService.findFor — équipe plateforme (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
+  })
+
+  test('un expert ne lit que les exports de ses particuliers assignés', async ({ assert }) => {
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const mine = await createB2cCandidate({ expert: expertA, paid: true })
+    const other = await createB2cCandidate({ expert: expertB, paid: true })
+    const own = await exportOf(mine.employee, expertA)
+    const foreign = await exportOf(other.employee, expertB)
+
+    const found = await service.findFor(expertA, own.id)
+    assert.equal(found.id, own.id)
+    await assert.rejects(() => service.findFor(expertA, foreign.id), PdfExportNotFoundError)
+  })
+
+  test('l’admin de la plateforme garde la vue d’ensemble', async ({ assert }) => {
+    const expert = await createInHouseExpert()
+    const admin = await createAdmin(await createPlatformOrganization())
+    const { employee } = await createB2cCandidate({ expert, paid: true })
+    const pdfExport = await exportOf(employee, expert)
+
+    const found = await service.findFor(admin, pdfExport.id)
     assert.equal(found.id, pdfExport.id)
   })
 })

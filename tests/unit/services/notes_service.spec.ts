@@ -12,7 +12,9 @@ import { NOTE_VISIBILITY } from '#shared/constants/note'
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createEmployeeFor,
+  createInHouseExpert,
   createSuperAdmin,
 } from '#tests/support/actors'
 import { countQueries } from '#tests/utils/query_counter'
@@ -189,5 +191,25 @@ test.group('NotesService — modification et suppression', (group) => {
     assert.isNotNull(note.deletedAt)
     const error = await service.getEditableNote(advisor, note.id).catch((e) => e)
     assert.instanceOf(error, NoteNotFoundError)
+  })
+})
+
+test.group('NotesService — équipe plateforme (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('un conseiller de la plateforme n’écrit que sur ses particuliers assignés', async ({
+    assert,
+  }) => {
+    const service = new NotesService()
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const mine = await createB2cCandidate({ expert: expertA })
+    const other = await createB2cCandidate({ expert: expertB })
+
+    const target = await service.getEmployeeForNewNote(expertA, mine.employee.id)
+    assert.equal(target.id, mine.employee.id)
+    const error = await service.getEmployeeForNewNote(expertA, other.employee.id).catch((e) => e)
+    assert.instanceOf(error, NoteNotFoundError)
+    assert.equal(error.status, 404)
   })
 })

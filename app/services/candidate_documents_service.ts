@@ -8,6 +8,7 @@ import type Media from '#models/media'
 import type User from '#models/user'
 import { reportError } from '#services/error_tracking_service'
 import { MediaService } from '#services/media_service'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import {
   MAX_CANDIDATE_DOCUMENTS,
   MEDIA_ENTITY_TYPES,
@@ -47,22 +48,26 @@ function isCandidate(user: User): boolean {
  * Documents d'un candidat (issue #50), déposés par lui ou par son conseiller.
  *
  * L'accès par rôle est porté par les routes (`candidate` / `advisorOrAdmin`) ;
- * ici on résout la fiche : la sienne pour un candidat, celle de son
- * organisation pour un conseiller (autre organisation → 404).
+ * ici on résout la fiche : la sienne pour un candidat, une fiche de son
+ * périmètre d'équipe pour un conseiller (`teamEmployeeScope` : autre
+ * organisation, ou particulier non assigné de l'organisation plateforme → 404).
  */
 @inject()
 export class CandidateDocumentsService {
   constructor(private media: MediaService) {}
 
-  /** Fiche du candidat connecté, ou fiche `employeeId` de l'organisation du conseiller. */
+  /** Fiche du candidat connecté, ou fiche `employeeId` du périmètre d'équipe du conseiller (#167). */
   async employeeFor(user: User, employeeId?: number): Promise<Employee> {
-    if (employeeId !== undefined && !Number.isSafeInteger(employeeId)) {
+    if (employeeId === undefined) {
+      return Employee.query()
+        .where('organizationId', user.organizationId)
+        .where('userId', user.id)
+        .firstOrFail()
+    }
+    if (!Number.isSafeInteger(employeeId)) {
       throw new MediaNotFoundError('Candidat introuvable.')
     }
-    const query = Employee.query().where('organizationId', user.organizationId)
-    if (employeeId === undefined) query.where('userId', user.id)
-    else query.where('id', employeeId)
-    return query.firstOrFail()
+    return Employee.query().where('id', employeeId).where(teamEmployeeScope(user)).firstOrFail()
   }
 
   async list(employee: Employee, viewer: User): Promise<CandidateDocumentDto[]> {

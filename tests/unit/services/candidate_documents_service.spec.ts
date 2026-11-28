@@ -7,7 +7,13 @@ import {
 import { CandidateDocumentsService } from '#services/candidate_documents_service'
 import { MAX_CANDIDATE_DOCUMENTS } from '#shared/constants/media'
 import type { IncomingMediaFile } from '#shared/types/media/documents'
-import { createAdvisor, createCandidate, createEmployeeFor } from '#tests/support/actors'
+import {
+  createAdvisor,
+  createB2cCandidate,
+  createCandidate,
+  createEmployeeFor,
+  createInHouseExpert,
+} from '#tests/support/actors'
 import { documentsOf } from '#tests/support/documents'
 import {
   FakeCloudinary,
@@ -133,5 +139,32 @@ test.group('CandidateDocumentsService', (group) => {
     const documents = await service()
     assert.isNull(await documents.storeImportedCv(user, await cvFile()))
     assert.lengthOf(await documentsOf(employee), 0)
+  })
+})
+
+test.group('CandidateDocumentsService.employeeFor — équipe plateforme (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const service = () => app.container.make(CandidateDocumentsService)
+
+  test('un expert ne résout que les particuliers qui lui sont assignés', async ({ assert }) => {
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const mine = await createB2cCandidate({ expert: expertA })
+    const other = await createB2cCandidate({ expert: expertB })
+    const unassigned = await createB2cCandidate()
+    const documents = await service()
+
+    const sheet = await documents.employeeFor(expertA, mine.employee.id)
+    assert.equal(sheet.id, mine.employee.id)
+    await assert.rejects(() => documents.employeeFor(expertA, other.employee.id))
+    await assert.rejects(() => documents.employeeFor(expertA, unassigned.employee.id))
+  })
+
+  test('le particulier résout toujours sa propre fiche', async ({ assert }) => {
+    const { user, employee } = await createB2cCandidate()
+    const documents = await service()
+    const sheet = await documents.employeeFor(user)
+    assert.equal(sheet.id, employee.id)
   })
 })
