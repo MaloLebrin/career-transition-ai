@@ -1,4 +1,6 @@
 import type { RankedItem } from '#shared/types/exercise/ranking'
+import { motivationDefinition } from '../../../constants/motivations'
+import { DefinitionTooltip } from '../../ui/DefinitionTooltip'
 
 const RANKING_TONES = {
   lake: 'bg-tint-lake text-tint-lake-ink',
@@ -28,7 +30,7 @@ export function MotivationRankingColumn({
               {item.rank}
             </span>
             <span className="min-w-0 text-sm font-semibold leading-snug text-ink">
-              {item.label}
+              <DefinitionTooltip label={item.label} definition={motivationDefinition(item.label)} />
             </span>
           </li>
         ))}

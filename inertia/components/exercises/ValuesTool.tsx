@@ -128,6 +128,7 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                     className="p-4 text-left rounded-2xl border border-hairline bg-surface hover:bg-surface-soft hover:border-accent hover:shadow-card transition-all group cursor-pointer disabled:cursor-not-allowed"
                   >
                     <div className="font-bold text-ink group-hover:text-accent">{val.label}</div>
+                    <p className="text-sm text-ink mt-1">{val.definition}</p>
                     <p className="text-sm text-muted mt-1">{val.desc}</p>
                     <p className="text-sm text-ink mt-3">{val.portrait}</p>
                     <p className="text-sm text-muted mt-2 border-t border-hairline pt-2">
@@ -150,9 +151,9 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                 }}
                 onDropCapture={(e) => {
                   e.preventDefault()
-                  const target = (e.target as HTMLElement | null)?.closest?.('[data-ranked-idx]') as
-                    | HTMLElement
-                    | null
+                  const target = (e.target as HTMLElement | null)?.closest?.(
+                    '[data-ranked-idx]'
+                  ) as HTMLElement | null
                   const toIdx = target ? Number(target.dataset.rankedIdx) : NaN
                   const fromIdx = dragFromIndexRef.current
                   if (typeof fromIdx === 'number' && Number.isFinite(toIdx)) {
@@ -193,8 +194,8 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
                       </span>
                       <div className="grow min-w-0">
                         <span className="font-bold text-ink">{label}</span>
-                        {value?.situation ? (
-                          <p className="text-sm text-muted mt-1">{value.situation}</p>
+                        {value?.definition ? (
+                          <p className="text-sm text-muted mt-1">{value.definition}</p>
                         ) : null}
                       </div>
                       <button

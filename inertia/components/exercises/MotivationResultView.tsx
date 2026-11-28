@@ -6,6 +6,8 @@ import {
   rankingExtremes,
 } from '#shared/helpers/exercise/ranking_extremes'
 import { MotivationRankingColumn } from './motivation/MotivationRankingColumn'
+import { motivationDefinition } from '../../constants/motivations'
+import { DefinitionTooltip } from '../ui/DefinitionTooltip'
 
 interface Props {
   data: {
@@ -81,7 +83,9 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
                 <span className="mt-0.5 w-6 shrink-0 text-sm font-semibold tabular-nums text-muted">
                   {idx + 1}
                 </span>
-                <span className="text-sm leading-snug text-ink">{label}</span>
+                <span className="text-sm leading-snug text-ink">
+                  <DefinitionTooltip label={label} definition={motivationDefinition(label)} />
+                </span>
               </li>
             ))}
           </ol>
