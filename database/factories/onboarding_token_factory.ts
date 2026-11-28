@@ -15,6 +15,7 @@ export const OnboardingTokenFactory = factory
       userId: 0, // à surcharger (ou via `.with('user')`)
       expiresAt: DateTime.now().plus({ days: 7 }),
       usedAt: null,
+      newEmail: null,
     }
   })
   .after('make', (_, token) => {
@@ -28,6 +29,10 @@ export const OnboardingTokenFactory = factory
   })
   .state('used', (token) => {
     token.usedAt = DateTime.now().minus({ hours: 1 })
+  })
+  /** Lien de changement d'e-mail (#143) envoyé à la nouvelle adresse. */
+  .state('emailChange', (token) => {
+    token.newEmail = `nouvelle-${randomBytes(4).toString('hex')}@example.com`
   })
   .relation('user', () => UserFactory)
   .build()

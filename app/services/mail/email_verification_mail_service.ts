@@ -63,4 +63,64 @@ export class EmailVerificationMailService {
       metadata: { kind: 'email_verification', userId: user.id },
     })
   }
+
+  /**
+   * Changement d'e-mail (#143) : lien envoyé à la nouvelle adresse, qui ne
+   * remplace l'ancienne qu'au clic.
+   */
+  public async sendEmailChangeLink({
+    user,
+    token,
+  }: {
+    user: User
+    token: OnboardingToken
+  }): Promise<void> {
+    if (!token.plainToken || !token.newEmail) {
+      throw new Error('Email change link needs a fresh token carrying the new address.')
+    }
+    const link = appUrl(`/auth/verify-email/${token.plainToken}`)
+
+    await this.mail.send({
+      from: resolveFromAddress(),
+      to: { email: token.newEmail, name: user.name },
+      subject: 'Confirmez votre nouvelle adresse e-mail',
+      text: [
+        `Bonjour ${user.name},`,
+        '',
+        'Vous avez demandé à utiliser cette adresse pour votre compte. Cliquez sur ce lien pour la confirmer :',
+        link,
+        '',
+        'Votre adresse actuelle reste active tant que vous n’avez pas cliqué.',
+        `Ce lien est valable ${EMAIL_VERIFICATION_TOKEN_TTL_DAYS} jours et ne sert qu’une fois.`,
+        'Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.',
+      ].join('\n'),
+      tags: ['email_change'],
+      metadata: { kind: 'email_change', userId: user.id },
+    })
+  }
+
+  /** Avis envoyé à l'ancienne adresse une fois la nouvelle confirmée (#143). */
+  public async sendEmailChangedNotice({
+    user,
+    previousEmail,
+  }: {
+    user: User
+    previousEmail: string
+  }): Promise<void> {
+    await this.mail.send({
+      from: resolveFromAddress(),
+      to: { email: previousEmail, name: user.name },
+      subject: 'Votre adresse e-mail a été modifiée',
+      text: [
+        `Bonjour ${user.name},`,
+        '',
+        `L’adresse e-mail de votre compte est désormais ${user.email}.`,
+        'Vous ne recevrez plus nos e-mails à cette adresse.',
+        '',
+        'Si vous n’êtes pas à l’origine de ce changement, contactez-nous sans attendre.',
+      ].join('\n'),
+      tags: ['email_changed_notice'],
+      metadata: { kind: 'email_changed_notice', userId: user.id },
+    })
+  }
 }

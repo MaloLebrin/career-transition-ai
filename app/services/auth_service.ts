@@ -15,6 +15,7 @@ import { ACCOUNT_TYPES } from '#shared/constants/b2c'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
 import { TERMS_VERSION } from '#shared/constants/legal'
 import { USERS_ROLES, type UserRole } from '#shared/types/advisor/roles'
+import type { UpdateProfileInput, UpdateProfileResult } from '#shared/types/auth/email_change'
 import type { RegisterCandidateInput } from '#shared/types/auth/register_candidate'
 import { toSessionDto } from '#utils/dto'
 import { inject } from '@adonisjs/core'
@@ -28,11 +29,6 @@ type RegisterInput = {
   name: string
   role: UserRole
   organizationName: string
-}
-
-type UpdateProfileInput = {
-  name: string
-  email: string
 }
 
 @inject()
@@ -165,26 +161,17 @@ export class AuthService {
   /**
    * Updates the authenticated user's profile (name, email).
    */
-  public async updateProfile(user: User, input: UpdateProfileInput): Promise<UserSessionDto> {
-    if (input.email !== user.email) {
-      const existing = await User.query()
-        .where('email', input.email)
-        .whereNot('id', '=', user.id)
-        .first()
+  /**
+   * Profil conseiller / admin : le nom change tout de suite ; une nouvelle
+   * adresse reçoit un lien de confirmation et ne remplace l'actuelle qu'au
+   * clic (#143). Adresse déjà prise → `EmailChangeConflictError`, rien n'est modifié.
+   */
+  public async updateProfile(user: User, input: UpdateProfileInput): Promise<UpdateProfileResult> {
+    const pendingEmail = await this.emailVerification.requestEmailChange(user, input.email)
 
-      if (existing) {
-        throw new EmailAlreadyUsedException()
-      }
-    }
-
-    user.merge({
-      name: input.name,
-      email: input.email,
-    })
+    user.name = input.name
     await user.save()
-
-    await user.refresh()
-    return toSessionDto(user)
+    return { pendingEmail }
   }
 
   public toSession(user: User): UserSessionDto {

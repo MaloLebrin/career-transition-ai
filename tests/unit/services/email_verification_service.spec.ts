@@ -1,4 +1,7 @@
-import { EmailAlreadyVerifiedError } from '#exceptions/email_verification_errors'
+import {
+  EmailAlreadyVerifiedError,
+  EmailChangeConflictError,
+} from '#exceptions/email_verification_errors'
 import OnboardingToken from '#models/onboarding_token'
 import User from '#models/user'
 import { EmailVerificationService } from '#services/email_verification_service'
@@ -7,21 +10,35 @@ import {
   type EmailVerificationMailService,
 } from '#services/mail/email_verification_mail_service'
 import { OnboardingTokensService } from '#services/onboarding_tokens_service'
-import { createB2cCandidate } from '#tests/support/actors'
+import { createAdvisor, createB2cCandidate } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 /** Double de `EmailVerificationMailService` : garde les envois, peut simuler une panne. */
-function makeService(options: { failing?: boolean } = {}) {
+function makeService(options: { failing?: boolean; failingNotice?: boolean } = {}) {
   const links: Array<{ userId: number; plainToken?: string }> = []
+  const changeLinks: Array<{ userId: number; to: string | null; plainToken?: string }> = []
+  const notices: Array<{ userId: number; to: string; newEmail: string }> = []
   const mails = {
     async sendVerificationLink({ user, token }: { user: User; token: OnboardingToken }) {
       if (options.failing) throw new Error('provider down')
       links.push({ userId: user.id, plainToken: token.plainToken })
     },
+    async sendEmailChangeLink({ user, token }: { user: User; token: OnboardingToken }) {
+      changeLinks.push({ userId: user.id, to: token.newEmail, plainToken: token.plainToken })
+    },
+    async sendEmailChangedNotice({ user, previousEmail }: { user: User; previousEmail: string }) {
+      if (options.failingNotice) throw new Error('provider down')
+      notices.push({ userId: user.id, to: previousEmail, newEmail: user.email })
+    },
   } as unknown as EmailVerificationMailService
-  return { service: new EmailVerificationService(mails, new OnboardingTokensService()), links }
+  return {
+    service: new EmailVerificationService(mails, new OnboardingTokensService()),
+    links,
+    changeLinks,
+    notices,
+  }
 }
 
 async function activeTokens(userId: number) {
@@ -132,16 +149,16 @@ test.group('EmailVerificationService.verify', (group) => {
     const token = await OnboardingToken.createForUser(user.id)
     const { service } = makeService()
 
-    const verified = await service.verify(token.plainToken!)
+    const result = await service.verify(token.plainToken!)
 
-    assert.equal(verified?.id, user.id)
+    assert.deepEqual(result, { outcome: 'verified' })
     const fresh = await User.findOrFail(user.id)
     assert.isNotNull(fresh.emailVerifiedAt)
     await token.refresh()
     assert.isNotNull(token.usedAt)
   })
 
-  test('secret inconnu, vide, expiré ou consommé : null et adresse non vérifiée', async ({
+  test('secret inconnu, vide, expiré ou consommé : invalid et adresse non vérifiée', async ({
     assert,
   }) => {
     const { user } = await createB2cCandidate()
@@ -153,11 +170,137 @@ test.group('EmailVerificationService.verify', (group) => {
     await used.save()
     const { service } = makeService()
 
-    assert.isNull(await service.verify('inconnu'))
-    assert.isNull(await service.verify(''))
-    assert.isNull(await service.verify(expired.plainToken!))
-    assert.isNull(await service.verify(used.plainToken!))
+    const invalid = { outcome: 'invalid' }
+    assert.deepEqual(await service.verify('inconnu'), invalid)
+    assert.deepEqual(await service.verify(''), invalid)
+    assert.deepEqual(await service.verify(expired.plainToken!), invalid)
+    assert.deepEqual(await service.verify(used.plainToken!), invalid)
     const fresh = await User.findOrFail(user.id)
     assert.isNull(fresh.emailVerifiedAt)
+  })
+})
+
+test.group('EmailVerificationService.requestEmailChange (#143)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('envoie un lien à la nouvelle adresse sans toucher à celle du compte', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const before = advisor.email
+    const { service, changeLinks } = makeService()
+
+    const pending = await service.requestEmailChange(advisor, '  nouvelle@example.com ')
+
+    assert.equal(pending, 'nouvelle@example.com')
+    assert.deepEqual(
+      changeLinks.map((l) => [l.userId, l.to]),
+      [[advisor.id, 'nouvelle@example.com']]
+    )
+    const fresh = await User.findOrFail(advisor.id)
+    assert.equal(fresh.email, before)
+    const [row] = await activeTokens(advisor.id)
+    assert.equal(row.newEmail, 'nouvelle@example.com')
+    assert.equal(row.token, OnboardingToken.hash(changeLinks[0].plainToken!))
+    assert.equal(await service.pendingEmailFor(advisor), 'nouvelle@example.com')
+  })
+
+  test('même adresse (casse comprise) : rien n’est envoyé', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { service, changeLinks } = makeService()
+
+    assert.isNull(await service.requestEmailChange(advisor, advisor.email.toUpperCase()))
+    assert.lengthOf(changeLinks, 0)
+    assert.isNull(await service.pendingEmailFor(advisor))
+  })
+
+  test('adresse d’un autre compte (casse comprise) : refus, aucun lien', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const other = await createAdvisor()
+    const { service, changeLinks } = makeService()
+
+    await assert.rejects(
+      () => service.requestEmailChange(advisor, other.email.toUpperCase()),
+      EmailChangeConflictError
+    )
+    assert.lengthOf(changeLinks, 0)
+  })
+
+  test('une seule demande en cours : la dernière adresse l’emporte, l’onboarding est intact', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const onboarding = await OnboardingToken.createForUser(advisor.id)
+    const { service, changeLinks } = makeService()
+
+    await service.requestEmailChange(advisor, 'premiere@example.com')
+    await service.requestEmailChange(advisor, 'seconde@example.com')
+
+    const active = await activeTokens(advisor.id)
+    assert.sameMembers(
+      active.map((t) => t.newEmail),
+      [null, 'seconde@example.com']
+    )
+    assert.include(
+      active.map((t) => t.id),
+      onboarding.id
+    )
+    assert.equal(await service.pendingEmailFor(advisor), 'seconde@example.com')
+    assert.deepEqual(await service.verify(changeLinks[0].plainToken!), { outcome: 'invalid' })
+  })
+})
+
+test.group('EmailVerificationService.verify — changement d’e-mail (#143)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('applique la nouvelle adresse, la tient pour vérifiée et prévient l’ancienne', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const previous = advisor.email
+    const { service, changeLinks, notices } = makeService()
+    await service.requestEmailChange(advisor, 'nouvelle@example.com')
+
+    const result = await service.verify(changeLinks[0].plainToken!)
+
+    assert.deepEqual(result, { outcome: 'email_changed' })
+    const fresh = await User.findOrFail(advisor.id)
+    assert.equal(fresh.email, 'nouvelle@example.com')
+    assert.isNotNull(fresh.emailVerifiedAt)
+    assert.deepEqual(notices, [
+      { userId: advisor.id, to: previous, newEmail: 'nouvelle@example.com' },
+    ])
+    assert.isNull(await service.pendingEmailFor(fresh))
+  })
+
+  test('un échec de l’avis à l’ancienne adresse n’annule pas le changement', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { service, changeLinks } = makeService({ failingNotice: true })
+    await service.requestEmailChange(advisor, 'nouvelle@example.com')
+
+    const result = await service.verify(changeLinks[0].plainToken!)
+
+    assert.deepEqual(result, { outcome: 'email_changed' })
+    const changed = await User.findOrFail(advisor.id)
+    assert.equal(changed.email, 'nouvelle@example.com')
+  })
+
+  test('adresse prise entre l’envoi et le clic : email_taken, rien ne change', async ({
+    assert,
+  }) => {
+    const advisor = await createAdvisor()
+    const previous = advisor.email
+    const { service, changeLinks, notices } = makeService()
+    await service.requestEmailChange(advisor, 'convoitee@example.com')
+    const other = await createAdvisor()
+    other.email = 'Convoitee@example.com'
+    await other.save()
+
+    const result = await service.verify(changeLinks[0].plainToken!)
+
+    assert.deepEqual(result, { outcome: 'email_taken' })
+    const unchanged = await User.findOrFail(advisor.id)
+    assert.equal(unchanged.email, previous)
+    assert.lengthOf(notices, 0)
   })
 })
