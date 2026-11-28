@@ -1,6 +1,9 @@
 export type SchwartzValue = {
   id: string
   label: string
+  /** Définition courte et explicite, affichée au choix et au survol des résultats. */
+  definition: string
+  /** Mots-clés de la valeur (Schwartz). */
   desc: string
   /** Portrait d’une personne pour qui cette valeur compte. */
   portrait: string
@@ -12,6 +15,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'uni',
     label: "L'universalisme",
+    definition: 'Agir pour la justice, l’égalité et le bien de tous, au-delà de son entourage.',
     desc: "Largeur d'esprit, sensibilité à la justice sociale et à l'égalité.",
     portrait: 'Quelqu’un qui défend l’équité et le bien commun, au-delà de son cercle proche.',
     situation:
@@ -20,6 +24,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'bien',
     label: 'La bienveillance',
+    definition: 'Prendre soin des personnes proches et être quelqu’un sur qui l’on peut compter.',
     desc: 'Altruisme, loyauté, honnêteté, responsabilité.',
     portrait: 'Quelqu’un qui prend soin des autres et tient ses engagements envers son équipe.',
     situation:
@@ -28,6 +33,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'conf',
     label: 'La conformité',
+    definition: 'Respecter les règles et les attentes des autres, et se tenir à ses engagements.',
     desc: 'Obéissance, autodiscipline, politesse.',
     portrait: 'Quelqu’un qui respecte les règles et attend le même sérieux de son entourage.',
     situation:
@@ -36,6 +42,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'trad',
     label: 'La tradition',
+    definition: 'S’appuyer sur les usages, l’héritage et ce qui a fait ses preuves.',
     desc: 'Respect de la tradition, humilité.',
     portrait:
       'Quelqu’un qui s’appuie sur l’héritage, les usages et ce qui a déjà fait ses preuves.',
@@ -45,6 +52,8 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'secu',
     label: 'La sécurité',
+    definition:
+      'Chercher la stabilité, la prévisibilité et la protection, pour soi et ses proches.',
     desc: 'Ordre social, sécurité familiale.',
     portrait: 'Quelqu’un qui privilégie la stabilité, la prévisibilité et la protection du foyer.',
     situation:
@@ -53,6 +62,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'pouv',
     label: 'Le pouvoir',
+    definition: 'Avoir de l’influence, de l’autorité et du poids dans les décisions.',
     desc: 'Importance sociale, richesse, autorité.',
     portrait: 'Quelqu’un qui veut influencer, décider et compter dans l’organisation.',
     situation:
@@ -61,6 +71,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'real',
     label: 'La réalisation',
+    definition: 'Réussir, être reconnu pour ses compétences et atteindre ses objectifs.',
     desc: 'Ambition personnelle, succès, compétence.',
     portrait:
       'Quelqu’un qui vise l’excellence, les objectifs ambitieux et la reconnaissance du résultat.',
@@ -70,6 +81,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'hedo',
     label: "L'hédonisme",
+    definition: 'Prendre du plaisir et profiter de la vie, au travail comme ailleurs.',
     desc: 'Attrait vers les plaisirs de la vie.',
     portrait: 'Quelqu’un qui cherche le plaisir, le confort et la joie au quotidien.',
     situation:
@@ -78,6 +90,7 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'stim',
     label: 'La stimulation',
+    definition: 'Vivre de la nouveauté, des défis et de la variété, loin de la routine.',
     desc: "Curiosité, goût pour l'aventure.",
     portrait: 'Quelqu’un qui a besoin de nouveauté, de défis et de sortir de la routine.',
     situation:
@@ -86,9 +99,14 @@ export const SCHWARTZ_VALUES: SchwartzValue[] = [
   {
     id: 'auto',
     label: "L'autonomie",
+    definition: 'Penser et agir librement, choisir sa façon de faire.',
     desc: 'Créativité, liberté, indépendance.',
     portrait: 'Quelqu’un qui veut choisir sa façon de faire et garder sa liberté de décision.',
     situation:
       'Un cahier des charges très cadré est imposé : la personne négocie la méthode, quitte à rendre un résultat moins standard.',
   },
 ]
+
+export function valueDefinition(label: string): string | undefined {
+  return SCHWARTZ_VALUES.find((v) => v.label === label)?.definition
+}

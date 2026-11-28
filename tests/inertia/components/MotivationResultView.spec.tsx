@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import MotivationResultView from '../../../inertia/components/exercises/MotivationResultView'
+import { motivationDefinition } from '../../../inertia/constants/motivations'
 
 const defaultProps = {
   date: '2024-05-10',
@@ -96,5 +97,17 @@ describe('MotivationResultView', () => {
     expect(
       screen.queryByRole('heading', { name: 'Vos 5 premières et 5 dernières motivations' })
     ).not.toBeInTheDocument()
+  })
+
+  test('affiche la définition d’une motivation au survol de son libellé', () => {
+    render(
+      <MotivationResultView
+        data={{ ranked: ["L'autonomie"], scores: {}, matrix: [] }}
+        {...defaultProps}
+      />
+    )
+    const [label] = screen.getAllByText("L'autonomie")
+    fireEvent.mouseEnter(label)
+    expect(screen.getByRole('tooltip')).toHaveTextContent(motivationDefinition("L'autonomie")!)
   })
 })
