@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import { formatDate } from '../../../shared/helpers/date'
 import MotivationMatrix from './motivation/MotivationMatrix'
-import { rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
+import {
+  RANKING_EXTREMES_COUNT as COUNT,
+  rankingExtremes,
+} from '#shared/helpers/exercise/ranking_extremes'
 import { MotivationRankingColumn } from './motivation/MotivationRankingColumn'
 
 interface Props {
@@ -56,11 +59,15 @@ const MotivationResultView: React.FC<Props> = ({ data, date, duration }) => {
       {ranked.length > 0 && (
         <section className="space-y-4" aria-labelledby="motivation-extremes-title">
           <h5 id="motivation-extremes-title" className="text-xl font-bold text-ink">
-            Vos 3 premières et 3 dernières motivations
+            Vos {COUNT} premières et {COUNT} dernières motivations
           </h5>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <MotivationRankingColumn title="Les 3 premières" items={top} tone="lake" />
-            <MotivationRankingColumn title="Les 3 dernières" items={bottom} tone="apricot" />
+            <MotivationRankingColumn title={`Les ${COUNT} premières`} items={top} tone="lake" />
+            <MotivationRankingColumn
+              title={`Les ${COUNT} dernières`}
+              items={bottom}
+              tone="apricot"
+            />
           </div>
         </section>
       )}

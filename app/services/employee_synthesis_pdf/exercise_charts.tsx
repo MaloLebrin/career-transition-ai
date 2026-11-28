@@ -10,7 +10,7 @@ import {
 // react-pdf SVG Text has a type gap with fontSize + textAnchor — cast to bypass
 const SvgText = _SvgText as any
 import { Text, View } from '@react-pdf/renderer'
-import { rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
+import { RANKING_EXTREMES_COUNT, rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
 import { C } from './styles.js'
 
 // ─── DISC colors (mirror prod) ────────────────────────────────────────────────
@@ -59,7 +59,7 @@ function MotivationChart({ data }: { data: unknown }) {
 
   return (
     <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
-      {/* 3 premières */}
+      {/* Premières */}
       <View
         style={{
           flex: 1,
@@ -79,7 +79,7 @@ function MotivationChart({ data }: { data: unknown }) {
             marginBottom: 8,
           }}
         >
-          LES 3 PREMIÈRES
+          LES {RANKING_EXTREMES_COUNT} PREMIÈRES
         </Text>
         {top.map((item) => (
           <View
@@ -107,7 +107,7 @@ function MotivationChart({ data }: { data: unknown }) {
         ))}
       </View>
 
-      {/* 3 dernières */}
+      {/* Dernières */}
       <View
         style={{
           flex: 1,
@@ -127,7 +127,7 @@ function MotivationChart({ data }: { data: unknown }) {
             marginBottom: 8,
           }}
         >
-          LES 3 DERNIÈRES
+          LES {RANKING_EXTREMES_COUNT} DERNIÈRES
         </Text>
         {bottom.map((item) => (
           <View

@@ -1,10 +1,10 @@
 import type { RankingExtremes } from '#shared/types/exercise/ranking'
 
-export const RANKING_EXTREMES_COUNT = 3
+export const RANKING_EXTREMES_COUNT = 5
 
 /**
  * Les `count` premiers et les `count` derniers éléments d'un classement, avec leur rang
- * réel (1-2-3 … 20-21-22), dans l'ordre du classement. Un élément n'apparaît jamais
+ * réel (1 à 5 … 18 à 22), dans l'ordre du classement. Un élément n'apparaît jamais
  * dans les deux listes quand le classement est court.
  */
 export function rankingExtremes(

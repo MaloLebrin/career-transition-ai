@@ -70,12 +70,15 @@ describe('MotivationResultView', () => {
     }
   })
 
-  test('remplace le podium par les 3 premières et les 3 dernières, avec leur rang réel', () => {
+  test('remplace le podium par les 5 premières et les 5 dernières, avec leur rang réel', () => {
     const ranked = Array.from({ length: 22 }, (_, i) => `Motivation ${i + 1}`)
     render(<MotivationResultView data={{ ranked, scores: {}, matrix: [] }} {...defaultProps} />)
 
     expect(screen.queryByText("Top 3 Leviers d'Engagement")).not.toBeInTheDocument()
     expect(screen.queryByText('Facteurs Neutres ou de Désengagement')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Vos 5 premières et 5 dernières motivations' })
+    ).toBeInTheDocument()
 
     const rows = (title: string) => {
       const column = screen.getByRole('heading', { name: title }).parentElement as HTMLElement
@@ -83,22 +86,15 @@ describe('MotivationResultView', () => {
         .getAllByRole('listitem')
         .map((li) => li.textContent)
     }
-    expect(rows('Les 3 premières')).toEqual([
-      'Rang 1Motivation 1',
-      'Rang 2Motivation 2',
-      'Rang 3Motivation 3',
-    ])
-    expect(rows('Les 3 dernières')).toEqual([
-      'Rang 20Motivation 20',
-      'Rang 21Motivation 21',
-      'Rang 22Motivation 22',
-    ])
+    const expected = (ranks: number[]) => ranks.map((rank) => `Rang ${rank}Motivation ${rank}`)
+    expect(rows('Les 5 premières')).toEqual(expected([1, 2, 3, 4, 5]))
+    expect(rows('Les 5 dernières')).toEqual(expected([18, 19, 20, 21, 22]))
   })
 
   test("n'affiche pas le bloc des extrêmes sans classement", () => {
     render(<MotivationResultView data={{ ranked: [], scores: {}, matrix: [] }} {...defaultProps} />)
     expect(
-      screen.queryByRole('heading', { name: 'Vos 3 premières et 3 dernières motivations' })
+      screen.queryByRole('heading', { name: 'Vos 5 premières et 5 dernières motivations' })
     ).not.toBeInTheDocument()
   })
 })

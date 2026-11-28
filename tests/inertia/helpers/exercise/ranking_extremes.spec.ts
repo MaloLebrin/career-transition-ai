@@ -1,33 +1,34 @@
 import { describe, test, expect } from 'vitest'
-import { rankingExtremes } from '../../../../shared/helpers/exercise/ranking_extremes'
+import {
+  RANKING_EXTREMES_COUNT,
+  rankingExtremes,
+} from '../../../../shared/helpers/exercise/ranking_extremes'
 
 const labels = (n: number) => Array.from({ length: n }, (_, i) => `M${i + 1}`)
+const ranks = (items: { rank: number }[]) => items.map((item) => item.rank)
 
 describe('shared/helpers/exercise/ranking_extremes', () => {
-  test('22 motivations : rangs 1-2-3 puis 20-21-22, dans l’ordre du classement', () => {
+  test('affiche 5 motivations de chaque côté par défaut', () => {
+    expect(RANKING_EXTREMES_COUNT).toBe(5)
+  })
+
+  test('22 motivations : rangs 1 à 5 puis 18 à 22, dans l’ordre du classement', () => {
     const { top, bottom } = rankingExtremes(labels(22))
-    expect(top).toEqual([
-      { rank: 1, label: 'M1' },
-      { rank: 2, label: 'M2' },
-      { rank: 3, label: 'M3' },
-    ])
-    expect(bottom).toEqual([
-      { rank: 20, label: 'M20' },
-      { rank: 21, label: 'M21' },
-      { rank: 22, label: 'M22' },
-    ])
+    expect(top).toEqual([1, 2, 3, 4, 5].map((rank) => ({ rank, label: `M${rank}` })))
+    expect(bottom).toEqual([18, 19, 20, 21, 22].map((rank) => ({ rank, label: `M${rank}` })))
   })
 
   test('classement court : aucun élément dans les deux listes', () => {
-    expect(rankingExtremes(labels(4))).toEqual({
-      top: [
-        { rank: 1, label: 'M1' },
-        { rank: 2, label: 'M2' },
-        { rank: 3, label: 'M3' },
-      ],
-      bottom: [{ rank: 4, label: 'M4' }],
-    })
-    expect(rankingExtremes(labels(2)).bottom).toEqual([])
+    const extremes = rankingExtremes(labels(7))
+    expect(ranks(extremes.top)).toEqual([1, 2, 3, 4, 5])
+    expect(ranks(extremes.bottom)).toEqual([6, 7])
+    expect(rankingExtremes(labels(4)).bottom).toEqual([])
+  })
+
+  test('nombre explicite', () => {
+    const { top, bottom } = rankingExtremes(labels(22), 3)
+    expect(ranks(top)).toEqual([1, 2, 3])
+    expect(ranks(bottom)).toEqual([20, 21, 22])
   })
 
   test('entrée vide ou invalide : listes vides', () => {
