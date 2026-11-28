@@ -44,14 +44,16 @@ conversations ayant au moins un message sont listées.
 Canal `chat/conversations/:id` (`chatChannel`), autorisation dans `start/transmit.ts` via
 `ChatService.canSubscribe` → `canSubscribeToChatConversation` (candidat propriétaire,
 expert responsable ou file, admin). Les messages sont diffusés depuis le **process web**
-(`transmit.broadcast` dans `persist`), jamais depuis le worker.
+(`transmit.broadcast` dans `persist`).
 
-**Limite mono-instance** : `config/transmit.ts` n'a pas de transport (`transport: null`).
-Un message n'atteint que les clients connectés au même process : avec **deux instances web**
-(ou plus), candidat et expert peuvent être sur des instances différentes et ne rien recevoir
-en direct. Le message reste enregistré et visible au rechargement. Passer à plusieurs
-instances impose un transport Redis (cf. `docs/hosting.md`). Le `pingInterval` est de
-`'30s'` ; Caddy (`deploy/Caddyfile`) pose `flush_interval -1` pour `/__transmit/events`.
+**Plusieurs process (#172)** : `config/transmit.ts` branche un bus Postgres `LISTEN/NOTIFY`
+(`TRANSMIT_TRANSPORT=postgres`, défaut ; `#utils/postgres_transmit_transport`). Chaque process
+ouvre une connexion d'écoute dédiée et relaie ses diffusions aux autres : avec **deux
+instances web** (ou plus), candidat et expert reçoivent les messages en direct même s'ils sont
+connectés à des instances différentes. Aucun Redis requis. Si la connexion d'écoute tombe,
+elle est rouverte (délai croissant) et les diffusions en échec sont rejouées ; dans tous les cas
+le message reste enregistré et visible au rechargement. Le `pingInterval` est de `'30s'` ;
+Caddy (`deploy/Caddyfile`) pose `flush_interval -1` pour `/__transmit/events`.
 
 ## RGPD
 
@@ -64,8 +66,7 @@ dossier (`RETENTION_PERIODS`). Aucun message n'est envoyé à un fournisseur IA.
 ## Limites de la v1
 
 Pas de pièces jointes, d'indicateur « en train d'écrire », de réponses IA, de modification
-ni de suppression de message, de purge automatique des conversations, ni de multi-instances
-(transport Redis requis).
+ni de suppression de message, ni de purge automatique des conversations.
 
 ## Tests
 

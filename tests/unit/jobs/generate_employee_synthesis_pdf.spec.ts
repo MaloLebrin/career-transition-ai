@@ -14,6 +14,8 @@ import { EmployeeSynthesisService } from '#services/employee_synthesis_service'
 import { pdfExportKey } from '#services/pdf_storage_service'
 import testUtils from '@adonisjs/core/services/test_utils'
 import { restoreCloudinary, swapFakeCloudinary } from '#tests/support/fake_cloudinary'
+import { TRANSMIT_PG_CHANNEL } from '#shared/constants/runtime_stores'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 import { test } from '@japa/runner'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -265,5 +267,50 @@ test.group('GenerateEmployeeSynthesisPdf job — droit disparu (#101)', (group) 
     await pdfExport.refresh()
     assert.equal(pdfExport.status, PDF_EXPORT_STATUSES.COMPLETED)
     assert.isNotNull(pdfExport.filePath)
+  })
+})
+
+// ─── relais worker → web (#172) ───────────────────────────────────────────────
+
+test.group('GenerateEmployeeSynthesisPdf job — relais des diffusions vers le web', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => {
+    swapFakeCloudinary()
+    return () => restoreCloudinary()
+  })
+
+  /**
+   * Le job tourne ici, hors de tout process HTTP, comme dans le worker. Le
+   * « process web » est un second abonné du bus de Transmit (`memory` en
+   * test, `postgres` en production) : il ne reçoit le message que si la
+   * diffusion du job passe par le transport — avec `transport: null`, rien.
+   */
+  test('« PDF prêt » et la notification atteignent un abonné d’un autre process', async ({
+    assert,
+    cleanup,
+  }) => {
+    const web = new MemoryTransport().setId('web-process')
+    const received: Array<{ channel: string; payload: any }> = []
+    await web.subscribe(TRANSMIT_PG_CHANNEL, (message: any) => {
+      received.push({ channel: message.channel, payload: message.payload })
+    })
+    cleanup(() => web.unsubscribe(TRANSMIT_PG_CHANNEL))
+
+    const { org, advisor, employee } = await seedFullScenario('job-relay')
+    const pdfExport = await createPendingExport(advisor.id, org.id, employee.id, advisor.id)
+
+    await GenerateEmployeeSynthesisPdf.dispatch({ pdfExportId: pdfExport.id }).toQueue('pdfs')
+
+    const exportEvents = received.filter((m) => m.channel === `users/${advisor.id}/pdf-exports`)
+    assert.deepEqual(
+      exportEvents.map((m) => m.payload.status),
+      [PDF_EXPORT_STATUSES.PROCESSING, PDF_EXPORT_STATUSES.COMPLETED]
+    )
+    assert.isTrue(
+      received.some((m) => m.channel === `organizations/${org.id}/pdf-exports`),
+      'canal d’organisation relayé'
+    )
+    const notification = received.find((m) => m.channel === `users/${advisor.id}/notifications`)
+    assert.exists(notification, 'notification « export PDF prêt » relayée')
   })
 })

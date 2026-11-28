@@ -10,6 +10,7 @@
 |
 */
 
+import { LIMITER_STORES, TRANSMIT_TRANSPORTS } from '#shared/constants/runtime_stores'
 import { Env } from '@adonisjs/core/env'
 
 export const envSchema = {
@@ -55,6 +56,17 @@ export const envSchema = {
   | Seuls les adapters déclarés dans config/queue.ts : pas de `redis`.
   */
   QUEUE_DRIVER: Env.schema.enum(['database', 'sync'] as const),
+
+  /*
+  |----------------------------------------------------------
+  | État partagé web ↔ worker (#172) — config/transmit.ts, config/limiter.ts
+  |----------------------------------------------------------
+  | `TRANSMIT_TRANSPORT` : `postgres` par défaut (LISTEN/NOTIFY), `memory`
+  | en test, `none` pour un seul process. `LIMITER_STORE` : `database` par
+  | défaut (table `rate_limits`), `memory` pour le dépannage.
+  */
+  TRANSMIT_TRANSPORT: Env.schema.enum.optional(Object.values(TRANSMIT_TRANSPORTS)),
+  LIMITER_STORE: Env.schema.enum.optional(Object.values(LIMITER_STORES)),
 
   /*
   |----------------------------------------------------------

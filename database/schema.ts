@@ -572,6 +572,17 @@ export class QueueScheduleSchema extends BaseModel {
   declare toDate: DateTime | null
 }
 
+export class RateLimitSchema extends BaseModel {
+  static $columns = ['expire', 'key', 'points'] as const
+  $columns = RateLimitSchema.$columns
+  @column()
+  declare expire: bigint | number | null
+  @column({ isPrimary: true })
+  declare key: string
+  @column()
+  declare points: number
+}
+
 export class SkillSchema extends BaseModel {
   static $columns = ['category', 'createdAt', 'deletedAt', 'id', 'name', 'organizationId', 'slug', 'updatedAt'] as const
   $columns = SkillSchema.$columns
