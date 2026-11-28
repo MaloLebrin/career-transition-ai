@@ -5,6 +5,8 @@ import {
   exerciceResultStatusValues,
   exerciceResultStatusValuesValues,
   exerciceResultTypesValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+  qualitativeAnalysisStatusValues,
 } from '#shared/constants/exercises'
 import { expectConsistentEnum } from './enum_contract.js'
 
@@ -28,6 +30,14 @@ describe('shared/constants/exercises', () => {
     expectConsistentEnum(exerciceResultStatusValues, exerciceResultStatusValuesValues, [
       'draft',
       'completed',
+    ])
+  })
+
+  test('statuts d’analyse IA : enum cohérent et figé (CHECK exercise_results.qualitative_analysis_status, #171)', () => {
+    expectConsistentEnum(QUALITATIVE_ANALYSIS_STATUSES, qualitativeAnalysisStatusValues, [
+      'pending',
+      'done',
+      'failed',
     ])
   })
 

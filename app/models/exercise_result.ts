@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import {
   exerciceResultTypesValues,
   type ExerciceResultStatus,
+  type QualitativeAnalysisStatus,
   type ExerciceResultType,
 } from '../../shared/constants/exercises.js'
 
@@ -41,6 +42,10 @@ export default class ExerciseResult extends BaseModel {
 
   @column()
   declare qualitativeAnalysis: string | null
+
+  /** Statut de l'analyse IA (#171) ; `null` : aucune analyse demandée. */
+  @column()
+  declare qualitativeAnalysisStatus: QualitativeAnalysisStatus | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

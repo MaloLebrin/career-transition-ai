@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react'
 import DashboardLayout from '~/components/dashboard/DashboardLayout'
+import { QualitativeAnalysisStatusNotice } from '~/components/dashboard/exercises/QualitativeAnalysisStatusNotice'
 import { ResetExerciseButton } from '~/components/dashboard/exercises/ResetExerciseButton'
 import NotesSection from '~/components/dashboard/NotesSection'
 import ExerciseResultVisualization from '~/components/exercises/ExerciseResultVisualization'
@@ -57,6 +58,12 @@ export default function ExerciseResultDetail({
                   exerciseTitle={exerciseTitle}
                 />
               </div>
+              <QualitativeAnalysisStatusNotice
+                employeeId={employeeId}
+                type={result.type}
+                status={result.qualitativeAnalysisStatus}
+                className="mt-4"
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">

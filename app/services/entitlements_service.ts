@@ -18,7 +18,10 @@ import {
 } from '#shared/constants/billing'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { ResultsEntitlement } from '#shared/types/billing/entitlement'
-import { exerciceResultStatusValues } from '#shared/constants/exercises'
+import {
+  exerciceResultStatusValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+} from '#shared/constants/exercises'
 import type { RevokeEntitlementInput } from '#shared/types/billing/inputs'
 import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import { inject } from '@adonisjs/core'
@@ -258,6 +261,10 @@ export class EntitlementsService {
 
   /** Isolé pour être observé en test (le driver `sync` exécuterait le job inline). */
   protected async dispatchAnalysis(exerciseResultId: number): Promise<void> {
+    // Statut `pending` dès la mise en file (#171).
+    await ExerciseResult.query()
+      .where('id', exerciseResultId)
+      .update({ qualitative_analysis_status: QUALITATIVE_ANALYSIS_STATUSES.PENDING })
     await AnalyzeExerciseQualitativeJob.dispatch({ exerciseResultId }).toQueue(QUEUE_NAMES.ai)
   }
 }

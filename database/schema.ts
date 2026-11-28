@@ -249,7 +249,7 @@ export class EmployeeSchema extends BaseModel {
 }
 
 export class ExerciseResultSchema extends BaseModel {
-  static $columns = ['createdAt', 'data', 'date', 'duration', 'employeeId', 'id', 'progressPercent', 'qualitativeAnalysis', 'quantitativeScore', 'status', 'type', 'updatedAt'] as const
+  static $columns = ['createdAt', 'data', 'date', 'duration', 'employeeId', 'id', 'progressPercent', 'qualitativeAnalysis', 'qualitativeAnalysisStatus', 'quantitativeScore', 'status', 'type', 'updatedAt'] as const
   $columns = ExerciseResultSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -267,6 +267,8 @@ export class ExerciseResultSchema extends BaseModel {
   declare progressPercent: number | null
   @column()
   declare qualitativeAnalysis: string | null
+  @column()
+  declare qualitativeAnalysisStatus: string | null
   @column()
   declare quantitativeScore: number | null
   @column()

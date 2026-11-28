@@ -1,5 +1,9 @@
 import ExerciseResult from '#models/exercise_result'
-import { exerciceResultStatusValues, exerciceResultTypesValues } from '#shared/constants/exercises'
+import {
+  exerciceResultStatusValues,
+  exerciceResultTypesValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+} from '#shared/constants/exercises'
 import factory from '@adonisjs/lucid/factories'
 import { DateTime } from 'luxon'
 
@@ -15,6 +19,12 @@ export const ExerciseResultFactory = factory
       data: {},
       quantitativeScore: null,
       qualitativeAnalysis: null,
+      qualitativeAnalysisStatus: null,
     }
+  })
+  /** Analyse IA en échec définitif (#171) : relançable par le conseiller. */
+  .state('analysisFailed', (row) => {
+    row.qualitativeAnalysis = null
+    row.qualitativeAnalysisStatus = QUALITATIVE_ANALYSIS_STATUSES.FAILED
   })
   .build()

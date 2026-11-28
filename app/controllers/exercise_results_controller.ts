@@ -251,6 +251,20 @@ export default class ExerciseResultsController {
   }
 
   /**
+   * Inertia form: relance une analyse IA en échec définitif (#171).
+   * POST /dashboard/conseiller/employees/:id/exercises/results/:type/analysis/retry
+   */
+  public async retryAnalysisConseiller({ auth, params, response, session }: HttpContext) {
+    const user = auth.user
+    if (!user) return response.unauthorized()
+
+    await this.service.retryFailedAnalysis(user, Number(params.id), String(params.type))
+
+    session.flash('success', 'Analyse IA relancée.')
+    return response.redirect().back()
+  }
+
+  /**
    * Conseiller: Inertia page showing one exercise result (read-only) for an employee.
    */
   public async showExerciseResultConseiller({
@@ -291,6 +305,7 @@ export default class ExerciseResultsController {
           data: latest.data ?? {},
           quantitativeScore: latest.quantitativeScore ?? 0,
           qualitativeAnalysis: latest.qualitativeAnalysis ?? undefined,
+          qualitativeAnalysisStatus: latest.qualitativeAnalysisStatus,
         }
       : null
     const notes = latest

@@ -1,7 +1,10 @@
 import type { EmployeeDto } from '#dtos/employee_dto'
 import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
 import { EmployeeNotFoundError } from '#exceptions/employee_errors'
-import { ExerciseResultNotFoundError } from '#exceptions/exercise_result_errors'
+import {
+  ExerciseResultNotFoundError,
+  QualitativeAnalysisNotRetryableError,
+} from '#exceptions/exercise_result_errors'
 import { mapEmployee } from '#mappers/employee_mapper'
 import Employee from '#models/employee'
 import ExerciseResult from '#models/exercise_result'
@@ -10,7 +13,11 @@ import type User from '#models/user'
 import { ExerciseAccessService } from '#services/exercise_access_service'
 import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { NotificationService } from '#services/notification_service'
-import { exerciceResultStatusValues, exerciceResultTypesValues } from '#shared/constants/exercises'
+import {
+  exerciceResultStatusValues,
+  exerciceResultTypesValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+} from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { getExerciseProgress } from '#shared/helpers/exercise_progress'
 import type { CandidateExerciseState, ExerciseInitialDraft } from '#shared/types/exercise/access'
@@ -81,6 +88,69 @@ export class ExerciseResultsService {
       .where('type', normalized)
       .delete()
     if (!deleted[0]) throw new ExerciseResultNotFoundError()
+  }
+
+  /**
+   * Relance manuelle d'une analyse IA en échec définitif (#171), depuis la
+   * fiche candidat du conseiller. Le droit B2C est revérifié (exercice
+   * verrouillé → refus) ; le job revérifie encore à l'exécution.
+   */
+  public async retryFailedAnalysis(user: User, employeeId: number, type: string): Promise<void> {
+    const employee = await Employee.query()
+      .where('id', employeeId)
+      .where(teamEmployeeScope(user))
+      .first()
+    if (!employee) throw new EmployeeNotFoundError()
+    const normalized = type.toLowerCase() as ExerciseResult['type']
+    if (!(exerciceResultTypesValues as readonly string[]).includes(normalized)) {
+      throw new ExerciseResultNotFoundError()
+    }
+    const result = await ExerciseResult.query()
+      .where('employeeId', employee.id)
+      .where('type', normalized)
+      .where('status', exerciceResultStatusValues.COMPLETED)
+      .orderBy('date', 'desc')
+      .orderBy('updatedAt', 'desc')
+      .first()
+    if (!result) throw new ExerciseResultNotFoundError()
+    if (result.qualitativeAnalysisStatus !== QUALITATIVE_ANALYSIS_STATUSES.FAILED) {
+      throw new QualitativeAnalysisNotRetryableError()
+    }
+    const allowed = await this.access.shouldRunAiAnalysis(
+      employee,
+      normalized,
+      Boolean(result.qualitativeAnalysis)
+    )
+    if (!allowed) throw new QualitativeAnalysisNotRetryableError()
+
+    await this.queueQualitativeAnalysis(result)
+  }
+
+  /**
+   * Passe l'analyse en `pending` puis enfile le job (#171). Avec le driver
+   * `sync` hors test, le job tourne en arrière-plan (cf.
+   * `awaitsQualitativeAnalysisInline`).
+   */
+  private async queueQualitativeAnalysis(result: ExerciseResult): Promise<void> {
+    result.qualitativeAnalysisStatus = QUALITATIVE_ANALYSIS_STATUSES.PENDING
+    await result.save()
+
+    const analysis = AnalyzeExerciseQualitativeJob.dispatch({
+      exerciseResultId: result.id,
+    }).toQueue('ai')
+    if (awaitsQualitativeAnalysisInline()) {
+      await analysis
+    } else {
+      void Promise.resolve(analysis).catch((error: unknown) => {
+        logger.error(
+          {
+            exerciseResultId: result.id,
+            message: error instanceof Error ? error.message : String(error),
+          },
+          'Analyse qualitative : lancement en arrière-plan échoué'
+        )
+      })
+    }
   }
 
   /** Dernier brouillon d'un candidat pour un type d'exercice, ou `null`. */
@@ -182,22 +252,7 @@ export class ExerciseResultsService {
 
     if (resultRow.status === exerciceResultStatusValues.COMPLETED) {
       if (await this.access.shouldRunAiAnalysis(employee, input.type, hadAnalysis)) {
-        const analysis = AnalyzeExerciseQualitativeJob.dispatch({
-          exerciseResultId: resultRow.id,
-        }).toQueue('ai')
-        if (awaitsQualitativeAnalysisInline()) {
-          await analysis
-        } else {
-          void Promise.resolve(analysis).catch((error: unknown) => {
-            logger.error(
-              {
-                exerciseResultId: resultRow.id,
-                message: error instanceof Error ? error.message : String(error),
-              },
-              'Analyse qualitative : lancement en arrière-plan échoué'
-            )
-          })
-        }
+        await this.queueQualitativeAnalysis(resultRow)
       }
 
       if (employee.advisorId) {

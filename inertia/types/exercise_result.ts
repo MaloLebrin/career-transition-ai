@@ -1,4 +1,4 @@
-import { ExerciceResultType } from '../../shared/constants/exercises'
+import { ExerciceResultType, QualitativeAnalysisStatus } from '../../shared/constants/exercises'
 
 export interface ExerciseResult {
   id: number
@@ -9,6 +9,8 @@ export interface ExerciseResult {
   progressPercent?: number
   quantitativeScore: number
   qualitativeAnalysis?: string
+  /** #171 : statut de l'analyse IA (`pending`, `done`, `failed`), `null` si non demandée. */
+  qualitativeAnalysisStatus?: QualitativeAnalysisStatus | null
   /** #101 : résultat réservé au forfait (B2C non payé) — `data` vidé, score à 0, analyse retirée. */
   locked?: true
   /** #101 : résultat visible mais analyse IA réservée au forfait. */

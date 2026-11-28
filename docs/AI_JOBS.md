@@ -10,6 +10,26 @@ Ce document décrit **comment le job d’analyse qualitative** est déclenché, 
 
 Le job charge l’`ExerciseResult`, vérifie que le statut est **terminé** (`completed`), appelle le fournisseur IA configuré, puis enregistre le texte dans `exercise_results.qualitative_analysis`.
 
+### Statut de l’analyse (#171)
+
+`exercise_results.qualitative_analysis_status` (`QUALITATIVE_ANALYSIS_STATUSES` de `shared/constants/exercises.ts`, contrainte `CHECK` synchronisée) :
+
+| Statut    | Sens                                                                                                        |
+| --------- | ----------------------------------------------------------------------------------------------------------- |
+| `null`    | Aucune analyse demandée (brouillon, exercice B2C verrouillé, résultats antérieurs sans analyse)             |
+| `pending` | Posé à la mise en file (`ExerciseResultsService`, `EntitlementsService.dispatchAnalysis`) et à chaque essai |
+| `done`    | Texte enregistré dans `qualitative_analysis`                                                                |
+| `failed`  | Tous les essais ont échoué : relance manuelle possible par le conseiller                                    |
+
+Si le job ignore le résultat à l’exécution (brouillon, droit B2C retiré), un `pending` est levé (`done` s’il existe déjà un texte, sinon `null`).
+
+### Échec du fournisseur IA : retries, puis `failed` (#171)
+
+- Une erreur de `provider.completeText` (clé invalide, 5xx, réseau, réponse vide…) est **relancée** : le job échoue et la queue le **réessaie** (`ANALYSIS_MAX_RETRIES` = 2, soit 3 essais au total) avec un délai **exponentiel** (`analysisRetryBackoff` : ~30 s puis ~1 min avec gigue, plafond 5 min ; 1 ms en test).
+- Après le dernier essai, le hook `failed()` du job pose `qualitative_analysis_status = 'failed'` (seulement si aucun texte n’a été enregistré) et envoie l’erreur d’origine à `reportError` (tags `queue`/`job`, `extra.exerciseResultId` — ni nom, ni payload). `watchQueueFailures` voit aussi l’échec définitif ; c’est le même objet d’erreur, que Sentry ne capture qu’une fois.
+- **Aucun texte d’erreur** n’est écrit dans `qualitative_analysis` : il compterait comme « analyse existante » pour la politique B2C (un exercice gratuit en échec reste donc analysable).
+- **Relance manuelle** : sur la page de résultat conseiller (`/dashboard/conseiller/employees/:id/exercises/results/:type`), le bandeau `QualitativeAnalysisStatusNotice` affiche « en cours » (`pending`) ou l’échec avec un bouton **Relancer l’analyse** → `POST …/results/:type/analysis/retry` (`ExerciseResultsService.retryFailedAnalysis`). Seule une analyse `failed` d’un résultat terminé est relançable, et le droit B2C est revérifié (`QualitativeAnalysisNotRetryableError`, 409) ; candidat hors périmètre → 404.
+
 ---
 
 ## 1. Déclenchement automatique (flux métier)
@@ -61,6 +81,7 @@ await AnalyzeExerciseQualitativeJob.dispatch({
 
 - La ligne `exercise_results` doit **exister**.
 - Son `status` doit être **`completed`** au moment où le worker exécute le job (sinon le job se termine sans erreur mais **sans** mettre à jour l’analyse).
+- Pour relancer une analyse `failed`, préférer `ExerciseResultsService.retryFailedAnalysis` (pose `pending`, revérifie le droit B2C).
 - Si tu dispatches **juste après** un `save()` en `completed`, l’ordre est bon : le worker lira la bonne ligne.
 
 Tu peux encapsuler le même `dispatch` dans une **commande Ace** (`node ace make:command`) ou un script one-off booté avec l’app Adonis si tu veux un raccourci CLI.
@@ -81,7 +102,7 @@ Sans worker, les entrées restent dans la file (adapter database) jusqu’au tra
 
 ### Mode `sync` (déploiement sans worker)
 
-Si `QUEUE_DRIVER=sync`, le job s’exécute dans le même processus que le `dispatch` (pas de `queue:work`). À l’enregistrement d’un exercice terminé, la requête **n’attend pas** la fin de l’appel IA : la redirection part tout de suite et l’analyse continue en arrière-plan. Le conseiller est notifié quand le texte est prêt.
+Si `QUEUE_DRIVER=sync`, le job s’exécute dans le même processus que le `dispatch` (pas de `queue:work`). À l’enregistrement d’un exercice terminé, la requête **n’attend pas** la fin de l’appel IA : la redirection part tout de suite et l’analyse continue en arrière-plan. Le conseiller est notifié quand le texte est prêt. Les essais et leur délai se déroulent aussi dans ce processus (un redémarrage les perd : l’analyse reste alors `pending`).
 
 En test (`app.inTest`), le `dispatch` est attendu pour rester dans la transaction de test.
 
@@ -96,7 +117,7 @@ Le job utilise [`resolveAiTextCompletionProvider()`](../app/services/ai/resolve_
 | `mistral`        | `MISTRAL_API_KEY` | API Chat Completions Mistral (`MISTRAL_MODEL` optionnel, défaut `mistral-small-latest`) |
 | `none` ou absent | —                 | Texte de substitution, **sans** appel réseau                                            |
 
-En cas d’exception (clé invalide, réseau, etc.), le job enregistre un message d’erreur dans `qualitative_analysis` et log l’erreur.
+En cas d’exception (clé invalide, erreur HTTP, réseau, réponse vide), le job échoue et réessaie, puis passe l’analyse en `failed` (voir « Échec du fournisseur IA » plus haut) ; `qualitative_analysis` reste vide. Le SDK Mistral ne réessaie pas lui-même (stratégie `none`) : les essais sont ceux de la queue.
 
 ---
 
