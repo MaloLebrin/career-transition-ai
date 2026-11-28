@@ -1,6 +1,7 @@
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, act, waitFor } from '@testing-library/react'
 import MotivationTool from '../../../inertia/components/exercises/MotivationTool'
+import { MOTIVATIONS } from '../../../inertia/constants/motivations'
 
 describe('MotivationTool', () => {
   test('renders intro screen and starts exercise', async () => {
@@ -22,6 +23,10 @@ describe('MotivationTool', () => {
     await waitFor(() => {
       expect(screen.getByText(/Lequel est le plus important pour vous/i)).toBeInTheDocument()
     })
+
+    // Chaque option du duel montre sa définition au moment du choix
+    expect(screen.getByText(MOTIVATIONS[0].definition)).toBeInTheDocument()
+    expect(screen.getByText(MOTIVATIONS[1].definition)).toBeInTheDocument()
   })
 
   test('records a decision and saves draft when started', async () => {

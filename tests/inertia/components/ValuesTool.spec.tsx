@@ -17,6 +17,7 @@ describe('ValuesTool', () => {
     for (const value of SCHWARTZ_VALUES) {
       expect(screen.getByText(value.situation)).toBeInTheDocument()
       expect(screen.getByText(value.portrait)).toBeInTheDocument()
+      expect(screen.getByText(value.definition)).toBeInTheDocument()
     }
 
     const first = SCHWARTZ_VALUES[0]
@@ -28,7 +29,7 @@ describe('ValuesTool', () => {
     expect(screen.getByText(/Votre hiérarchie \(1\/10\)/i)).toBeInTheDocument()
 
     const ranked = screen.getByTestId(`ranked-value-${first.label}`)
-    expect(within(ranked).getByText(first.situation)).toBeInTheDocument()
+    expect(within(ranked).getByText(first.definition)).toBeInTheDocument()
     expect(onSave).not.toHaveBeenCalled()
   })
 

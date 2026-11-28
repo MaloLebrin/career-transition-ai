@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { MOTIVATIONS_LIST } from '../../constants/motivations'
+import { MOTIVATIONS } from '../../constants/motivations'
 import { ExerciseDraft } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -88,7 +88,7 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
       : 0
     const totals: Record<number, number> = {}
-    MOTIVATIONS_LIST.forEach((_, idx) => (totals[idx] = 0))
+    MOTIVATIONS.forEach((_, idx) => (totals[idx] = 0))
 
     for (let i = 0; i < 22; i++) {
       for (let j = i + 1; j < 22; j++) {
@@ -98,8 +98,8 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
     }
 
     const namedScores: Record<string, number> = {}
-    MOTIVATIONS_LIST.forEach((name, idx) => (namedScores[name] = totals[idx]))
-    const ranked = [...MOTIVATIONS_LIST].sort((a, b) => namedScores[b] - namedScores[a])
+    MOTIVATIONS.forEach(({ label }, idx) => (namedScores[label] = totals[idx]))
+    const ranked = MOTIVATIONS.map((m) => m.label).sort((a, b) => namedScores[b] - namedScores[a])
 
     onSave({ ranked, scores: namedScores, matrix: finalMatrix }, duration)
   }
@@ -202,7 +202,10 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
               <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 Option A
               </div>
-              {MOTIVATIONS_LIST[currentI]}
+              <span className="block">{MOTIVATIONS[currentI].label}</span>
+              <span className="mt-3 block text-base font-normal leading-snug text-muted">
+                {MOTIVATIONS[currentI].definition}
+              </span>
             </button>
             <button
               onClick={() => handleDecision(currentJ)}
@@ -211,14 +214,19 @@ const MotivationTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftProm
               <div className="text-[10px] font-bold text-brand-navy/20 uppercase tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 Option B
               </div>
-              {MOTIVATIONS_LIST[currentJ]}
+              <span className="block">{MOTIVATIONS[currentJ].label}</span>
+              <span className="mt-3 block text-base font-normal leading-snug text-muted">
+                {MOTIVATIONS[currentJ].definition}
+              </span>
             </button>
           </div>
 
           <div className="mt-16 text-brand-navy/80 text-[10px] font-bold uppercase tracking-[0.5em]">
-            <p>Duel {currentDuelNumber} / {totalDuels}</p>
+            <p>
+              Duel {currentDuelNumber} / {totalDuels}
+            </p>
           </div>
-          <div className='mt-4'>
+          <div className="mt-4">
             <p className="text-brand-navy text-[10px] font-bold">
               Vous pouvez utiliser les flèches du clavier pour aller plus vite !
             </p>

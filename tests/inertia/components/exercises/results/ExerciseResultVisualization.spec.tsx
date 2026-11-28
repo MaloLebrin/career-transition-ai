@@ -1,7 +1,8 @@
 import { describe, test, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import ExerciseResultVisualization from '../../../../../inertia/components/exercises/ExerciseResultVisualization'
 import { EXERCICE_RESULTS_TYPES } from '../../../../../shared/constants/exercises'
+import { valueDefinition } from '../../../../../inertia/constants/values'
 
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -123,6 +124,9 @@ describe('ExerciseResultVisualization', () => {
     expect(screen.getByText('La réalisation')).toBeInTheDocument()
     expect(screen.getByText(/Figures d’inspiration/i)).toBeInTheDocument()
     expect(screen.getByText('Adrien')).toBeInTheDocument()
+
+    fireEvent.mouseEnter(screen.getByText('La réalisation'))
+    expect(screen.getByRole('tooltip')).toHaveTextContent(valueDefinition('La réalisation')!)
   })
 
   test('renders DefaultResultView for unknown type', () => {
