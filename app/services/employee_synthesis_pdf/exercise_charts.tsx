@@ -10,6 +10,7 @@ import {
 // react-pdf SVG Text has a type gap with fontSize + textAnchor — cast to bypass
 const SvgText = _SvgText as any
 import { Text, View } from '@react-pdf/renderer'
+import { RANKING_EXTREMES_COUNT, rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
 import { C } from './styles.js'
 
 // ─── DISC colors (mirror prod) ────────────────────────────────────────────────
@@ -52,40 +53,102 @@ function safeObj(v: unknown): Record<string, unknown> {
 
 function MotivationChart({ data }: { data: unknown }) {
   const d = safeObj(data)
-  const ranked = safeArr(d.ranked) as string[]
-  const top3 = ranked.slice(0, 3)
-  const bottom3 = [...ranked].reverse().slice(0, 3)
+  const { top, bottom } = rankingExtremes(safeArr(d.ranked))
 
-  if (ranked.length === 0) return null
+  if (top.length === 0) return null
 
   return (
     <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
-      {/* Top 3 */}
-      <View style={{ flex: 1, backgroundColor: '#f0fdf4', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: '#bbf7d0' }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#16a34a', letterSpacing: 1, marginBottom: 8 }}>
-          TOP 3 — LEVIERS D'ENGAGEMENT
+      {/* Premières */}
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#f0fdf4',
+          borderRadius: 6,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: '#bbf7d0',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: '#16a34a',
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
+          LES {RANKING_EXTREMES_COUNT} PREMIÈRES
         </Text>
-        {top3.map((item, i) => (
-          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 9, color: '#fff', fontFamily: 'Helvetica-Bold' }}>{i + 1}</Text>
+        {top.map((item) => (
+          <View
+            key={item.rank}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 }}
+          >
+            <View
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: '#16a34a',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 9, color: '#fff', fontFamily: 'Helvetica-Bold' }}>
+                {item.rank}
+              </Text>
             </View>
-            <Text style={{ fontSize: 9, color: '#374151', fontFamily: 'Helvetica-Bold', flex: 1 }}>{item}</Text>
+            <Text style={{ fontSize: 9, color: '#374151', fontFamily: 'Helvetica-Bold', flex: 1 }}>
+              {item.label}
+            </Text>
           </View>
         ))}
       </View>
 
-      {/* Bottom 3 */}
-      <View style={{ flex: 1, backgroundColor: '#fff1f2', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: '#fecdd3' }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#e11d48', letterSpacing: 1, marginBottom: 8 }}>
-          FACTEURS DE DÉSENGAGEMENT
+      {/* Dernières */}
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#fff1f2',
+          borderRadius: 6,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: '#fecdd3',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: '#e11d48',
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
+          LES {RANKING_EXTREMES_COUNT} DERNIÈRES
         </Text>
-        {bottom3.map((item, i) => (
-          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#e11d48', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 9, color: '#fff', fontFamily: 'Helvetica-Bold' }}>{i + 1}</Text>
+        {bottom.map((item) => (
+          <View
+            key={item.rank}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 5 }}
+          >
+            <View
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: '#e11d48',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 9, color: '#fff', fontFamily: 'Helvetica-Bold' }}>
+                {item.rank}
+              </Text>
             </View>
-            <Text style={{ fontSize: 9, color: '#374151', flex: 1 }}>{item}</Text>
+            <Text style={{ fontSize: 9, color: '#374151', flex: 1 }}>{item.label}</Text>
           </View>
         ))}
       </View>
@@ -105,15 +168,47 @@ function ValuesChart({ data }: { data: unknown }) {
   return (
     <View style={{ marginBottom: 8 }}>
       {/* Hierarchy */}
-      <View style={{ backgroundColor: '#f9fafb', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: C.lightGray, marginBottom: 8 }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.gray, letterSpacing: 1, marginBottom: 8 }}>
+      <View
+        style={{
+          backgroundColor: '#f9fafb',
+          borderRadius: 6,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: C.lightGray,
+          marginBottom: 8,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: C.gray,
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
           HIÉRARCHIE DES VALEURS
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {selectedValues.map((v, i) => (
-            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: C.primaryBg, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 }}>
-              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.primary }}>{i + 1}.</Text>
-              <Text style={{ fontSize: 9, color: C.medium, fontFamily: 'Helvetica-Bold' }}>{v}</Text>
+            <View
+              key={i}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                backgroundColor: C.primaryBg,
+                borderRadius: 4,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+              }}
+            >
+              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.primary }}>
+                {i + 1}.
+              </Text>
+              <Text style={{ fontSize: 9, color: C.medium, fontFamily: 'Helvetica-Bold' }}>
+                {v}
+              </Text>
             </View>
           ))}
         </View>
@@ -121,14 +216,47 @@ function ValuesChart({ data }: { data: unknown }) {
 
       {/* Inspiration figures */}
       {peopleExercise.length > 0 && (
-        <View style={{ backgroundColor: '#f9fafb', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: C.lightGray }}>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.gray, letterSpacing: 1, marginBottom: 8 }}>
+        <View
+          style={{
+            backgroundColor: '#f9fafb',
+            borderRadius: 6,
+            padding: 10,
+            borderWidth: 1,
+            borderColor: C.lightGray,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 8,
+              fontFamily: 'Helvetica-Bold',
+              color: C.gray,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             FIGURES D'INSPIRATION
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {peopleExercise.slice(0, 6).map((p, i) => (
-              <View key={i} style={{ width: '31%', backgroundColor: C.white, borderRadius: 4, padding: 7, borderWidth: 1, borderColor: C.lightGray }}>
-                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.dark, marginBottom: 2 }}>
+              <View
+                key={i}
+                style={{
+                  width: '31%',
+                  backgroundColor: C.white,
+                  borderRadius: 4,
+                  padding: 7,
+                  borderWidth: 1,
+                  borderColor: C.lightGray,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontFamily: 'Helvetica-Bold',
+                    color: C.dark,
+                    marginBottom: 2,
+                  }}
+                >
                   {p?.name?.trim() || `Personne ${i + 1}`}
                 </Text>
                 <Text style={{ fontSize: 8, color: C.gray, lineHeight: 1.4 }}>
@@ -157,12 +285,18 @@ function PersonalityChart({ data }: { data: unknown }) {
           const filled = Math.round((value / 10) * BAR_WIDTH)
           return (
             <View key={key} style={{ width: '47%' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.dark }}>{label}</Text>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}
+              >
+                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.dark }}>
+                  {label}
+                </Text>
                 <Text style={{ fontSize: 9, color: C.gray }}>{value}/10</Text>
               </View>
               <View style={{ height: 8, backgroundColor: C.lightGray, borderRadius: 4 }}>
-                <View style={{ width: filled, height: 8, backgroundColor: '#f59e0b', borderRadius: 4 }} />
+                <View
+                  style={{ width: filled, height: 8, backgroundColor: '#f59e0b', borderRadius: 4 }}
+                />
               </View>
             </View>
           )
@@ -209,12 +343,27 @@ function LifeCurveChart({ data }: { data: unknown }) {
   return (
     <View style={{ marginBottom: 8 }}>
       {/* Line chart */}
-      <View style={{ backgroundColor: '#f8fafc', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: C.lightGray, marginBottom: 8 }}>
+      <View
+        style={{
+          backgroundColor: '#f8fafc',
+          borderRadius: 6,
+          padding: 8,
+          borderWidth: 1,
+          borderColor: C.lightGray,
+          marginBottom: 8,
+        }}
+      >
         <Svg width={W} height={H}>
           {/* Y-axis labels */}
-          <SvgText x={0} y={PT + 3} fontSize={7} fill={C.gray}>10</SvgText>
-          <SvgText x={2} y={midY + 3} fontSize={7} fill={C.gray}>5</SvgText>
-          <SvgText x={4} y={PT + iH + 3} fontSize={7} fill={C.gray}>0</SvgText>
+          <SvgText x={0} y={PT + 3} fontSize={7} fill={C.gray}>
+            10
+          </SvgText>
+          <SvgText x={2} y={midY + 3} fontSize={7} fill={C.gray}>
+            5
+          </SvgText>
+          <SvgText x={4} y={PT + iH + 3} fontSize={7} fill={C.gray}>
+            0
+          </SvgText>
 
           {/* Background grid */}
           {[0, 2.5, 5, 7.5, 10].map((v) => (
@@ -241,11 +390,21 @@ function LifeCurveChart({ data }: { data: unknown }) {
           />
 
           {/* X-axis */}
-          <SvgLine x1={PL} y1={PT + iH} x2={W - PR} y2={PT + iH} stroke={C.lightGray} strokeWidth={0.5} />
+          <SvgLine
+            x1={PL}
+            y1={PT + iH}
+            x2={W - PR}
+            y2={PT + iH}
+            stroke={C.lightGray}
+            strokeWidth={0.5}
+          />
 
           {/* Year labels (max 10) */}
           {points
-            .filter((_, i) => i % Math.max(1, Math.floor(points.length / 10)) === 0 || i === points.length - 1)
+            .filter(
+              (_, i) =>
+                i % Math.max(1, Math.floor(points.length / 10)) === 0 || i === points.length - 1
+            )
             .map((p) => (
               <SvgText
                 key={p.year}
@@ -273,8 +432,26 @@ function LifeCurveChart({ data }: { data: unknown }) {
       {reflectionEntries.length > 0 && (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {reflectionEntries.slice(0, 4).map(([key, value]) => (
-            <View key={key} style={{ width: '47%', backgroundColor: C.white, borderRadius: 4, padding: 8, borderWidth: 1, borderColor: C.lightGray }}>
-              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.gray, letterSpacing: 0.5, marginBottom: 3 }}>
+            <View
+              key={key}
+              style={{
+                width: '47%',
+                backgroundColor: C.white,
+                borderRadius: 4,
+                padding: 8,
+                borderWidth: 1,
+                borderColor: C.lightGray,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 8,
+                  fontFamily: 'Helvetica-Bold',
+                  color: C.gray,
+                  letterSpacing: 0.5,
+                  marginBottom: 3,
+                }}
+              >
                 {String(key).toUpperCase()}
               </Text>
               <Text style={{ fontSize: 9, color: C.medium, lineHeight: 1.5 }}>{String(value)}</Text>
@@ -305,10 +482,14 @@ function DiscChart({ data }: { data: unknown }) {
 
   const axisPoint = (trait: 'D' | 'I' | 'S' | 'C', r: number) => {
     switch (trait) {
-      case 'D': return { x: CX, y: CY - r }
-      case 'I': return { x: CX + r, y: CY }
-      case 'S': return { x: CX, y: CY + r }
-      case 'C': return { x: CX - r, y: CY }
+      case 'D':
+        return { x: CX, y: CY - r }
+      case 'I':
+        return { x: CX + r, y: CY }
+      case 'S':
+        return { x: CX, y: CY + r }
+      case 'C':
+        return { x: CX - r, y: CY }
     }
   }
 
@@ -322,14 +503,23 @@ function DiscChart({ data }: { data: unknown }) {
   const gridLevels = [25, 50, 75, 100]
 
   // Dominant trait
-  const dominant = (Object.entries(scores) as Array<[keyof typeof scores, number]>)
-    .sort((a, b) => b[1] - a[1])[0][0]
+  const dominant = (Object.entries(scores) as Array<[keyof typeof scores, number]>).sort(
+    (a, b) => b[1] - a[1]
+  )[0][0]
 
   return (
     <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
       {/* Left: bars */}
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.primary, letterSpacing: 1, marginBottom: 8 }}>
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: C.primary,
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
           DOMINANT : {DISC_COLORS[dominant].label.toUpperCase()} ({dominant})
         </Text>
         {(['D', 'I', 'S', 'C'] as const).map((trait) => {
@@ -338,17 +528,39 @@ function DiscChart({ data }: { data: unknown }) {
           const barW = Math.round((value / 100) * 220)
           return (
             <View key={trait} style={{ marginBottom: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 4,
+                }}
+              >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <View style={{ width: 20, height: 20, borderRadius: 4, backgroundColor: color.bg, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>{trait}</Text>
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      backgroundColor: color.bg,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>
+                      {trait}
+                    </Text>
                   </View>
                   <Text style={{ fontSize: 9, color: C.medium }}>{color.label}</Text>
                 </View>
-                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>{value}%</Text>
+                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>
+                  {value}%
+                </Text>
               </View>
               <View style={{ height: 8, backgroundColor: C.lightGray, borderRadius: 4 }}>
-                <View style={{ width: barW, height: 8, backgroundColor: color.bar, borderRadius: 4 }} />
+                <View
+                  style={{ width: barW, height: 8, backgroundColor: color.bar, borderRadius: 4 }}
+                />
               </View>
             </View>
           )
@@ -382,12 +594,26 @@ function DiscChart({ data }: { data: unknown }) {
           {(['D', 'I', 'S', 'C'] as const).map((t) => {
             const pt = axisPoint(t, R_MAX)
             return (
-              <SvgLine key={t} x1={CX} y1={CY} x2={pt.x} y2={pt.y} stroke="#e5e7eb" strokeWidth={0.5} />
+              <SvgLine
+                key={t}
+                x1={CX}
+                y1={CY}
+                x2={pt.x}
+                y2={pt.y}
+                stroke="#e5e7eb"
+                strokeWidth={0.5}
+              />
             )
           })}
 
           {/* Filled radar polygon */}
-          <SvgPolygon points={radarPoints} fill={C.primary} fillOpacity={0.25} stroke={C.primary} strokeWidth={1.5} />
+          <SvgPolygon
+            points={radarPoints}
+            fill={C.primary}
+            fillOpacity={0.25}
+            stroke={C.primary}
+            strokeWidth={1.5}
+          />
 
           {/* Axis letter labels at the extremes using colored circles */}
           {(['D', 'I', 'S', 'C'] as const).map((t) => {
@@ -418,7 +644,15 @@ function CircleOfControlChart({ data }: { data: unknown }) {
   if (inControl.length === 0 && outControl.length === 0) return null
 
   const Pill = ({ text, color, bg }: { text: string; color: string; bg: string }) => (
-    <View style={{ backgroundColor: bg, borderRadius: 4, paddingHorizontal: 7, paddingVertical: 3, margin: 2 }}>
+    <View
+      style={{
+        backgroundColor: bg,
+        borderRadius: 4,
+        paddingHorizontal: 7,
+        paddingVertical: 3,
+        margin: 2,
+      }}
+    >
       <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color }}>{text}</Text>
     </View>
   )
@@ -426,8 +660,25 @@ function CircleOfControlChart({ data }: { data: unknown }) {
   return (
     <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
       {/* In control */}
-      <View style={{ flex: 1, backgroundColor: '#f5f3ff', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: '#ddd6fe' }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.primary, letterSpacing: 1, marginBottom: 8 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#f5f3ff',
+          borderRadius: 6,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: '#ddd6fe',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: C.primary,
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
           SOUS CONTRÔLE
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -438,13 +689,30 @@ function CircleOfControlChart({ data }: { data: unknown }) {
       </View>
 
       {/* Out of control */}
-      <View style={{ flex: 1, backgroundColor: '#fff1f2', borderRadius: 6, padding: 10, borderWidth: 1, borderColor: '#fecdd3' }}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#e11d48', letterSpacing: 1, marginBottom: 8 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#fff1f2',
+          borderRadius: 6,
+          padding: 10,
+          borderWidth: 1,
+          borderColor: '#fecdd3',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 8,
+            fontFamily: 'Helvetica-Bold',
+            color: '#e11d48',
+            letterSpacing: 1,
+            marginBottom: 8,
+          }}
+        >
           HORS CONTRÔLE
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {outControl.map((item, i) => (
-            <Pill key={i} text={item} color='#e11d48' bg={C.white} />
+            <Pill key={i} text={item} color="#e11d48" bg={C.white} />
           ))}
         </View>
       </View>
@@ -457,7 +725,11 @@ function CircleOfControlChart({ data }: { data: unknown }) {
 function SkillMappingChart({ data }: { data: unknown }) {
   const d = safeObj(data)
   const jobTitle = String(d.jobTitle || '')
-  const mapping = safeArr(d.mapping) as Array<{ mission?: string; activity?: string; proof?: string }>
+  const mapping = safeArr(d.mapping) as Array<{
+    mission?: string
+    activity?: string
+    proof?: string
+  }>
 
   if (mapping.length === 0) return null
 
@@ -467,13 +739,32 @@ function SkillMappingChart({ data }: { data: unknown }) {
     <View style={{ marginBottom: 8 }}>
       {jobTitle && (
         <View style={{ backgroundColor: C.primary, borderRadius: 4, padding: 8, marginBottom: 6 }}>
-          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.white }}>{jobTitle}</Text>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.white }}>
+            {jobTitle}
+          </Text>
         </View>
       )}
       {/* Header row */}
-      <View style={{ flexDirection: 'row', backgroundColor: C.primaryBg, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 5, marginBottom: 2 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: C.primaryBg,
+          borderRadius: 4,
+          paddingHorizontal: 8,
+          paddingVertical: 5,
+          marginBottom: 2,
+        }}
+      >
         {(['Mission', 'Activité', 'Preuve'] as const).map((h, i) => (
-          <Text key={i} style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.primary, width: Object.values(COL)[i] }}>
+          <Text
+            key={i}
+            style={{
+              fontSize: 8,
+              fontFamily: 'Helvetica-Bold',
+              color: C.primary,
+              width: Object.values(COL)[i],
+            }}
+          >
             {h}
           </Text>
         ))}
@@ -490,9 +781,15 @@ function SkillMappingChart({ data }: { data: unknown }) {
             borderRadius: 2,
           }}
         >
-          <Text style={{ fontSize: 8, color: C.medium, width: COL.mission, lineHeight: 1.4 }}>{row.mission || '—'}</Text>
-          <Text style={{ fontSize: 8, color: C.medium, width: COL.activity, lineHeight: 1.4 }}>{row.activity || '—'}</Text>
-          <Text style={{ fontSize: 8, color: C.gray, width: COL.proof, lineHeight: 1.4 }}>{row.proof || '—'}</Text>
+          <Text style={{ fontSize: 8, color: C.medium, width: COL.mission, lineHeight: 1.4 }}>
+            {row.mission || '—'}
+          </Text>
+          <Text style={{ fontSize: 8, color: C.medium, width: COL.activity, lineHeight: 1.4 }}>
+            {row.activity || '—'}
+          </Text>
+          <Text style={{ fontSize: 8, color: C.gray, width: COL.proof, lineHeight: 1.4 }}>
+            {row.proof || '—'}
+          </Text>
         </View>
       ))}
     </View>
@@ -515,17 +812,42 @@ function TargetingChart({ data }: { data: unknown }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
       {targets.map((t, i) => (
-        <View key={i} style={{ width: '47%', backgroundColor: C.superLight, borderRadius: 6, padding: 10, borderWidth: 1, borderColor: C.lightGray }}>
-          <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.dark, marginBottom: 2 }}>
+        <View
+          key={i}
+          style={{
+            width: '47%',
+            backgroundColor: C.superLight,
+            borderRadius: 6,
+            padding: 10,
+            borderWidth: 1,
+            borderColor: C.lightGray,
+          }}
+        >
+          <Text
+            style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.dark, marginBottom: 2 }}
+          >
             {t.name || `Cible ${i + 1}`}
           </Text>
           {t.type && (
-            <View style={{ backgroundColor: C.primaryBg, borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 4 }}>
-              <Text style={{ fontSize: 8, color: C.primary, fontFamily: 'Helvetica-Bold' }}>{t.type}</Text>
+            <View
+              style={{
+                backgroundColor: C.primaryBg,
+                borderRadius: 3,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                alignSelf: 'flex-start',
+                marginBottom: 4,
+              }}
+            >
+              <Text style={{ fontSize: 8, color: C.primary, fontFamily: 'Helvetica-Bold' }}>
+                {t.type}
+              </Text>
             </View>
           )}
           {t.comment && (
-            <Text style={{ fontSize: 8, color: C.medium, lineHeight: 1.4, marginBottom: 2 }}>{t.comment}</Text>
+            <Text style={{ fontSize: 8, color: C.medium, lineHeight: 1.4, marginBottom: 2 }}>
+              {t.comment}
+            </Text>
           )}
           {t.advisorComment && (
             <Text style={{ fontSize: 8, color: C.gray, lineHeight: 1.4 }}>{t.advisorComment}</Text>
@@ -563,6 +885,12 @@ export function ExerciseChart({ type, data }: { type: string; data: unknown }) {
 
 /** Types with a dedicated chart — ScoreBlock is skipped for these */
 export const TYPES_WITH_CHART = new Set([
-  'MOTIVATION', 'VALUES', 'PERSONALITY', 'LIFE_CURVE',
-  'DISC', 'CIRCLE_OF_CONTROL', 'SKILL_MAPPING', 'TARGETING',
+  'MOTIVATION',
+  'VALUES',
+  'PERSONALITY',
+  'LIFE_CURVE',
+  'DISC',
+  'CIRCLE_OF_CONTROL',
+  'SKILL_MAPPING',
+  'TARGETING',
 ])
