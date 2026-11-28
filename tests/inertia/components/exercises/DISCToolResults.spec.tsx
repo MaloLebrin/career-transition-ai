@@ -39,6 +39,9 @@ describe('DISCTool results', () => {
     await user.click(screen.getByRole('button', { name: 'Voir mon profil' }))
 
     expect(await screen.findByText('Dominante')).toBeInTheDocument()
+    // La roue DISC apparaît dès l'aperçu, avant l'enregistrement.
+    expect(screen.getByTestId('disc-wheel')).toBeInTheDocument()
+    expect(screen.getByTestId('disc-wheel-reading')).toHaveTextContent('zone Promoteur')
     expect(screen.getByRole('button', { name: 'Enregistrer mon profil' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Enregistrer mon profil' }))

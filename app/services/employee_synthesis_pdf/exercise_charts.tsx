@@ -1,8 +1,13 @@
+import { Fragment } from 'react'
 import {
   Circle as SvgCircle,
+  Defs as SvgDefs,
   Line as SvgLine,
+  LinearGradient as SvgLinearGradient,
+  Path as SvgPath,
   Polygon as SvgPolygon,
   Polyline as SvgPolyline,
+  Stop as SvgStop,
   Svg,
   Text as _SvgText,
 } from '@react-pdf/renderer'
@@ -11,16 +16,40 @@ import {
 const SvgText = _SvgText as any
 import { Text, View } from '@react-pdf/renderer'
 import { RANKING_EXTREMES_COUNT, rankingExtremes } from '#shared/helpers/exercise/ranking_extremes'
+import {
+  DISC_TRAIT_PALETTE,
+  DISC_WHEEL_RINGS,
+  DISC_WHEEL_TRAIT_ANGLES,
+  DISC_WHEEL_TRAIT_LABELS,
+  DISC_WHEEL_TRAITS,
+  DISC_WHEEL_ZONES,
+  type DiscWheelTrait,
+} from '#shared/constants/disc_wheel'
+import {
+  discRadarDomain,
+  discRadarRatio,
+  discRadarTicks,
+  discWheelPoint,
+  discWheelPosition,
+  discWheelZoneBounds,
+  polarToXY,
+  sectorPath,
+} from '#shared/helpers/exercise/disc_wheel_geometry'
 import { C } from './styles.js'
 
-// ─── DISC colors (mirror prod) ────────────────────────────────────────────────
+// ─── DISC colors (charte, partagées avec la roue du dashboard) ─────────────────
 
-const DISC_COLORS = {
-  D: { bar: '#ef4444', bg: '#fee2e2', label: 'Dominant' },
-  I: { bar: '#f59e0b', bg: '#fef3c7', label: 'Influent' },
-  S: { bar: '#10b981', bg: '#d1fae5', label: 'Stable' },
-  C: { bar: '#0ea5e9', bg: '#e0f2fe', label: 'Consciencieux' },
-} as const
+const DISC_COLORS = Object.fromEntries(
+  DISC_WHEEL_TRAITS.map((trait) => [
+    trait,
+    {
+      bar: DISC_TRAIT_PALETTE[trait].boldHex,
+      bg: DISC_TRAIT_PALETTE[trait].softHex,
+      ink: DISC_TRAIT_PALETTE[trait].inkHex,
+      label: DISC_WHEEL_TRAIT_LABELS[trait],
+    },
+  ])
+) as Record<DiscWheelTrait, { bar: string; bg: string; ink: string; label: string }>
 
 // ─── Personality traits (mirror prod labels) ──────────────────────────────────
 
@@ -465,170 +494,336 @@ function LifeCurveChart({ data }: { data: unknown }) {
 
 // ─── DISC ─────────────────────────────────────────────────────────────────────
 
+type DiscScoresPdf = Record<DiscWheelTrait, number>
+
+/** Radar resserré autour des scores (même domaine que le dashboard), D en haut à droite. */
+function DiscRadar({ scores }: { scores: DiscScoresPdf }) {
+  const SIZE = 160
+  const CX = SIZE / 2
+  const CY = SIZE / 2
+  const R_MAX = 58
+  const domain = discRadarDomain(scores)
+  const ticks = discRadarTicks(domain)
+
+  const pointFor = (trait: DiscWheelTrait, ratio: number) =>
+    polarToXY(CX, CY, ratio * R_MAX, DISC_WHEEL_TRAIT_ANGLES[trait])
+
+  const radarPoints = DISC_WHEEL_TRAITS.map((t) => {
+    const pt = pointFor(t, discRadarRatio(scores[t], domain))
+    return `${pt.x},${pt.y}`
+  }).join(' ')
+
+  return (
+    <View style={{ width: SIZE, alignItems: 'center' }}>
+      <Svg width={SIZE} height={SIZE}>
+        {ticks.map((tick) => {
+          const r = discRadarRatio(tick, domain) * R_MAX
+          return (
+            <SvgCircle
+              key={tick}
+              cx={CX}
+              cy={CY}
+              r={Math.max(0.5, r)}
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth={tick === domain[1] ? 1 : 0.5}
+            />
+          )
+        })}
+        {ticks.slice(1).map((tick) => (
+          <SvgText
+            key={`tick-${tick}`}
+            x={CX + 2}
+            y={CY - discRadarRatio(tick, domain) * R_MAX - 1}
+            style={{ fontSize: 5 }}
+            fill={C.medium}
+          >
+            {tick} %
+          </SvgText>
+        ))}
+        {DISC_WHEEL_TRAITS.map((t) => {
+          const pt = pointFor(t, 1)
+          return (
+            <SvgLine
+              key={t}
+              x1={CX}
+              y1={CY}
+              x2={pt.x}
+              y2={pt.y}
+              stroke="#e5e7eb"
+              strokeWidth={0.5}
+            />
+          )
+        })}
+        <SvgPolygon
+          points={radarPoints}
+          fill={DISC_COLORS.I.bar}
+          fillOpacity={0.35}
+          stroke={C.dark}
+          strokeWidth={1.2}
+        />
+        {DISC_WHEEL_TRAITS.map((t) => {
+          const label = pointFor(t, 1.22)
+          const dot = pointFor(t, discRadarRatio(scores[t], domain))
+          return (
+            <Fragment key={t}>
+              <SvgCircle cx={label.x} cy={label.y} r={8} fill={DISC_COLORS[t].bg} />
+              <SvgText
+                x={label.x}
+                y={label.y + 3}
+                textAnchor="middle"
+                style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
+                fill={DISC_COLORS[t].ink}
+              >
+                {t}
+              </SvgText>
+              <SvgCircle
+                cx={dot.x}
+                cy={dot.y}
+                r={3}
+                fill={DISC_COLORS[t].bar}
+                stroke="#ffffff"
+                strokeWidth={1}
+              />
+            </Fragment>
+          )
+        })}
+      </Svg>
+      <Text style={{ fontSize: 7, color: C.medium, marginTop: 2 }}>
+        Échelle resserrée : {domain[0]} à {domain[1]} %
+      </Text>
+    </View>
+  )
+}
+
+/** Roue DISC statique : huit zones, anneaux d'intensité et point du candidat. */
+function DiscWheelPdf({ scores }: { scores: DiscScoresPdf }) {
+  const WIDTH = 250
+  const HEIGHT = 190
+  const CX = WIDTH / 2
+  const CY = HEIGHT / 2
+  const R = 66
+  const ringRadii = DISC_WHEEL_RINGS.map((ring) => ring.to * R)
+  const ringOpacity = [0.35, 0.6, 0.9]
+  const position = discWheelPosition(scores)
+  const point = discWheelPoint(position, CX, CY, R)
+
+  return (
+    <Svg width={WIDTH} height={HEIGHT}>
+      <SvgDefs>
+        {DISC_WHEEL_ZONES.filter((zone) => zone.traits.length === 2).map((zone) => {
+          const { start, end } = discWheelZoneBounds(zone)
+          const from = polarToXY(CX, CY, R, start)
+          const to = polarToXY(CX, CY, R, end)
+          const [first, second] = zone.traits
+          return (
+            <SvgLinearGradient
+              key={zone.key}
+              id={`disc-pdf-${zone.key}`}
+              gradientUnits="userSpaceOnUse"
+              x1={from.x}
+              y1={from.y}
+              x2={to.x}
+              y2={to.y}
+            >
+              <SvgStop offset="0%" stopColor={DISC_COLORS[first].bar} />
+              <SvgStop offset="100%" stopColor={DISC_COLORS[second ?? first].bar} />
+            </SvgLinearGradient>
+          )
+        })}
+      </SvgDefs>
+
+      {DISC_WHEEL_ZONES.flatMap((zone) => {
+        const { start, end } = discWheelZoneBounds(zone)
+        const fill =
+          zone.traits.length === 1 ? DISC_COLORS[zone.traits[0]].bar : `url(#disc-pdf-${zone.key})`
+        return ringOpacity.map((opacity, index) => (
+          <SvgPath
+            key={`${zone.key}-${index}`}
+            d={sectorPath(CX, CY, ringRadii[index], ringRadii[index + 1], start, end)}
+            fill={fill}
+            fillOpacity={opacity}
+            stroke="#ffffff"
+            strokeWidth={1}
+          />
+        ))
+      })}
+
+      <SvgCircle
+        cx={CX}
+        cy={CY}
+        r={ringRadii[0]}
+        fill="#ffffff"
+        stroke="#e5e7eb"
+        strokeWidth={0.8}
+      />
+
+      {DISC_WHEEL_ZONES.map((zone) => {
+        const sin = Math.sin((zone.angle * Math.PI) / 180)
+        const cos = Math.cos((zone.angle * Math.PI) / 180)
+        const at = polarToXY(CX, CY, R + 6, zone.angle)
+        const anchor = Math.abs(sin) < 0.2 ? 'middle' : sin > 0 ? 'start' : 'end'
+        const dy = Math.abs(sin) < 0.2 ? (cos > 0 ? -2 : 7) : 3
+        const isCandidate = zone.key === position.zone?.key
+        return (
+          <SvgText
+            key={zone.key}
+            x={at.x}
+            y={at.y + dy}
+            textAnchor={anchor}
+            style={{ fontSize: 7, fontFamily: 'Helvetica-Bold' }}
+            fill={isCandidate ? C.primary : C.dark}
+          >
+            {zone.label}
+          </SvgText>
+        )
+      })}
+
+      {DISC_WHEEL_TRAITS.map((trait) => {
+        const at = polarToXY(
+          CX,
+          CY,
+          (ringRadii[0] + ringRadii[1]) / 2,
+          DISC_WHEEL_TRAIT_ANGLES[trait]
+        )
+        return (
+          <Fragment key={trait}>
+            <SvgCircle cx={at.x} cy={at.y} r={5} fill="#ffffff" />
+            <SvgText
+              x={at.x}
+              y={at.y + 2}
+              textAnchor="middle"
+              style={{ fontSize: 5.5, fontFamily: 'Helvetica-Bold' }}
+              fill={C.dark}
+            >
+              {trait}
+            </SvgText>
+          </Fragment>
+        )
+      })}
+
+      <SvgCircle cx={point.x} cy={point.y} r={8} fill={C.dark} fillOpacity={0.15} />
+      <SvgCircle cx={point.x} cy={point.y} r={4} fill={C.dark} stroke="#ffffff" strokeWidth={1.5} />
+    </Svg>
+  )
+}
+
 function DiscChart({ data }: { data: unknown }) {
   const d = safeObj(data)
-  const scores = {
+  const scores: DiscScoresPdf = {
     D: Math.min(100, Math.max(0, safeNum(d.D))),
     I: Math.min(100, Math.max(0, safeNum(d.I))),
     S: Math.min(100, Math.max(0, safeNum(d.S))),
     C: Math.min(100, Math.max(0, safeNum(d.C))),
   }
 
-  // Radar SVG config
-  const CX = 80
-  const CY = 80
-  const R_MAX = 62
-  const SVG_SIZE = 160
-
-  const axisPoint = (trait: 'D' | 'I' | 'S' | 'C', r: number) => {
-    switch (trait) {
-      case 'D':
-        return { x: CX, y: CY - r }
-      case 'I':
-        return { x: CX + r, y: CY }
-      case 'S':
-        return { x: CX, y: CY + r }
-      case 'C':
-        return { x: CX - r, y: CY }
-    }
-  }
-
-  const radarPoints = (['D', 'I', 'S', 'C'] as const)
-    .map((t) => {
-      const pt = axisPoint(t, (scores[t] / 100) * R_MAX)
-      return `${pt.x},${pt.y}`
-    })
-    .join(' ')
-
-  const gridLevels = [25, 50, 75, 100]
-
   // Dominant trait
-  const dominant = (Object.entries(scores) as Array<[keyof typeof scores, number]>).sort(
+  const dominant = (Object.entries(scores) as Array<[DiscWheelTrait, number]>).sort(
     (a, b) => b[1] - a[1]
   )[0][0]
+  const position = discWheelPosition(scores)
 
   return (
-    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
-      {/* Left: bars */}
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            fontSize: 8,
-            fontFamily: 'Helvetica-Bold',
-            color: C.primary,
-            letterSpacing: 1,
-            marginBottom: 8,
-          }}
-        >
-          DOMINANT : {DISC_COLORS[dominant].label.toUpperCase()} ({dominant})
-        </Text>
-        {(['D', 'I', 'S', 'C'] as const).map((trait) => {
-          const value = scores[trait]
-          const color = DISC_COLORS[trait]
-          const barW = Math.round((value / 100) * 220)
-          return (
-            <View key={trait} style={{ marginBottom: 8 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 4,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 4,
-                      backgroundColor: color.bg,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>
-                      {trait}
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 9, color: C.medium }}>{color.label}</Text>
-                </View>
-                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.bar }}>
-                  {value}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: C.lightGray, borderRadius: 4 }}>
+    <View style={{ marginBottom: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 10 }}>
+        {/* Left: bars */}
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 8,
+              fontFamily: 'Helvetica-Bold',
+              color: C.primary,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
+            DOMINANT : {DISC_COLORS[dominant].label.toUpperCase()} ({dominant})
+          </Text>
+          {DISC_WHEEL_TRAITS.map((trait) => {
+            const value = scores[trait]
+            const color = DISC_COLORS[trait]
+            const barW = Math.round((value / 100) * 220)
+            return (
+              <View key={trait} style={{ marginBottom: 8 }}>
                 <View
-                  style={{ width: barW, height: 8, backgroundColor: color.bar, borderRadius: 4 }}
-                />
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 4,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 4,
+                        backgroundColor: color.bg,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.ink }}>
+                        {trait}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: C.medium }}>{color.label}</Text>
+                  </View>
+                  <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: color.ink }}>
+                    {value}%
+                  </Text>
+                </View>
+                <View style={{ height: 8, backgroundColor: C.lightGray, borderRadius: 4 }}>
+                  <View
+                    style={{ width: barW, height: 8, backgroundColor: color.bar, borderRadius: 4 }}
+                  />
+                </View>
               </View>
-            </View>
-          )
-        })}
+            )
+          })}
+        </View>
+
+        {/* Right: radar */}
+        <DiscRadar scores={scores} />
       </View>
 
-      {/* Right: radar diamond */}
-      <View style={{ width: SVG_SIZE, alignItems: 'center', justifyContent: 'center' }}>
-        <Svg width={SVG_SIZE} height={SVG_SIZE}>
-          {/* Grid diamonds */}
-          {gridLevels.map((pct) => {
-            const r = (pct / 100) * R_MAX
-            const pts = (['D', 'I', 'S', 'C'] as const)
-              .map((t) => {
-                const p = axisPoint(t, r)
-                return `${p.x},${p.y}`
-              })
-              .join(' ')
-            return (
-              <SvgPolygon
-                key={pct}
-                points={pts}
-                fill="none"
-                stroke="#e5e7eb"
-                strokeWidth={pct === 100 ? 1 : 0.5}
-              />
-            )
-          })}
-
-          {/* Axes */}
-          {(['D', 'I', 'S', 'C'] as const).map((t) => {
-            const pt = axisPoint(t, R_MAX)
-            return (
-              <SvgLine
-                key={t}
-                x1={CX}
-                y1={CY}
-                x2={pt.x}
-                y2={pt.y}
-                stroke="#e5e7eb"
-                strokeWidth={0.5}
-              />
-            )
-          })}
-
-          {/* Filled radar polygon */}
-          <SvgPolygon
-            points={radarPoints}
-            fill={C.primary}
-            fillOpacity={0.25}
-            stroke={C.primary}
-            strokeWidth={1.5}
-          />
-
-          {/* Axis letter labels at the extremes using colored circles */}
-          {(['D', 'I', 'S', 'C'] as const).map((t) => {
-            const pt = axisPoint(t, R_MAX + 10)
-            return (
-              <SvgCircle key={`lbl-${t}`} cx={pt.x} cy={pt.y} r={8} fill={DISC_COLORS[t].bar} />
-            )
-          })}
-
-          {/* Data point dots */}
-          {(['D', 'I', 'S', 'C'] as const).map((t) => {
-            const pt = axisPoint(t, (scores[t] / 100) * R_MAX)
-            return <SvgCircle key={t} cx={pt.x} cy={pt.y} r={3} fill={DISC_COLORS[t].bar} />
-          })}
-        </Svg>
+      {/* Roue DISC */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <DiscWheelPdf scores={scores} />
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 8,
+              fontFamily: 'Helvetica-Bold',
+              color: C.primary,
+              letterSpacing: 1,
+              marginBottom: 4,
+            }}
+          >
+            POSITION SUR LA ROUE
+          </Text>
+          {position.zone ? (
+            <>
+              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.dark }}>
+                Zone {position.zone.label} (tendance {position.ring.label})
+              </Text>
+              <Text style={{ fontSize: 8.5, color: C.medium, marginTop: 3, lineHeight: 1.4 }}>
+                {position.zone.description}
+              </Text>
+              <Text style={{ fontSize: 7.5, color: C.medium, marginTop: 3 }}>
+                {position.zone.keywords.join(' · ')}
+              </Text>
+            </>
+          ) : (
+            <Text style={{ fontSize: 9, color: C.medium }}>
+              Profil équilibré : aucun style ne domine.
+            </Text>
+          )}
+          <Text style={{ fontSize: 7, color: C.medium, marginTop: 6 }}>
+            Plus le point est loin du centre, plus le style est marqué.
+          </Text>
+        </View>
       </View>
     </View>
   )

@@ -1,12 +1,8 @@
 import React, { useMemo } from 'react'
-import {
-  DISC_TRAIT_COLORS,
-  DISC_TRAIT_LABELS,
-  DISC_TRAITS,
-  type DiscScores,
-} from './disc_scoring'
+import { DISC_TRAIT_COLORS, DISC_TRAIT_LABELS, DISC_TRAITS, type DiscScores } from './disc_scoring'
 import { DISC_PROFILE_COPY } from './disc_profile_copy'
 import type { DiscTrait } from './disc_questionnaire'
+import { DiscWheel } from './DiscWheel'
 
 type DiscPercent = DiscScores
 
@@ -103,12 +99,17 @@ export default function DiscResultSummary({
                   <div className="flex items-baseline justify-between">
                     <div className="flex items-center gap-2">
                       <span className={`font-black ${color.text}`}>{t}</span>
-                      <span className="text-xs font-bold text-slate-500">{DISC_TRAIT_LABELS[t]}</span>
+                      <span className="text-xs font-bold text-slate-500">
+                        {DISC_TRAIT_LABELS[t]}
+                      </span>
                     </div>
                     <span className="text-xs font-black text-slate-700">{value}%</span>
                   </div>
                   <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
-                    <div className={`h-full ${color.fill} transition-all duration-700`} style={{ width: `${value}%` }} />
+                    <div
+                      className={`h-full ${color.fill} transition-all duration-700`}
+                      style={{ width: `${value}%` }}
+                    />
                   </div>
                 </div>
               )
@@ -117,7 +118,9 @@ export default function DiscResultSummary({
         </div>
 
         <div className="rounded-[40px] border border-slate-100 bg-white p-8">
-          <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Lecture rapide</h4>
+          <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
+            Lecture rapide
+          </h4>
           <div className="mt-4 space-y-4">
             <div>
               <div className="font-black text-slate-900">{dominantCopy.title}</div>
@@ -133,6 +136,22 @@ export default function DiscResultSummary({
         </div>
       </div>
 
+      <section
+        aria-labelledby="disc-wheel-title"
+        className="rounded-2xl border border-hairline bg-surface p-6 shadow-card sm:p-8"
+      >
+        <h4 id="disc-wheel-title" className="text-title-md text-ink">
+          Votre position sur la roue
+        </h4>
+        <p className="mt-1 text-sm text-muted">
+          Huit styles de comportement entre les quatre couleurs DISC. Le point montre votre style
+          naturel ; plus il est loin du centre, plus ce style est marqué.
+        </p>
+        <div className="mt-6">
+          <DiscWheel percent={percent} />
+        </div>
+      </section>
+
       {showSections && dominantCopy && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[
@@ -141,7 +160,10 @@ export default function DiscResultSummary({
             dominantCopy.prefers,
             dominantCopy.underStress,
           ].map((section) => (
-            <div key={section.title} className="rounded-[40px] border border-slate-100 bg-white p-8">
+            <div
+              key={section.title}
+              className="rounded-[40px] border border-slate-100 bg-white p-8"
+            >
               <h4 className="text-sm font-black text-slate-900">{section.title}</h4>
               <ul className="mt-4 space-y-2 text-sm text-slate-600">
                 {section.bullets.map((b) => (
@@ -162,4 +184,3 @@ export default function DiscResultSummary({
     </div>
   )
 }
-

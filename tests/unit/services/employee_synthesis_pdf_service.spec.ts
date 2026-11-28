@@ -209,6 +209,36 @@ test.group('EmployeeSynthesisPdfService.generateShareablePdf — structure', () 
     assert.isAbove(resultWith.length, resultWithout.length)
   })
 
+  test('un exercice DISC rend la roue et le radar pour tout profil (équilibré, marqué, invalide)', async ({
+    assert,
+  }) => {
+    const service = new EmployeeSynthesisPdfService()
+    const profiles = [
+      { D: 50, I: 50, S: 50, C: 50 },
+      { D: 100, I: 0, S: 0, C: 0 },
+      { D: 20, I: 85, S: 75, C: 25 },
+      { D: 'abc', I: null },
+    ]
+
+    for (const data of profiles) {
+      const payload = buildMinimalPayload()
+      payload.employee.exercises = [
+        {
+          id: 42,
+          type: 'DISC',
+          date: '2026-01-10T09:00:00.000Z',
+          duration: 30,
+          quantitativeScore: 0,
+          qualitativeAnalysis: 'Analyse DISC.',
+          data,
+        } as any,
+      ]
+      payload.latestCompletedByType = { DISC: 42 }
+      const result = await service.generateShareablePdf({ payload })
+      assert.equal(Buffer.from(result.slice(0, 5)).toString('ascii'), '%PDF-')
+    }
+  })
+
   test("les accents et caractères spéciaux ne lèvent pas d'erreur", async ({ assert }) => {
     const service = new EmployeeSynthesisPdfService()
     const payload = buildMinimalPayload()

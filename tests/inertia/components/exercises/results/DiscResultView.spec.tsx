@@ -12,7 +12,13 @@ vi.mock('recharts', () => ({
   Radar: () => <div data-testid="radar" />,
   PolarGrid: () => <div data-testid="polar-grid" />,
   PolarAngleAxis: () => <div data-testid="polar-angle-axis" />,
-  PolarRadiusAxis: () => <div data-testid="polar-radius-axis" />,
+  PolarRadiusAxis: ({ domain, ticks }: { domain: [number, number]; ticks: number[] }) => (
+    <div
+      data-testid="polar-radius-axis"
+      data-domain={domain.join('-')}
+      data-ticks={ticks.join(',')}
+    />
+  ),
 }))
 
 describe('DiscResultView', () => {
@@ -40,5 +46,21 @@ describe('DiscResultView', () => {
     expect(screen.getByTestId('polar-grid')).toBeInTheDocument()
     expect(screen.getByTestId('polar-angle-axis')).toBeInTheDocument()
     expect(screen.getByTestId('polar-radius-axis')).toBeInTheDocument()
+  })
+
+  test('accentue les nuances : échelle du radar resserrée autour des scores', () => {
+    render(<DiscResultView scores={{ D: 40, I: 62, S: 55, C: 48 }} />)
+
+    const axis = screen.getByTestId('polar-radius-axis')
+    expect(axis).toHaveAttribute('data-domain', '30-70')
+    expect(axis).toHaveAttribute('data-ticks', '30,40,50,60,70')
+    expect(screen.getByText(/Échelle resserrée de 30 à 70 %/)).toBeInTheDocument()
+  })
+
+  test('affiche la roue DISC avec la position du candidat', () => {
+    render(<DiscResultView scores={{ D: 20, I: 85, S: 75, C: 25 }} />)
+
+    expect(screen.getByTestId('disc-wheel')).toBeInTheDocument()
+    expect(screen.getByTestId('disc-wheel-reading')).toHaveTextContent('zone Facilitant')
   })
 })

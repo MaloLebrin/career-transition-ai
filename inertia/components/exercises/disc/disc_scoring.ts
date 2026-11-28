@@ -1,3 +1,4 @@
+import { DISC_TRAIT_PALETTE } from '#shared/constants/disc_wheel'
 import type { DiscTrait } from './disc_questionnaire'
 
 export type DiscSelection = { most: DiscTrait | ''; least: DiscTrait | '' }
@@ -13,37 +14,41 @@ export const DISC_TRAIT_LABELS: Record<DiscTrait, string> = {
   C: 'Consciencieux',
 }
 
+/**
+ * Couleurs des traits : teintes de la charte partagées avec la roue DISC et le PDF
+ * (`DISC_TRAIT_PALETTE`). Les noms de couleur (rouge, jaune…) restent ceux du modèle DISC.
+ */
 export const DISC_TRAIT_COLORS: Record<
   DiscTrait,
   { name: string; bg: string; text: string; ring: string; fill: string }
 > = {
   D: {
     name: 'Rouge',
-    bg: 'bg-red-50',
-    text: 'text-red-700',
-    ring: 'ring-red-200',
-    fill: 'bg-red-500',
+    bg: DISC_TRAIT_PALETTE.D.softBgClass,
+    text: DISC_TRAIT_PALETTE.D.textClass,
+    ring: DISC_TRAIT_PALETTE.D.ringClass,
+    fill: DISC_TRAIT_PALETTE.D.barClass,
   },
   I: {
     name: 'Jaune',
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
-    ring: 'ring-amber-200',
-    fill: 'bg-amber-300',
+    bg: DISC_TRAIT_PALETTE.I.softBgClass,
+    text: DISC_TRAIT_PALETTE.I.textClass,
+    ring: DISC_TRAIT_PALETTE.I.ringClass,
+    fill: DISC_TRAIT_PALETTE.I.barClass,
   },
   S: {
     name: 'Vert',
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    ring: 'ring-emerald-200',
-    fill: 'bg-emerald-500',
+    bg: DISC_TRAIT_PALETTE.S.softBgClass,
+    text: DISC_TRAIT_PALETTE.S.textClass,
+    ring: DISC_TRAIT_PALETTE.S.ringClass,
+    fill: DISC_TRAIT_PALETTE.S.barClass,
   },
   C: {
     name: 'Bleu',
-    bg: 'bg-sky-50',
-    text: 'text-sky-700',
-    ring: 'ring-sky-200',
-    fill: 'bg-sky-500',
+    bg: DISC_TRAIT_PALETTE.C.softBgClass,
+    text: DISC_TRAIT_PALETTE.C.textClass,
+    ring: DISC_TRAIT_PALETTE.C.ringClass,
+    fill: DISC_TRAIT_PALETTE.C.barClass,
   },
 }
 
