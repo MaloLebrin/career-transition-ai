@@ -6,7 +6,7 @@ import { ExerciseSaveOverlay } from '~/components/exercises/ExerciseSaveOverlay'
 import TargetingTool from '~/components/exercises/TargetingTool'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
-import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
+import { useExercises } from '~/hooks/use_exercises'
 import { useAuth } from '~/hooks/use_auth'
 import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType } from '~/types'
@@ -16,9 +16,7 @@ interface TargetingExerciseProps {
   initialDraftsByType?: Record<string, unknown>
 }
 
-export default function TargetingExercise({
-  employeeId,
-}: TargetingExerciseProps) {
+export default function TargetingExercise({ employeeId }: TargetingExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
@@ -26,26 +24,18 @@ export default function TargetingExercise({
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
-  const { isAnalyzing, saveResult } = useAdvisorExercises(
-    selectedEmployee,
-    async () => {
+  const { isAnalyzing, saveResult } = useExercises({
+    employee: selectedEmployee,
+    basePath: exercisesBasePath,
+    onComplete: async () => {
       await refreshEmployee()
       router.visit(backHref)
     },
-    {
-      exercisesBasePath,
-      motivation: { initialDraft: null },
-      values: { initialDraft: null },
-      personality: { initialDraft: null },
-      lifeCurve: { initialDraft: null },
-      targeting: { initialDraft: null },
-      disc: { initialDraft: null },
-      skillMapping: { initialDraft: null },
-      circleOfControl: { initialDraft: null },
-    }
-  )
+  })
 
   useEffect(() => {
     if (!user) router.visit('/auth/login')

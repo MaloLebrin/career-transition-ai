@@ -13,7 +13,7 @@ import ValuesTool from '~/components/exercises/ValuesTool'
 import AppLink from '~/components/ui/AppLink'
 import Button from '~/components/ui/Button'
 import { EXERCISE_SLUGS } from '~/config/exercises'
-import { useAdvisorExercises } from '~/hooks/use_advisor_exercises'
+import { useExercises } from '~/hooks/use_exercises'
 import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType, type ExerciseDraft } from '~/types'
 import type { Employee } from '~/types/employee'
@@ -47,33 +47,22 @@ export default function ConseillerExercise({
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (exerciseType: ExerciseType): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[exerciseType]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
 
   const backHref = `/dashboard/conseiller/employees/${employeeId}`
   const exercisesBasePath = `${backHref}/exercises`
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
-    selectedEmployee,
-    async () => {
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises({
+    employee: selectedEmployee,
+    basePath: exercisesBasePath,
+    onComplete: async () => {
       await refreshEmployee()
       router.visit(backHref)
     },
-    {
-      exercisesBasePath,
-      motivation: { initialDraft: getInitialDraft(ExerciseType.MOTIVATION) },
-      values: { initialDraft: getInitialDraft(ExerciseType.VALUES) },
-      personality: { initialDraft: getInitialDraft(ExerciseType.PERSONALITY) },
-      lifeCurve: { initialDraft: getInitialDraft(ExerciseType.LIFE_CURVE) },
-      targeting: { initialDraft: getInitialDraft(ExerciseType.TARGETING) },
-      disc: { initialDraft: getInitialDraft(ExerciseType.DISC) },
-      skillMapping: { initialDraft: getInitialDraft(ExerciseType.SKILL_MAPPING) },
-      circleOfControl: { initialDraft: getInitialDraft(ExerciseType.CIRCLE_OF_CONTROL) },
-    }
-  )
+  })
 
-  const exerciseType =
-    EXERCISE_TYPES[type.toUpperCase()] ?? null
+  const exerciseType = EXERCISE_TYPES[type.toUpperCase()] ?? null
 
   return (
     <>

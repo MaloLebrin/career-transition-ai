@@ -1,18 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react'
+import type {
+  ExerciseToolProps,
+  ValuesDraft,
+  ValuesPerson,
+  ValuesResult,
+} from '#shared/types/exercise/tool'
+import React, { useRef, useState } from 'react'
+import { useExerciseDraft } from '../../hooks/use_exercise_draft'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import { SCHWARTZ_VALUES } from '../../constants/values'
-import { ExerciseDraft } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import Input from '../ui/Input'
 
-interface Props {
-  onSave: (
-    data: { selectedValues: string[]; peopleExercise: { name: string; values: string }[] },
-    duration: number
-  ) => void
-  onSaveDraft: (data: any) => void
-  initialDraftPromise?: Promise<ExerciseDraft | null>
-}
+type Props = ExerciseToolProps<ValuesResult, ValuesDraft>
+
+const EMPTY_PEOPLE: ValuesPerson[] = [
+  { name: '', values: '' },
+  { name: '', values: '' },
+  { name: '', values: '' },
+]
 
 function valueByLabel(label: string) {
   return SCHWARTZ_VALUES.find((v) => v.label === label)
@@ -21,49 +27,22 @@ function valueByLabel(label: string) {
 const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise }) => {
   const [step, setStep] = useState<1 | 2>(1)
   const [rankedValues, setRankedValues] = useState<string[]>([])
-  const [people, setPeople] = useState([
-    { name: '', values: '' },
-    { name: '', values: '' },
-    { name: '', values: '' },
-  ])
-  const startTimeRef = useRef<number>(Date.now())
+  const [people, setPeople] = useState<ValuesPerson[]>(EMPTY_PEOPLE)
+  const timer = useExerciseTimer()
   const dragFromIndexRef = useRef<number | null>(null)
-  const onSaveDraftRef = useRef(onSaveDraft)
-  const didInitFromDraftRef = useRef(false)
-
-  useEffect(() => {
-    if (didInitFromDraftRef.current) return
-    didInitFromDraftRef.current = true
-    let cancelled = false
-
-    initialDraftPromise?.then((draft) => {
-      if (cancelled) return
-      if (draft && (draft as any).data) {
-        const data = (draft as any).data
+  const draft = useExerciseDraft<ValuesDraft>(
+    { selectedValues: rankedValues, peopleExercise: people, step },
+    onSaveDraft,
+    {
+      initialDraftPromise,
+      onHydrate: (data) => {
+        if (!data) return
         setRankedValues(data.selectedValues || [])
-        setPeople(
-          data.peopleExercise || [
-            { name: '', values: '' },
-            { name: '', values: '' },
-            { name: '', values: '' },
-          ]
-        )
+        setPeople(data.peopleExercise || EMPTY_PEOPLE)
         setStep(data.step || 1)
-      }
-    })
-
-    return () => {
-      cancelled = true
+      },
     }
-  }, [])
-
-  useEffect(() => {
-    onSaveDraftRef.current = onSaveDraft
-  }, [onSaveDraft])
-
-  useEffect(() => {
-    onSaveDraftRef.current({ selectedValues: rankedValues, peopleExercise: people, step })
-  }, [rankedValues, people, step])
+  )
 
   const unrankedValues = SCHWARTZ_VALUES.filter((v) => !rankedValues.includes(v.label))
 
@@ -86,14 +65,12 @@ const ValuesTool: React.FC<Props> = ({ onSave, onSaveDraft, initialDraftPromise 
   }
 
   const updatePerson = (idx: number, field: 'name' | 'values', val: string) => {
-    const next = [...people]
-    next[idx][field] = val
-    setPeople(next)
+    setPeople(people.map((person, i) => (i === idx ? { ...person, [field]: val } : person)))
   }
 
   const handleSave = () => {
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
-    onSave({ selectedValues: rankedValues, peopleExercise: people }, duration)
+    draft.cancel()
+    onSave({ selectedValues: rankedValues, peopleExercise: people }, timer.elapsedSeconds())
   }
 
   return (

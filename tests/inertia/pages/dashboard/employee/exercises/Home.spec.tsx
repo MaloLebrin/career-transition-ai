@@ -35,8 +35,8 @@ vi.mock('../../../../../../inertia/hooks/use_auth', () => ({
   }),
 }))
 
-vi.mock('../../../../../../inertia/hooks/use_candidate_exercises', () => ({
-  useCandidateExercises: () => ({
+vi.mock('../../../../../../inertia/hooks/use_exercises', () => ({
+  useExercises: () => ({
     isAnalyzing: false,
     isSavingDraft: false,
     saveResult: vi.fn(),

@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
+import { useExerciseTimer } from '../../hooks/use_exercise_timer'
 import { PersonalityData } from '../../types'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -15,7 +16,7 @@ const PersonalityTool: React.FC<Props> = ({ onSave }) => {
     agreeableness: 5,
     neuroticism: 5,
   })
-  const startTimeRef = useRef<number>(Date.now())
+  const timer = useExerciseTimer()
 
   const fields: { key: keyof PersonalityData; label: string; desc: string }[] = [
     {
@@ -46,7 +47,7 @@ const PersonalityTool: React.FC<Props> = ({ onSave }) => {
   ]
 
   const handleSave = () => {
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+    const duration = timer.elapsedSeconds()
     onSave(scores, duration)
   }
 

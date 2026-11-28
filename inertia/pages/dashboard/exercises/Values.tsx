@@ -6,7 +6,7 @@ import ValuesTool from '../../../components/exercises/ValuesTool'
 import AppLink from '../../../components/ui/AppLink'
 import Button from '../../../components/ui/Button'
 import { EXERCISE_SLUGS } from '../../../config/exercises'
-import { useAdvisorExercises } from '../../../hooks/use_advisor_exercises'
+import { useExercises } from '../../../hooks/use_exercises'
 import { useAuth } from '../../../hooks/use_auth'
 import { useEmployee } from '../../../hooks/use_employee'
 import { ExerciseType, type ExerciseDraft } from '../../../types'
@@ -16,42 +16,31 @@ interface ValuesExerciseProps {
   initialDraftsByType?: Record<string, ExerciseDraft | null>
 }
 
-export default function ValuesExercise({
-  employeeId,
-  initialDraftsByType,
-}: ValuesExerciseProps) {
+export default function ValuesExercise({ employeeId, initialDraftsByType }: ValuesExerciseProps) {
   const { user } = useAuth()
   const targetId = employeeId || user?.id || '1'
   const { employee: selectedEmployee, refreshEmployee } = useEmployee(targetId)
   const draftsByType = initialDraftsByType ?? {}
   const getInitialDraft = (): ExerciseDraft | null => {
     const slug = EXERCISE_SLUGS[ExerciseType.VALUES]
-    return slug ? draftsByType[slug] ?? null : null
+    return slug ? (draftsByType[slug] ?? null) : null
   }
   const isCandidat = !employeeId
   const exercisesBasePath = isCandidat
     ? '/dashboard/candidat/exercises'
     : `/dashboard/conseiller/employees/${employeeId}/exercises`
-  const backHref = isCandidat ? '/dashboard/candidat' : `/dashboard/conseiller/employees/${employeeId}`
+  const backHref = isCandidat
+    ? '/dashboard/candidat'
+    : `/dashboard/conseiller/employees/${employeeId}`
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useAdvisorExercises(
-    selectedEmployee,
-    async () => {
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises({
+    employee: selectedEmployee,
+    basePath: exercisesBasePath,
+    onComplete: async () => {
       await refreshEmployee()
       router.visit(backHref)
     },
-    {
-      exercisesBasePath,
-      motivation: { initialDraft: null },
-      values: { initialDraft: getInitialDraft() },
-      personality: { initialDraft: null },
-      lifeCurve: { initialDraft: null },
-      targeting: { initialDraft: null },
-      disc: { initialDraft: null },
-      skillMapping: { initialDraft: null },
-      circleOfControl: { initialDraft: null },
-    }
-  )
+  })
 
   return (
     <>

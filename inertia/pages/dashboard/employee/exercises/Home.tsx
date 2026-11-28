@@ -19,7 +19,7 @@ import AppLink from '~/components/ui/AppLink'
 import Button, { buttonClassName } from '~/components/ui/Button'
 import Card from '~/components/ui/Card'
 import { EXERCISE_SLUGS } from '~/config/exercises'
-import { useCandidateExercises } from '~/hooks/use_candidate_exercises'
+import { useExercises } from '~/hooks/use_exercises'
 import { useEmployee } from '~/hooks/use_employee'
 import { ExerciseType, type ExerciseDraft, type ExerciseResult } from '~/types'
 import type { Employee } from '~/types/employee'
@@ -70,24 +70,14 @@ export default function CandidatExercise({
     return slug ? (draftsByType[slug] ?? null) : null
   }
 
-  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useCandidateExercises(
-    selectedEmployee,
-    async () => {
+  const { isAnalyzing, isSavingDraft, saveResult, saveDraft } = useExercises({
+    employee: selectedEmployee,
+    basePath: '/dashboard/candidat/exercises',
+    onComplete: async () => {
       await refreshEmployee()
       router.visit('/dashboard/candidat')
     },
-    {
-      exercisesBasePath: '/dashboard/candidat/exercises',
-      motivation: { initialDraft: getInitialDraft(ExerciseType.MOTIVATION) },
-      values: { initialDraft: getInitialDraft(ExerciseType.VALUES) },
-      personality: { initialDraft: getInitialDraft(ExerciseType.PERSONALITY) },
-      lifeCurve: { initialDraft: getInitialDraft(ExerciseType.LIFE_CURVE) },
-      targeting: { initialDraft: getInitialDraft(ExerciseType.TARGETING) },
-      disc: { initialDraft: getInitialDraft(ExerciseType.DISC) },
-      skillMapping: { initialDraft: getInitialDraft(ExerciseType.SKILL_MAPPING) },
-      circleOfControl: { initialDraft: getInitialDraft(ExerciseType.CIRCLE_OF_CONTROL) },
-    }
-  )
+  })
 
   const exerciseType = EXERCISE_TYPES[type.toUpperCase()] ?? null
 

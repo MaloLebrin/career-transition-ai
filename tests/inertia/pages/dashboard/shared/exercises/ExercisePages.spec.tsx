@@ -16,7 +16,7 @@ import { renderWithUser } from '../../../../support/render'
 
 /**
  * Pages d'exercice partagées (candidat / conseiller) : on vérifie le câblage entre la page,
- * l'outil d'exercice et `useAdvisorExercises` (type d'exercice, score, brouillon initial,
+ * l'outil d'exercice et `useExercises` (type d'exercice, score, brouillon initial,
  * lien retour, redirection après enregistrement). Les outils eux-mêmes sont testés à part.
  */
 
@@ -32,8 +32,8 @@ vi.mock('@inertiajs/react', async () => {
   return inertiaMock()
 })
 
-vi.mock('~/hooks/use_advisor_exercises', () => ({
-  useAdvisorExercises: (...args: unknown[]) => {
+vi.mock('~/hooks/use_exercises', () => ({
+  useExercises: (...args: unknown[]) => {
     hook.calls.push(args)
     return { ...hook.state, saveResult: hook.saveResult, saveDraft: hook.saveDraft }
   },
@@ -213,8 +213,8 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
       'href',
       '/dashboard/conseiller/employees/5'
     )
-    expect(hook.calls.at(-1)![2]).toMatchObject({
-      exercisesBasePath: '/dashboard/conseiller/employees/5/exercises',
+    expect(hook.calls.at(-1)![0]).toMatchObject({
+      basePath: '/dashboard/conseiller/employees/5/exercises',
     })
   })
 
@@ -224,8 +224,8 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
       'href',
       '/dashboard/candidat'
     )
-    expect(hook.calls.at(-1)![2]).toMatchObject({
-      exercisesBasePath: '/dashboard/candidat/exercises',
+    expect(hook.calls.at(-1)![0]).toMatchObject({
+      basePath: '/dashboard/candidat/exercises',
     })
   })
 
@@ -237,7 +237,7 @@ describe.each(pages)('page d’exercice $name', ({ Page, tool, type, hasDraft, r
 
   test('après enregistrement, redirige vers le lien retour', async () => {
     await renderPage(<Page employeeId="5" />)
-    const onComplete = hook.calls.at(-1)![1] as () => Promise<void>
+    const { onComplete } = hook.calls.at(-1)![0] as { onComplete: () => Promise<void> }
     await onComplete()
     expect(routerSpies.visit).toHaveBeenCalledWith('/dashboard/conseiller/employees/5')
   })

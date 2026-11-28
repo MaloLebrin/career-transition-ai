@@ -8,7 +8,7 @@ describe('LifeCurveTool', () => {
   const onSaveDraft = vi.fn()
 
   test('renders intro and allows adding a point', () => {
-    render(<LifeCurveTool onSave={onSave} onSaveDraft={onSaveDraft} />)
+    const { unmount } = render(<LifeCurveTool onSave={onSave} onSaveDraft={onSaveDraft} />)
 
     expect(screen.getByText(/La courbe de vie/i)).toBeInTheDocument()
     expect(
@@ -17,18 +17,23 @@ describe('LifeCurveTool', () => {
 
     const labelInput = screen.getByPlaceholderText(/Premier poste chez/i)
 
-    act(() => {
-      // @ts-expect-error jsdom typing
-      labelInput.value = 'Premier poste'
-      labelInput.dispatchEvent(new Event('input', { bubbles: true }))
-    })
+    fireEvent.change(labelInput, { target: { value: 'Premier poste' } })
 
     const addButton = screen.getByRole('button', { name: /Ajouter au graphique/i })
     act(() => {
       addButton.click()
     })
 
-    expect(onSaveDraft).toHaveBeenCalled()
+    expect(screen.getByText('Premier poste')).toBeInTheDocument()
+    // Brouillon différé (#170), envoyé au plus tard en quittant l'exercice.
+    expect(onSaveDraft).not.toHaveBeenCalled()
+    unmount()
+    expect(onSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        step: 1,
+        points: [expect.objectContaining({ label: 'Premier poste' })],
+      })
+    )
   })
 })
 
@@ -70,14 +75,18 @@ describe('LifeCurveTool — parcours complet', () => {
     expect(years).toEqual(['2010', '2015'])
     expect(screen.getByRole('button', { name: /Suivant : Analyse/ })).toBeInTheDocument()
 
-    expect(onSaveDraft).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        step: 1,
-        points: [
-          { year: 2010, satisfaction: 5, label: 'Stage' },
-          { year: 2015, satisfaction: 8, label: 'Premier poste' },
-        ],
-      })
+    await waitFor(
+      () =>
+        expect(onSaveDraft).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            step: 1,
+            points: [
+              { year: 2010, satisfaction: 5, label: 'Stage' },
+              { year: 2015, satisfaction: 8, label: 'Premier poste' },
+            ],
+          })
+        ),
+      { timeout: 4000 }
     )
 
     // Suppression du premier point (Stage)
@@ -252,9 +261,9 @@ describe('LifeCurveTool — parcours complet', () => {
         initialDraftPromise={Promise.resolve({ data: {} } as never)}
       />
     )
-    await waitFor(() =>
-      expect(onSaveDraft).toHaveBeenCalledWith(expect.objectContaining({ points: [], step: 1 }))
-    )
-    expect(screen.getByText('La courbe de vie')).toBeInTheDocument()
+    expect(await screen.findByText('La courbe de vie')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Ajouter au graphique/i })).toBeInTheDocument()
+    // L'état hydraté n'est pas renvoyé tel quel au serveur (#170).
+    expect(onSaveDraft).not.toHaveBeenCalled()
   })
 })
