@@ -6,6 +6,7 @@ import {
 import Employee from '#models/employee'
 import Note from '#models/note'
 import type User from '#models/user'
+import { teamEmployeeScope } from '#services/team_employee_scope_service'
 import { USERS_ROLES } from '#shared/types/advisor/roles'
 import type { CreateNoteInput, UpdateNoteInput } from '#shared/types/note/inputs'
 import { DateTime } from 'luxon'
@@ -13,9 +14,10 @@ import { DateTime } from 'luxon'
 /**
  * Notes de suivi posées par les conseillers sur un candidat.
  *
- * Toutes les lectures sont bornées à l'organisation de l'utilisateur : une
- * ressource d'une autre organisation lève `NoteNotFoundError` (404), jamais un
- * 403 qui en confirmerait l'existence.
+ * Toutes les lectures sont bornées à l'organisation de l'utilisateur, et la
+ * fiche cible à son périmètre d'équipe (`teamEmployeeScope`, #167) : une
+ * ressource hors de portée lève `NoteNotFoundError` (404), jamais un 403 qui en
+ * confirmerait l'existence.
  */
 export class NotesService {
   /**
@@ -32,7 +34,7 @@ export class NotesService {
 
     const employee = await Employee.query()
       .where('id', employeeId)
-      .where('organizationId', user.organizationId)
+      .where(teamEmployeeScope(user))
       .first()
 
     if (!employee) {
@@ -81,21 +83,22 @@ export class NotesService {
   }
 
   /**
-   * Note non supprimée de l'organisation de `user`, dont il est l'auteur.
+   * Note non supprimée dont `user` est l'auteur, sur une fiche de son
+   * périmètre d'équipe (`teamEmployeeScope`, #167). Toute autre note — d'un
+   * collègue, d'une autre organisation, ou d'un particulier réassigné à un
+   * autre expert — est introuvable (404), sans confirmer qu'elle existe.
    */
   public async getEditableNote(user: User, noteId: number): Promise<Note> {
     const note = await Note.query()
       .where('id', noteId)
       .where('organizationId', user.organizationId)
+      .where('authorId', user.id)
+      .whereIn('employeeId', Employee.query().select('id').where(teamEmployeeScope(user)))
       .whereNull('deletedAt')
       .first()
 
     if (!note) {
       throw new NoteNotFoundError()
-    }
-
-    if (note.authorId !== user.id) {
-      throw new NoteForbiddenError('Only the author can edit this note')
     }
 
     return note

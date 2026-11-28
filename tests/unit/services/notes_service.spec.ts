@@ -12,7 +12,9 @@ import { NOTE_VISIBILITY } from '#shared/constants/note'
 import {
   createAdmin,
   createAdvisor,
+  createB2cCandidate,
   createEmployeeFor,
+  createInHouseExpert,
   createSuperAdmin,
 } from '#tests/support/actors'
 import { countQueries } from '#tests/utils/query_counter'
@@ -125,9 +127,7 @@ test.group('NotesService — modification et suppression', (group) => {
     assert.equal(queries, 1)
   })
 
-  test("un collègue de l'organisation qui n'est pas l'auteur est refusé (403)", async ({
-    assert,
-  }) => {
+  test("la note d'un collègue de l'organisation est introuvable (404)", async ({ assert }) => {
     const author = await createAdvisor()
     const employee = await createEmployeeFor(author)
     const colleague = await createAdvisor(await Organization.findOrFail(author.organizationId))
@@ -138,7 +138,8 @@ test.group('NotesService — modification et suppression', (group) => {
     }).create()
 
     const error = await new NotesService().getEditableNote(colleague, note.id).catch((e) => e)
-    assert.instanceOf(error, NoteForbiddenError)
+    assert.instanceOf(error, NoteNotFoundError)
+    assert.equal(error.status, 404)
   })
 
   test("une note d'une autre organisation est introuvable (404)", async ({ assert }) => {
@@ -188,6 +189,51 @@ test.group('NotesService — modification et suppression', (group) => {
     await note.refresh()
     assert.isNotNull(note.deletedAt)
     const error = await service.getEditableNote(advisor, note.id).catch((e) => e)
+    assert.instanceOf(error, NoteNotFoundError)
+  })
+})
+
+test.group('NotesService — équipe plateforme (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('un conseiller de la plateforme n’écrit que sur ses particuliers assignés', async ({
+    assert,
+  }) => {
+    const service = new NotesService()
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const mine = await createB2cCandidate({ expert: expertA })
+    const other = await createB2cCandidate({ expert: expertB })
+
+    const target = await service.getEmployeeForNewNote(expertA, mine.employee.id)
+    assert.equal(target.id, mine.employee.id)
+    const error = await service.getEmployeeForNewNote(expertA, other.employee.id).catch((e) => e)
+    assert.instanceOf(error, NoteNotFoundError)
+    assert.equal(error.status, 404)
+  })
+})
+
+test.group('NotesService — note sur un particulier réassigné (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('l’auteur ne modifie plus sa note une fois le particulier réassigné', async ({ assert }) => {
+    const service = new NotesService()
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const { employee } = await createB2cCandidate({ expert: expertA })
+    const note = await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: expertA.id,
+    }).create()
+
+    const found = await service.getEditableNote(expertA, note.id)
+    assert.equal(found.id, note.id)
+
+    employee.advisorId = expertB.id
+    await employee.save()
+
+    const error = await service.getEditableNote(expertA, note.id).catch((e) => e)
     assert.instanceOf(error, NoteNotFoundError)
   })
 })

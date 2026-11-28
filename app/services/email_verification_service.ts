@@ -15,6 +15,7 @@ import type { EmailVerificationResult } from '#shared/types/auth/email_change'
 import { inject } from '@adonisjs/core'
 import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import { DateTime } from 'luxon'
 
 /**
@@ -34,11 +35,16 @@ export class EmailVerificationService {
     private tokens: OnboardingTokensService
   ) {}
 
-  /** Crée un nouveau lien (les précédents non consommés sont invalidés) et l'envoie. */
+  /**
+   * Crée un nouveau lien de vérification et l'envoie. Les précédents liens de
+   * vérification (ou d'onboarding) non consommés sont invalidés ; une demande
+   * de changement d'e-mail en cours (`newEmail`) est conservée.
+   */
   public async sendLink(user: User): Promise<void> {
     const token = await db.transaction(async (trx) => {
       await OnboardingToken.query({ client: trx })
         .where('userId', user.id)
+        .whereNull('newEmail')
         .whereNull('usedAt')
         .update({ usedAt: DateTime.now().toSQL() })
       return OnboardingToken.createForUser(user.id, {
@@ -71,21 +77,22 @@ export class EmailVerificationService {
   /**
    * Demande de changement d'e-mail (#143) : envoie un lien à la nouvelle
    * adresse, l'adresse du compte reste inchangée jusqu'au clic. Renvoie
-   * l'adresse en attente, ou `null` si elle ne diffère pas de l'actuelle.
+   * l'adresse en attente, ou `null` si elle ne diffère pas de l'actuelle —
+   * auquel cas une demande précédente est annulée : remettre son adresse
+   * actuelle dans le formulaire revient sur un changement saisi par erreur.
    */
   public async requestEmailChange(user: User, newEmail: string): Promise<string | null> {
     // En minuscules : la connexion compare l'adresse saisie à celle du compte.
     const email = newEmail.trim().toLowerCase()
-    if (email === user.email.toLowerCase()) return null
+    if (email === user.email.toLowerCase()) {
+      await this.cancelPendingEmailChanges(user)
+      return null
+    }
     if (await this.isTakenByAnother(user, email)) throw new EmailChangeConflictError()
 
     const token = await db.transaction(async (trx) => {
       // Une seule demande en cours : la dernière adresse saisie l'emporte.
-      await OnboardingToken.query({ client: trx })
-        .where('userId', user.id)
-        .whereNotNull('newEmail')
-        .whereNull('usedAt')
-        .update({ usedAt: DateTime.now().toSQL() })
+      await this.cancelPendingEmailChanges(user, trx)
       return OnboardingToken.createForUser(user.id, {
         expiresInDays: EMAIL_VERIFICATION_TOKEN_TTL_DAYS,
         newEmail: email,
@@ -139,6 +146,18 @@ export class EmailVerificationService {
       if (error instanceof EmailChangeConflictError) return { outcome: 'email_taken' }
       throw error
     }
+  }
+
+  /** Invalide les liens de changement d'e-mail non consommés de `user`. */
+  private async cancelPendingEmailChanges(
+    user: User,
+    client?: TransactionClientContract
+  ): Promise<void> {
+    await OnboardingToken.query(client ? { client } : {})
+      .where('userId', user.id)
+      .whereNotNull('newEmail')
+      .whereNull('usedAt')
+      .update({ usedAt: DateTime.now().toSQL() })
   }
 
   private async isTakenByAnother(user: User, email: string): Promise<boolean> {

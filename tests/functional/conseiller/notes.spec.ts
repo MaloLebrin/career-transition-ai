@@ -298,7 +298,7 @@ test.group('Conseiller — notes : modification et suppression', (group) => {
     assert.equal(note.content, 'Original')
   })
 
-  test("un autre conseiller de l'organisation ne peut ni modifier ni supprimer (403)", async ({
+  test("un autre conseiller de l'organisation ne peut ni modifier ni supprimer (404)", async ({
     client,
     assert,
   }) => {
@@ -317,13 +317,13 @@ test.group('Conseiller — notes : modification et suppression', (group) => {
       .json({ content: 'Piraté' })
       .loginAs(colleague)
       .redirects(0)
-    update.assertStatus(403)
+    update.assertStatus(404)
 
     const destroy = await client
       .delete(`/dashboard/conseiller/notes/${note.id}`)
       .loginAs(colleague)
       .redirects(0)
-    destroy.assertStatus(403)
+    destroy.assertStatus(404)
 
     await note.refresh()
     assert.equal(note.content, 'Original')
@@ -344,7 +344,7 @@ test.group('Conseiller — notes : modification et suppression', (group) => {
       content: 'Original',
     }).create()
 
-    // Erreur métier (`NoteForbiddenError`) rendue par le handler : pas de JSON
+    // Erreur métier (`NoteNotFoundError`) rendue par le handler : pas de JSON
     // brut qu'Inertia afficherait dans une modale.
     const response = await client
       .put(`/dashboard/conseiller/notes/${note.id}`)
@@ -356,7 +356,7 @@ test.group('Conseiller — notes : modification et suppression', (group) => {
 
     response.assertStatus(303)
     response.assertHeader('location', referer(employee.id))
-    assert.equal(response.flashMessage('error'), 'Only the author can edit this note')
+    assert.equal(response.flashMessage('error'), 'Note not found')
     await note.refresh()
     assert.equal(note.content, 'Original')
   })
