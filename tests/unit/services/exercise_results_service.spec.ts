@@ -610,22 +610,93 @@ test.group('ExerciseResultsService.saveResult — champs réservés au serveur (
     assert.notEqual(row.qualitativeAnalysis, 'Analyse forgée')
   })
 
-  test('mise à jour : analyse et score existants conservés', async ({ assert }) => {
+  test('mise à jour, mêmes réponses : analyse et score existants conservés', async ({ assert }) => {
     const service = await app.container.make(ExerciseResultsService)
     const { employee } = await createB2cCandidate()
     const row = await ExerciseResultFactory.merge({
       employeeId: employee.id,
       type: EXERCICE_RESULTS_TYPES.VALUES,
       status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2 },
       quantitativeScore: 7,
       qualitativeAnalysis: 'Analyse du job',
-    }).create()
+    })
+      .apply('analyzed')
+      .create()
 
     await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.VALUES))
 
     await row.refresh()
     assert.equal(row.qualitativeAnalysis, 'Analyse du job')
     assert.equal(row.quantitativeScore, 7)
+  })
+
+  test('B2C gratuit, réponses modifiées : ancienne analyse effacée, pas de seconde analyse', async ({
+    assert,
+  }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+    const row = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2, ranking: ['a', 'b'] },
+      qualitativeAnalysis: 'Analyse des anciennes réponses',
+    })
+      .apply('analyzed')
+      .create()
+    const analyzedAt = row.analyzedAt!.toISO()
+
+    await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.VALUES))
+
+    await row.refresh()
+    assert.isNull(row.qualitativeAnalysis)
+    // Le marqueur reste : l'analyse gratuite est consommée.
+    assert.equal(row.analyzedAt?.toISO(), analyzedAt)
+  })
+
+  test('B2B, réponses modifiées : l’analyse est refaite sur les nouvelles réponses', async ({
+    assert,
+  }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createCandidate()
+    const row = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.MOTIVATION,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { step: 2, answers: { autonomie: 5 } },
+      qualitativeAnalysis: 'Analyse des anciennes réponses',
+    })
+      .apply('analyzed')
+      .create()
+
+    await service.saveResult(forgedInput(employee.id, EXERCICE_RESULTS_TYPES.MOTIVATION))
+
+    await row.refresh()
+    assert.isNotNull(row.qualitativeAnalysis)
+    assert.notEqual(row.qualitativeAnalysis, 'Analyse des anciennes réponses')
+  })
+
+  test('réponses identiques à l’ordre des clés près : analyse conservée', async ({ assert }) => {
+    const service = await app.container.make(ExerciseResultsService)
+    const { employee } = await createB2cCandidate()
+    const row = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      status: exerciceResultStatusValues.COMPLETED,
+      data: { b: [1, 2], a: { y: 1, x: 2 } },
+      qualitativeAnalysis: 'Analyse du job',
+    })
+      .apply('analyzed')
+      .create()
+
+    await service.saveResult({
+      ...forgedInput(employee.id, EXERCICE_RESULTS_TYPES.VALUES),
+      data: { a: { x: 2, y: 1 }, b: [1, 2] },
+    })
+
+    await row.refresh()
+    assert.equal(row.qualitativeAnalysis, 'Analyse du job')
   })
 
   test('exercice verrouillé : aucune analyse, même forgée', async ({ assert }) => {
@@ -725,8 +796,9 @@ test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5
       .where('employeeId', employee.id)
       .where('type', type)
       .firstOrFail()
-    row.qualitativeAnalysis = 'Première analyse'
-    await row.save()
+    assert.isNotNull(row.qualitativeAnalysis)
+    const analyzedAt = row.analyzedAt?.toISO()
+    assert.isDefined(analyzedAt)
 
     await service.saveResult({
       ...base,
@@ -735,7 +807,9 @@ test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5
     })
     await service.saveDraft({ employeeId: employee.id, type, data: { step: 1, edit: true } })
     await row.refresh()
-    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+    // Réponses modifiées (#168) : l'ancien texte est effacé, le marqueur reste.
+    assert.isNull(row.qualitativeAnalysis)
+    assert.equal(row.analyzedAt?.toISO(), analyzedAt)
 
     await service.saveResult({
       ...base,
@@ -743,7 +817,9 @@ test.group('ExerciseResultsService — contournement de l’analyse gratuite (M5
       data: { step: 2 },
     })
     await row.refresh()
-    assert.equal(row.qualitativeAnalysis, 'Première analyse')
+    // Pas de seconde analyse gratuite.
+    assert.isNull(row.qualitativeAnalysis)
+    assert.equal(row.analyzedAt?.toISO(), analyzedAt)
   })
 })
 

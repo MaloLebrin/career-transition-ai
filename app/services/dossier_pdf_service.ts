@@ -210,6 +210,22 @@ export async function generateProfilPdf(employee: Employee): Promise<Buffer> {
   return Buffer.from(bytes)
 }
 
+/**
+ * Ligne « date · durée » sous le titre d'un résultat. Jamais de score (#168) :
+ * `quantitative_score` ne contient que la constante envoyée autrefois par le
+ * front, sans lien avec les réponses.
+ */
+export function resultMetaLine(result: Pick<ExerciseResult, 'date' | 'duration'>): string | null {
+  const meta: string[] = []
+  if (result.date) {
+    meta.push(
+      DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date)
+    )
+  }
+  if (result.duration !== null) meta.push(`${result.duration} min`)
+  return meta.length ? meta.join('  ·  ') : null
+}
+
 export async function generateResultPdf(result: ExerciseResult): Promise<Buffer> {
   const doc = await PDFDocument.create()
   const font = await doc.embedFont(StandardFonts.Helvetica)
@@ -256,16 +272,9 @@ export async function generateResultPdf(result: ExerciseResult): Promise<Buffer>
   })
   y = PAGE_HEIGHT - 72
 
-  const meta: string[] = []
-  if (result.date) {
-    meta.push(
-      DateTime.isDateTime(result.date) ? result.date.toFormat('dd/MM/yyyy') : String(result.date)
-    )
-  }
-  if (result.duration !== null) meta.push(`${result.duration} min`)
-  if (result.quantitativeScore !== null) meta.push(`Score : ${result.quantitativeScore}`)
-  if (meta.length) {
-    drawLine(meta.join('  ·  '), { color: COLORS.gray, size: SMALL_SIZE })
+  const meta = resultMetaLine(result)
+  if (meta) {
+    drawLine(meta, { color: COLORS.gray, size: SMALL_SIZE })
     y -= 12
   }
 

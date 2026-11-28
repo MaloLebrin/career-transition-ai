@@ -13,6 +13,7 @@ import { QUEUE_NAMES } from '#utils/queues/queue_names'
 import logger from '@adonisjs/core/services/logger'
 import { Job } from '@adonisjs/queue'
 import type { JobOptions } from '@adonisjs/queue/types'
+import { DateTime } from 'luxon'
 
 export interface AnalyzeExerciseQualitativePayload {
   exerciseResultId: number
@@ -66,7 +67,9 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
     const allowed = await access.shouldRunAiAnalysis(
       employee,
       result.type,
-      Boolean(result.qualitativeAnalysis)
+      // Marqueur, pas le texte (#168) : le texte est effacé quand les réponses
+      // changent, sans rouvrir l'analyse gratuite.
+      Boolean(result.analyzedAt)
     )
     if (!allowed) {
       logger.warn(
@@ -89,8 +92,8 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
     try {
       text = await provider.completeText(prompt)
     } catch (error) {
-      // Aucun texte d'erreur dans `qualitativeAnalysis` : il compterait comme
-      // « analyse existante » (politique B2C, relance au déverrouillage).
+      // Aucun texte d'erreur dans `qualitativeAnalysis` : il serait affiché
+      // comme une analyse et bloquerait la relance au déverrouillage (`whereNull`).
       const message = error instanceof Error ? error.message : String(error)
       logger.error(
         { err: error, exerciseResultId, message },
@@ -99,7 +102,14 @@ export default class AnalyzeExerciseQualitativeJob extends Job<AnalyzeExerciseQu
       return
     }
 
+    // Réponse vide : traitée comme un échec, ni texte vide ni marqueur (#168).
+    if (!text.trim()) {
+      logger.error({ exerciseResultId }, 'AnalyzeExerciseQualitativeJob: réponse IA vide')
+      return
+    }
+
     result.qualitativeAnalysis = text
+    result.analyzedAt = DateTime.now()
     await result.save()
 
     // Les notifications sont hors du `try` : leur échec ne doit pas écraser

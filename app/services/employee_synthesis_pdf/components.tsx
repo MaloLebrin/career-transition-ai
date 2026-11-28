@@ -30,21 +30,6 @@ export function synthesisRoleText(employee: {
   return target ? `${employee.currentRole}${ROLE_SEPARATOR}${target}` : employee.currentRole
 }
 
-export function getScoreColor(score: number, max = 10): string {
-  const pct = score / max
-  if (pct >= 0.7) return C.green
-  if (pct >= 0.4) return C.amber
-  return C.red
-}
-
-export function getScoreLabel(score: number, max = 10): string {
-  const pct = score / max
-  if (pct >= 0.7) return 'Très satisfaisant'
-  if (pct >= 0.5) return 'Satisfaisant'
-  if (pct >= 0.3) return 'En développement'
-  return 'À travailler'
-}
-
 // ─── SectionTitle ─────────────────────────────────────────────────────────────
 
 export function SectionTitle({ label }: { label: string }) {
@@ -74,44 +59,6 @@ export function SkillBar({ level, max = 5 }: { level: number; max?: number }) {
           }}
         />
       ))}
-    </View>
-  )
-}
-
-// ─── ScoreBlock ───────────────────────────────────────────────────────────────
-
-export function ScoreBlock({ score, max = 10 }: { score: number; max?: number }) {
-  const filled = Math.min(max, Math.max(0, Math.round(score)))
-  const empty = max - filled
-  const color = getScoreColor(score, max)
-  const label = getScoreLabel(score, max)
-
-  return (
-    <View style={s.scoreBlock}>
-      {/* Big number */}
-      <View style={{ alignItems: 'center' }}>
-        <Text style={[s.scoreValue, { color }]}>{score}</Text>
-        <Text style={s.bodySmall}>/{max}</Text>
-      </View>
-
-      {/* Bar + label */}
-      <View style={s.scoreRight}>
-        <View style={s.scoreBarTrack}>
-          {Array.from({ length: filled }, (_, i) => (
-            <View
-              key={`f-${i}`}
-              style={{ width: 18, height: 12, borderRadius: 3, backgroundColor: color }}
-            />
-          ))}
-          {Array.from({ length: empty }, (_, i) => (
-            <View
-              key={`e-${i}`}
-              style={{ width: 18, height: 12, borderRadius: 3, backgroundColor: C.lightGray }}
-            />
-          ))}
-        </View>
-        <Text style={[s.scoreBarLabel, { color }]}>{label}</Text>
-      </View>
     </View>
   )
 }

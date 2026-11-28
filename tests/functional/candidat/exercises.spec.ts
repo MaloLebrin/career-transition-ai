@@ -708,16 +708,17 @@ test.group('Candidat B2C — exercices (#100)', (group) => {
     )
 
     // Une relance ne déclenche pas de seconde analyse (ni de seconde notification).
-    stored.qualitativeAnalysis = 'Analyse déjà produite'
-    await stored.save()
     await client
       .post(`${BASE}/${EXERCICE_RESULTS_TYPES.MOTIVATION}/result`)
       .loginAs(user)
       .json(resultPayload({ data: { step: 2, answers: { autonomie: 1 } } }))
       .redirects(0)
 
+    // Réponses modifiées (#168) : l'analyse des anciennes réponses est effacée,
+    // sans seconde analyse gratuite (`analyzed_at` conservé).
     await stored.refresh()
-    assert.equal(stored.qualitativeAnalysis, 'Analyse déjà produite')
+    assert.isNull(stored.qualitativeAnalysis)
+    assert.isNotNull(stored.analyzedAt)
     assert.notEqual(stored.qualitativeAnalysis, firstAnalysis)
     assert.lengthOf(
       await Notification.query()

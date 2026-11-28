@@ -256,38 +256,38 @@ describe('EmployeeSynthesisPage — export PDF en échec (#72)', () => {
 })
 
 describe('EmployeeSynthesisPage — score des résultats (#168)', () => {
-  function renderWith(exercises: Array<Record<string, unknown>>) {
+  test('n’affiche aucun score, même historique (constante du front)', () => {
     render(
       <EmployeeSynthesisPage
         employeeId="10"
-        employee={{ ...baseEmployee, exercises } as never}
+        employee={
+          {
+            ...baseEmployee,
+            exercises: [
+              {
+                id: 1,
+                type: 'MOTIVATION',
+                status: 'completed',
+                date: '2026-01-15',
+                quantitativeScore: 10,
+              },
+              {
+                id: 2,
+                type: 'VALUES',
+                status: 'completed',
+                date: '2026-01-15',
+                quantitativeScore: 0,
+              },
+            ],
+          } as never
+        }
         synthesis={makeSynthesis('shared')}
         latestCompletedByType={{}}
         latestPdfJob={null}
       />
     )
-  }
 
-  test('n’affiche pas de score quand le résultat n’en a pas (null ou 0)', () => {
-    renderWith([
-      {
-        id: 1,
-        type: 'MOTIVATION',
-        status: 'completed',
-        date: '2026-01-15',
-        quantitativeScore: null,
-      },
-      { id: 2, type: 'VALUES', status: 'completed', date: '2026-01-15', quantitativeScore: 0 },
-    ])
-
-    expect(screen.queryByText(/Score:/)).not.toBeInTheDocument()
-  })
-
-  test('affiche le score historique quand il existe', () => {
-    renderWith([
-      { id: 1, type: 'MOTIVATION', status: 'completed', date: '2026-01-15', quantitativeScore: 10 },
-    ])
-
-    expect(screen.getByText('Score: 10')).toBeInTheDocument()
+    expect(screen.getByText('Analyse Motivations')).toBeInTheDocument()
+    expect(screen.queryByText(/Score/)).not.toBeInTheDocument()
   })
 })

@@ -258,7 +258,8 @@ export default class MaloExercisesSeeder extends BaseSeeder {
           type: row.type,
           status: 'completed' as const,
         },
-        row
+        // Analyse IA de démo : marquée produite, comme le ferait le job (#168).
+        { ...row, analyzedAt: row.qualitativeAnalysis ? DateTime.now() : null }
       )
     }
 

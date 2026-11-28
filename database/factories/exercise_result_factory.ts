@@ -15,6 +15,12 @@ export const ExerciseResultFactory = factory
       data: {},
       quantitativeScore: null,
       qualitativeAnalysis: null,
+      analyzedAt: null,
     }
+  })
+  // Résultat déjà analysé par le job IA (#168) : texte + marqueur.
+  .state('analyzed', (row) => {
+    row.qualitativeAnalysis = row.qualitativeAnalysis ?? 'Analyse IA'
+    row.analyzedAt = DateTime.now()
   })
   .build()

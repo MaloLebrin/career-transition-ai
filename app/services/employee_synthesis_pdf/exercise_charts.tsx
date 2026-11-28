@@ -35,15 +35,3 @@ export function ExerciseChart({ type, data }: { type: string; data: unknown }) {
       return null
   }
 }
-
-/** Types with a dedicated chart — ScoreBlock is skipped for these */
-export const TYPES_WITH_CHART = new Set([
-  'MOTIVATION',
-  'VALUES',
-  'PERSONALITY',
-  'LIFE_CURVE',
-  'DISC',
-  'CIRCLE_OF_CONTROL',
-  'SKILL_MAPPING',
-  'TARGETING',
-])

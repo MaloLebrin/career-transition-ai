@@ -42,6 +42,14 @@ export default class ExerciseResult extends BaseModel {
   @column()
   declare qualitativeAnalysis: string | null
 
+  /**
+   * Date de la dernière analyse IA produite pour ce résultat (#168). Survit à
+   * l'effacement du texte quand les réponses changent : c'est elle, pas le
+   * texte, qui compte pour la politique B2C « une analyse ».
+   */
+  @column.dateTime()
+  declare analyzedAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
