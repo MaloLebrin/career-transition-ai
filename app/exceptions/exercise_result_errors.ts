@@ -13,3 +13,13 @@ export class ExerciseResultNotFoundError extends DomainException {
     super(message, { status: 404, code: 'E_EXERCISE_RESULT_NOT_FOUND' })
   }
 }
+
+/**
+ * Relance manuelle d'une analyse IA (#171) refusée : l'analyse n'est pas en
+ * échec (`failed`), ou le candidat n'y a plus droit (exercice B2C verrouillé).
+ */
+export class QualitativeAnalysisNotRetryableError extends DomainException {
+  constructor(message: string = 'Cette analyse IA ne peut pas être relancée.') {
+    super(message, { status: 409, code: 'E_QUALITATIVE_ANALYSIS_NOT_RETRYABLE' })
+  }
+}

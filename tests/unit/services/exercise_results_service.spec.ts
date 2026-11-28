@@ -9,14 +9,24 @@ import {
   ExerciseResultsService,
 } from '#services/exercise_results_service'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
-import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
+import { B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
+import {
+  EXERCICE_RESULTS_TYPES,
+  exerciceResultStatusValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+} from '#shared/constants/exercises'
+import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
 import { ExerciseResultFactory } from '#database/factories/exercise_result_factory'
 import { EmployeeNotFoundError } from '#exceptions/employee_errors'
-import { ExerciseResultNotFoundError } from '#exceptions/exercise_result_errors'
+import {
+  ExerciseResultNotFoundError,
+  QualitativeAnalysisNotRetryableError,
+} from '#exceptions/exercise_result_errors'
 import {
   createAdvisor,
   createB2cCandidate,
   createCandidate,
+  createInHouseExpert,
   createOrganization,
 } from '#tests/support/actors'
 import testUtils from '@adonisjs/core/services/test_utils'
@@ -747,5 +757,125 @@ test.group('ExerciseResultsService.resetForEmployee (#72)', (group) => {
       EmployeeNotFoundError
     )
     assert.lengthOf(await ExerciseResult.query().where('employeeId', employee.id), 1)
+  })
+})
+
+test.group('ExerciseResultsService.retryFailedAnalysis (#171)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  async function advisorWithCandidate() {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({
+      organization: await advisor.related('organization').query().firstOrFail(),
+      advisor,
+    })
+    return { advisor, employee }
+  }
+
+  test('relance une analyse `failed` : le job tourne et enregistre l’analyse', async ({
+    assert,
+  }) => {
+    const { advisor, employee } = await advisorWithCandidate()
+    const result = await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: employee.id, type: EXERCICE_RESULTS_TYPES.VALUES })
+      .create()
+    const service = await app.container.make(ExerciseResultsService)
+
+    await service.retryFailedAnalysis(advisor, employee.id, 'VALUES')
+
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.DONE)
+    assert.equal(result.qualitativeAnalysis, await new NullAiTextProvider().completeText(''))
+  })
+
+  test('analyse non en échec (terminée, en cours ou jamais demandée) → refus', async ({
+    assert,
+  }) => {
+    const { advisor, employee } = await advisorWithCandidate()
+    const service = await app.container.make(ExerciseResultsService)
+    const statuses = [
+      QUALITATIVE_ANALYSIS_STATUSES.DONE,
+      QUALITATIVE_ANALYSIS_STATUSES.PENDING,
+      null,
+    ] as const
+    const types = [
+      EXERCICE_RESULTS_TYPES.VALUES,
+      EXERCICE_RESULTS_TYPES.DISC,
+      EXERCICE_RESULTS_TYPES.MOTIVATION,
+    ] as const
+    await ExerciseResultFactory.merge(
+      statuses.map((status, index) => ({
+        employeeId: employee.id,
+        type: types[index],
+        qualitativeAnalysisStatus: status,
+      }))
+    ).createMany(3)
+
+    for (const type of types) {
+      await assert.rejects(
+        () => service.retryFailedAnalysis(advisor, employee.id, type),
+        QualitativeAnalysisNotRetryableError
+      )
+    }
+  })
+
+  test('aucun résultat terminé ou type inconnu → ExerciseResultNotFoundError', async ({
+    assert,
+  }) => {
+    const { advisor, employee } = await advisorWithCandidate()
+    await ExerciseResultFactory.apply('analysisFailed')
+      .merge({
+        employeeId: employee.id,
+        type: EXERCICE_RESULTS_TYPES.VALUES,
+        status: exerciceResultStatusValues.DRAFT,
+      })
+      .create()
+    const service = await app.container.make(ExerciseResultsService)
+
+    await assert.rejects(
+      () => service.retryFailedAnalysis(advisor, employee.id, 'values'),
+      ExerciseResultNotFoundError
+    )
+    await assert.rejects(
+      () => service.retryFailedAnalysis(advisor, employee.id, 'xyz'),
+      ExerciseResultNotFoundError
+    )
+  })
+
+  test('candidat hors périmètre → EmployeeNotFoundError, statut inchangé', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({ organization: await createOrganization() })
+    const result = await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: employee.id, type: EXERCICE_RESULTS_TYPES.VALUES })
+      .create()
+    const service = await app.container.make(ExerciseResultsService)
+
+    await assert.rejects(
+      () => service.retryFailedAnalysis(advisor, employee.id, 'values'),
+      EmployeeNotFoundError
+    )
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.FAILED)
+  })
+
+  test('B2C : exercice verrouillé (forfait non réglé) → refus, statut inchangé', async ({
+    assert,
+  }) => {
+    const expert = await createInHouseExpert()
+    const { employee } = await createB2cCandidate({ expert })
+    const locked = Object.values(EXERCICE_RESULTS_TYPES).find(
+      (type) => !B2C_FREE_EXERCISE_TYPES.includes(type as any)
+    )!
+    const result = await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: employee.id, type: locked })
+      .create()
+    const service = await app.container.make(ExerciseResultsService)
+
+    await assert.rejects(
+      () => service.retryFailedAnalysis(expert, employee.id, locked),
+      QualitativeAnalysisNotRetryableError
+    )
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.FAILED)
   })
 })

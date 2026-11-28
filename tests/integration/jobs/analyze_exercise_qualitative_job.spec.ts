@@ -1,11 +1,19 @@
 import { test } from '@japa/runner'
-import AnalyzeExerciseQualitativeJob from '#jobs/analyze_exercise_qualitative_job'
+import AnalyzeExerciseQualitativeJob, {
+  ANALYSIS_MAX_RETRIES,
+  analysisRetryBackoff,
+} from '#jobs/analyze_exercise_qualitative_job'
+import { setErrorReporter, type ErrorContext } from '#services/error_tracking_service'
 import ExerciseResult from '#models/exercise_result'
 import Notification from '#models/notification'
 import { NotificationService } from '#services/notification_service'
 import { B2C_FREE_EXERCISE_TYPES } from '#shared/constants/b2c'
 import { NullAiTextProvider } from '#services/ai/null_ai_text_provider'
-import { EXERCICE_RESULTS_TYPES, exerciceResultStatusValues } from '#shared/constants/exercises'
+import {
+  EXERCICE_RESULTS_TYPES,
+  exerciceResultStatusValues,
+  QUALITATIVE_ANALYSIS_STATUSES,
+} from '#shared/constants/exercises'
 import { NOTIFICATION_TYPES } from '#shared/constants/notifications'
 import { AI_PSEUDONYM } from '#shared/helpers/ai/exercise_profile'
 import {
@@ -50,6 +58,20 @@ async function withFailingProvider(callback: () => Promise<void>) {
   } finally {
     env.get = original
   }
+}
+
+/** Capture les envois au suivi des erreurs (Sentry) le temps du callback. */
+async function captureReports(callback: () => Promise<void>) {
+  const reports: Array<{ error: unknown; context: ErrorContext }> = []
+  const previous = setErrorReporter({
+    capture: (error, context) => reports.push({ error, context }),
+  })
+  try {
+    await callback()
+  } finally {
+    setErrorReporter(previous)
+  }
+  return reports
 }
 
 test.group('AnalyzeExerciseQualitativeJob', () => {
@@ -184,7 +206,101 @@ test.group('AnalyzeExerciseQualitativeJob', () => {
 
     await result.refresh()
     assert.isNull(result.qualitativeAnalysis)
+    assert.equal(result.duration, 40)
     assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
+  })
+
+  test('échec du fournisseur → le job échoue et réessaie (#171)', async ({ assert }) => {
+    const { employee } = await createCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    let calls = 0
+    const original = NullAiTextProvider.prototype.completeText
+    NullAiTextProvider.prototype.completeText = async function (prompt: string) {
+      calls++
+      if (calls === 1) throw new Error('Mistral 503')
+      return original.call(this, prompt)
+    }
+    try {
+      const reports = await captureReports(() => run(result.id))
+      assert.lengthOf(reports, 0)
+    } finally {
+      NullAiTextProvider.prototype.completeText = original
+    }
+
+    assert.equal(calls, 2)
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.DONE)
+  })
+
+  test('après le dernier essai → statut `failed` et reportError (#171)', async ({ assert }) => {
+    const advisor = await createAdvisor()
+    const { employee } = await createCandidate({ advisor })
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    const failure = new Error('Mistral 503')
+    let calls = 0
+    const original = NullAiTextProvider.prototype.completeText
+    NullAiTextProvider.prototype.completeText = async function () {
+      calls++
+      throw failure
+    }
+    let reports: Awaited<ReturnType<typeof captureReports>> = []
+    try {
+      reports = await captureReports(() => run(result.id))
+    } finally {
+      NullAiTextProvider.prototype.completeText = original
+    }
+
+    assert.equal(calls, 1 + ANALYSIS_MAX_RETRIES)
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysis)
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.FAILED)
+    assert.lengthOf(reports, 1)
+    assert.strictEqual(reports[0].error, failure)
+    assert.deepEqual(reports[0].context, {
+      tags: { queue: 'ai', job: 'AnalyzeExerciseQualitativeJob' },
+      extra: { exerciseResultId: result.id },
+    })
+    assert.lengthOf(await Notification.query().where('user_id', advisor.id), 0)
+  })
+
+  test('B2C gratuit : une analyse en échec reste relançable (#171)', async ({ assert }) => {
+    const { employee } = await createB2cCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.COMPLETED)
+
+    await withFailingProvider(() => run(result.id))
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.FAILED)
+
+    await run(result.id)
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, NULL_ANALYSIS)
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.DONE)
+  })
+
+  test('exercice ignoré à l’exécution : un `pending` posé au dispatch est levé', async ({
+    assert,
+  }) => {
+    const { employee } = await createCandidate()
+    const result = await createResult(employee.id, exerciceResultStatusValues.DRAFT)
+    result.qualitativeAnalysisStatus = QUALITATIVE_ANALYSIS_STATUSES.PENDING
+    await result.save()
+
+    await run(result.id)
+
+    await result.refresh()
+    assert.isNull(result.qualitativeAnalysisStatus)
+  })
+
+  test('délai progressif entre les essais : exponentiel hors test (#171)', ({ assert }) => {
+    const production = analysisRetryBackoff(false)()
+    assert.isAtLeast(production.calculateDelay(1), 15_000)
+    assert.isAtMost(production.calculateDelay(2), 5 * 60_000)
+    assert.isAbove(production.calculateDelay(3), production.calculateDelay(1))
+    assert.equal(analysisRetryBackoff(true)().calculateDelay(2), 1)
+    assert.equal(AnalyzeExerciseQualitativeJob.options.retry?.maxRetries, ANALYSIS_MAX_RETRIES)
   })
 
   test("une notification en échec n'écrase pas l'analyse enregistrée", async ({ assert }) => {

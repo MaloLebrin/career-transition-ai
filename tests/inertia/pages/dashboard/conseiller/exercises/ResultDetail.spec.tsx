@@ -165,4 +165,36 @@ describe('Détail d’un résultat d’exercice (conseiller)', () => {
       screen.queryByRole('button', { name: 'Réinitialiser l’exercice' })
     ).not.toBeInTheDocument()
   })
+
+  test('analyse IA en échec : message et bouton de relance (#171)', () => {
+    render(
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={
+          {
+            ...result,
+            qualitativeAnalysis: undefined,
+            qualitativeAnalysisStatus: 'failed',
+          } as never
+        }
+      />
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent(/n’a pas pu être générée/)
+    expect(screen.getByRole('button', { name: 'Relancer l’analyse' })).toBeInTheDocument()
+  })
+
+  test('analyse terminée : aucun bandeau de statut (#171)', () => {
+    render(
+      <ExerciseResultDetail
+        employeeId="5"
+        employeeName="Camille"
+        exerciseTitle="Valeurs"
+        result={{ ...result, qualitativeAnalysisStatus: 'done' } as never}
+      />
+    )
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Relancer l’analyse' })).not.toBeInTheDocument()
+  })
 })

@@ -7,7 +7,7 @@ import ExerciseResult from '#models/exercise_result'
 import Note from '#models/note'
 import PdfExport from '#models/pdf_export'
 import { EMPLOYEES_STATUS } from '#shared/constants/employee'
-import { EXERCICE_RESULTS_TYPES } from '#shared/constants/exercises'
+import { EXERCICE_RESULTS_TYPES, QUALITATIVE_ANALYSIS_STATUSES } from '#shared/constants/exercises'
 import { PDF_EXPORT_STATUSES, type PdfExportStatus } from '#shared/constants/pdf_export'
 import {
   createAdvisor,
@@ -330,5 +330,93 @@ test.group('Conseiller — exports PDF en échec', (group) => {
     crossEmployee.assertStatus(404)
     crossOrg.assertStatus(404)
     assert.isNotNull(await PdfExport.find(foreign.id))
+  })
+})
+
+test.group('Conseiller — relancer une analyse IA en échec (#171)', (group) => {
+  group.each.setup(() => truncateDb())
+
+  const retryUrl = (employeeId: number, type: string) =>
+    `${BASE}/${employeeId}/exercises/results/${type}/analysis/retry`
+
+  test('relance : redirect back, flash, analyse enregistrée', async ({ client, assert }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    const result = await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: employee.id, type: EXERCICE_RESULTS_TYPES.VALUES })
+      .create()
+    const detail = `${BASE}/${employee.id}/exercises/results/values`
+
+    const response = await client
+      .post(retryUrl(employee.id, 'values'))
+      .header('referer', detail)
+      .loginAs(advisor)
+      .withInertia()
+      .redirects(0)
+
+    response.assertStatus(302)
+    response.assertHeader('location', detail)
+    assert.equal(response.flashMessage('success'), 'Analyse IA relancée.')
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.DONE)
+    assert.isNotNull(result.qualitativeAnalysis)
+  })
+
+  test('analyse déjà terminée → 409, rien n’est relancé', async ({ client, assert }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    const result = await ExerciseResultFactory.merge({
+      employeeId: employee.id,
+      type: EXERCICE_RESULTS_TYPES.VALUES,
+      qualitativeAnalysis: 'Analyse existante',
+      qualitativeAnalysisStatus: QUALITATIVE_ANALYSIS_STATUSES.DONE,
+    }).create()
+
+    const response = await client
+      .post(retryUrl(employee.id, 'values'))
+      .header('Accept', 'application/json')
+      .loginAs(advisor)
+      .redirects(0)
+
+    response.assertStatus(409)
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysis, 'Analyse existante')
+  })
+
+  test('candidat d’une autre organisation → 404, statut inchangé', async ({ client, assert }) => {
+    const otherOrg = await createOrganization()
+    const other = await EmployeeFactory.merge({ organizationId: otherOrg.id }).create()
+    const result = await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: other.id, type: EXERCICE_RESULTS_TYPES.VALUES })
+      .create()
+    const intruder = await createAdvisor()
+
+    const response = await client
+      .post(retryUrl(other.id, 'values'))
+      .header('Accept', 'application/json')
+      .loginAs(intruder)
+      .redirects(0)
+
+    response.assertStatus(404)
+    await result.refresh()
+    assert.equal(result.qualitativeAnalysisStatus, QUALITATIVE_ANALYSIS_STATUSES.FAILED)
+  })
+
+  test('la page de résultat expose le statut de l’analyse', async ({ client }) => {
+    const advisor = await createAdvisor()
+    const employee = await createEmployeeFor(advisor)
+    await ExerciseResultFactory.apply('analysisFailed')
+      .merge({ employeeId: employee.id, type: EXERCICE_RESULTS_TYPES.VALUES })
+      .create()
+
+    const response = await client
+      .get(`${BASE}/${employee.id}/exercises/results/values`)
+      .loginAs(advisor)
+      .withInertia()
+
+    response.assertStatus(200)
+    response.assertInertiaPropsContains({
+      result: { qualitativeAnalysisStatus: QUALITATIVE_ANALYSIS_STATUSES.FAILED },
+    })
   })
 })

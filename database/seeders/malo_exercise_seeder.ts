@@ -5,6 +5,7 @@ import SupportPlanStep from '#models/support_plan_step'
 import SupportPlanStepExercise from '#models/support_plan_step_exercise'
 import User from '#models/user'
 import { APPOINTMENTS_STATUSES } from '#shared/constants/appointment'
+import { QUALITATIVE_ANALYSIS_STATUSES } from '#shared/constants/exercises'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import { DateTime } from 'luxon'
 
@@ -258,7 +259,13 @@ export default class MaloExercisesSeeder extends BaseSeeder {
           type: row.type,
           status: 'completed' as const,
         },
-        row
+        {
+          ...row,
+          // Analyses de démo déjà rédigées (#171) : statut terminé.
+          qualitativeAnalysisStatus: row.qualitativeAnalysis
+            ? QUALITATIVE_ANALYSIS_STATUSES.DONE
+            : null,
+        }
       )
     }
 

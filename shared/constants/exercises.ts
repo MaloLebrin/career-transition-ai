@@ -38,6 +38,24 @@ export type ExerciceResultStatus =
 
 export const exerciceResultStatusValuesValues = Object.values(exerciceResultStatusValues)
 
+/**
+ * Statut de l'analyse IA qualitative d'un résultat (#171). `null` : aucune
+ * analyse demandée (brouillon, exercice verrouillé). `pending` : job en file ou
+ * en cours d'essais ; `done` : texte enregistré ; `failed` : tous les essais du
+ * job ont échoué, le conseiller peut relancer depuis la fiche.
+ * Synchronisé avec la contrainte CHECK `exercise_results_qualitative_analysis_status_check`.
+ */
+export const QUALITATIVE_ANALYSIS_STATUSES = {
+  PENDING: 'pending',
+  DONE: 'done',
+  FAILED: 'failed',
+} as const
+
+export type QualitativeAnalysisStatus =
+  (typeof QUALITATIVE_ANALYSIS_STATUSES)[keyof typeof QUALITATIVE_ANALYSIS_STATUSES]
+
+export const qualitativeAnalysisStatusValues = Object.values(QUALITATIVE_ANALYSIS_STATUSES)
+
 export interface ExerciseListEntry {
   slug: string
   title: string

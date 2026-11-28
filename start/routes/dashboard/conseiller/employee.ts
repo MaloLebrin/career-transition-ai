@@ -81,6 +81,10 @@ router
               'showExerciseResultConseiller',
             ])
             router.delete('/results/:type', [ExerciseResultsController, 'resetConseiller'])
+            router.post('/results/:type/analysis/retry', [
+              ExerciseResultsController,
+              'retryAnalysisConseiller',
+            ])
             router.get('/:type', [ExerciseResultsController, 'showDashboard'])
 
             // Exercise submissions (Motivation)
