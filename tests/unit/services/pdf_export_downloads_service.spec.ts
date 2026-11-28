@@ -245,6 +245,22 @@ test.group('PdfExportDownloadsService.findFor — équipe plateforme (#167)', (g
     await assert.rejects(() => service.findFor(expertA, foreign.id), PdfExportNotFoundError)
   })
 
+  test('l’export demandé par l’expert est introuvable une fois le particulier réassigné', async ({
+    assert,
+  }) => {
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const { employee } = await createB2cCandidate({ expert: expertA, paid: true })
+    const pdfExport = await exportOf(employee, expertA)
+
+    employee.advisorId = expertB.id
+    await employee.save()
+
+    await assert.rejects(() => service.findFor(expertA, pdfExport.id), PdfExportNotFoundError)
+    const found = await service.findFor(expertB, pdfExport.id)
+    assert.equal(found.id, pdfExport.id)
+  })
+
   test('l’admin de la plateforme garde la vue d’ensemble', async ({ assert }) => {
     const expert = await createInHouseExpert()
     const admin = await createAdmin(await createPlatformOrganization())

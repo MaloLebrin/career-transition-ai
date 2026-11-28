@@ -39,6 +39,10 @@ export class PdfExportDownloadsService {
     if (isSuperAdmin(user.role)) {
       // Pas de restriction.
     } else if (isConseillerDashboardRole(user.role)) {
+      // La fiche du périmètre d'équipe décide (#167) : un export que l'expert a
+      // lui-même demandé devient introuvable si le particulier est réassigné.
+      // L'`organizationId` de l'export reste vérifié en plus, par défense en
+      // profondeur (une ligne incohérente avec sa fiche ne sort pas).
       query
         .where('organizationId', user.organizationId)
         .whereIn('employeeId', Employee.query().select('id').where(teamEmployeeScope(user)))

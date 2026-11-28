@@ -127,9 +127,7 @@ test.group('NotesService — modification et suppression', (group) => {
     assert.equal(queries, 1)
   })
 
-  test("un collègue de l'organisation qui n'est pas l'auteur est refusé (403)", async ({
-    assert,
-  }) => {
+  test("la note d'un collègue de l'organisation est introuvable (404)", async ({ assert }) => {
     const author = await createAdvisor()
     const employee = await createEmployeeFor(author)
     const colleague = await createAdvisor(await Organization.findOrFail(author.organizationId))
@@ -140,7 +138,8 @@ test.group('NotesService — modification et suppression', (group) => {
     }).create()
 
     const error = await new NotesService().getEditableNote(colleague, note.id).catch((e) => e)
-    assert.instanceOf(error, NoteForbiddenError)
+    assert.instanceOf(error, NoteNotFoundError)
+    assert.equal(error.status, 404)
   })
 
   test("une note d'une autre organisation est introuvable (404)", async ({ assert }) => {
@@ -211,5 +210,30 @@ test.group('NotesService — équipe plateforme (#167)', (group) => {
     const error = await service.getEmployeeForNewNote(expertA, other.employee.id).catch((e) => e)
     assert.instanceOf(error, NoteNotFoundError)
     assert.equal(error.status, 404)
+  })
+})
+
+test.group('NotesService — note sur un particulier réassigné (#167)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('l’auteur ne modifie plus sa note une fois le particulier réassigné', async ({ assert }) => {
+    const service = new NotesService()
+    const expertA = await createInHouseExpert()
+    const expertB = await createInHouseExpert()
+    const { employee } = await createB2cCandidate({ expert: expertA })
+    const note = await NoteFactory.merge({
+      organizationId: employee.organizationId,
+      employeeId: employee.id,
+      authorId: expertA.id,
+    }).create()
+
+    const found = await service.getEditableNote(expertA, note.id)
+    assert.equal(found.id, note.id)
+
+    employee.advisorId = expertB.id
+    await employee.save()
+
+    const error = await service.getEditableNote(expertA, note.id).catch((e) => e)
+    assert.instanceOf(error, NoteNotFoundError)
   })
 })

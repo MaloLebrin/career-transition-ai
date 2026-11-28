@@ -208,9 +208,9 @@ test.group('NotesController.update', () => {
     assert.isTrue(response.state.redirectedBack)
   })
 
-  test("propage NoteForbiddenError si l'utilisateur n'est pas l'auteur", async ({ assert }) => {
+  test("propage NoteNotFoundError si l'utilisateur n'est pas l'auteur", async ({ assert }) => {
     const service = new FakeNotesService()
-    service.editableError = new NoteForbiddenError('Only the author can edit this note')
+    service.editableError = new NoteNotFoundError()
     const controller = new NotesController(service as any)
     const { ctx, session, request } = makeContext({ id: '90' }, { content: 'x' })
 
@@ -218,7 +218,7 @@ test.group('NotesController.update', () => {
       await controller.update(ctx)
       assert.fail('update aurait dû lever')
     } catch (error) {
-      assert.instanceOf(error, NoteForbiddenError)
+      assert.instanceOf(error, NoteNotFoundError)
     }
     assert.lengthOf(request.validators, 0)
     assert.lengthOf(service.updateCalls, 0)

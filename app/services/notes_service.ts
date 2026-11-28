@@ -83,21 +83,22 @@ export class NotesService {
   }
 
   /**
-   * Note non supprimée de l'organisation de `user`, dont il est l'auteur.
+   * Note non supprimée dont `user` est l'auteur, sur une fiche de son
+   * périmètre d'équipe (`teamEmployeeScope`, #167). Toute autre note — d'un
+   * collègue, d'une autre organisation, ou d'un particulier réassigné à un
+   * autre expert — est introuvable (404), sans confirmer qu'elle existe.
    */
   public async getEditableNote(user: User, noteId: number): Promise<Note> {
     const note = await Note.query()
       .where('id', noteId)
       .where('organizationId', user.organizationId)
+      .where('authorId', user.id)
+      .whereIn('employeeId', Employee.query().select('id').where(teamEmployeeScope(user)))
       .whereNull('deletedAt')
       .first()
 
     if (!note) {
       throw new NoteNotFoundError()
-    }
-
-    if (note.authorId !== user.id) {
-      throw new NoteForbiddenError('Only the author can edit this note')
     }
 
     return note
