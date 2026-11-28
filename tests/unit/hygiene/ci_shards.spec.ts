@@ -25,8 +25,9 @@ const ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 
 // Spécifieur non littéral : le module est un .mjs sans déclarations de types.
 const generatorUrl = new URL('../../../scripts/ci_test_shards.mjs', import.meta.url).href
-const { buildMatrix } = (await import(generatorUrl)) as {
+const { buildMatrix, buildUnitOnlyMatrix } = (await import(generatorUrl)) as {
   buildMatrix: (count?: number) => Shard[]
+  buildUnitOnlyMatrix: () => Shard[]
 }
 
 /**
@@ -118,11 +119,17 @@ test.group('CI shards hygiene (unit)', () => {
     assert.equal(unitShard!.files, '')
   })
 
+  test('the docs-only matrix keeps the unfiltered unit shard alone', ({ assert }) => {
+    assert.deepEqual(buildUnitOnlyMatrix(), [
+      { name: 'unit-integration', suites: 'unit integration', files: '' },
+    ])
+  })
+
   test('the workflow consumes the generated matrix, not a hand-written allowlist', ({ assert }) => {
     const workflow = readFileSync(`${ROOT}.github/workflows/ci.yml`, 'utf8')
 
     assert.include(workflow, 'node scripts/ci_test_shards.mjs')
-    assert.include(workflow, 'fromJson(needs.test-backend-matrix.outputs.shards)')
+    assert.include(workflow, 'fromJson(needs.plan.outputs.shards)')
     assert.notMatch(
       workflow,
       /files: "[^"]*\*/,

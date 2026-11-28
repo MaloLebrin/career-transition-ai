@@ -125,7 +125,7 @@ Le job `test-backend` tourne en shards parallèles, chacun avec son propre conte
 éphémère (service GitHub Actions). Un job d'agrégation `test-backend` (`needs` sur la matrice et
 sur les shards) reste l'unique check requis pour la protection de branche.
 
-La matrice **n'est pas écrite à la main** : le job `test-backend-matrix` exécute
+La matrice **n'est pas écrite à la main** : le job `plan` exécute
 `scripts/ci_test_shards.mjs`, qui balaie `tests/functional/` et répartit les specs. Une allowlist
 `--files` maintenue dans le workflow serait un angle mort silencieux : un nouveau répertoire de
 specs passerait en local et ne tournerait jamais en CI, sans qu'aucun job n'échoue.
@@ -134,6 +134,7 @@ specs passerait en local et ne tournerait jamais en CI, sans qu'aucun job n'éch
 node scripts/ci_test_shards.mjs --explain     # la répartition, lisible
 node scripts/ci_test_shards.mjs               # le JSON consommé par la CI
 node scripts/ci_test_shards.mjs --shards=4    # simuler un autre découpage
+node scripts/ci_test_shards.mjs --unit-only   # matrice d'une PR de doc seule
 ```
 
 **Répartition au fichier près, pas au répertoire**, pondérée par le nombre de `test(...)` de chaque
@@ -163,18 +164,46 @@ privé de son `.spec.ts`. Deux conséquences :
 
 ## Les autres jobs de la CI
 
-| Job                | Commande                            | Note                                                          |
-| ------------------ | ----------------------------------- | ------------------------------------------------------------- |
-| `lint`             | `pnpm lint`                         |                                                               |
-| `typecheck`        | `pnpm typecheck`                    | `tsconfig.json` exclut `tests/` : les specs ne sont pas typés |
-| `build`            | `pnpm run build`                    | `node ace build` — serveur + assets Vite                      |
-| `test-backend`     | voir ci-dessus                      | agrégation des shards                                         |
-| `test-frontend`    | `pnpm test:inertia`                 | Vitest + Testing Library, sans base                           |
-| `smoke-prod-build` | `node scripts/smoke_prod_build.mjs` | démarre le build de prod, voir ci-dessous                     |
+| Job                | Commande                                              | Note                                                                 |
+| ------------------ | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| `plan`             | `git diff`, `node scripts/ci_test_shards.mjs`         | fichiers modifiés + matrice ; sauté sur une PR en draft              |
+| `checks`           | `pnpm lint`, `pnpm typecheck`, `pnpm test:inertia`    | un seul job ; `tsconfig.json` exclut `tests/` (specs non typés)      |
+| `test-backend`     | voir ci-dessus                                        | agrégation des shards                                                |
+| `smoke-prod-build` | `pnpm run build`, `node scripts/smoke_prod_build.mjs` | tient lieu de job `build`, voir ci-dessous                           |
+| `docker-image`     | `docker/build-push-action` + `smoke_compose_prod.sh`  | seulement si l'image ou `deploy/` peuvent changer ; couches en cache |
 
 `pnpm/action-setup@v4` est appelé **sans** `version:` : l'action lit `packageManager` de
 `package.json`, qui reste la source unique de vérité (avec le `Dockerfile`). Les deux en même
 temps font échouer le setup (« Multiple versions of pnpm specified »).
+
+### Coût de la CI
+
+Le workflow est réglé pour consommer le moins de minutes possible :
+
+- **Pas de CI sur une PR en draft.** Le job `plan` est sauté, et tous les autres en dépendent.
+  La CI part au passage en « Ready for review » ; repasser en draft annule le run en cours.
+- **Un push annule le run précédent** de la même PR (`concurrency` + `cancel-in-progress`). Pas
+  sur `main` : chaque run n'y regarde que les commits de son push (`github.event.before`..`HEAD`),
+  donc un run annulé laisserait ses changements sans test.
+- **Fichiers modifiés** : diff contre la base de la PR, ou contre `github.event.before` sur un
+  push, en `--no-renames` (un fichier sorti de `deploy/` compte par son ancien chemin). Base
+  introuvable (nouvelle branche, `workflow_dispatch`) → CI complète.
+- **PR de doc seule** (Markdown, `docs/`, `.claude/`, `.cursor/`) : seul le shard
+  `unit-integration` tourne (`--unit-only`), parce qu'il porte la garde des liens
+  `docs_links.spec.ts`.
+- **`docker-image`** ne tourne que si `Dockerfile`, `.dockerignore`, `docker/`, `deploy/`,
+  `scripts/smoke_compose_prod.sh`, les manifestes pnpm ou le workflow changent. Le reste du build
+  est couvert par `smoke-prod-build`. Les couches sont mises en cache (`type=gha`), lu partout
+  et écrit depuis `main` seulement.
+- **Lint, typecheck et Vitest partagent un job** (`checks`) : une seule installation, et une minute
+  facturée au lieu de trois. Le job `build` a disparu : `smoke-prod-build` construit déjà l'app.
+- `timeout-minutes` sur chaque job, pour qu'un run bloqué ne brûle pas 6 h.
+
+Pas de `paths-ignore` : un workflow non déclenché laisse les checks requis « en attente » pour
+toujours, alors qu'un job sauté (`skipped`) compte comme un succès pour la protection de branche.
+Checks à exiger : `test-backend`, `lint · typecheck · test-frontend`, `smoke-prod-build`,
+`docker-image`. Lancer la CI complète à la main : onglet Actions → CI → « Run workflow »
+(`workflow_dispatch`).
 
 ### Test de fumée du build de production
 
